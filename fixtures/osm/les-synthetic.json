@@ -1,0 +1,1622 @@
+{
+ "version": 0.6,
+ "generator": "outrn synthetic fixture generator (NOT real OSM data)",
+ "osm3s": {
+  "timestamp_osm_base": "2026-09-26T14:39:11Z",
+  "copyright": "Synthetic fixture. Shape follows Overpass output; content is invented."
+ },
+ "elements": [
+  {
+   "type": "node",
+   "id": 100007,
+   "tags": {
+    "name": "Essex Kitchen",
+    "amenity": "restaurant",
+    "website": "https://essexkitchen.example",
+    "cuisine": "italian",
+    "outdoor_seating": "no",
+    "reservation": "yes"
+   },
+   "timestamp": "2025-06-05T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.730672,
+   "lon": -73.972309
+  },
+  {
+   "type": "node",
+   "id": 100008,
+   "tags": {
+    "name": "Grand Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "phone": "+1 212 555 5266",
+    "cuisine": "korean",
+    "outdoor_seating": "yes",
+    "reservation": "required"
+   },
+   "timestamp": "2026-04-19T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726906,
+   "lon": -73.992709
+  },
+  {
+   "type": "node",
+   "id": 100009,
+   "tags": {
+    "name": "Ludlow Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://ludlowkitchen.example",
+    "phone": "+1 212 555 6594",
+    "cuisine": "korean",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2025-11-13T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.712607,
+   "lon": -73.984996
+  },
+  {
+   "type": "node",
+   "id": 100010,
+   "tags": {
+    "name": "Forsyth Clinton Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "phone": "+1 212 555 9967",
+    "cuisine": "mexican",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2026-04-22T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.720713,
+   "lon": -73.98824
+  },
+  {
+   "type": "node",
+   "id": 100011,
+   "tags": {
+    "name": "Rivington Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Tu-Su 12:00-23:00; Mo off",
+    "phone": "+1 212 555 5887",
+    "cuisine": "vietnamese",
+    "outdoor_seating": "no",
+    "reservation": "required"
+   },
+   "timestamp": "2025-07-20T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726766,
+   "lon": -73.98788
+  },
+  {
+   "type": "node",
+   "id": 100012,
+   "tags": {
+    "name": "Ridge Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "website": "https://ridgekitchen.example",
+    "phone": "+1 212 555 9547",
+    "cuisine": "vietnamese",
+    "outdoor_seating": "yes",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2025-06-25T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.72504,
+   "lon": -73.997603
+  },
+  {
+   "type": "node",
+   "id": 100013,
+   "tags": {
+    "name": "Allen Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://allenkitchen.example",
+    "cuisine": "chinese",
+    "outdoor_seating": "no",
+    "reservation": "recommended"
+   },
+   "timestamp": "2026-06-28T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.719101,
+   "lon": -73.993416
+  },
+  {
+   "type": "node",
+   "id": 100014,
+   "tags": {
+    "name": "Broome Kitchen",
+    "amenity": "restaurant",
+    "cuisine": "chinese",
+    "outdoor_seating": "no",
+    "reservation": "required"
+   },
+   "timestamp": "2024-08-21T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726618,
+   "lon": -73.985916
+  },
+  {
+   "type": "node",
+   "id": 100015,
+   "tags": {
+    "name": "Norfolk Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "phone": "+1 212 555 3536",
+    "cuisine": "korean",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2026-02-24T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706663,
+   "lon": -73.975267
+  },
+  {
+   "type": "node",
+   "id": 100016,
+   "tags": {
+    "name": "Attorney Pitt Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Tu-Su 12:00-23:00; Mo off",
+    "website": "https://attorneypittkitchen.example",
+    "phone": "+1 212 555 1242",
+    "cuisine": "italian",
+    "outdoor_seating": "yes",
+    "reservation": "recommended"
+   },
+   "timestamp": "2026-04-09T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.718281,
+   "lon": -73.971661
+  },
+  {
+   "type": "node",
+   "id": 100017,
+   "tags": {
+    "name": "Allen Grand Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Tu-Su 12:00-23:00; Mo off",
+    "website": "https://allengrandkitchen.example",
+    "phone": "+1 212 555 2620",
+    "cuisine": "vietnamese",
+    "outdoor_seating": "no",
+    "reservation": "no"
+   },
+   "timestamp": "2026-05-12T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.708057,
+   "lon": -73.98512
+  },
+  {
+   "type": "node",
+   "id": 100018,
+   "tags": {
+    "name": "Stanton Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://stantonkitchen.example",
+    "phone": "+1 212 555 7138",
+    "cuisine": "japanese",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2025-06-04T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.721023,
+   "lon": -73.979262
+  },
+  {
+   "type": "node",
+   "id": 100019,
+   "tags": {
+    "name": "Ridge Suffolk Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://ridgesuffolkkitchen.example",
+    "phone": "+1 212 555 5718",
+    "cuisine": "pizza",
+    "outdoor_seating": "no",
+    "reservation": "no"
+   },
+   "timestamp": "2024-06-06T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.712091,
+   "lon": -73.990301
+  },
+  {
+   "type": "node",
+   "id": 100020,
+   "tags": {
+    "name": "Ridge Ludlow Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+    "website": "https://ridgeludlowkitchen.example",
+    "phone": "+1 212 555 7135",
+    "cuisine": "pizza",
+    "outdoor_seating": "no",
+    "wheelchair": "no",
+    "reservation": "yes"
+   },
+   "timestamp": "2026-01-09T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.718864,
+   "lon": -73.979899
+  },
+  {
+   "type": "node",
+   "id": 100021,
+   "tags": {
+    "name": "Hester Kitchen",
+    "amenity": "restaurant",
+    "cuisine": "italian",
+    "outdoor_seating": "yes",
+    "wheelchair": "no"
+   },
+   "timestamp": "2024-12-06T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726295,
+   "lon": -73.981623
+  },
+  {
+   "type": "node",
+   "id": 100022,
+   "tags": {
+    "name": "Eldridge Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+    "cuisine": "japanese",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2024-09-08T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706025,
+   "lon": -73.991016
+  },
+  {
+   "type": "node",
+   "id": 100023,
+   "tags": {
+    "name": "Suffolk Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "website": "https://suffolkkitchen.example",
+    "cuisine": "chinese",
+    "outdoor_seating": "no",
+    "reservation": "required"
+   },
+   "timestamp": "2025-07-19T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.724213,
+   "lon": -73.976451
+  },
+  {
+   "type": "node",
+   "id": 100024,
+   "tags": {
+    "name": "Stanton Allen Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "website": "https://stantonallenkitchen.example",
+    "phone": "+1 212 555 7512",
+    "cuisine": "mexican",
+    "outdoor_seating": "no",
+    "reservation": "no"
+   },
+   "timestamp": "2025-09-15T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.725116,
+   "lon": -73.989173
+  },
+  {
+   "type": "node",
+   "id": 100025,
+   "tags": {
+    "name": "Orchard Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://orchardkitchen.example",
+    "cuisine": "italian",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2024-08-08T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706748,
+   "lon": -73.984412
+  },
+  {
+   "type": "node",
+   "id": 100026,
+   "tags": {
+    "name": "Stanton 2 Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:00-23:00",
+    "website": "https://stantonkitchen.example",
+    "phone": "+1 212 555 4745",
+    "cuisine": "mexican",
+    "outdoor_seating": "no",
+    "reservation": "required"
+   },
+   "timestamp": "2025-07-25T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.707882,
+   "lon": -73.986019
+  },
+  {
+   "type": "node",
+   "id": 100027,
+   "tags": {
+    "name": "Essex Allen Kitchen",
+    "amenity": "restaurant",
+    "phone": "+1 212 555 4925",
+    "cuisine": "chinese",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2024-05-10T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727409,
+   "lon": -73.979207
+  },
+  {
+   "type": "node",
+   "id": 100028,
+   "tags": {
+    "name": "Forsyth Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 11:30-15:00,17:00-22:00",
+    "website": "https://forsythkitchen.example",
+    "cuisine": "pizza",
+    "outdoor_seating": "yes",
+    "reservation": "recommended"
+   },
+   "timestamp": "2026-02-09T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.70705,
+   "lon": -73.993872
+  },
+  {
+   "type": "node",
+   "id": 100029,
+   "tags": {
+    "name": "Delancey Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 08:00-20:00",
+    "website": "https://delanceycoffee.example",
+    "phone": "+1 212 555 6384",
+    "outdoor_seating": "no",
+    "wheelchair": "limited"
+   },
+   "timestamp": "2026-08-29T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.724198,
+   "lon": -73.987295
+  },
+  {
+   "type": "node",
+   "id": 100030,
+   "tags": {
+    "name": "Attorney Coffee",
+    "amenity": "cafe",
+    "website": "https://attorneycoffee.example",
+    "phone": "+1 212 555 3485",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2026-01-11T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706387,
+   "lon": -73.995925
+  },
+  {
+   "type": "node",
+   "id": 100031,
+   "tags": {
+    "name": "Essex Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 07:30-17:00",
+    "website": "https://essexcoffee.example",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2026-03-31T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.730386,
+   "lon": -73.991581
+  },
+  {
+   "type": "node",
+   "id": 100032,
+   "tags": {
+    "name": "Pitt 2 Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Fr 07:00-18:00; Sa-Su 08:00-18:00",
+    "website": "https://pittcoffee.example",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2025-11-22T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.71822,
+   "lon": -73.980711
+  },
+  {
+   "type": "node",
+   "id": 100033,
+   "tags": {
+    "name": "Hester Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 08:00-20:00",
+    "website": "https://hestercoffee.example",
+    "phone": "+1 212 555 7238",
+    "outdoor_seating": "no",
+    "wheelchair": "no"
+   },
+   "timestamp": "2025-07-23T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.718167,
+   "lon": -74.000814
+  },
+  {
+   "type": "node",
+   "id": 100034,
+   "tags": {
+    "name": "Stanton Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Fr 07:00-18:00; Sa-Su 08:00-18:00",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2024-08-22T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.729252,
+   "lon": -73.998532
+  },
+  {
+   "type": "node",
+   "id": 100035,
+   "tags": {
+    "name": "Allen Hester Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 07:30-17:00",
+    "website": "https://allenhestercoffee.example",
+    "phone": "+1 212 555 4396",
+    "outdoor_seating": "no",
+    "wheelchair": "no"
+   },
+   "timestamp": "2025-06-28T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.717107,
+   "lon": -74.00094
+  },
+  {
+   "type": "node",
+   "id": 100036,
+   "tags": {
+    "name": "Forsyth Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 07:30-17:00",
+    "website": "https://forsythcoffee.example",
+    "phone": "+1 212 555 7088",
+    "outdoor_seating": "no",
+    "wheelchair": "no"
+   },
+   "timestamp": "2025-09-04T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.708116,
+   "lon": -73.999579
+  },
+  {
+   "type": "node",
+   "id": 100037,
+   "tags": {
+    "name": "Ludlow Orchard Coffee",
+    "amenity": "cafe",
+    "phone": "+1 212 555 6236",
+    "outdoor_seating": "no",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2026-06-27T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.721889,
+   "lon": -74.000653
+  },
+  {
+   "type": "node",
+   "id": 100038,
+   "tags": {
+    "name": "Eldridge Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 08:00-20:00",
+    "website": "https://eldridgecoffee.example",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2025-01-27T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.722789,
+   "lon": -73.98462
+  },
+  {
+   "type": "node",
+   "id": 100039,
+   "tags": {
+    "name": "Ridge Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Su 08:00-20:00",
+    "website": "https://ridgecoffee.example",
+    "phone": "+1 212 555 1346",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2025-07-19T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.728686,
+   "lon": -73.980324
+  },
+  {
+   "type": "node",
+   "id": 100040,
+   "tags": {
+    "name": "Allen Ludlow Coffee",
+    "amenity": "cafe",
+    "opening_hours": "Mo-Fr 07:00-18:00; Sa-Su 08:00-18:00",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2025-09-27T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.729976,
+   "lon": -73.987329
+  },
+  {
+   "type": "node",
+   "id": 100041,
+   "tags": {
+    "name": "Norfolk Bar",
+    "amenity": "bar",
+    "opening_hours": "Mo-Su 16:00-02:00",
+    "website": "https://norfolkbar.example",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2026-07-24T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726726,
+   "lon": -73.99412
+  },
+  {
+   "type": "node",
+   "id": 100042,
+   "tags": {
+    "name": "Ridge Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "website": "https://ridgebar.example",
+    "phone": "+1 212 555 6471",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2026-03-29T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.713276,
+   "lon": -74.00022
+  },
+  {
+   "type": "node",
+   "id": 100043,
+   "tags": {
+    "name": "Essex Bar",
+    "amenity": "bar",
+    "website": "https://essexbar.example",
+    "phone": "+1 212 555 6946",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2024-10-24T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.707774,
+   "lon": -73.974524
+  },
+  {
+   "type": "node",
+   "id": 100044,
+   "tags": {
+    "name": "Clinton Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "phone": "+1 212 555 8297",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2026-01-15T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.723404,
+   "lon": -73.980264
+  },
+  {
+   "type": "node",
+   "id": 100045,
+   "tags": {
+    "name": "Hester Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "website": "https://hesterbar.example",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2026-09-25T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727329,
+   "lon": -73.986761
+  },
+  {
+   "type": "node",
+   "id": 100046,
+   "tags": {
+    "name": "Delancey Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "outdoor_seating": "no",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2025-09-11T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727594,
+   "lon": -73.999704
+  },
+  {
+   "type": "node",
+   "id": 100047,
+   "tags": {
+    "name": "Eldridge Norfolk Bar",
+    "amenity": "bar",
+    "opening_hours": "Mo-Su 16:00-02:00",
+    "website": "https://eldridgenorfolkbar.example",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2026-06-15T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.724763,
+   "lon": -74.001489
+  },
+  {
+   "type": "node",
+   "id": 100048,
+   "tags": {
+    "name": "Essex Hester Bar",
+    "amenity": "bar",
+    "opening_hours": "Mo-Su 16:00-02:00",
+    "website": "https://essexhesterbar.example",
+    "outdoor_seating": "no"
+   },
+   "timestamp": "2025-08-04T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.709488,
+   "lon": -73.975001
+  },
+  {
+   "type": "node",
+   "id": 100049,
+   "tags": {
+    "name": "Stanton Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "website": "https://stantonbar.example",
+    "outdoor_seating": "yes"
+   },
+   "timestamp": "2024-06-13T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.730851,
+   "lon": -73.986194
+  },
+  {
+   "type": "node",
+   "id": 100050,
+   "tags": {
+    "name": "Broome Bar",
+    "amenity": "bar",
+    "opening_hours": "Tu-Sa 18:00-03:00",
+    "website": "https://broomebar.example",
+    "phone": "+1 212 555 3125",
+    "outdoor_seating": "yes",
+    "wheelchair": "no"
+   },
+   "timestamp": "2026-08-31T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727149,
+   "lon": -73.992962
+  },
+  {
+   "type": "node",
+   "id": 100051,
+   "tags": {
+    "name": "Ludlow Tavern",
+    "amenity": "pub",
+    "opening_hours": "Mo-Su 12:00-02:00",
+    "website": "https://ludlowtavern.example",
+    "wheelchair": "limited"
+   },
+   "timestamp": "2025-10-20T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.73031,
+   "lon": -73.988579
+  },
+  {
+   "type": "node",
+   "id": 100052,
+   "tags": {
+    "name": "Delancey Tavern",
+    "amenity": "pub",
+    "opening_hours": "Mo-Su 12:00-02:00",
+    "website": "https://delanceytavern.example"
+   },
+   "timestamp": "2024-12-13T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.716973,
+   "lon": -73.998882
+  },
+  {
+   "type": "node",
+   "id": 100053,
+   "tags": {
+    "name": "Ridge Tavern",
+    "amenity": "pub",
+    "opening_hours": "Mo-Su 12:00-02:00",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2025-08-20T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.720409,
+   "lon": -73.998263
+  },
+  {
+   "type": "node",
+   "id": 100054,
+   "tags": {
+    "name": "Orchard Scoops",
+    "amenity": "ice_cream",
+    "opening_hours": "Mo-Su 12:00-23:00",
+    "phone": "+1 212 555 2852"
+   },
+   "timestamp": "2026-02-21T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706682,
+   "lon": -73.972509
+  },
+  {
+   "type": "node",
+   "id": 100055,
+   "tags": {
+    "name": "Eldridge Scoops",
+    "amenity": "ice_cream",
+    "opening_hours": "Mo-Su 12:00-23:00",
+    "website": "https://eldridgescoops.example"
+   },
+   "timestamp": "2024-08-19T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.706634,
+   "lon": -73.992882
+  },
+  {
+   "type": "way",
+   "id": 100056,
+   "tags": {
+    "name": "Orchard Museum",
+    "tourism": "museum",
+    "opening_hours": "Tu-Su 11:00-18:00; Fr 11:00-21:00; Mo off",
+    "website": "https://orchardmuseum.example",
+    "phone": "+1 212 555 8384"
+   },
+   "timestamp": "2026-08-23T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.710951,
+    "lon": -73.984143
+   }
+  },
+  {
+   "type": "way",
+   "id": 100057,
+   "tags": {
+    "name": "Ludlow Museum",
+    "tourism": "museum",
+    "opening_hours": "Tu-Su 11:00-18:00; Fr 11:00-21:00; Mo off",
+    "website": "https://ludlowmuseum.example",
+    "wheelchair": "no"
+   },
+   "timestamp": "2026-05-16T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.719846,
+    "lon": -73.994398
+   }
+  },
+  {
+   "type": "way",
+   "id": 100058,
+   "tags": {
+    "name": "Rivington Museum",
+    "tourism": "museum",
+    "opening_hours": "We-Su 12:00-18:00",
+    "website": "https://rivingtonmuseum.example",
+    "phone": "+1 212 555 3626"
+   },
+   "timestamp": "2026-09-06T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.725994,
+    "lon": -73.979447
+   }
+  },
+  {
+   "type": "node",
+   "id": 100059,
+   "tags": {
+    "name": "Ridge Gallery",
+    "tourism": "gallery",
+    "opening_hours": "We-Su 12:00-19:00",
+    "phone": "+1 212 555 7174"
+   },
+   "timestamp": "2026-04-30T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727546,
+   "lon": -73.986184
+  },
+  {
+   "type": "node",
+   "id": 100060,
+   "tags": {
+    "name": "Rivington Stanton Gallery",
+    "tourism": "gallery",
+    "phone": "+1 212 555 7694",
+    "wheelchair": "no"
+   },
+   "timestamp": "2025-08-13T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.710569,
+   "lon": -73.989335
+  },
+  {
+   "type": "node",
+   "id": 100061,
+   "tags": {
+    "name": "Eldridge Gallery",
+    "tourism": "gallery",
+    "opening_hours": "We-Su 12:00-19:00",
+    "website": "https://eldridgegallery.example",
+    "phone": "+1 212 555 6665"
+   },
+   "timestamp": "2024-10-28T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.713942,
+   "lon": -74.000631
+  },
+  {
+   "type": "node",
+   "id": 100062,
+   "tags": {
+    "name": "Orchard Gallery",
+    "tourism": "gallery",
+    "opening_hours": "Tu-Sa 11:00-18:00",
+    "website": "https://orchardgallery.example",
+    "phone": "+1 212 555 8000",
+    "wheelchair": "no"
+   },
+   "timestamp": "2025-08-13T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.729513,
+   "lon": -73.99984
+  },
+  {
+   "type": "node",
+   "id": 100063,
+   "tags": {
+    "name": "Stanton Gallery",
+    "tourism": "gallery",
+    "opening_hours": "We-Su 12:00-19:00",
+    "website": "https://stantongallery.example"
+   },
+   "timestamp": "2025-01-07T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.715524,
+   "lon": -73.995201
+  },
+  {
+   "type": "node",
+   "id": 100064,
+   "tags": {
+    "name": "Allen Gallery",
+    "tourism": "gallery",
+    "opening_hours": "We-Su 12:00-19:00",
+    "phone": "+1 212 555 3643"
+   },
+   "timestamp": "2025-10-23T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.715441,
+   "lon": -73.989433
+  },
+  {
+   "type": "node",
+   "id": 100065,
+   "tags": {
+    "name": "Delancey Playhouse",
+    "amenity": "theatre",
+    "opening_hours": "Tu-Su 19:00-22:30",
+    "website": "https://delanceyplayhouse.example",
+    "wheelchair": "limited"
+   },
+   "timestamp": "2025-04-05T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.714031,
+   "lon": -73.977359
+  },
+  {
+   "type": "node",
+   "id": 100066,
+   "tags": {
+    "name": "Broome Playhouse",
+    "amenity": "theatre",
+    "website": "https://broomeplayhouse.example"
+   },
+   "timestamp": "2024-08-29T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.727811,
+   "lon": -73.986647
+  },
+  {
+   "type": "node",
+   "id": 100067,
+   "tags": {
+    "name": "Broome Cinema",
+    "amenity": "cinema",
+    "phone": "+1 212 555 1310"
+   },
+   "timestamp": "2024-12-20T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726265,
+   "lon": -73.980414
+  },
+  {
+   "type": "node",
+   "id": 100068,
+   "tags": {
+    "name": "Ridge Cinema",
+    "amenity": "cinema",
+    "wheelchair": "no"
+   },
+   "timestamp": "2024-07-20T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.713509,
+   "lon": -73.974336
+  },
+  {
+   "type": "node",
+   "id": 100069,
+   "tags": {
+    "name": "Attorney Arts Center",
+    "amenity": "arts_centre",
+    "opening_hours": "Mo-Su 10:00-22:00",
+    "website": "https://attorneyartscenter.example",
+    "phone": "+1 212 555 8180"
+   },
+   "timestamp": "2025-05-22T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726145,
+   "lon": -73.978868
+  },
+  {
+   "type": "node",
+   "id": 100070,
+   "tags": {
+    "name": "Hester Community House",
+    "amenity": "community_centre",
+    "opening_hours": "Mo-Fr 09:00-21:00; Sa 10:00-17:00"
+   },
+   "timestamp": "2026-01-27T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.726325,
+   "lon": -73.983032
+  },
+  {
+   "type": "node",
+   "id": 100071,
+   "tags": {
+    "name": "Ridge Market",
+    "amenity": "marketplace",
+    "opening_hours": "Su 10:00-17:00",
+    "website": "https://ridgemarket.example",
+    "phone": "+1 212 555 2300"
+   },
+   "timestamp": "2025-12-17T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.705993,
+   "lon": -74.001038
+  },
+  {
+   "type": "node",
+   "id": 100072,
+   "tags": {
+    "name": "Suffolk Library",
+    "amenity": "library",
+    "opening_hours": "Mo,We 10:00-20:00; Tu,Th 10:00-18:00; Fr,Sa 10:00-17:00; Su off",
+    "website": "https://suffolklibrary.example"
+   },
+   "timestamp": "2026-07-12T00:00:00.000Z",
+   "version": 8,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.709655,
+   "lon": -73.99498
+  },
+  {
+   "type": "way",
+   "id": 100073,
+   "tags": {
+    "name": "Allen Park",
+    "leisure": "park",
+    "website": "https://allenpark.example",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2024-05-10T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.723619,
+    "lon": -73.99885
+   }
+  },
+  {
+   "type": "node",
+   "id": 100074,
+   "tags": {
+    "name": "Pitt Park",
+    "leisure": "park",
+    "opening_hours": "Mo-Su 06:00-01:00",
+    "website": "https://pittpark.example"
+   },
+   "timestamp": "2025-09-04T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.722592,
+   "lon": -73.986782
+  },
+  {
+   "type": "way",
+   "id": 100075,
+   "tags": {
+    "name": "Norfolk Park",
+    "leisure": "park",
+    "opening_hours": "Mo-Su 06:00-01:00",
+    "phone": "+1 212 555 1075"
+   },
+   "timestamp": "2026-05-31T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.722865,
+    "lon": -73.985733
+   }
+  },
+  {
+   "type": "way",
+   "id": 100076,
+   "tags": {
+    "name": "Stanton Park",
+    "leisure": "park",
+    "website": "https://stantonpark.example",
+    "phone": "+1 212 555 6468"
+   },
+   "timestamp": "2026-07-09T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.719677,
+    "lon": -73.981504
+   }
+  },
+  {
+   "type": "way",
+   "id": 100077,
+   "tags": {
+    "name": "Rivington Norfolk Park",
+    "leisure": "park",
+    "opening_hours": "Mo-Su 06:00-01:00",
+    "website": "https://rivingtonnorfolkpark.example",
+    "phone": "+1 212 555 2718"
+   },
+   "timestamp": "2024-08-19T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.726204,
+    "lon": -73.988294
+   }
+  },
+  {
+   "type": "way",
+   "id": 100078,
+   "tags": {
+    "name": "Essex Garden",
+    "leisure": "garden",
+    "opening_hours": "Apr-Oct Mo-Su 08:00-19:00; Nov-Mar Mo-Su 08:00-17:00",
+    "website": "https://essexgarden.example",
+    "wheelchair": "yes"
+   },
+   "timestamp": "2025-08-27T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.714099,
+    "lon": -73.998084
+   }
+  },
+  {
+   "type": "way",
+   "id": 100079,
+   "tags": {
+    "name": "Broome Garden",
+    "leisure": "garden",
+    "opening_hours": "Apr-Oct Mo-Su 08:00-19:00; Nov-Mar Mo-Su 08:00-17:00"
+   },
+   "timestamp": "2026-08-13T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.712393,
+    "lon": -73.997751
+   }
+  },
+  {
+   "type": "node",
+   "id": 100080,
+   "tags": {
+    "name": "Ridge Hall",
+    "tourism": "attraction",
+    "website": "https://ridgehall.example",
+    "phone": "+1 212 555 5547"
+   },
+   "timestamp": "2024-11-06T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.709229,
+   "lon": -73.997019
+  },
+  {
+   "type": "node",
+   "id": 100081,
+   "tags": {
+    "name": "Clinton Hall",
+    "tourism": "attraction",
+    "opening_hours": "Mo-Su 09:00-21:00",
+    "website": "https://clintonhall.example",
+    "phone": "+1 212 555 1580",
+    "fee": "yes"
+   },
+   "timestamp": "2025-03-26T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.728471,
+   "lon": -73.998578
+  },
+  {
+   "type": "node",
+   "id": 100082,
+   "tags": {
+    "name": "Eldridge Books",
+    "shop": "books",
+    "website": "https://eldridgebooks.example"
+   },
+   "timestamp": "2024-12-09T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.715451,
+   "lon": -73.971932
+  },
+  {
+   "type": "node",
+   "id": 100083,
+   "tags": {
+    "name": "Delancey Books",
+    "shop": "books",
+    "opening_hours": "Mo-Su 10:00-21:00",
+    "website": "https://delanceybooks.example"
+   },
+   "timestamp": "2025-03-31T00:00:00.000Z",
+   "version": 7,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.715671,
+   "lon": -73.989625
+  },
+  {
+   "type": "node",
+   "id": 100084,
+   "tags": {
+    "name": "Orchard St. Coffee",
+    "amenity": "cafe",
+    "website": "https://orchardstcoffee.example",
+    "opening_hours": "Mo-Su 07:00-18:00"
+   },
+   "timestamp": "2026-08-17T00:00:00.000Z",
+   "version": 5,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.718753,
+   "lon": -73.982609
+  },
+  {
+   "type": "way",
+   "id": 100085,
+   "tags": {
+    "name": "Orchard Street Coffee",
+    "amenity": "cafe",
+    "website": "https://orchardstcoffee.example",
+    "building": "yes"
+   },
+   "timestamp": "2025-08-22T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.718873,
+    "lon": -73.982709
+   }
+  },
+  {
+   "type": "node",
+   "id": 100086,
+   "tags": {
+    "name": "Bagel Depot",
+    "amenity": "cafe",
+    "brand": "Bagel Depot",
+    "website": "https://bageldepot.example",
+    "phone": "+1 212 555 0100",
+    "addr:housenumber": "12",
+    "addr:street": "Essex Street",
+    "opening_hours": "Mo-Su 06:00-16:00"
+   },
+   "timestamp": "2025-08-08T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.720475,
+   "lon": -73.980952
+  },
+  {
+   "type": "node",
+   "id": 100087,
+   "tags": {
+    "name": "Bagel Depot",
+    "amenity": "cafe",
+    "brand": "Bagel Depot",
+    "website": "https://bageldepot.example",
+    "phone": "+1 212 555 0100",
+    "addr:housenumber": "88",
+    "addr:street": "Rivington Street",
+    "opening_hours": "Mo-Su 06:00-16:00"
+   },
+   "timestamp": "2024-12-18T00:00:00.000Z",
+   "version": 6,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.719983,
+   "lon": -73.978276
+  },
+  {
+   "type": "way",
+   "id": 100088,
+   "tags": {
+    "name": "Tenement Story Museum",
+    "tourism": "museum",
+    "website": "https://tenementstory.example",
+    "opening_hours": "Tu-Su 10:00-18:30; Mo off",
+    "fee": "yes",
+    "building": "yes"
+   },
+   "timestamp": "2026-09-06T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "center": {
+    "lat": 40.716455,
+    "lon": -73.981137
+   }
+  },
+  {
+   "type": "node",
+   "id": 100089,
+   "tags": {
+    "name": "Tenement Story Museum Café",
+    "amenity": "cafe",
+    "website": "https://tenementstory.example",
+    "opening_hours": "Tu-Su 10:00-17:00",
+    "level": "0"
+   },
+   "timestamp": "2026-09-06T00:00:00.000Z",
+   "version": 1,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.716505000000005,
+   "lon": -73.981097
+  },
+  {
+   "type": "node",
+   "id": 100090,
+   "tags": {
+    "name": "Old Norfolk Lounge",
+    "disused:amenity": "bar",
+    "amenity": "bar",
+    "opening_hours": "off"
+   },
+   "timestamp": "2026-08-27T00:00:00.000Z",
+   "version": 4,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.714535,
+   "lon": -73.998174
+  },
+  {
+   "type": "node",
+   "id": 100091,
+   "tags": {
+    "name": "Hester Lane Kitchen",
+    "amenity": "restaurant",
+    "opening_hours": "Mo-Su 12:00-22:00",
+    "cuisine": "cantonese"
+   },
+   "timestamp": "2020-09-17T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.724739,
+   "lon": -73.976321
+  },
+  {
+   "type": "node",
+   "id": 100092,
+   "tags": {
+    "name": "East River Overlook",
+    "tourism": "viewpoint",
+    "natural": "coastline"
+   },
+   "timestamp": "2026-06-21T00:00:00.000Z",
+   "version": 3,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.7145,
+   "lon": -73.976
+  },
+  {
+   "type": "node",
+   "id": 100093,
+   "tags": {
+    "name": "Pitt Street Nightcap",
+    "amenity": "bar",
+    "opening_hours": "Mo-Su 20:00-04:00"
+   },
+   "timestamp": "2024-11-11T00:00:00.000Z",
+   "version": 9,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.715594,
+   "lon": -73.996037
+  }
+ ]
+}

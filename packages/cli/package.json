@@ -1,0 +1,35 @@
+{
+  "name": "@outrn/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "outrn": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@outrn/core": "workspace:*",
+    "@outrn/db": "workspace:*",
+    "@outrn/sources": "workspace:*",
+    "@outrn/ingest": "workspace:*",
+    "@outrn/identity": "workspace:*",
+    "@outrn/facts": "workspace:*",
+    "@outrn/engine": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "bin": {
+    "outrn": "./dist/main.js"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

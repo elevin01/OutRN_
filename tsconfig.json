@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/db" },
+    { "path": "packages/sources" },
+    { "path": "packages/ingest" },
+    { "path": "packages/identity" },
+    { "path": "packages/facts" },
+    { "path": "packages/engine" },
+    { "path": "packages/cli" }
+  ]
+}
