@@ -7,6 +7,7 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "outrn-src": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
@@ -14,8 +15,8 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "migrate": "tsx src/bin.ts migrate",
-    "reset": "tsx src/bin.ts reset"
+    "migrate": "tsx --conditions=outrn-src src/bin.ts migrate",
+    "reset": "tsx --conditions=outrn-src src/bin.ts reset"
   },
   "dependencies": {
     "@outrn/core": "workspace:*",

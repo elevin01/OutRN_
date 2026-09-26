@@ -122,6 +122,12 @@ importers:
       '@outrn/db':
         specifier: workspace:*
         version: link:../db
+      '@outrn/facts':
+        specifier: workspace:*
+        version: link:../facts
+      '@outrn/identity':
+        specifier: workspace:*
+        version: link:../identity
       '@outrn/sources':
         specifier: workspace:*
         version: link:../sources

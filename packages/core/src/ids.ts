@@ -9,16 +9,16 @@ export function contentHash(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex").slice(0, 32);
 }
 
-/** Normalize a name for matching: lowercase, strip punctuation/diacritics, collapse whitespace, drop legal suffixes. */
+/** Normalize a name for matching: lowercase, strip punctuation/diacritics, collapse whitespace, drop articles and legal suffixes (never category words: "X Café" must stay distinct from "X"). */
 export function normalizeName(name: string): string {
   return name
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/['’`]/g, "")
     .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\b(the|inc|llc|ltd|co|restaurant|cafe|bar|nyc|new york)\b/g, " ")
+    .replace(/\b(the|inc|llc|ltd|co)\b/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
