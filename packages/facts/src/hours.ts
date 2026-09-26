@@ -42,7 +42,8 @@ export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): { oh:
     const warnings = oh.getWarnings();
     return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|PH|SH/.test(rule) };
   } catch (e) {
-    return { oh: null, error: (e as Error).message.split("\n")[0] ?? "parse error", approximate: false };
+    const msg = e instanceof Error ? e.message : String(e);
+    return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false };
   }
 }
 

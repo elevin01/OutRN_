@@ -1,0 +1,63 @@
+import { describe, expect, it } from "vitest";
+import { extractFromJsonLd, extractJsonLdBlocks, openingHoursFromSpec } from "./firstparty.js";
+
+const html = `<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Restaurant","name":"Example Kitchen","telephone":"+1 212 555 0199","priceRange":"$$",
+ "acceptsReservations":"True",
+ "openingHoursSpecification":[
+   {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday"],"opens":"17:00","closes":"22:30"},
+   {"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Friday","opens":"17:00","closes":"00:30"},
+   {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"00:30","validFrom":"2026-12-01","validThrough":"2026-12-31"}
+ ]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"MusicEvent","name":"Late Set","startDate":"2026-10-03T20:00:00-04:00","endDate":"2026-10-03T22:00:00-04:00","eventStatus":"https://schema.org/EventScheduled",
+  "offers":{"@type":"Offer","price":"15","priceCurrency":"USD","availability":"https://schema.org/InStock"},"url":"https://example.org/late-set"},
+ {"@type":"Event","name":"Cancelled Thing","startDate":"2026-10-04T19:00:00-04:00","eventStatus":"https://schema.org/EventCancelled"},
+ {"@type":"Event","name":"Sold Out Thing","startDate":"2026-10-05T19:00:00-04:00","offers":[{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/SoldOut"}]}
+]}
+</script>
+<script type="application/ld+json">{ this is not json }</script>
+</head><body>Hours: whenever</body></html>`;
+
+describe("first-party JSON-LD extraction", () => {
+  const blocks = extractJsonLdBlocks(html);
+  const x = extractFromJsonLd(blocks, "https://example.org/", new Date("2026-09-26T12:00:00Z"));
+
+  it("finds valid blocks and skips broken ones", () => {
+    expect(blocks).toHaveLength(2);
+    expect(x.types).toEqual(expect.arrayContaining(["Restaurant", "MusicEvent", "Event"]));
+  });
+
+  it("extracts business facts with the JSON as evidence", () => {
+    expect(x.facts.find((f) => f.attribute === "name")).toMatchObject({ value: { value: "Example Kitchen" }, status: "stated" });
+    expect(x.facts.find((f) => f.attribute === "phone")?.evidence).toContain("telephone");
+    expect(x.facts.find((f) => f.attribute === "price")).toMatchObject({ value: { min: 15, max: 35, tier: 2 } });
+    expect(x.facts.find((f) => f.attribute === "admission")).toMatchObject({ value: { requirement: "reservation_available" } });
+  });
+
+  it("converts openingHoursSpecification to weekly intervals, handles past-midnight closes, skips date-bounded exceptions", () => {
+    const h = x.facts.find((f) => f.attribute === "opening_hours")!;
+    const weekly = (h.value as { weekly: { weekday: number; startMin: number; endMin: number }[] }).weekly;
+    expect(weekly.filter((w) => w.weekday >= 1 && w.weekday <= 4)).toHaveLength(4);
+    const fri = weekly.find((w) => w.weekday === 5)!;
+    expect(fri.endMin).toBe(24 * 60 + 30);
+    expect(weekly.find((w) => w.weekday === 6)).toBeUndefined(); // validFrom/validThrough exception not merged into the weekly rule
+  });
+
+  it("extracts events with status, price and url; never invents an end time", () => {
+    expect(x.events).toHaveLength(3);
+    const late = x.events.find((e) => e.title === "Late Set")!;
+    expect(late.status).toBe("scheduled");
+    expect(late.price).toEqual({ min: 15, max: 15, currency: "USD" });
+    expect(late.end).not.toBeNull();
+    expect(x.events.find((e) => e.title === "Cancelled Thing")).toMatchObject({ status: "cancelled", end: null });
+    expect(x.events.find((e) => e.title === "Sold Out Thing")).toMatchObject({ status: "sold_out", price: { free: true } });
+  });
+
+  it("openingHoursFromSpec returns null when nothing usable is present", () => {
+    expect(openingHoursFromSpec([{ dayOfWeek: "Monday" }])).toBeNull();
+  });
+});

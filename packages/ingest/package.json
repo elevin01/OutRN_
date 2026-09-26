@@ -23,5 +23,9 @@
     "opening_hours": "^3.8.0",
     "@outrn/identity": "workspace:*",
     "@outrn/facts": "workspace:*"
+  },
+  "devDependencies": {
+    "pg": "^8.13.0",
+    "@types/pg": "^8.11.10"
   }
 }
