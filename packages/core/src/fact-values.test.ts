@@ -19,6 +19,8 @@ describe("fact value schemas", () => {
       ["website", { value: "www.petesofbronxville.com" }],
       ["last_entry_offset", { minutes: 60 }],
       ["queue", { value: "short" }],
+      ["age_limit", { minAge: 0 }],
+      ["age_limit", { minAge: 21 }],
     ];
     for (const [attribute, value] of ok) expect(validateFactValue(attribute, value), `${attribute} ${JSON.stringify(value)}`).toBeNull();
   });
@@ -36,5 +38,8 @@ describe("fact value schemas", () => {
     expect(validateFactValue("opening_hours", "Mo-Su 10:00-22:00")).not.toBeNull(); // bare string, not { osm }
     expect(validateFactValue("category", { value: "casino" })).not.toBeNull();
     expect(validateFactValue("parking", { kind: "multi-storey" })).not.toBeNull();
+    expect(validateFactValue("age_limit", { value: "all_ages", minAge: 21 })).not.toBeNull(); // the old, contradiction-prone shape
+    expect(validateFactValue("age_limit", { minAge: -1 })).not.toBeNull();
+    expect(validateFactValue("age_limit", {})).not.toBeNull();
   });
 });

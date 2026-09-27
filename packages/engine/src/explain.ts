@@ -1,4 +1,5 @@
 import { localClock } from "@outrn/core";
+import { ageLimitOf } from "./feasibility.js";
 import type { Evaluation, ReasonCode } from "./types.js";
 
 /**
@@ -57,6 +58,9 @@ export function explain(e: Evaluation, tz: string): CardCopy {
     parts.push(`you'd have ${fmtDuration(t.usefulMinutes)}`);
   }
   parts.push(e.price.unknown ? "price unknown" : e.price.isEstimate && e.price.text === "free" ? "usually free" : e.price.text);
+  // An age limit is always on the card, whoever is asking; an estimated one says so.
+  const limit = ageLimitOf(e.candidate);
+  if (limit && limit.minAge > 0) parts.push(`${limit.isEstimate ? "usually " : ""}${limit.minAge}+`);
   const factLine = parts.join(" · ");
 
   const s: string[] = [];
@@ -75,7 +79,9 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   if (e.reasons.includes("LANDMARK")) s.push("a landmark");
   const sentence = s.length ? s[0]!.charAt(0).toUpperCase() + s.join(", ").slice(1) + "." : "";
 
-  const caveats = e.unresolved.map((u) => UNRESOLVED_TEXT[u]).filter((x): x is string => Boolean(x));
+  const age = limit?.minAge ?? 0;
+  const ageText: Partial<Record<ReasonCode, string>> = { AGE_LIMIT_LIKELY: `probably ${age}+ only`, AGE_LIMIT_UNCERTAIN: `${age}+ only; check your group's ages` };
+  const caveats = e.unresolved.map((u) => ageText[u] ?? UNRESOLVED_TEXT[u]).filter((x): x is string => Boolean(x));
   const caveat = caveats.length ? `Check first: ${caveats.join("; ")}` : null;
   const cta = e.cta === "go" ? "Go now" : e.cta === "book" ? "Book" : e.cta === "check" ? "Check first" : null;
   return { factLine, sentence, caveat, cta };

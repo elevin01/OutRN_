@@ -20,6 +20,7 @@ export function registerRecommend(program: Command): void {
     .option("--company <alone|date|friends|family>")
     .option("--categories <list>", "comma-separated categories to narrow to")
     .option("--wheelchair", "require wheelchair access")
+    .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
     .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
     .option("--all", "print every candidate with its class and exclusion reason")
     .option("--no-persist", "do not record the run")
@@ -37,6 +38,7 @@ export function registerRecommend(program: Command): void {
       if (o["company"]) ctx.company = o["company"] as NonNullable<RequestContext["company"]>;
       if (o["categories"]) ctx.categories = String(o["categories"]).split(",").map((x) => x.trim()) as Category[];
       if (o["wheelchair"]) ctx.requireWheelchair = true;
+      if (typeof o["youngest"] === "number" && Number.isFinite(o["youngest"])) ctx.youngestAge = o["youngest"];
       if (area && mode === "drive") {
         const parking = await loadParkingBuffer(db, area.slug, now, ctx.timezone);
         if (parking !== undefined) ctx.parkingBufferMinutes = parking;

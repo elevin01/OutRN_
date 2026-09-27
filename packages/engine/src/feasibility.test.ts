@@ -446,23 +446,60 @@ describe("appeal signals", () => {
   });
 });
 
-describe("suitability", () => {
-  const casino = () => {
-    const c = venue({ id: "casino", category: "activity", hours: "Mo-Su 10:00-04:00" });
-    c.facts.audience = { value: { value: "adults_only", minAge: 21 }, confidence: 0.7, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+describe("age limits", () => {
+  const withLimit = (c: Candidate, minAge: number, cls: "published" | "estimate") => {
+    c.facts.age_limit = { value: { minAge }, confidence: cls === "published" ? 0.75 : 0.7, evidenceClass: cls, validUntil: null, independentSources: 1 };
     return c;
   };
-  const golf = () => venue({ id: "golf", category: "activity", hours: "Mo-Su 10:00-04:00" });
+  const casino = (cls: "published" | "estimate") => withLimit(venue({ id: "casino", category: "activity", hours: "Mo-Su 10:00-04:00" }), 21, cls);
+  const cafes = () => [1, 2, 3].map((i) => venue({ id: `cafe${i}`, category: "cafe", hours: "Mo-Su 07:00-23:00" }));
+  const at = (over: Partial<RequestContext> = {}) => ctx("2026-09-26 15:00", 180, over);
+  const ids = (s: ReturnType<typeof recommend>) => s.items.map((e) => e.candidate.id);
 
-  it("an adults-only venue never gets the family bonus its category would earn; it ranks below an all-ages one", () => {
-    const [c, g] = evaluateAll([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "family" }), POLICIES);
-    expect(g!.scores.fit - c!.scores.fit).toBeCloseTo(0.15 * 0.5, 3); // +0.25 vs −0.25 on the chips term
-    const s = recommend([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "family", categories: ["activity"] }), POLICIES);
-    expect(s.items[0]!.candidate.id).toBe("golf");
+  it("family, published 21+: the casino is excluded and the shortlist is the three cafes (26 Sep re-review case)", () => {
+    const s = recommend([...cafes(), casino("published")], at({ company: "family" }), POLICIES);
+    expect(ids(s).sort()).toEqual(["cafe1", "cafe2", "cafe3"]);
+    expect(s.items.every((e) => e.class === "ready")).toBe(true);
+    expect(s.all.find((e) => e.candidate.id === "casino")!.excludedBy).toBe("AGE_RESTRICTED");
+    expect(s.relaxations.join(" ")).not.toMatch(/age/i); // never offered as a relaxation
   });
 
-  it("other company is unaffected by the audience", () => {
-    const [c, g] = evaluateAll([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "date" }), POLICIES);
-    expect(c!.scores.fit).toBe(g!.scores.fit);
+  it("family, estimated 21+: Check first with the limit named, never Ready, and never ahead of Ready options", () => {
+    const s = recommend([...cafes(), casino("estimate")], at({ company: "family" }), POLICIES);
+    const c = s.all.find((e) => e.candidate.id === "casino")!;
+    expect(c.class).toBe("check_first");
+    expect(c.unresolved).toContain("AGE_LIMIT_LIKELY");
+    expect(explain(c, TZ).caveat).toMatch(/probably 21\+ only/);
+    expect(ids(s).sort()).toEqual(["cafe1", "cafe2", "cafe3"]);
+  });
+
+  it("an explicit youngest age decides: an adult family can go; a 16+ place is fine for a 16-year-old, not a 12-year-old", () => {
+    expect(evaluateAll([casino("published")], at({ company: "family", youngestAge: 30 }), POLICIES)[0]!.class).toBe("ready");
+    const arcade = () => withLimit(venue({ id: "arcade", category: "activity", hours: "Mo-Su 10:00-23:00" }), 16, "published");
+    expect(evaluateAll([arcade()], at({ youngestAge: 16 }), POLICIES)[0]!.class).toBe("ready");
+    expect(evaluateAll([arcade()], at({ youngestAge: 12 }), POLICIES)[0]!.excludedBy).toBe("AGE_RESTRICTED");
+    // Family with no ages given: a 16+ limit may or may not fit, so Check first with the reason.
+    const unsure = evaluateAll([arcade()], at({ company: "family" }), POLICIES)[0]!;
+    expect(unsure.class).toBe("check_first");
+    expect(explain(unsure, TZ).caveat).toMatch(/16\+ only; check your group's ages/);
+  });
+
+  it("the limit is always on the card, published or estimated, whoever is asking", () => {
+    const friends = evaluateAll([casino("published")], at({ company: "friends" }), POLICIES)[0]!;
+    expect(friends.class).toBe("ready");
+    expect(explain(friends, TZ).factLine).toMatch(/· 21\+$/);
+    const est = evaluateAll([casino("estimate")], at(), POLICIES)[0]!;
+    expect(explain(est, TZ).factLine).toMatch(/· usually 21\+$/);
+    const allAges = evaluateAll([withLimit(venue({ id: "park", category: "park", hours: "24/7" }), 0, "published")], at({ company: "family" }), POLICIES)[0]!;
+    expect(allAges.class).toBe("ready");
+    expect(explain(allAges, TZ).factLine).not.toMatch(/\+/);
+  });
+
+  it("with a minor present an estimated adult limit also loses the family bonus; other company is unaffected", () => {
+    const golf = () => venue({ id: "golf", category: "activity", hours: "Mo-Su 10:00-04:00" });
+    const [c, g] = evaluateAll([casino("estimate"), golf()], at({ company: "family" }), POLICIES);
+    expect(g!.scores.fit - c!.scores.fit).toBeCloseTo(0.15 * 0.5, 3);
+    const [cd, gd] = evaluateAll([casino("estimate"), golf()], at({ company: "date" }), POLICIES);
+    expect(cd!.scores.fit).toBe(gd!.scores.fit);
   });
 });

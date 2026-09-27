@@ -84,15 +84,19 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "something_new" }), "parking")).toMatchObject({ value: { kind: "unknown" } });
   });
 
-  it("activity venues carry their kind, and adults-only kinds carry an audience estimate", () => {
+  it("activity venues carry their kind; age limits are one number, published from min_age or estimated by kind", () => {
     const casino = rec({ name: "Empire City", amenity: "casino" });
     expect(fact(casino, "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "casino" } });
-    expect(fact(casino, "audience")).toMatchObject({ evidenceClass: "estimate", value: { value: "adults_only", minAge: 21 } });
+    expect(fact(casino, "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 } });
+    expect(fact(rec({ name: "Club", amenity: "nightclub" }), "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 } });
     const golf = rec({ name: "Putt", leisure: "miniature_golf" });
     expect(fact(golf, "subtype")).toMatchObject({ value: { value: "miniature_golf" } });
-    expect(fact(golf, "audience")).toBeUndefined(); // unknown, not "all ages"
-    expect(fact(rec({ name: "Club", amenity: "nightclub" }), "audience")).toMatchObject({ value: { value: "adults_only" } });
-    expect(fact(rec({ name: "Arcade", leisure: "amusement_arcade", min_age: "16" }), "audience")).toMatchObject({ evidenceClass: "published", value: { value: "all_ages", minAge: 16 } });
+    expect(fact(golf, "age_limit")).toBeUndefined(); // unknown, not "all ages"
+    for (const [tag, minAge] of [["0", 0], ["16", 16], ["18", 18], ["21", 21]] as const) {
+      expect(fact(rec({ name: "Arcade", leisure: "amusement_arcade", min_age: tag }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge }, evidence: `min_age=${tag}` });
+    }
+    // A published min_age beats the kind's default.
+    expect(fact(rec({ name: "Kids casino night", amenity: "casino", min_age: "18" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 18 } });
     expect(fact(rec({ name: "Wall", leisure: "sports_centre", sport: "climbing" }), "subtype")).toMatchObject({ value: { value: "climbing" } });
     expect(fact(rec({ name: "R", amenity: "restaurant" }), "subtype")).toBeUndefined();
   });

@@ -1,6 +1,6 @@
 import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
-import type { FeasibilityOutcome } from "./feasibility.js";
+import { ageLimitOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -36,10 +36,13 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   let chips = 0.5;
   if (ctx.mood) chips += MOOD_ACTIVITY[ctx.mood].includes(activity) ? 0.25 : -0.15;
   if (ctx.company) {
-    // Suitability before preference: an adults-only venue (a casino inside "activity") never gets the
-    // family bonus its category would otherwise earn; it sinks instead.
-    const adultsOnly = (c.facts.audience?.value as { value?: string } | undefined)?.value === "adults_only";
-    if (ctx.company === "family" && adultsOnly) chips -= 0.25;
+    // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
+    // gets the family bonus its category would otherwise earn when a minor is in the party. Feasibility
+    // has already excluded published limits; this sinks estimated ones.
+    const youngest = partyYoungest(ctx);
+    const minorPresent = youngest === "minor" || (typeof youngest === "number" && youngest < 18);
+    const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
+    if (minorPresent && adultLimit) chips -= 0.25;
     else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
   }
   chips = Math.max(0, Math.min(1, chips));

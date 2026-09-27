@@ -26,6 +26,8 @@ export interface RecommendationInput {
   at?: string | undefined;
   /** "More options": how many options to skip in the display order. */
   offset?: number | undefined;
+  /** Age of the youngest person going, if the request states it. */
+  youngest?: number | undefined;
 }
 
 export interface RecommendationOutput {
@@ -66,6 +68,7 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
   else if (input.budget && Number.isFinite(Number(input.budget))) context.budget = Math.max(0, Number(input.budget));
   if (input.mood && MOODS.has(input.mood)) context.mood = input.mood as NonNullable<RequestContext["mood"]>;
   if (input.company && COMPANIES.has(input.company)) context.company = input.company as NonNullable<RequestContext["company"]>;
+  if (input.youngest !== undefined) context.youngestAge = input.youngest;
   if (input.category && (CATEGORIES as readonly string[]).includes(input.category)) context.categories = [input.category as Category];
   if (mode === "drive") {
     const parking = await loadParkingBuffer(db, area.slug, now, area.timezone);

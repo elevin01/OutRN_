@@ -45,10 +45,13 @@ describe("founder fact values", () => {
     expect(parseFounderValue("opening_hours", '{"weekly": [{"weekday": 5, "startMin": 960, "endMin": 1680}]}', { json: true })).toMatchObject({ weekly: [{ weekday: 5 }] });
   });
 
-  it("audience and subtype", () => {
-    expect(parseFounderValue("audience", "21+")).toEqual({ value: "adults_only", minAge: 21 });
-    expect(parseFounderValue("audience", "all ages")).toEqual({ value: "all_ages" });
+  it("age limits are a single minimum age; 'adults only' must say which", () => {
+    expect(parseFounderValue("age_limit", "all ages")).toEqual({ minAge: 0 });
+    expect(parseFounderValue("age_limit", "16+")).toEqual({ minAge: 16 });
+    expect(parseFounderValue("age_limit", "18+")).toEqual({ minAge: 18 });
+    expect(parseFounderValue("age_limit", "21")).toEqual({ minAge: 21 });
+    expect(() => parseFounderValue("age_limit", "adults only")).toThrow(/18\+ or 21\+/);
+    expect(() => parseFounderValue("age_limit", '{"minAge": 21, "value": "all_ages"}', { json: true })).toThrow(); // no contradictory extra fields
     expect(parseFounderValue("subtype", "Mini golf")).toEqual({ value: "mini_golf" });
-    expect(() => parseFounderValue("audience", "grown-ups")).toThrow();
   });
 });

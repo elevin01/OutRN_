@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.1.0";
-export const WEIGHTS_VERSION = "2026-09-27.3";
+export const ENGINE_VERSION = "0.2.0";
+export const WEIGHTS_VERSION = "2026-09-27.4";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -25,6 +25,11 @@ export interface RequestContext {
   mood?: Mood;
   company?: Company;
   requireWheelchair?: boolean;
+  /**
+   * Age of the youngest person going. Age limits are a gate against it. With company "family" and no
+   * age given, the party is assumed to include a minor of unknown age.
+   */
+  youngestAge?: number;
   /** Narrow to these categories (user tapped a chip). Diversity across activity types is skipped. */
   categories?: Category[];
   /** Items shown recently on this device, and items dismissed. */
@@ -112,7 +117,9 @@ export type ReasonCode =
   | "LATE_ENTRY_UNCERTAIN"
   | "ACCESS_LIMITED"
   | "WAIT_FOR_OPENING"
-  | "HOURS_CONFIRMED";
+  | "HOURS_CONFIRMED"
+  | "AGE_LIMIT_LIKELY"
+  | "AGE_LIMIT_UNCERTAIN";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -132,7 +139,8 @@ export type ExclusionCode =
   | "NOT_ACCESSIBLE"
   | "DISMISSED"
   | "CHILD_OF_SHOWN_PARENT"
-  | "NO_PROGRAMME";
+  | "NO_PROGRAMME"
+  | "AGE_RESTRICTED";
 
 export interface Timing {
   travel: TravelEstimate;

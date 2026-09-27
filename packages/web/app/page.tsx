@@ -23,6 +23,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
         category: one(query["category"]),
         at: one(query["at"]) || undefined,
         offset: integer(query["offset"], 0, 0, MAX_OFFSET),
+        youngest: one(query["youngest"]) ? integer(query["youngest"], 0, 0, 120) : undefined,
       })
     : null;
   // "More options" re-runs the same request one page further, pinned to the first page's instant

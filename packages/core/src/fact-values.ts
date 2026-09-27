@@ -55,7 +55,8 @@ export const FACT_VALUE_SCHEMAS = {
     .strict(),
   wheelchair: oneOf(["yes", "limited", "no", "unknown"]),
   subtype: z.object({ value: z.string().regex(/^[a-z0-9_]{2,40}$/, "subtype is a lowercase slug, e.g. miniature_golf") }).strict(),
-  audience: z.object({ value: z.enum(["adults_only", "all_ages"]), minAge: z.number().int().min(0).max(99).optional() }).strict(),
+  // One number, so it cannot contradict itself: 0 = no age limit, 16 = 16+, 21 = 21+.
+  age_limit: z.object({ minAge: z.number().int().min(0).max(25) }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

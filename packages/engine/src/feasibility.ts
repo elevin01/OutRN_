@@ -13,6 +13,22 @@ import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, 
  *   useful         = latest_finish − arrival     must clear min useful duration
  */
 
+/**
+ * Youngest person in the party: a number when known, "minor" when company is family and no age was
+ * given (a child of unknown age), undefined when there is no reason to assume a minor.
+ */
+export function partyYoungest(ctx: RequestContext): number | "minor" | undefined {
+  if (typeof ctx.youngestAge === "number") return ctx.youngestAge;
+  return ctx.company === "family" ? "minor" : undefined;
+}
+
+/** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
+export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
+  const f = c.facts.age_limit;
+  const minAge = (f?.value as { minAge?: unknown } | undefined)?.minAge;
+  return f && typeof minAge === "number" ? { minAge, isEstimate: f.evidenceClass === "estimate" } : null;
+}
+
 export function deadlineOf(ctx: RequestContext): Date {
   if (ctx.endAt) return ctx.endAt;
   return addMinutes(ctx.now, ctx.windowMinutes ?? 180);
@@ -46,6 +62,20 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
 
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out("CLOSED_PERMANENTLY");
+
+  // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
+  // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
+  const limit = ageLimitOf(c);
+  const youngest = partyYoungest(ctx);
+  if (limit && limit.minAge > 0 && youngest !== undefined) {
+    const tooYoung = youngest === "minor" ? limit.minAge >= 18 : youngest < limit.minAge;
+    if (tooYoung) {
+      if (!limit.isEstimate) return out("AGE_RESTRICTED");
+      unresolved.push("AGE_LIMIT_LIKELY");
+    } else if (youngest === "minor") {
+      unresolved.push("AGE_LIMIT_UNCERTAIN"); // e.g. 16+ with children whose ages we do not know
+    }
+  }
 
   // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
   // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".

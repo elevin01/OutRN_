@@ -112,13 +112,12 @@ function parseText(attribute: Attribute, raw: string, opts: { json?: boolean }):
       if (!/^[a-z0-9_]{2,40}$/.test(v)) throw new Error(`subtype is a short kind name, e.g. miniature_golf`);
       return { value: v };
     }
-    case "audience": {
+    case "age_limit": {
       const t = text.toLowerCase().replace(/[\s-]+/g, "_");
-      if (t === "all_ages") return { value: "all_ages" };
-      if (t === "adults_only") return { value: "adults_only" };
-      const m = /^(\d{1,2})\+$/.exec(t);
-      if (m) return { value: Number(m[1]) >= 18 ? "adults_only" : "all_ages", minAge: Number(m[1]) };
-      throw new Error(`audience is all_ages, adults_only, or a minimum age like 21+`);
+      if (t === "all_ages" || t === "none" || t === "0") return { minAge: 0 };
+      const m = /^(\d{1,2})\+?$/.exec(t);
+      if (m) return { minAge: Number(m[1]) };
+      throw new Error(`age_limit is a minimum age like 16+, 18+ or 21+, or "all ages" for no limit`);
     }
     case "parking": {
       const [kind, cost] = text.toLowerCase().split(/[\s,]+/);

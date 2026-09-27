@@ -45,14 +45,14 @@ const LABEL: Record<string, string> = {
   min_useful_minutes: "Time to allow",
   wheelchair: "Wheelchair",
   subtype: "Kind",
-  audience: "Audience",
+  age_limit: "Age limit",
   parking: "Parking",
   indoor_outdoor: "Setting",
   crowd_level: "Crowd",
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "business_status", "subtype", "audience", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "business_status", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone"]);
 
@@ -128,8 +128,12 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
     }
     case "subtype":
       return sentenceCase(String(v["value"] ?? "unknown"));
-    case "audience":
-      return v["value"] === "adults_only" ? `Adults only${typeof v["minAge"] === "number" ? ` (${v["minAge"]}+)` : ""}` : v["value"] === "all_ages" ? "All ages" : "Unknown";
+    case "age_limit": {
+      const n = typeof v["minAge"] === "number" ? v["minAge"] : null;
+      if (n === null) return "Unknown";
+      if (n === 0) return isEstimate ? "Usually all ages" : "All ages";
+      return `${isEstimate ? "Usually " : ""}${n}+${n >= 18 ? " (adults only)" : ""}`;
+    }
     case "parking": {
       const kind = sentenceCase(String(v["kind"] ?? "unknown"));
       const cost = v["cost"] && v["cost"] !== "unknown" ? `, ${String(v["cost"])}` : "";
