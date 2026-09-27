@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, boundaries, contract, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: UI/backend boundaries
+        run: pnpm check:boundaries
+      - name: Contract schema is up to date
+        run: pnpm --filter @outrn/contracts schema:check
+      - name: Contract is backward compatible with the base branch
+        if: github.event_name == 'pull_request'
+        env:
+          ALLOW_BREAKING: ${{ contains(github.event.pull_request.labels.*.name, 'contract-breaking') && '1' || '' }}
+        run: |
+          git show "origin/${{ github.base_ref }}:packages/contracts/schema/v1.json" > "$RUNNER_TEMP/base-v1.json" 2>/dev/null || : > "$RUNNER_TEMP/base-v1.json"
+          pnpm --filter @outrn/contracts compat "$RUNNER_TEMP/base-v1.json"
+      - name: Unit tests (database tests skip here; the database job runs them)
+        run: pnpm test
+
+  database:
+    name: Database-backed tests and full-stack smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_DB: outrn
+          POSTGRES_USER: outrn
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U outrn -d outrn"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      DATABASE_URL: postgres://outrn@127.0.0.1:54329/outrn
+      # A missing database is a failure here, never a skip.
+      OUTRN_REQUIRE_DB: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - name: Fixture generator still runs against the real API
+        run: |
+          pnpm fixtures
+          git diff --stat -- packages/contracts/src/fixtures || true
+      - name: Seed the dev database with the synthetic LES fixture
+        run: |
+          pnpm db:migrate
+          pnpm outrn ingest osm --area les --from-file fixtures/osm/les-synthetic.json
+      - run: pnpm web:build
+      - name: Smoke test, real API + web
+        run: bash scripts/smoke.sh real
+
+  web:
+    name: UI in mock mode (no database)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @outrn/web typecheck
+      - run: pnpm web:build
+      - name: Smoke test, mock API + web
+        run: bash scripts/smoke.sh mock

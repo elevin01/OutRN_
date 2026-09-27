@@ -28,13 +28,38 @@ services:
       db:
         condition: service_healthy
 
+  api:
+    build:
+      context: .
+    entrypoint: ["node", "packages/api/dist/bin/server.js"]
+    environment:
+      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+      HOST: 0.0.0.0
+      PORT: "4000"
+      # Set to require a bearer token on /ops/v1/*. Unset: ops routes are open (development only).
+      OUTRN_OPS_TOKEN: ${OUTRN_OPS_TOKEN:-}
+      OUTRN_WEB_ORIGINS: http://localhost:3000
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+
   web:
     build:
       context: .
     entrypoint: ["pnpm"]
     command: ["--filter", "@outrn/web", "start", "--hostname", "0.0.0.0"]
     environment:
-      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+      # The UI talks to the backend only over HTTP.
+      OUTRN_API_URL: http://api:4000
+      OUTRN_OPS_TOKEN: ${OUTRN_OPS_TOKEN:-}
     ports:
       - "3000:3000"
     healthcheck:
@@ -44,8 +69,38 @@ services:
       retries: 12
       start_period: 5s
     depends_on:
-      db:
+      api:
         condition: service_healthy
+
+  # The mock API over the contract fixtures: `docker compose --profile mock up web-mock` runs the UI with no database.
+  api-mock:
+    build:
+      context: .
+    entrypoint: ["node", "packages/api/dist/bin/mock.js"]
+    environment:
+      HOST: 0.0.0.0
+      PORT: "4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    profiles: ["mock"]
+
+  web-mock:
+    build:
+      context: .
+    entrypoint: ["pnpm"]
+    command: ["--filter", "@outrn/web", "start", "--hostname", "0.0.0.0"]
+    environment:
+      OUTRN_API_URL: http://api-mock:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api-mock:
+        condition: service_healthy
+    profiles: ["mock"]
 
   test:
     build:

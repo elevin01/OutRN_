@@ -3,8 +3,10 @@
 Feasibility-first local discovery. Someone opens it with a few hours free, sees three options that are
 actually doable in that window, picks one, and leaves.
 
-This repository is the **supply pipeline and recommendation engine** — stages 0–3 of the build plan.
-The consumer web app (stage 4) sits on top of the same database and calls the same engine.
+This repository holds the **supply pipeline and recommendation engine** (stages 0–3 of the build plan),
+the **API** that serves them, and the **consumer web app** (stage 4). The UI and the backend meet only
+at a versioned HTTP contract, `@outrn/contracts`, so they can be developed independently — see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```
 sources ──▶ raw store ──▶ identity ──▶ facts (append-only) ──▶ current_facts ──▶ engine ──▶ 3 cards
@@ -82,22 +84,29 @@ docker compose down
 Set `OUTRN_USER_AGENT` in the shell or a local `.env` before making live source requests. Compose
 uses the named `outrn_postgres-data` volume so application data survives container replacement.
 
-## Consumer web app
+## API and web app
 
-The Next.js app runs the recommendation engine on the server, persists each run, and includes the
-three-card consumer view, place details, a Google Maps directions handoff, and an ops browser for
-the full eligible-now decision set and recent recommendation runs.
-
-```bash
-# Database + production web build at http://localhost:3000
-docker compose up --build web
-
-# Or, with Node 22 and pnpm 10 installed locally
-pnpm web:dev
+```
+packages/web  ──HTTP──▶  packages/api  ──▶  engine · facts · db
+                 ▲
+        packages/contracts  (v1 schemas, types, fixtures)
 ```
 
-Open `/ops/eligible` to evaluate candidates and inspect recent runs. Each consumer search also links
-to its persisted run so the card selection can be traced without querying the database directly.
+`@outrn/api` (Hono, port 4000) validates requests, runs the engine, maps results to the v1 contract
+and serves "More options" from a frozen snapshot of each search. The Next.js app (port 3000) has the
+three-card view, place details, a Google Maps directions handoff, and an ops browser for the full
+eligible-now decision set and persisted runs; it reaches the backend only through the API.
+
+```bash
+pnpm dev:mock          # UI work: mock API over the contract fixtures + web. No database.
+pnpm dev               # real API (needs DATABASE_URL) + web
+docker compose up --build web                  # database + API + web at http://localhost:3000
+docker compose --profile mock up --build web-mock   # mock API + web, no database
+```
+
+Open `/ops/eligible` to evaluate candidates and inspect recent runs. Each consumer search links to
+its persisted run. Set `OUTRN_OPS_TOKEN` (API and web) to protect the ops routes; the API disables
+them in production without one.
 
 `fixtures/osm/*-synthetic.json` are **invented** — see `fixtures/README.md`. They exist so the pipeline
 runs identically offline; the identity-resolution traps in them (node+way duplicate, chain branches,
@@ -110,7 +119,7 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | `outrn migrate [--reset]` | Apply SQL migrations (reset drops everything; dev only) |
 | `outrn ingest osm --area <slug> [--from-file p] [--save p] [--radius m]` | Overpass → raw store → identity → facts → materialize; extent = catchment + max reach |
 | `outrn materialize [--area <slug>]` | Rebuild `current_facts`, publish states and verification tasks |
-| `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all]` | Run the engine; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason (the debug view) |
+| `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all] [--json]` | Run the engine through the same request resolution as the API; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason; `--json` prints the exact v1 response the UI receives (`--cursor c` for more pages) |
 | `outrn backtest --area <slug> [--grid n] [--hours ..] [--windows ..] [--budgets ..] [--days ..] [--out p]` | Coverage matrix: % of sample points × contexts with three options |
 | `outrn ops queue` / `ops conflicts` / `ops health` | The two founder queues and the health strip |
 | `outrn ops merge <from> <into> --reason` / `ops split <sourceEntityId> --reason` | Identity decisions, audited and reversible |
@@ -132,6 +141,9 @@ packages/ingest     OSM tags → category + facts; the area pipeline; first-part
 packages/identity   pairwise scoring (strong/supporting/negative evidence), resolver, merge/split
 packages/facts      append-only fact writer, opening-hours evaluation, current_facts materialization
 packages/engine     feasibility, four scores, diversity, reason codes → card copy, DB loader, run persistence
+packages/contracts  the v1 API contract: zod schemas, types, error codes, fixtures, schema/v1.json
+packages/api        HTTP boundary: validation, request resolution, result mapping, paging snapshots, ops, mock
+packages/web        the Next.js UI; depends on @outrn/contracts only
 packages/cli        the commands above
 fixtures/           synthetic Overpass responses + generator
 ```
@@ -139,9 +151,12 @@ fixtures/           synthetic Overpass responses + generator
 ## Tests
 
 ```bash
-pnpm test           # 59 tests: engine correctness suite, identity traps, normalization, hours, JSON-LD,
-                    # and a DB integration test that ingests the fixture twice and asserts idempotence
+pnpm test           # engine correctness suite, identity traps, normalization, hours, JSON-LD, the contract
+                    # (every fixture against the schemas), the mock API, and DB integration tests
+                    # (pipeline idempotence, loader, founder facts, the v1 API end to end)
 pnpm typecheck
+pnpm check:boundaries   # the UI imports only @outrn/contracts
+bash scripts/smoke.sh mock   # built web app against the mock API (`real` for the real API)
 ```
 
 The engine suite (`packages/engine/src/feasibility.test.ts`) is the correctness list from the plan:
@@ -164,7 +179,7 @@ them inside a serverless request.
 
 Foursquare OS Places connector (needs the export token; registered as disabled), Google Places/Routes
 adapters (off by default, budget cap first), Ticketmaster (conditional), the LLM extraction rung (rung 4 of
-the ladder; rungs 1–3 are JSON-LD, site parsers, and nothing), the consumer Next.js app, the post-Go
+the ladder; rungs 1–3 are JSON-LD, site parsers, and nothing), the post-Go
 prompt endpoints, contributor reliability updates. Each has a table or a stub where it will land.
 
 ## Licensing note
