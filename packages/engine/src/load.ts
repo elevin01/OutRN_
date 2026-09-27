@@ -17,10 +17,11 @@ interface VenueRow {
   lon: number;
   timezone: string;
   parent_venue_id: string | null;
-  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number }>;
+  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number; sources: string[] | null }>;
   boost: string | null;
   excluded: boolean;
   has_landmark: boolean;
+  brand: string | null;
 }
 
 interface OccRow {
@@ -39,7 +40,7 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   for (const [k, v] of Object.entries(raw ?? {})) {
     const validUntil = v.valid_until ? new Date(v.valid_until) : null;
     if (validUntil && validUntil <= now) continue; // expiry enforced at request time even if the job is late
-    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources };
+    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources, sources: v.sources ?? [] };
   }
   return out;
 }
@@ -51,11 +52,12 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   const venues = (
     await q.query<VenueRow>(
       `select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon, v.timezone, v.parent_venue_id,
-              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources))
+              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids))
                           from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) as facts,
               (select sum(weight) from venue_overrides o where o.venue_id = v.id and o.kind = 'boost' and (o.expires_at is null or o.expires_at > $4)) as boost,
               exists(select 1 from venue_overrides o where o.venue_id = v.id and o.kind = 'exclude' and (o.expires_at is null or o.expires_at > $4)) as excluded,
-              exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark
+              exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark,
+              (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'brand' limit 1) as brand
          from venues v
         where v.publish_state = 'eligible'
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
@@ -76,6 +78,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
     boost: Number(v.boost ?? 0),
     excluded: v.excluded,
     hasLandmarkId: v.has_landmark,
+    brand: v.brand,
   }));
   if (!venues.length) return candidates;
   const occ = (
@@ -93,10 +96,10 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
-    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number }>(`select attribute, value, confidence, evidence_class, valid_until, independent_sources from current_facts where subject_kind = 'occurrence' and subject_id = $1`, [o.id])).rows;
+    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[] }>(`select attribute, value, confidence, evidence_class, valid_until, independent_sources, source_ids from current_facts where subject_kind = 'occurrence' and subject_id = $1`, [o.id])).rows;
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
-    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources };
+    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids };
     kept.push({
       kind: "occurrence",
       id: o.id,
@@ -111,6 +114,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       boost: Number(v.boost ?? 0),
       excluded: v.excluded,
       hasLandmarkId: v.has_landmark,
+      brand: v.brand,
     });
   }
   return kept;

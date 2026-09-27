@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
+import { explain } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import type { Candidate, CategoryPolicy, RequestContext } from "./types.js";
 
@@ -27,18 +28,18 @@ const POLICIES = new Map<string, CategoryPolicy>([
 ]);
 
 let n = 0;
-function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number }): Candidate {
+function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number }): Candidate {
   const id = over.id ?? `v${++n}`;
   const facts: Candidate["facts"] = {
     name: { value: { value: over.name ?? id }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 },
     business_status: { value: { status: "operating" }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 },
     admission: { value: { requirement: over.admission ?? "walk_in" }, confidence: 0.6, evidenceClass: over.admission ? "published" : "estimate", validUntil: null, independentSources: 1 },
   };
-  if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 };
+  if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1, sources: over.hoursSources ?? ["osm"] };
   if (over.price !== undefined) facts.price = { value: over.price, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.wheelchair) facts.wheelchair = { value: { value: over.wheelchair }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.lastEntry) facts.last_entry_offset = { value: { minutes: over.lastEntry }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
-  return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: 0, excluded: false, hasLandmarkId: false, parentVenueId: null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
+  return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: 0, excluded: false, hasLandmarkId: false, parentVenueId: null, brand: over.brand ?? null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
 }
 
 function ctx(date: string, minutes: number, over: Partial<RequestContext> = {}): RequestContext {
@@ -355,5 +356,36 @@ describe("selection: diversity and fewer than three", () => {
     expect(second.fewerThanThree).toBe(false); // a short last page is not a supply failure
     const seen = new Set([...first.items, ...second.items].map((e) => e.candidate.id));
     expect(seen.size).toBe(5);
+  });
+});
+
+describe("appeal signals", () => {
+  it("a chain ranks below an otherwise identical local place, unless the user asked for that category", () => {
+    const chain = venue({ id: "chain", category: "dessert", hours: "Mo-Su 11:00-23:00", brand: "Häagen-Dazs" });
+    const local = venue({ id: "local", category: "dessert", hours: "Mo-Su 11:00-23:00" });
+    const broad = evaluateAll([chain, local], ctx("2026-09-26 20:00", 120), POLICIES);
+    expect(broad[1]!.scores.appeal - broad[0]!.scores.appeal).toBeCloseTo(0.15, 3);
+    const narrowed = evaluateAll([chain, local], ctx("2026-09-26 20:00", 120, { categories: ["dessert"] }), POLICIES);
+    expect(narrowed[0]!.scores.appeal).toBe(narrowed[1]!.scores.appeal);
+  });
+
+  it("after 9pm, bars and late food get a late-night bonus; at 3pm they do not", () => {
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 12:00-02:00" });
+    const late = evaluateAll([bar, cafe], ctx("2026-09-26 21:30", 120), POLICIES);
+    expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(0.1, 3);
+    const afternoon = evaluateAll([bar, cafe], ctx("2026-09-26 15:00", 120), POLICIES);
+    expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
+  });
+
+  it("hours confirmed by the founder or the venue's own site earn a boost and say so", () => {
+    const checked = venue({ id: "checked", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.9, hoursSources: ["founder"] });
+    const mapped = venue({ id: "mapped", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.9 });
+    const [a, b] = evaluateAll([checked, mapped], ctx("2026-09-26 21:37", 120), POLICIES);
+    expect(a!.scores.appeal - b!.scores.appeal).toBeCloseTo(0.1, 3);
+    expect(a!.reasons).toContain("HOURS_CONFIRMED");
+    expect(explain(a!, TZ).sentence).toMatch(/hours confirmed/);
+    const s = recommend([mapped, checked], ctx("2026-09-26 21:37", 120), POLICIES);
+    expect(s.items[0]!.candidate.id).toBe("checked");
   });
 });

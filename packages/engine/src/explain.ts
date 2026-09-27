@@ -66,6 +66,7 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   if (e.reasons.includes("ENOUGH_TIME")) s.push("plenty of time");
   else if (e.reasons.includes("CLOSES_SOON")) s.push("closes soon");
   if (e.reasons.includes("OPEN_LATE")) s.push("open late");
+  if (e.reasons.includes("HOURS_CONFIRMED")) s.push("hours confirmed");
   if (e.reasons.includes("FREE")) s.push("free");
   else if (e.reasons.includes("FITS_BUDGET")) s.push("within budget");
   if (e.reasons.includes("SUNSET_WINDOW")) s.push("sunset window");

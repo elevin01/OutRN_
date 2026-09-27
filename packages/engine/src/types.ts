@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.1.0";
-export const WEIGHTS_VERSION = "2026-09-26.1";
+export const WEIGHTS_VERSION = "2026-09-27.1";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -42,6 +42,8 @@ export interface FactView {
   evidenceClass: EvidenceClass;
   validUntil: Date | null;
   independentSources: number;
+  /** Sources behind the winning value (current_facts.source_ids), e.g. ["founder"], ["osm"]. */
+  sources?: string[];
 }
 
 export interface OccurrenceView {
@@ -69,6 +71,8 @@ export interface Candidate {
   boost: number;
   excluded: boolean;
   hasLandmarkId: boolean;
+  /** Chain brand from the source record (OSM `brand`), if any. */
+  brand?: string | null;
 }
 
 export interface CategoryPolicy {
@@ -103,7 +107,8 @@ export type ReasonCode =
   | "PRICE_UNKNOWN"
   | "LATE_ENTRY_UNCERTAIN"
   | "ACCESS_LIMITED"
-  | "WAIT_FOR_OPENING";
+  | "WAIT_FOR_OPENING"
+  | "HOURS_CONFIRMED";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"

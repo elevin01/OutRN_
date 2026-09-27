@@ -1,4 +1,4 @@
-import { ACTIVITY_OF_CATEGORY, minutesBetween } from "@outrn/core";
+import { ACTIVITY_OF_CATEGORY, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import type { FeasibilityOutcome } from "./feasibility.js";
 
@@ -8,6 +8,12 @@ import type { FeasibilityOutcome } from "./feasibility.js";
  */
 
 const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
+/** What a 9pm+ window is for: bars and late food. */
+const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
+/** Hours from these sources were checked, not just mapped: the venue's own site, or the founder. */
+const CONFIRMING_SOURCES = ["founder", "firstparty"];
+
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1 } as const;
 const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
   relaxed: ["food", "outdoors", "browse"],
   active: ["outdoors", "entertainment"],
@@ -56,6 +62,15 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += 0.15;
+  // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
+  if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
+  const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
+  if ((arrivalHour >= 21 || arrivalHour < 4) && LATE_NIGHT.has(c.category)) appeal += APPEAL_WEIGHTS.lateNight;
+  const hoursSources = c.kind === "venue" ? (c.facts.opening_hours?.sources ?? []) : [];
+  if (hoursSources.some((s) => CONFIRMING_SOURCES.includes(s))) {
+    appeal += APPEAL_WEIGHTS.hoursConfirmed;
+    extra.push("HOURS_CONFIRMED");
+  }
   if (ctx.sunset && outdoor && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
     const m = minutesBetween(t.arrival, ctx.sunset);
     const clear = (ctx.weather?.precipProbability ?? 0) < 50;
