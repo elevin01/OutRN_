@@ -94,13 +94,27 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   // the venue row stays only when nothing is loaded, and the engine excludes it as NO_PROGRAMME.
   const withProgramme = new Set(occ.map((o) => o.venue_id));
   const kept = candidates.filter((c) => !(withProgramme.has(c.venueId) && PROGRAMME_CATEGORIES.has(c.category)));
+  // One query for every occurrence's facts, not one per occurrence.
+  const occFactRows = occ.length
+    ? (
+        await q.query<{ subject_id: string; attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(
+          `select cf.subject_id, cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at
+             from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = any($1::uuid[])`,
+          [occ.map((o) => o.id)],
+        )
+      ).rows
+    : [];
+  const factsByOccurrence = new Map<string, typeof occFactRows>();
+  for (const f of occFactRows) factsByOccurrence.set(f.subject_id, [...(factsByOccurrence.get(f.subject_id) ?? []), f]);
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
-    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(`select cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = $1`, [o.id])).rows;
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
-    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
+    for (const f of factsByOccurrence.get(o.id) ?? []) {
+      if (f.valid_until && f.valid_until <= now) continue; // expiry enforced at request time, as for venue facts
+      facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
+    }
     kept.push({
       kind: "occurrence",
       id: o.id,
