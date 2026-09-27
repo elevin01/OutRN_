@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "packages/contracts" },
     { "path": "packages/core" },
     { "path": "packages/db" },
     { "path": "packages/sources" },
@@ -8,6 +9,7 @@
     { "path": "packages/identity" },
     { "path": "packages/facts" },
     { "path": "packages/engine" },
+    { "path": "packages/api" },
     { "path": "packages/cli" }
   ]
 }

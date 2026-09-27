@@ -1,0 +1,135 @@
+{
+  "id": "00000000-0000-4000-8000-00000000000b",
+  "name": "Eldridge Coffee",
+  "category": {
+    "id": "cafe",
+    "label": "Cafe"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.722789,
+    "lon": -73.98462
+  },
+  "address": null,
+  "status": "operating",
+  "hoursNow": {
+    "state": "open",
+    "closesAt": "2026-10-04T00:00:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 8pm"
+  },
+  "price": {
+    "kind": "unknown"
+  },
+  "ageLimit": null,
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Mo-Su 08:00-20:00",
+      "detail": "Open now until 8pm",
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.52,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · published"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Indoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+      }
+    }
+  ],
+  "contact": {
+    "websiteUrl": "https://eldridgecoffee.example/",
+    "phone": null
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=driving"
+    }
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

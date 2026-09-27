@@ -1,0 +1,249 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000011",
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "generatedAt": "2026-10-03T22:30:00.000Z",
+  "expiresAt": "2026-10-03T22:50:00.000Z",
+  "area": {
+    "id": "mock-bars",
+    "name": "Mock · bars, date night",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T22:30:00.000Z",
+    "mood": null,
+    "areaId": "mock-bars",
+    "budget": {
+      "kind": "any"
+    },
+    "company": "date",
+    "categories": [
+      "bar"
+    ],
+    "travelMode": "walk",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 180,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000013",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~16 min walk · until 2am, you'd have 2h39 · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Delancey Tavern",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 16,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:51:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 159
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": "https://delanceytavern.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000013",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 159
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.716973,
+        "lon": -73.998882
+      },
+      "placeName": "Delancey Tavern",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~13 min walk · until 4am, you'd have 1h30 · price unknown · usually 21+",
+        "sentence": "Opens at 8pm, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Pitt Street Nightcap",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-04T00:00:00.000Z",
+        "closesAt": "2026-10-04T08:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 90
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000014",
+      "reasons": [
+        {
+          "code": "WAIT_FOR_OPENING",
+          "text": "opens at 8pm",
+          "params": {
+            "opensAt": "2026-10-04T00:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 90
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T08:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.715594,
+        "lon": -73.996037
+      },
+      "placeName": "Pitt Street Nightcap",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000015",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~20 min walk · until 3am, you'd have 2h35 · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Ridge Bar",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 20,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:55:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 155
+      },
+      "actions": {
+        "phone": "+1 212 555 6471",
+        "websiteUrl": "https://ridgebar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000015",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 155
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T07:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.713276,
+        "lon": -74.00022
+      },
+      "placeName": "Ridge Bar",
+      "callToAction": "go"
+    }
+  ],
+  "page": {
+    "offset": 3,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6MH0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

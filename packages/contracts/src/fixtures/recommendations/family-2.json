@@ -1,0 +1,168 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000001c",
+  "asOf": "2026-10-04T05:15:00.000Z",
+  "generatedAt": "2026-10-04T05:15:00.000Z",
+  "expiresAt": "2026-10-04T05:35:00.000Z",
+  "area": {
+    "id": "mock-family",
+    "name": "Mock · family, age limits",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-04T05:15:00.000Z",
+    "mood": null,
+    "areaId": "mock-family",
+    "budget": {
+      "kind": "any"
+    },
+    "company": "family",
+    "categories": [
+      "bar"
+    ],
+    "travelMode": "walk",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 120,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-00000000001d",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Delancey Bar",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 23,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T05:15:00.000Z",
+        "arriveAt": "2026-10-04T05:43:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "finishBy": "2026-10-04T07:00:00.000Z",
+        "usefulMinutes": 77
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000001d",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 77
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.727594,
+        "lon": -73.999704
+      },
+      "placeName": "Delancey Bar",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: probably 21+ only",
+        "summary": "~13 min walk · until 4am, you'd have 1h42 · price unknown · usually 21+",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Pitt Street Nightcap",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T05:15:00.000Z",
+        "arriveAt": "2026-10-04T05:33:00.000Z",
+        "closesAt": "2026-10-04T08:00:00.000Z",
+        "finishBy": "2026-10-04T07:15:00.000Z",
+        "usefulMinutes": 102
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000014",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 102
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.715594,
+        "lon": -73.996037
+      },
+      "placeName": "Pitt Street Nightcap",
+      "callToAction": "check"
+    }
+  ],
+  "page": {
+    "offset": 3,
+    "size": 3,
+    "nextCursor": null,
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFjIiwibyI6MH0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

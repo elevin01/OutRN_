@@ -1,0 +1,14 @@
+{
+  "status": 410,
+  "body": {
+    "error": {
+      "code": "CURSOR_EXPIRED",
+      "message": "These results have expired. Run the search again for current options.",
+      "retryable": false,
+      "restart": {
+        "areaId": "les",
+        "windowMinutes": 120
+      }
+    }
+  }
+}

@@ -106,6 +106,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       id: o.id,
       venueId: o.venue_id,
       name: o.title,
+      venueName: v.canonical_name,
       category: v.category,
       point: { lat: v.lat, lon: v.lon },
       timezone: v.timezone,

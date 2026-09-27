@@ -1,0 +1,254 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000001",
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "generatedAt": "2026-10-03T22:30:00.000Z",
+  "expiresAt": "2026-10-03T22:50:00.000Z",
+  "area": {
+    "id": "les",
+    "name": "Lower East Side (test point)",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "areaId": "les",
+    "windowMinutes": 180,
+    "travelMode": "walk",
+    "travelModeIsDefault": true,
+    "budget": {
+      "kind": "any"
+    },
+    "mood": null,
+    "company": null,
+    "youngestAge": null,
+    "categories": [],
+    "at": "2026-10-03T22:30:00.000Z",
+    "atIsExplicit": false
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000002",
+      "name": "Forsyth Clinton Kitchen",
+      "placeName": "Forsyth Clinton Kitchen",
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.720713,
+        "lon": -73.98824
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 5,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:45:00.000Z",
+        "usefulMinutes": 165,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 5
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 165
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~5 min walk · until 11pm, you'd have 2h45 · price unknown",
+        "sentence": "A short walk, plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=walking",
+        "websiteUrl": null,
+        "phone": "+1 212 555 9967"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000003",
+      "name": "Clinton Bar",
+      "placeName": "Clinton Bar",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.723404,
+        "lon": -73.980264
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 14,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:49:00.000Z",
+        "usefulMinutes": 161,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 161
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "HOURS_CONFIRMED",
+          "text": "hours confirmed",
+          "params": {
+            "verifiedAt": "2026-09-29T16:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown",
+        "sentence": "Plenty of time, open late, hours confirmed.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+        "websiteUrl": null,
+        "phone": "+1 212 555 8297"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000004",
+      "name": "Delancey Books",
+      "placeName": "Delancey Books",
+      "category": {
+        "id": "bookshop",
+        "label": "Bookshop"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.715671,
+        "lon": -73.989625
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 6,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:41:00.000Z",
+        "usefulMinutes": 139,
+        "finishBy": "2026-10-04T01:00:00.000Z",
+        "closesAt": "2026-10-04T01:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 6
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 139
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~6 min walk · until 9pm, you'd have 2h19 · price unknown",
+        "sentence": "A short walk, plenty of time.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
+        "websiteUrl": "https://delanceybooks.example/",
+        "phone": null
+      }
+    }
+  ],
+  "page": {
+    "offset": 0,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwibyI6M30",
+    "prevCursor": null
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

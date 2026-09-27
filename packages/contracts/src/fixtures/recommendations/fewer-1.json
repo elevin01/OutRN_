@@ -1,0 +1,195 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000021",
+  "asOf": "2026-10-04T06:30:00.000Z",
+  "generatedAt": "2026-10-04T06:30:00.000Z",
+  "expiresAt": "2026-10-04T06:50:00.000Z",
+  "area": {
+    "id": "mock-fewer",
+    "name": "Mock · fewer than three",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "areaId": "mock-fewer",
+    "windowMinutes": 60,
+    "travelMode": "walk",
+    "travelModeIsDefault": true,
+    "budget": {
+      "kind": "free"
+    },
+    "mood": null,
+    "company": null,
+    "youngestAge": null,
+    "categories": [],
+    "at": "2026-10-04T06:30:00.000Z",
+    "atIsExplicit": false
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000022",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000022",
+      "name": "Stanton Park",
+      "placeName": "Stanton Park",
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "subtype": null,
+      "status": "check_first",
+      "callToAction": "check",
+      "location": {
+        "lat": 40.719677,
+        "lon": -73.981504
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T06:30:00.000Z",
+        "arriveAt": "2026-10-04T06:45:00.000Z",
+        "usefulMinutes": 45,
+        "finishBy": "2026-10-04T07:30:00.000Z",
+        "closesAt": null
+      },
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "copy": {
+        "summary": "~10 min walk · you'd have 45 min · usually free",
+        "sentence": "A short walk, free.",
+        "caveat": "Check first: hours not listed",
+        "action": "Check first"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
+        "websiteUrl": "https://stantonpark.example/",
+        "phone": "+1 212 555 6468"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000023",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000023",
+      "name": "East River Overlook",
+      "placeName": "East River Overlook",
+      "category": {
+        "id": "viewpoint",
+        "label": "Viewpoint"
+      },
+      "subtype": null,
+      "status": "check_first",
+      "callToAction": "check",
+      "location": {
+        "lat": 40.7145,
+        "lon": -73.976
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T06:30:00.000Z",
+        "arriveAt": "2026-10-04T06:53:00.000Z",
+        "usefulMinutes": 37,
+        "finishBy": "2026-10-04T07:30:00.000Z",
+        "closesAt": null
+      },
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "copy": {
+        "summary": "~18 min walk · you'd have 37 min · usually free",
+        "sentence": "Free.",
+        "caveat": "Check first: hours not listed",
+        "action": "Check first"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
+        "websiteUrl": null,
+        "phone": null
+      }
+    }
+  ],
+  "page": {
+    "offset": 0,
+    "size": 3,
+    "nextCursor": null,
+    "prevCursor": null
+  },
+  "insufficient": {
+    "found": 2,
+    "wanted": 3,
+    "relaxations": [
+      {
+        "code": "longer_travel",
+        "text": "allow a longer walk",
+        "admits": 1
+      },
+      {
+        "code": "more_time",
+        "text": "give it more time",
+        "admits": 8
+      },
+      {
+        "code": "different_time",
+        "text": "try a different time",
+        "admits": 61
+      }
+    ]
+  },
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

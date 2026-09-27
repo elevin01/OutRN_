@@ -1,14 +1,19 @@
 import type { Command } from "commander";
-import type { Category, TravelMode } from "@outrn/core";
-import { getArea, getDb } from "@outrn/db";
-import { explain, loadCandidates, loadParkingBuffer, loadPolicies, persistRun, recommend, type RequestContext } from "@outrn/engine";
+import { RecommendationRequest, type Budget } from "@outrn/contracts";
+import { page, runEngine, search, type InternalOverrides } from "@outrn/api";
+import { getDb } from "@outrn/db";
+import { explain } from "@outrn/engine";
 
+/**
+ * Same request resolution and engine run as the API (via @outrn/api), so what this prints is what
+ * the UI would get. --json prints the exact v1 response.
+ */
 export function registerRecommend(program: Command): void {
   program
     .command("recommend")
-    .description("Run the engine for a point and window; prints the shortlist and the debug view")
-    .option("--area <slug>", "service area (origin defaults to its center)")
-    .option("--lat <n>", "origin latitude", parseFloat)
+    .description("Run the engine for an area and window; prints the shortlist and the debug view (or the v1 API response with --json)")
+    .option("--area <slug>", "service area", "les")
+    .option("--lat <n>", "origin latitude (default: the area's center)", parseFloat)
     .option("--lon <n>", "origin longitude", parseFloat)
     .option("--at <iso>", "pretend it is this time (ISO 8601); default now")
     .option("--minutes <n>", "free time in minutes", (v) => parseInt(v, 10), 180)
@@ -22,49 +27,63 @@ export function registerRecommend(program: Command): void {
     .option("--wheelchair", "require wheelchair access")
     .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
     .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
+    .option("--json", "print the v1 API response the UI would receive (first page; use --cursor for more)")
+    .option("--cursor <c>", "with --json: print another page of an earlier search")
     .option("--all", "print every candidate with its class and exclusion reason")
     .option("--no-persist", "do not record the run")
     .action(async (o: Record<string, unknown>) => {
       const db = getDb();
-      const area = o["area"] ? await getArea(db, String(o["area"])) : null;
-      const origin = { lat: (o["lat"] as number | undefined) ?? area?.lat ?? 40.7185, lon: (o["lon"] as number | undefined) ?? area?.lon ?? -73.988 };
-      const now = o["at"] ? new Date(String(o["at"])) : new Date();
-      const mode = ((o["mode"] as string | undefined) ?? area?.travel_mode ?? "walk") as TravelMode;
-      const ctx: RequestContext = { origin, now, windowMinutes: o["minutes"] as number, mode, timezone: area?.timezone ?? "America/New_York" };
-      if (o["backBy"]) ctx.backBy = new Date(String(o["backBy"]));
-      if (o["maxTravel"]) ctx.maxTravelMinutes = o["maxTravel"] as number;
-      if (o["budget"]) ctx.budget = o["budget"] === "free" ? "free" : Number(o["budget"]);
-      if (o["mood"]) ctx.mood = o["mood"] as NonNullable<RequestContext["mood"]>;
-      if (o["company"]) ctx.company = o["company"] as NonNullable<RequestContext["company"]>;
-      if (o["categories"]) ctx.categories = String(o["categories"]).split(",").map((x) => x.trim()) as Category[];
-      if (o["wheelchair"]) ctx.requireWheelchair = true;
-      if (typeof o["youngest"] === "number" && Number.isFinite(o["youngest"])) ctx.youngestAge = o["youngest"];
-      if (area && mode === "drive") {
-        const parking = await loadParkingBuffer(db, area.slug, now, ctx.timezone);
-        if (parking !== undefined) ctx.parkingBufferMinutes = parking;
+      if (o["cursor"]) {
+        console.log(JSON.stringify(await page(db, String(o["cursor"])), null, 2));
+        return;
       }
-      const t0 = Date.now();
-      const windowEnd = new Date(now.getTime() + (ctx.windowMinutes ?? 180) * 60_000);
-      const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes, ctx.parkingBufferMinutes), loadPolicies(db)]);
-      const s = recommend(candidates, ctx, policies, { offset: o["offset"] as number });
-      const ms = Date.now() - t0;
-      const runId = o["persist"] === false ? null : await persistRun(db, area?.id ?? null, ctx, s, ms);
+      const budget: Budget | undefined = o["budget"] === undefined ? undefined : o["budget"] === "free" ? { kind: "free" } : { kind: "max", maxCents: Math.round(Number(o["budget"]) * 100), currency: "USD" };
+      const parsed = RecommendationRequest.safeParse({
+        areaId: String(o["area"]),
+        windowMinutes: o["minutes"],
+        ...(o["mode"] ? { travelMode: o["mode"] } : {}),
+        ...(budget ? { budget } : {}),
+        ...(o["mood"] ? { mood: o["mood"] } : {}),
+        ...(o["company"] ? { company: o["company"] } : {}),
+        ...(typeof o["youngest"] === "number" && Number.isFinite(o["youngest"]) ? { youngestAge: o["youngest"] } : {}),
+        ...(o["categories"] ? { categories: String(o["categories"]).split(",").map((x) => x.trim()) } : {}),
+        ...(o["at"] ? { at: new Date(String(o["at"])).toISOString() } : {}),
+      });
+      if (!parsed.success) {
+        for (const i of parsed.error.issues) console.error(`${i.path.join(".") || "request"}: ${i.message}`);
+        process.exitCode = 1;
+        return;
+      }
+      const overrides: InternalOverrides = {};
+      if (typeof o["lat"] === "number" && typeof o["lon"] === "number") overrides.origin = { lat: o["lat"], lon: o["lon"] };
+      if (o["backBy"]) overrides.backBy = new Date(String(o["backBy"]));
+      if (o["maxTravel"]) overrides.maxTravelMinutes = o["maxTravel"] as number;
+      if (o["wheelchair"]) overrides.requireWheelchair = true;
 
-      console.log(`${now.toISOString()} · ${mode} · ${ctx.windowMinutes} min · ${candidates.length} candidates · ${ms} ms${runId ? ` · run ${runId}` : ""}`);
+      if (o["json"]) {
+        console.log(JSON.stringify(await search(db, parsed.data, { overrides }), null, 2));
+        return;
+      }
+
+      const run = await runEngine(db, parsed.data, { overrides, persist: o["persist"] !== false });
+      const { ctx, shortlist: s, candidates } = run;
+      const offset = Math.max(0, (o["offset"] as number) ?? 0);
+      const items = s.ordered.slice(offset, offset + 3);
+      console.log(`${ctx.now.toISOString()} · ${ctx.mode} · ${ctx.windowMinutes} min · ${candidates.length} candidates · ${run.durationMs} ms${run.runId ? ` · run ${run.runId}` : ""}`);
       const counts = { ready: 0, check_first: 0, ineligible: 0 } as Record<string, number>;
       for (const e of s.all) counts[e.class] = (counts[e.class] ?? 0) + 1;
       console.log(`ready ${counts["ready"]} · check first ${counts["check_first"]} · ineligible ${counts["ineligible"]}`);
       console.log("");
-      s.items.forEach((e, i) => {
+      items.forEach((e, i) => {
         const copy = explain(e, ctx.timezone);
-        console.log(`${s.offset + i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
+        console.log(`${offset + i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
         console.log(`   ${copy.factLine}`);
         if (copy.sentence) console.log(`   ${copy.sentence}`);
         if (copy.caveat) console.log(`   ${copy.caveat}`);
         console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}`);
       });
-      if (s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.join(" · ") || "a different time"}`);
-      if (s.nextOffset !== null) console.log(`\nMore options: --offset ${s.nextOffset}`);
+      if (offset === 0 && s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.map((r) => `${r.text} (+${r.admits})`).join(" · ") || "a different time"}`);
+      if (s.ordered.length > offset + items.length && items.length) console.log(`\nMore options: --offset ${offset + items.length}`);
       if (o["all"]) {
         console.log("\n— all candidates —");
         const byClass = [...s.all].sort((a, b) => (a.class > b.class ? 1 : a.class < b.class ? -1 : 0));

@@ -1,0 +1,19 @@
+# Who must review what. The split lets the UI and the backend move independently; the contract is
+# the one place both sides must agree. Takes effect with branch protection → "Require review from
+# Code Owners" on main.
+#
+# TODO(owner): replace @UI_OWNER_HANDLE below with the UI contributor's GitHub handle.
+
+# Backend: engine, API, data pipeline, database, CLI, and anything not listed below.
+*                                   @elevin01
+
+# UI: pages, components, styling, the API client.
+# /packages/web/                    @UI_OWNER_HANDLE
+
+# The contract (schemas, fixtures, generated JSON Schema): both sides approve every change.
+/packages/contracts/                @elevin01
+# /packages/contracts/              @elevin01 @UI_OWNER_HANDLE
+
+# The guard rails themselves.
+/scripts/check-boundaries.mjs       @elevin01
+/.github/                           @elevin01

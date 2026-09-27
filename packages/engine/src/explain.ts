@@ -33,6 +33,14 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   ACCESS_LIMITED: "limited accessibility",
 };
 
+/** One reason or caveat as data: a stable code, its inputs, and default wording. */
+export interface Note {
+  code: ReasonCode;
+  /** Default wording, lower case so it can sit inside a sentence. */
+  text: string;
+  params: Record<string, string | number | boolean | null>;
+}
+
 export interface CardCopy {
   /** e.g. "~12 min walk · until 10pm, you'd have 1h40 · $15–35" */
   factLine: string;
@@ -41,6 +49,45 @@ export interface CardCopy {
   /** e.g. "Check first: hours not checked recently" */
   caveat: string | null;
   cta: "Go now" | "Check first" | "Book" | null;
+}
+
+const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() : null);
+
+/** Why this option is good, in the order the card sentence reads them. Only reasons the sentence would use. */
+export function reasonNotes(e: Evaluation, tz: string): Note[] {
+  const t = e.timing;
+  if (!t) return [];
+  const out: Note[] = [];
+  const has = (code: ReasonCode) => e.reasons.includes(code);
+  const add = (code: ReasonCode, text: string, params: Note["params"] = {}) => out.push({ code, text, params });
+  if (has("EVENT_STARTS_SOON")) add("EVENT_STARTS_SOON", "starts soon", { startsAt: iso(e.candidate.occurrence?.start) });
+  if (has("SHORT_TRAVEL")) add("SHORT_TRAVEL", t.travel.mode === "walk" ? "a short walk" : t.travel.mode === "drive" ? "a short drive" : "a short trip", { mode: t.travel.mode, minutes: t.travel.minutes });
+  if (has("WAIT_FOR_OPENING")) add("WAIT_FOR_OPENING", `opens at ${fmtTime(t.arrival, tz)}`, { opensAt: iso(t.arrival) });
+  if (has("ENOUGH_TIME")) add("ENOUGH_TIME", "plenty of time", { usefulMinutes: t.usefulMinutes });
+  else if (has("CLOSES_SOON")) add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
+  if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
+  if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
+  if (has("FREE")) add("FREE", "free");
+  else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
+  if (has("SUNSET_WINDOW")) add("SUNSET_WINDOW", "sunset window");
+  if (has("WEATHER_SUITABLE")) add("WEATHER_SUITABLE", "good weather for it");
+  if (has("FRESH_REPORT")) add("FRESH_REPORT", "recent report");
+  if (has("LANDMARK")) add("LANDMARK", "a landmark");
+  return out;
+}
+
+/**
+ * What to check before going: one note per unresolved code, none dropped. A code without its own
+ * wording still appears (as its name) so a new engine caveat can never silently vanish from a card.
+ */
+export function caveatNotes(e: Evaluation): Note[] {
+  const age = ageLimitOf(e.candidate)?.minAge ?? 0;
+  const ageText: Partial<Record<ReasonCode, string>> = { AGE_LIMIT_LIKELY: `probably ${age}+ only`, AGE_LIMIT_UNCERTAIN: `${age}+ only; check your group's ages` };
+  return e.unresolved.map((code) => ({
+    code,
+    text: ageText[code] ?? UNRESOLVED_TEXT[code] ?? code.toLowerCase().replace(/_/g, " "),
+    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : {},
+  }));
 }
 
 export function explain(e: Evaluation, tz: string): CardCopy {
@@ -63,25 +110,10 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   if (limit && limit.minAge > 0) parts.push(`${limit.isEstimate ? "usually " : ""}${limit.minAge}+`);
   const factLine = parts.join(" · ");
 
-  const s: string[] = [];
-  if (e.reasons.includes("EVENT_STARTS_SOON")) s.push("starts soon");
-  if (e.reasons.includes("SHORT_TRAVEL")) s.push(t.travel.mode === "walk" ? "a short walk" : "a short drive");
-  if (e.reasons.includes("WAIT_FOR_OPENING")) s.push(`opens at ${fmtTime(t.arrival, tz)}`);
-  if (e.reasons.includes("ENOUGH_TIME")) s.push("plenty of time");
-  else if (e.reasons.includes("CLOSES_SOON")) s.push("closes soon");
-  if (e.reasons.includes("OPEN_LATE")) s.push("open late");
-  if (e.reasons.includes("HOURS_CONFIRMED")) s.push("hours confirmed");
-  if (e.reasons.includes("FREE")) s.push("free");
-  else if (e.reasons.includes("FITS_BUDGET")) s.push("within budget");
-  if (e.reasons.includes("SUNSET_WINDOW")) s.push("sunset window");
-  if (e.reasons.includes("WEATHER_SUITABLE")) s.push("good weather for it");
-  if (e.reasons.includes("FRESH_REPORT")) s.push("recent report");
-  if (e.reasons.includes("LANDMARK")) s.push("a landmark");
+  const s = reasonNotes(e, tz).map((n) => n.text);
   const sentence = s.length ? s[0]!.charAt(0).toUpperCase() + s.join(", ").slice(1) + "." : "";
 
-  const age = limit?.minAge ?? 0;
-  const ageText: Partial<Record<ReasonCode, string>> = { AGE_LIMIT_LIKELY: `probably ${age}+ only`, AGE_LIMIT_UNCERTAIN: `${age}+ only; check your group's ages` };
-  const caveats = e.unresolved.map((u) => ageText[u] ?? UNRESOLVED_TEXT[u]).filter((x): x is string => Boolean(x));
+  const caveats = caveatNotes(e).map((n) => n.text);
   const caveat = caveats.length ? `Check first: ${caveats.join("; ")}` : null;
   const cta = e.cta === "go" ? "Go now" : e.cta === "book" ? "Book" : e.cta === "check" ? "Check first" : null;
   return { factLine, sentence, caveat, cta };

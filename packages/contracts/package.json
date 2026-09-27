@@ -1,0 +1,34 @@
+{
+  "name": "@outrn/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The v1 API contract between the OutRN backend and its UI: schemas, types, fixtures. Depends on zod only.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "outrn-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fixtures": {
+      "outrn-src": "./src/fixtures.ts",
+      "types": "./dist/fixtures.d.ts",
+      "default": "./dist/fixtures.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "schema": "tsx --conditions=outrn-src scripts/schema.ts write",
+    "schema:check": "tsx --conditions=outrn-src scripts/schema.ts check",
+    "compat": "tsx --conditions=outrn-src scripts/compat.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

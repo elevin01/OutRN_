@@ -1,0 +1,154 @@
+{
+  "id": "00000000-0000-4000-8000-000000000022",
+  "name": "Stanton Park",
+  "category": {
+    "id": "park",
+    "label": "Park"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.719677,
+    "lon": -73.981504
+  },
+  "address": null,
+  "status": "operating",
+  "hoursNow": {
+    "state": "unknown",
+    "closesAt": null,
+    "opensAt": null,
+    "summary": null
+  },
+  "price": {
+    "kind": "free",
+    "evidence": "estimate"
+  },
+  "ageLimit": null,
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Not listed",
+      "detail": "Check before you go",
+      "provenance": {
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
+        "verifiedAt": null,
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Outdoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    }
+  ],
+  "contact": {
+    "websiteUrl": "https://stantonpark.example/",
+    "phone": "+1 212 555 6468"
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=driving"
+    }
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

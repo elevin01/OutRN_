@@ -1,40 +1,33 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import type { AreasResponse, RecommendationResponse } from "@outrn/contracts";
+import { ApiProblem } from "../components/ApiProblem";
 import { PlaceCard } from "../components/PlaceCard";
 import { SearchForm } from "../components/SearchForm";
-import { areas, runRecommendation } from "../lib/data";
-import { MAX_OFFSET } from "@outrn/engine";
-import { integer, one, type Search } from "../lib/query";
+import { api, ApiRequestError } from "../lib/api";
+import { one, type Search } from "../lib/query";
+import { formFromResolved, hrefForRequest, requestFromQuery } from "../lib/request";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<Search> }) {
   const query = await searchParams;
-  const serviceAreas = await areas();
-  const shouldRun = one(query["run"]) === "1";
-  const defaults = Object.fromEntries(Object.entries(query).map(([key, value]) => [key, one(value)]));
-  const output = shouldRun
-    ? await runRecommendation({
-        area: one(query["area"]) ?? "les",
-        minutes: integer(query["minutes"], 180, 30, 480),
-        mode: one(query["mode"]),
-        budget: one(query["budget"]),
-        mood: one(query["mood"]),
-        company: one(query["company"]),
-        category: one(query["category"]),
-        at: one(query["at"]) || undefined,
-        offset: integer(query["offset"], 0, 0, MAX_OFFSET),
-        youngest: one(query["youngest"]) ? integer(query["youngest"], 0, 0, 120) : undefined,
-      })
-    : null;
-  // "More options" re-runs the same request one page further, pinned to the first page's instant
-  // so the ordering cannot shift underneath the user between pages.
-  const pageHref = (offset: number) => {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(defaults)) if (value !== undefined && key !== "offset" && key !== "at") params.set(key, value);
-    if (output) params.set("at", output.context.now.toISOString());
-    if (offset > 0) params.set("offset", String(offset));
-    return `/?${params.toString()}`;
-  };
+  let meta: AreasResponse | null = null;
+  let output: RecommendationResponse | null = null;
+  let failure: ApiRequestError | null = null;
+  try {
+    meta = await api.areas();
+    const cursor = one(query["cursor"]);
+    // "More options" and "Previous" carry only a cursor: pages of one frozen result list.
+    if (cursor) output = await api.recommendations({ cursor });
+    else if (one(query["run"]) === "1") output = await api.recommendations(requestFromQuery(query, meta));
+  } catch (error) {
+    if (!(error instanceof ApiRequestError)) throw error;
+    // The pages' plans went stale: run the same search again, now.
+    if (error.code === "CURSOR_EXPIRED" && error.detail?.restart && meta) redirect(hrefForRequest(error.detail.restart, meta));
+    failure = error;
+  }
+  const defaults = output && meta ? formFromResolved(output.request, meta) : Object.fromEntries(Object.entries(query).map(([key, value]) => [key, one(value)]));
 
   return (
     <>
@@ -55,31 +48,33 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <div><p className="eyebrow">Make a plan</p><h2 id="finder-title">What fits right now?</h2></div>
           <p>We check travel, hours, useful time, admission, and price before anything earns a card.</p>
         </div>
-        <SearchForm areas={serviceAreas} defaults={defaults} />
+        {meta && <SearchForm meta={meta} defaults={defaults} />}
       </section>
 
-      {output ? (
+      {failure ? (
+        <section className="results-section" aria-live="polite"><ApiProblem error={failure} /></section>
+      ) : output ? (
         <section className="results-section" aria-live="polite">
           <div className="results-heading">
             <div>
-              <p className="eyebrow">{output.area.name} · {output.context.windowMinutes} minutes</p>
-              <h2>{output.offset > 0 ? "More ways out" : output.items.length === 3 ? "Three ways out" : `${output.items.length} honest option${output.items.length === 1 ? "" : "s"}`}</h2>
+              <p className="eyebrow">{output.area.name} · {output.request.windowMinutes} minutes</p>
+              <h2>{output.page.offset > 0 ? "More ways out" : output.items.length === 3 ? "Three ways out" : `${output.items.length} honest option${output.items.length === 1 ? "" : "s"}`}</h2>
             </div>
-            <Link className="run-link" href={`/ops/runs/${output.runId}`}>Inspect run <span>{output.runId.slice(0, 8)}</span></Link>
+            <Link className="run-link" href={`/ops/runs/${output.requestId}`}>Inspect run <span>{output.requestId.slice(0, 8)}</span></Link>
           </div>
           <div className="card-grid">
-            {output.items.map(({ evaluation, copy }, index) => <PlaceCard key={evaluation.candidate.id} evaluation={evaluation} copy={copy} index={output.offset + index} />)}
+            {output.items.map((item, index) => <PlaceCard key={item.id} item={item} index={output.page.offset + index} />)}
           </div>
-          {(output.nextOffset !== null || output.offset > 0) && (
+          {(output.page.nextCursor || output.page.prevCursor) && (
             <div className="more-options">
-              {output.offset > 0 && <Link className="text-button" href={pageHref(Math.max(0, output.offset - 3))}>← Previous</Link>}
-              {output.nextOffset !== null && <Link className="text-button" href={pageHref(output.nextOffset)}>More options →</Link>}
+              {output.page.prevCursor && <Link className="text-button" href={`/?cursor=${output.page.prevCursor}`}>← Previous</Link>}
+              {output.page.nextCursor && <Link className="text-button" href={`/?cursor=${output.page.nextCursor}`}>More options →</Link>}
             </div>
           )}
-          {output.fewerThanThree && (
+          {output.insufficient && (
             <div className="honest-empty">
               <strong>We won’t pad the answer.</strong>
-              <span>{output.relaxations.length ? `Try ${output.relaxations.join(" or ")}.` : "Try a different time."}</span>
+              <span>{output.insufficient.relaxations.length ? `Try ${output.insufficient.relaxations.map((r) => `${r.text} (+${r.admits})`).join(" or ")}.` : "Try a different time."}</span>
             </div>
           )}
         </section>

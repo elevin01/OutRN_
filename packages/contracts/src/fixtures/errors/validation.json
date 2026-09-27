@@ -1,0 +1,16 @@
+{
+  "status": 400,
+  "body": {
+    "error": {
+      "code": "VALIDATION_FAILED",
+      "message": "The request is not valid: windowMinutes: Too small: expected number to be >=30",
+      "retryable": false,
+      "fields": [
+        {
+          "path": "windowMinutes",
+          "message": "Too small: expected number to be >=30"
+        }
+      ]
+    }
+  }
+}

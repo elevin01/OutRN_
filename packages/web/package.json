@@ -2,19 +2,20 @@
   "name": "@outrn/web",
   "version": "0.1.0",
   "private": true,
+  "description": "The OutRN UI. Talks to the backend only through the v1 HTTP API in @outrn/contracts; runs against the mock with no database.",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "tsc -b ../contracts && next dev",
+    "dev:mock": "tsc -b ../contracts && next dev",
+    "build": "tsc -b ../contracts && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@outrn/core": "workspace:*",
-    "@outrn/db": "workspace:*",
-    "@outrn/engine": "workspace:*",
+    "@outrn/contracts": "workspace:*",
     "next": "16.3.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

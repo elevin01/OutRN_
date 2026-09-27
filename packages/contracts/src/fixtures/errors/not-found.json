@@ -1,0 +1,10 @@
+{
+  "status": 404,
+  "body": {
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "No place with this id.",
+      "retryable": false
+    }
+  }
+}

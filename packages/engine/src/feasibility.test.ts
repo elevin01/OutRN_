@@ -236,7 +236,7 @@ describe("feasibility: programme venues", () => {
     expect(e.class).toBe("check_first");
     expect(e.cta).toBe("book");
     const s = recommend([venue({ category: "cinema", hours: null })], ctx("2026-09-26 21:37", 120), POLICIES);
-    expect(s.relaxations.join(" ")).not.toMatch(/programme/i);
+    expect(s.relaxations.map((r) => r.text).join(" ")).not.toMatch(/programme/i);
   });
 });
 
@@ -330,7 +330,7 @@ describe("selection: diversity and fewer than three", () => {
     const s = recommend(cands, ctx("2026-10-03 15:00", 180), POLICIES);
     expect(s.items).toHaveLength(1);
     expect(s.fewerThanThree).toBe(true);
-    expect(s.relaxations[0]).toMatch(/longer walk \(\+2\)/);
+    expect(s.relaxations[0]).toEqual({ code: "longer_travel", text: "allow a longer walk", admits: 2 });
   });
 
   it("Ready outranks Check first regardless of appeal, and a child venue is not shown beside its parent", () => {
@@ -461,7 +461,7 @@ describe("age limits", () => {
     expect(ids(s).sort()).toEqual(["cafe1", "cafe2", "cafe3"]);
     expect(s.items.every((e) => e.class === "ready")).toBe(true);
     expect(s.all.find((e) => e.candidate.id === "casino")!.excludedBy).toBe("AGE_RESTRICTED");
-    expect(s.relaxations.join(" ")).not.toMatch(/age/i); // never offered as a relaxation
+    expect(s.relaxations.map((r) => r.text).join(" ")).not.toMatch(/age/i); // never offered as a relaxation
   });
 
   it("family, estimated 21+: Check first with the limit named, never Ready, and never ahead of Ready options", () => {

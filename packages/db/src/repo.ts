@@ -25,6 +25,17 @@ export async function getArea(q: Queryable, slug: string): Promise<ServiceAreaRo
   return row;
 }
 
+/** The area with this slug, or null. */
+export async function findArea(q: Queryable, slug: string): Promise<ServiceAreaRow | null> {
+  const r = await q.query<ServiceAreaRow>(
+    `select id, slug, name, ST_Y(center::geometry) as lat, ST_X(center::geometry) as lon,
+            radius_m, timezone, travel_mode, launch_state
+       from service_areas where slug = $1`,
+    [slug],
+  );
+  return r.rows[0] ?? null;
+}
+
 export async function listAreas(q: Queryable): Promise<ServiceAreaRow[]> {
   const r = await q.query<ServiceAreaRow>(
     `select id, slug, name, ST_Y(center::geometry) as lat, ST_X(center::geometry) as lon,

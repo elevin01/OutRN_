@@ -156,8 +156,13 @@ function fmtMonth(d: Date, tz: string): string {
   return new Intl.DateTimeFormat("en-US", { timeZone: tz, month: "short", year: "numeric" }).format(d);
 }
 
+/** Display name of one source id ("osm" → "OpenStreetMap"). */
+export function sourceName(source: string): string {
+  return SOURCE_LABEL[source] ?? source;
+}
+
 export function sourceLabel(sources: string[]): string {
-  return sources.map((s) => SOURCE_LABEL[s] ?? s).join(" + ") || "unknown source";
+  return sources.map(sourceName).join(" + ") || "unknown source";
 }
 
 /** Age wording by what the date actually means for the winning source. */
