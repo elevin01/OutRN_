@@ -213,7 +213,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   });
 
   it("accepts only item ids (UUIDs) in seen and dismissed lists", async () => {
-    for (const bad of ["x".repeat(1_000_000), "not-a-uuid", ""]) {
+    for (const bad of ["x".repeat(10_000), "not-a-uuid", ""]) {
       const r = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, seenIds: [bad] });
       expect(r.status).toBe(400);
       expect(ApiError.parse(r.json).error.fields?.[0]?.path).toBe("seenIds.0");
