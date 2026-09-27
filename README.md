@@ -105,8 +105,11 @@ docker compose --profile mock up --build web-mock   # mock API + web, no databas
 ```
 
 Open `/ops/eligible` to evaluate candidates and inspect recent runs. Each consumer search links to
-its persisted run. Set `OUTRN_OPS_TOKEN` (API and web) to protect the ops routes; the API disables
-them in production without one.
+its persisted run. Ops pages are for operators: set `OUTRN_OPS_TOKEN` on the API and the web app,
+and sign in with any username and the token as the password (HTTP Basic). The web app checks the
+visitor's credential and forwards only that credential to the API, which checks it again; it never
+attaches one on a visitor's behalf. Without a token, a production deployment serves no ops pages
+(web 404, API 401); in development both are open.
 
 `fixtures/osm/*-synthetic.json` are **invented** — see `fixtures/README.md`. They exist so the pipeline
 runs identically offline; the identity-resolution traps in them (node+way duplicate, chain branches,

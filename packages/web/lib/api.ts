@@ -11,6 +11,7 @@ import {
   type RecommendationsBody,
 } from "@outrn/contracts";
 import type { z } from "zod/v4";
+import type { OpsCredential } from "./ops";
 
 /**
  * The UI's only way to the backend: the v1 HTTP API described by @outrn/contracts. Point it at the
@@ -19,7 +20,6 @@ import type { z } from "zod/v4";
  */
 
 const API_URL = (process.env["OUTRN_API_URL"] ?? "http://127.0.0.1:4000").replace(/\/$/, "");
-const OPS_TOKEN = process.env["OUTRN_OPS_TOKEN"];
 
 export class ApiRequestError extends Error {
   constructor(
@@ -34,7 +34,7 @@ export class ApiRequestError extends Error {
   }
 }
 
-async function request<T extends z.ZodType>(schema: T, path: string, init: { method?: "GET" | "POST"; body?: unknown; ops?: boolean } = {}): Promise<z.infer<T>> {
+async function request<T extends z.ZodType>(schema: T, path: string, init: { method?: "GET" | "POST"; body?: unknown; ops?: OpsCredential } = {}): Promise<z.infer<T>> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
@@ -42,7 +42,8 @@ async function request<T extends z.ZodType>(schema: T, path: string, init: { met
       headers: {
         accept: "application/json",
         ...(init.body === undefined ? {} : { "content-type": "application/json" }),
-        ...(init.ops && OPS_TOKEN ? { authorization: `Bearer ${OPS_TOKEN}` } : {}),
+        // Only ever the visitor's own credential (see lib/ops.ts); never one the server holds.
+        ...(init.ops?.bearer ? { authorization: `Bearer ${init.ops.bearer}` } : {}),
       },
       ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
       cache: "no-store",
@@ -68,9 +69,10 @@ export const api = {
   areas: () => request(AreasResponse, "/v1/areas"),
   recommendations: (body: RecommendationsBody) => request(RecommendationResponse, "/v1/recommendations", { method: "POST", body }),
   place: (id: string) => request(PlaceDetails, `/v1/places/${encodeURIComponent(id)}`),
+  /** Operator views. Each call needs the credential `requireOps()` returned for this request. */
   ops: {
-    evaluate: (body: RecommendationRequest) => request(OpsRunDetail, "/ops/v1/evaluate", { method: "POST", body, ops: true }),
-    runs: (limit = 20) => request(OpsRunList, `/ops/v1/runs?limit=${limit}`, { ops: true }),
-    run: (id: string) => request(OpsRunDetail, `/ops/v1/runs/${encodeURIComponent(id)}`, { ops: true }),
+    evaluate: (credential: OpsCredential, body: RecommendationRequest) => request(OpsRunDetail, "/ops/v1/evaluate", { method: "POST", body, ops: credential }),
+    runs: (credential: OpsCredential, limit = 20) => request(OpsRunList, `/ops/v1/runs?limit=${limit}`, { ops: credential }),
+    run: (credential: OpsCredential, id: string) => request(OpsRunDetail, `/ops/v1/runs/${encodeURIComponent(id)}`, { ops: credential }),
   },
 };

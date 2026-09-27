@@ -3,12 +3,14 @@ import type { AreasResponse, OpsRunDetail, OpsRunList } from "@outrn/contracts";
 import { ApiProblem } from "../../../components/ApiProblem";
 import { SearchForm } from "../../../components/SearchForm";
 import { api, ApiRequestError } from "../../../lib/api";
+import { requireOps } from "../../../lib/ops";
 import { one, type Search } from "../../../lib/query";
 import { requestFromQuery } from "../../../lib/request";
 
 export const dynamic = "force-dynamic";
 
 export default async function EligiblePage({ searchParams }: { searchParams: Promise<Search> }) {
+  const credential = await requireOps();
   const query = await searchParams;
   const defaults = Object.fromEntries(Object.entries(query).map(([key, value]) => [key, one(value)]));
   let meta: AreasResponse | null = null;
@@ -17,8 +19,8 @@ export default async function EligiblePage({ searchParams }: { searchParams: Pro
   let failure: ApiRequestError | null = null;
   try {
     meta = await api.areas();
-    if (one(query["run"]) === "1") output = await api.ops.evaluate(requestFromQuery(query, meta));
-    runs = (await api.ops.runs()).runs;
+    if (one(query["run"]) === "1") output = await api.ops.evaluate(credential, requestFromQuery(query, meta));
+    runs = (await api.ops.runs(credential)).runs;
   } catch (error) {
     if (!(error instanceof ApiRequestError)) throw error;
     failure = error;

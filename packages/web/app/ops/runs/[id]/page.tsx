@@ -3,13 +3,15 @@ import { notFound } from "next/navigation";
 import type { OpsRunDetail } from "@outrn/contracts";
 import { ApiProblem } from "../../../../components/ApiProblem";
 import { api, ApiRequestError } from "../../../../lib/api";
+import { requireOps } from "../../../../lib/ops";
 
 export const dynamic = "force-dynamic";
 
 export default async function RunPage({ params }: { params: Promise<{ id: string }> }) {
+  const credential = await requireOps();
   let run: OpsRunDetail;
   try {
-    run = await api.ops.run((await params).id);
+    run = await api.ops.run(credential, (await params).id);
   } catch (error) {
     if (error instanceof ApiRequestError && error.code === "NOT_FOUND") notFound();
     if (error instanceof ApiRequestError) return <section className="ops-shell"><Link className="back-link" href="/ops/eligible">← Eligible now</Link><ApiProblem error={error} /></section>;

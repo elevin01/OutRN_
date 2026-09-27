@@ -27,7 +27,8 @@ state a screen has to handle is one **Neighborhood** choice away:
 | Mock · expired pages | Page 1 works; "More options" returns `CURSOR_EXPIRED` (the app re-runs the search) |
 | Mock · service unavailable | The search fails with a retryable `UNAVAILABLE` |
 
-Place details work for every card. `/ops/eligible` and `/ops/runs/:id` work too.
+Place details work for every card. `/ops/eligible` and `/ops/runs/:id` work too (open in
+`next dev`; a production build asks for the operator password, see below).
 
 ## Where things are
 
@@ -78,8 +79,11 @@ pnpm outrn ingest osm --area les --from-file fixtures/osm/les-synthetic.json
 pnpm dev               # real API on :4000 + this app on :3000
 ```
 
-Environment: `OUTRN_API_URL` (default `http://127.0.0.1:4000`), and `OUTRN_OPS_TOKEN` when the API
-protects its ops routes.
+Environment: `OUTRN_API_URL` (default `http://127.0.0.1:4000`), and `OUTRN_OPS_TOKEN`, the password
+operators sign in with on `/ops/*` (HTTP Basic, any username). `proxy.ts` challenges anyone
+without it, each ops page re-checks with `requireOps()` (`lib/ops.ts`), and `api.ops.*` only
+forwards the credential the visitor presented. Without a token, `next dev` serves ops pages openly
+and a production build serves none.
 
 ## Checks
 

@@ -59,6 +59,8 @@ services:
     environment:
       # The UI talks to the backend only over HTTP.
       OUTRN_API_URL: http://api:4000
+      # The password operators sign in with on /ops (HTTP Basic, any username). Checked here, never
+      # attached for a visitor; unset means this web app serves no ops pages.
       OUTRN_OPS_TOKEN: ${OUTRN_OPS_TOKEN:-}
     ports:
       - "3000:3000"
