@@ -83,4 +83,17 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "street_side", "parking:fee": "no" }), "parking")).toMatchObject({ value: { kind: "street", cost: "free" } });
     expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "something_new" }), "parking")).toMatchObject({ value: { kind: "unknown" } });
   });
+
+  it("activity venues carry their kind, and adults-only kinds carry an audience estimate", () => {
+    const casino = rec({ name: "Empire City", amenity: "casino" });
+    expect(fact(casino, "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "casino" } });
+    expect(fact(casino, "audience")).toMatchObject({ evidenceClass: "estimate", value: { value: "adults_only", minAge: 21 } });
+    const golf = rec({ name: "Putt", leisure: "miniature_golf" });
+    expect(fact(golf, "subtype")).toMatchObject({ value: { value: "miniature_golf" } });
+    expect(fact(golf, "audience")).toBeUndefined(); // unknown, not "all ages"
+    expect(fact(rec({ name: "Club", amenity: "nightclub" }), "audience")).toMatchObject({ value: { value: "adults_only" } });
+    expect(fact(rec({ name: "Arcade", leisure: "amusement_arcade", min_age: "16" }), "audience")).toMatchObject({ evidenceClass: "published", value: { value: "all_ages", minAge: 16 } });
+    expect(fact(rec({ name: "Wall", leisure: "sports_centre", sport: "climbing" }), "subtype")).toMatchObject({ value: { value: "climbing" } });
+    expect(fact(rec({ name: "R", amenity: "restaurant" }), "subtype")).toBeUndefined();
+  });
 });

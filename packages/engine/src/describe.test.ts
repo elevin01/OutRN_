@@ -47,4 +47,12 @@ describe("detail page facts", () => {
     const [site] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, sources: ["firstparty"], asOf: null }) }, { tz: TZ, point: P, now: NOW });
     expect(site).toMatchObject({ source: "venue website", age: "retrieved Sep 26" });
   });
+
+  it("kind and audience rows", () => {
+    expect(formatFactValue("audience", { value: "adults_only", minAge: 21 })).toBe("Adults only (21+)");
+    expect(formatFactValue("audience", { value: "all_ages" })).toBe("All ages");
+    expect(formatFactValue("subtype", { value: "miniature_golf" })).toBe("Miniature golf");
+    const rows = describeFacts({ audience: rec({ value: { value: "adults_only", minAge: 21 }, evidenceClass: "estimate" }), subtype: rec({ value: { value: "casino" } }), opening_hours: rec({ value: { osm: "24/7" } }) }, { tz: TZ, point: P, now: NOW });
+    expect(rows.map((r) => r.label)).toEqual(["Hours", "Kind", "Audience"]);
+  });
 });

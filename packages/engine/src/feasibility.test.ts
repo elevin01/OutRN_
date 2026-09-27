@@ -24,6 +24,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
   ["bookshop", { category: "bookshop", minUsefulMinutes: 30, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" }],
   ["dessert", { category: "dessert", minUsefulMinutes: 25, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "food" }],
   ["gallery", { category: "gallery", minUsefulMinutes: 40, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: 30, activityType: "culture" }],
+  ["activity", { category: "activity", minUsefulMinutes: 60, admissionBufferMinutes: 10, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["cinema", { category: "cinema", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
 ]);
 
@@ -387,5 +388,26 @@ describe("appeal signals", () => {
     expect(explain(a!, TZ).sentence).toMatch(/hours confirmed/);
     const s = recommend([mapped, checked], ctx("2026-09-26 21:37", 120), POLICIES);
     expect(s.items[0]!.candidate.id).toBe("checked");
+  });
+});
+
+describe("suitability", () => {
+  const casino = () => {
+    const c = venue({ id: "casino", category: "activity", hours: "Mo-Su 10:00-04:00" });
+    c.facts.audience = { value: { value: "adults_only", minAge: 21 }, confidence: 0.7, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    return c;
+  };
+  const golf = () => venue({ id: "golf", category: "activity", hours: "Mo-Su 10:00-04:00" });
+
+  it("an adults-only venue never gets the family bonus its category would earn; it ranks below an all-ages one", () => {
+    const [c, g] = evaluateAll([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "family" }), POLICIES);
+    expect(g!.scores.fit - c!.scores.fit).toBeCloseTo(0.15 * 0.5, 3); // +0.25 vs −0.25 on the chips term
+    const s = recommend([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "family", categories: ["activity"] }), POLICIES);
+    expect(s.items[0]!.candidate.id).toBe("golf");
+  });
+
+  it("other company is unaffected by the audience", () => {
+    const [c, g] = evaluateAll([casino(), golf()], ctx("2026-09-26 15:00", 180, { company: "date" }), POLICIES);
+    expect(c!.scores.fit).toBe(g!.scores.fit);
   });
 });

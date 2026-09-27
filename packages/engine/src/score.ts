@@ -37,7 +37,13 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
   if (ctx.mood) chips += MOOD_ACTIVITY[ctx.mood].includes(activity) ? 0.25 : -0.15;
-  if (ctx.company) chips += COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category) ? 0.25 : 0;
+  if (ctx.company) {
+    // Suitability before preference: an adults-only venue (a casino inside "activity") never gets the
+    // family bonus its category would otherwise earn; it sinks instead.
+    const adultsOnly = (c.facts.audience?.value as { value?: string } | undefined)?.value === "adults_only";
+    if (ctx.company === "family" && adultsOnly) chips -= 0.25;
+    else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
+  }
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = OUTDOOR.has(c.category) || (c.facts["indoor_outdoor"]?.value as { value?: string } | undefined)?.value === "outdoor";

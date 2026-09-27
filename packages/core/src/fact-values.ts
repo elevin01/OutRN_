@@ -54,6 +54,8 @@ export const FACT_VALUE_SCHEMAS = {
     .object({ kind: z.enum(["lot", "street", "garage", "none", "unknown"]), cost: z.enum(["free", "paid", "unknown"]).optional(), note: z.string().max(300).optional() })
     .strict(),
   wheelchair: oneOf(["yes", "limited", "no", "unknown"]),
+  subtype: z.object({ value: z.string().regex(/^[a-z0-9_]{2,40}$/, "subtype is a lowercase slug, e.g. miniature_golf") }).strict(),
+  audience: z.object({ value: z.enum(["adults_only", "all_ages"]), minAge: z.number().int().min(0).max(99).optional() }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

@@ -107,6 +107,19 @@ function parseText(attribute: Attribute, raw: string, opts: { json?: boolean }):
     case "category":
       if (!isCategory(text)) throw new Error(`category must be one of: ${CATEGORIES.join(", ")}`);
       return { value: text };
+    case "subtype": {
+      const v = text.toLowerCase().replace(/[\s-]+/g, "_");
+      if (!/^[a-z0-9_]{2,40}$/.test(v)) throw new Error(`subtype is a short kind name, e.g. miniature_golf`);
+      return { value: v };
+    }
+    case "audience": {
+      const t = text.toLowerCase().replace(/[\s-]+/g, "_");
+      if (t === "all_ages") return { value: "all_ages" };
+      if (t === "adults_only") return { value: "adults_only" };
+      const m = /^(\d{1,2})\+$/.exec(t);
+      if (m) return { value: Number(m[1]) >= 18 ? "adults_only" : "all_ages", minAge: Number(m[1]) };
+      throw new Error(`audience is all_ages, adults_only, or a minimum age like 21+`);
+    }
     case "parking": {
       const [kind, cost] = text.toLowerCase().split(/[\s,]+/);
       const kinds = ["lot", "street", "garage", "none", "unknown"];

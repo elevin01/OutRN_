@@ -22,6 +22,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - indoor_outdoor     : { value: "indoor"|"covered"|"outdoor"|"mixed" }
  *  - parking            : { kind: "lot"|"street"|"garage"|"none"|"unknown", cost?: "free"|"paid"|"unknown", note?: string }
  *  - wheelchair         : { value: "yes"|"limited"|"no"|"unknown" }
+ *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
+ *  - audience           : { value: "adults_only"|"all_ages", minAge?: number }  suitability; absent = unknown
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -41,6 +43,8 @@ export const ATTRIBUTES = [
   "indoor_outdoor",
   "parking",
   "wheelchair",
+  "subtype",
+  "audience",
   "crowd_level",
   "queue",
   "open_state",

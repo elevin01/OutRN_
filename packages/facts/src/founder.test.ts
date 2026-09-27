@@ -44,4 +44,11 @@ describe("founder fact values", () => {
     expect(parseFounderValue("parking", '{"kind": "lot", "cost": "free", "note": "village lot behind the station"}', { json: true })).toMatchObject({ kind: "lot", note: "village lot behind the station" });
     expect(parseFounderValue("opening_hours", '{"weekly": [{"weekday": 5, "startMin": 960, "endMin": 1680}]}', { json: true })).toMatchObject({ weekly: [{ weekday: 5 }] });
   });
+
+  it("audience and subtype", () => {
+    expect(parseFounderValue("audience", "21+")).toEqual({ value: "adults_only", minAge: 21 });
+    expect(parseFounderValue("audience", "all ages")).toEqual({ value: "all_ages" });
+    expect(parseFounderValue("subtype", "Mini golf")).toEqual({ value: "mini_golf" });
+    expect(() => parseFounderValue("audience", "grown-ups")).toThrow();
+  });
 });

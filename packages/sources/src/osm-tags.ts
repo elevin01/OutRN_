@@ -41,6 +41,18 @@ export function categoryFromOsmTags(tags: Record<string, string>): Category | nu
   return null;
 }
 
+/** The kind within the category, from the deciding tag ("casino", "miniature_golf", "climbing"). */
+export function subtypeFromOsmTags(tags: Record<string, string>): string | null {
+  for (const key of OSM_CATEGORY_KEYS) {
+    const v = tags[key];
+    if (v && (OSM_TAG_CATEGORIES[key] as Record<string, Category>)[v]) return v;
+  }
+  for (const q of OSM_QUALIFIED_TAGS) {
+    if (tags[q.key] === q.value && new RegExp(q.qualifierPattern).test(tags[q.qualifierKey] ?? "")) return q.qualifierPattern;
+  }
+  return null;
+}
+
 /** The tag that decided the category, as evidence text ("leisure=bowling_alley"). */
 export function categoryEvidence(tags: Record<string, string>): string | null {
   for (const key of OSM_CATEGORY_KEYS) {

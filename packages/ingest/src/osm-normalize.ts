@@ -1,6 +1,6 @@
 import { type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
-import { categoryEvidence, categoryFromOsmTags } from "@outrn/sources";
+import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
 /**
  * OSM tags → controlled category + facts. Pure function so it is trivially testable.
@@ -45,6 +45,10 @@ export function hoursConfidence(sourceUpdatedAt: Date | null, now: Date): number
 }
 
 const OUTDOOR: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint"]);
+/** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
+const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
+/** Kinds that are adults-only by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
+const ADULTS_ONLY_KINDS: Readonly<Record<string, number>> = { casino: 21, nightclub: 21 };
 
 /** OSM parking=* values → the controlled parking kinds (core fact-values). Unmapped values are "unknown", never passed through. */
 const PARKING_KIND: Record<string, "lot" | "street" | "garage" | "none"> = {
@@ -74,6 +78,13 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
 
   if (name) pub("name", { value: name }, `name=${name}`, 0.9);
   if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
+  const subtype = subtypeFromOsmTags(t);
+  if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
+
+  // Suitability: a published min_age wins; otherwise adults-only kinds get an estimate. Everything else stays unknown.
+  const minAge = t["min_age"] && /^\d{1,2}$/.test(t["min_age"].trim()) ? Number(t["min_age"].trim()) : null;
+  if (minAge !== null) pub("audience", { value: minAge >= 18 ? "adults_only" : "all_ages", minAge }, `min_age=${t["min_age"]}`, 0.75);
+  else if (subtype && ADULTS_ONLY_KINDS[subtype]) est("audience", { value: "adults_only", minAge: ADULTS_ONLY_KINDS[subtype] }, 0.7);
 
   // Closure signals are conservative: any disused:/abandoned: key, or hours "off", marks closed.
   const disused = Object.keys(t).some((k) => k.startsWith("disused:") || k.startsWith("abandoned:") || k.startsWith("was:"));
