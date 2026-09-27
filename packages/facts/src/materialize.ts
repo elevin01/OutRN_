@@ -9,16 +9,20 @@ import type { Queryable } from "@outrn/db";
  *  2. Class beats confidence: a published fact always outranks an estimate for the same attribute.
  *  3. Within a class, order by source trust, then confidence, then recency.
  *  4. Agreement counts once per lineage group. Independent agreeing sources raise confidence
- *     as 1 − Π(1 − cᵢ), capped. Disagreement inside the winning class marks conflict and dampens.
+ *     as 1 − Π(1 − cᵢ), capped. Disagreement inside the winning class marks conflict and dampens,
+ *     unless the disagreeing claim is both less trusted and older than the winner: a founder's
+ *     call on 26 Sep corrects a 2020 OSM tag, it does not contest it. An OSM edit made after the
+ *     call, or a claim from an equally trusted source, is still a conflict for review.
  *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim.
  */
 
-export const MATERIALIZE_POLICY_VERSION = "2026-09-26.1";
+export const MATERIALIZE_POLICY_VERSION = "2026-09-27.1";
 
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
 const SOURCE_TRUST: Record<string, number> = {
   firstparty: 0.9,
+  founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
   user_observation: 0.7,
   osm: 0.6,
   foursquare_os: 0.6,
@@ -90,7 +94,8 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
       const winnerHash = contentHash(winner.value);
       const sameClass = list.filter((f) => f.evidence_class === winner.evidence_class);
       const agreeing = sameClass.filter((f) => contentHash(f.value) === winnerHash);
-      const disagreeing = sameClass.length - agreeing.length;
+      const winnerTrust = SOURCE_TRUST[winner.source_id] ?? 0.5;
+      const disagreeing = sameClass.filter((f) => contentHash(f.value) !== winnerHash && ((SOURCE_TRUST[f.source_id] ?? 0.5) >= winnerTrust || recency(f) > recency(winner))).length;
       // One vote per lineage group (or per source when no group is declared).
       const groups = new Map<string, number>();
       for (const f of agreeing) {

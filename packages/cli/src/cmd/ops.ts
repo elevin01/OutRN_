@@ -24,8 +24,8 @@ export function registerOps(program: Command): void {
       );
       console.log(`identity review (${review.rowCount}):`);
       for (const r of review.rows) console.log(`  ${r.venue} [${r.category}]  ≈  ${r.candidate}   score ${r.score}   se=${r.source_entity_id}`);
-      const missing = await db.query<{ name: string; category: string; missing: string[] }>(
-        `select v.canonical_name as name, v.category,
+      const missing = await db.query<{ id: string; name: string; category: string; missing: string[] }>(
+        `select v.id, v.canonical_name as name, v.category,
                 array_remove(array[
                   case when not exists (select 1 from current_facts cf where cf.subject_id = v.id and cf.attribute = 'opening_hours') then 'hours' end,
                   case when not exists (select 1 from current_facts cf where cf.subject_id = v.id and cf.attribute = 'price') then 'price' end
@@ -35,8 +35,9 @@ export function registerOps(program: Command): void {
       );
       const rows = missing.rows.filter((r) => r.missing.length);
       console.log(`\neligible venues missing essentials (${rows.length}):`);
-      for (const r of rows.slice(0, 40)) console.log(`  ${r.name.padEnd(34)} ${r.category.padEnd(12)} missing ${r.missing.join(", ")}`);
+      for (const r of rows.slice(0, 40)) console.log(`  ${r.name.padEnd(34)} ${r.category.padEnd(12)} missing ${r.missing.join(", ").padEnd(12)} ${r.id}`);
       if (rows.length > 40) console.log(`  … ${rows.length - 40} more`);
+      if (rows.length) console.log(`  fill with: outrn facts set <id> opening_hours "Mo-Su 16:00-02:00" --evidence "called 9/27"`);
       const programme = await db.query<{ id: string; name: string; category: string; website: string | null }>(
         `select v.id, v.canonical_name as name, v.category,
                 (select cf.value->>'value' from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id and cf.attribute = 'website') as website

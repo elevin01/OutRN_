@@ -9,6 +9,8 @@ import { registerIngest } from "./cmd/ingest.js";
 import { registerRecommend } from "./cmd/recommend.js";
 import { registerOps } from "./cmd/ops.js";
 import { registerBacktest } from "./cmd/backtest.js";
+import { registerFacts } from "./cmd/facts.js";
+import { registerVenues } from "./cmd/venues.js";
 
 const program = new Command().name("outrn").description("OutRN supply pipeline and recommendation engine").version("0.1.0");
 
@@ -26,6 +28,8 @@ registerIngest(program);
 registerRecommend(program);
 registerOps(program);
 registerBacktest(program);
+registerFacts(program);
+registerVenues(program);
 
 program.hook("postAction", async () => {
   await closeDb();

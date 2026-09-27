@@ -116,6 +116,10 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | `outrn ops merge <from> <into> --reason` / `ops split <sourceEntityId> --reason` | Identity decisions, audited and reversible |
 | `outrn ops override <venueId> boost\|exclude\|review --reason [--weight]` | Founder controls |
 | `outrn firstparty add <venueId> <url> --reason` / `firstparty run [--force]` | Register a venue page; fetch JSON-LD → facts + occurrences |
+| `outrn venues find <text> [--area]` | Venue ids by name, with current hours and their source |
+| `outrn facts set <venue> <attribute> <value> --evidence "called 9/26" [--verified date] [--json]` | Record a fact you checked (published, source `founder`, trust 0.85); `<venue>` is an id or a unique name |
+| `outrn facts show <venue>` | What the engine believes about a venue: value, evidence class, source, confidence, age |
+| `outrn venues add --name --category --lat --lon --evidence [--hours --website --phone --area]` | Add a place OSM lacks; links to the existing venue instead if OSM has it |
 
 ## Layout
 
