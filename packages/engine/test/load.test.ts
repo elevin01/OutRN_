@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { reset } from "@outrn/db";
+import { databaseReachable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { loadCandidates } from "../src/load.js";
 
@@ -13,16 +13,15 @@ const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/ou
 const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 
 let db: pg.Pool;
-let available = true;
+// Decided when the file loads: describe.skipIf reads it before any beforeAll runs.
+const available = await databaseReachable(BASE);
 
 beforeAll(async () => {
+  if (!available) return;
   const admin = new pg.Pool({ connectionString: BASE });
   try {
     const exists = await admin.query("select 1 from pg_database where datname = 'outrn_test'");
     if (!exists.rowCount) await admin.query("create database outrn_test");
-  } catch {
-    available = false;
-    return;
   } finally {
     await admin.end();
   }

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { reset } from "@outrn/db";
+import { databaseReachable, reset } from "@outrn/db";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /**
@@ -17,16 +17,15 @@ const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 const FIXTURE = resolve(__dirname, "../../../fixtures/osm/les-synthetic.json");
 
 let db: pg.Pool;
-let available = true;
+// Decided when the file loads: describe.skipIf reads it before any beforeAll runs.
+const available = await databaseReachable(BASE);
 
 beforeAll(async () => {
+  if (!available) return;
   const admin = new pg.Pool({ connectionString: BASE });
   try {
     const exists = await admin.query("select 1 from pg_database where datname = 'outrn_test'");
     if (!exists.rowCount) await admin.query("create database outrn_test");
-  } catch {
-    available = false;
-    return;
   } finally {
     await admin.end();
   }

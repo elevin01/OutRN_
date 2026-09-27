@@ -14,6 +14,22 @@ export function databaseUrl(): string {
   return url;
 }
 
+/**
+ * Can a Postgres at `url` be reached? For test files: they must decide whether to skip at load time,
+ * because describe.skipIf reads its condition before any beforeAll hook runs.
+ */
+export async function databaseReachable(url: string, timeoutMs = 2000): Promise<boolean> {
+  const probe = new pg.Pool({ connectionString: url, connectionTimeoutMillis: timeoutMs, max: 1 });
+  try {
+    await probe.query("select 1");
+    return true;
+  } catch {
+    return false;
+  } finally {
+    await probe.end().catch(() => undefined);
+  }
+}
+
 export function getDb(): Db {
   if (!pool) {
     pool = new pg.Pool({
