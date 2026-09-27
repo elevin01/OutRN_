@@ -279,6 +279,29 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     now = SAT_EVENING;
   });
 
+  it("pages a snapshot written before contract 1.1, and expires one it cannot read", async () => {
+    now = SAT_EVENING;
+    const first = await search({ areaId: "les", windowMinutes: 180 });
+    const next = { cursor: first.page.nextCursor! } as unknown as RecommendationRequest;
+    const expected = (await search(next)).items.map((i) => i.id);
+    // Exactly what a v1.0 API stored: no origin, originIsDefault or backBy in the resolved request.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'origin' - 'originIsDefault' - 'backBy' where run_id = $1`, [first.requestId]);
+    const upgraded = await search(next);
+    expect(upgraded.items.map((i) => i.id)).toEqual(expected);
+    expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null });
+
+    // A shape nobody can read: expire it and hand back the search to run again.
+    await db.query(`update recommendation_snapshots set resolved = '{}' where run_id = $1`, [first.requestId]);
+    const unreadable = await call("POST", "/v1/recommendations", next);
+    expect(unreadable.status).toBe(410);
+    expect(ApiError.parse(unreadable.json).error).toMatchObject({ code: "CURSOR_EXPIRED", restart: { areaId: "les", windowMinutes: 180 } });
+
+    // Not even the request is readable: start over.
+    await db.query(`update recommendation_snapshots set request = '"garbage"' where run_id = $1`, [first.requestId]);
+    const lost = await call("POST", "/v1/recommendations", next);
+    expect([lost.status, ApiError.parse(lost.json).error.code]).toEqual([400, "CURSOR_INVALID"]);
+  });
+
   it("rejects bad cursors and bad requests with field-level errors", async () => {
     const bad = await call("POST", "/v1/recommendations", { cursor: "garbage" });
     expect([bad.status, ApiError.parse(bad.json).error.code]).toEqual([400, "CURSOR_INVALID"]);

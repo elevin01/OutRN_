@@ -1,5 +1,5 @@
-import type { RecommendationItem, RecommendationRequest, RecommendationResponse, RecommendationsBody, ResolvedRequest } from "@outrn/contracts";
-import type { Queryable, ServiceAreaRow } from "@outrn/db";
+import { RecommendationRequest, RecommendationResponse, type RecommendationItem, type RecommendationsBody, type ResolvedRequest } from "@outrn/contracts";
+import { findArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadCandidates, loadPolicies, MAX_OFFSET, persistRun, pruneRuns, recommend, type Candidate, type Shortlist } from "@outrn/engine";
 import { PAGE_SIZE, SNAPSHOT_RETENTION_HOURS, SNAPSHOT_TTL_MINUTES } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
@@ -132,24 +132,44 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
   return pageOf(snapshot, 0);
 }
 
+/**
+ * Snapshots outlive deploys: a search started before a release is paged after it. Read them through
+ * the contract: upgrade the shapes earlier versions wrote, serve the page only if it then satisfies
+ * today's schema, and otherwise expire the search with a restart. Stored data never causes a 500.
+ */
+async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> {
+  if (!stored || typeof stored !== "object") return stored;
+  const r = stored as Record<string, unknown>;
+  // Contract 1.0 had no origin or backBy: every 1.0 search planned from the area's center, with no back-by.
+  if (!("origin" in r) && !("originIsDefault" in r) && !("backBy" in r) && typeof r["areaId"] === "string") {
+    const area = await findArea(q, r["areaId"]);
+    if (area) return { ...r, origin: { lat: Number(area.lat), lon: Number(area.lon) }, originIsDefault: true, backBy: null };
+  }
+  return stored;
+}
+
 /** Another page of a search: a slice of its frozen list. Never re-runs the engine. */
 export async function page(q: Queryable, cursor: string, opts: ServiceOptions = {}): Promise<RecommendationResponse> {
   const clock = opts.clock ?? (() => new Date());
   const { run, offset } = decodeCursor(cursor);
   const row = (
-    await q.query<{ request: RecommendationRequest; resolved: ResolvedRequest; area: Snapshot["area"]; items: RecommendationItem[]; insufficient: Snapshot["insufficient"]; attributions: string[]; as_of: Date; generated_at: Date; expires_at: Date }>(
+    await q.query<{ request: unknown; resolved: unknown; area: Snapshot["area"]; items: RecommendationItem[]; insufficient: Snapshot["insufficient"]; attributions: string[]; as_of: Date; generated_at: Date; expires_at: Date }>(
       `select request, resolved, area, items, insufficient, attributions, as_of, generated_at, expires_at from recommendation_snapshots where run_id = $1`,
       [run],
     )
   ).rows[0];
   if (!row) throw new ApiProblem("CURSOR_INVALID", "This search is no longer available. Start a new search.");
-  if (row.expires_at <= clock()) {
-    // Plans computed for an instant that has passed. Offer the same search again; keep `at` only if the user chose it.
-    const { at, ...rest } = row.request;
-    const restart: RecommendationRequest = row.resolved.atIsExplicit && at ? { ...rest, at } : rest;
-    throw new ApiProblem("CURSOR_EXPIRED", "These results have expired. Run the search again for current options.", { restart });
-  }
-  return pageOf({ runId: run, request: row.request, resolved: row.resolved, area: row.area, items: row.items, insufficient: row.insufficient, attributions: row.attributions, asOf: row.as_of, generatedAt: row.generated_at, expiresAt: row.expires_at }, offset);
+  const request = RecommendationRequest.safeParse(row.request);
+  if (!request.success) throw new ApiProblem("CURSOR_INVALID", "This search can no longer be continued. Start a new search.");
+  // The stored request carries `at` only when the user chose it, so it restarts as the same search.
+  const expire = () => new ApiProblem("CURSOR_EXPIRED", "These results have expired. Run the search again for current options.", { restart: request.data });
+  if (row.expires_at <= clock()) throw expire();
+  const result = pageOf(
+    { runId: run, request: request.data, resolved: (await upgradeResolved(q, row.resolved)) as ResolvedRequest, area: row.area, items: row.items, insufficient: row.insufficient, attributions: row.attributions, asOf: row.as_of, generatedAt: row.generated_at, expiresAt: row.expires_at },
+    offset,
+  );
+  if (!RecommendationResponse.safeParse(result).success) throw expire();
+  return result;
 }
 
 export async function recommendations(q: Queryable, body: RecommendationsBody, opts: ServiceOptions = {}): Promise<RecommendationResponse> {

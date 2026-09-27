@@ -7,7 +7,8 @@
 process.env["TZ"] = "UTC";
 import pg from "pg";
 import { getArea } from "@outrn/db";
-import { loadCandidates, loadPolicies, recommend, type Candidate, type RequestContext } from "../src/index.js";
+import { loadCandidates, loadPolicies, recommend, type RequestContext } from "../src/index.js";
+import { replicate } from "./replicate.js";
 
 const [areaSlug = "les", atArg = "2026-10-03T22:30:00Z"] = process.argv.slice(2);
 const db = new pg.Pool({ connectionString: process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/outrn" });
@@ -17,11 +18,15 @@ const origin = { lat: area.lat, lon: area.lon };
 const t0 = performance.now();
 const base = await loadCandidates(db, origin, area.travel_mode, now, new Date(now.getTime() + 180 * 60_000));
 console.log(`${area.slug}: loaded ${base.length} candidates in ${(performance.now() - t0).toFixed(0)} ms`);
+if (base.length === 0) {
+  console.error(`No candidates within reach of ${area.slug} at ${now.toISOString()}. Ingest it first (pnpm outrn ingest osm --area ${area.slug}) or pass another area or time.`);
+  await db.end();
+  process.exit(1);
+}
 const policies = await loadPolicies(db);
 const ctx: RequestContext = { origin, now, windowMinutes: 180, mode: area.travel_mode, timezone: area.timezone };
 for (const target of [base.length, 1_000, 3_000, 10_000]) {
-  const cands: Candidate[] = [];
-  for (let i = 0; cands.length < target; i++) for (const c of base) if (cands.length < target) cands.push({ ...c, id: `${c.id}-${i}`, venueId: `${c.venueId}-${i}`, point: { lat: c.point.lat + (i % 9) * 0.0004, lon: c.point.lon + Math.floor(i / 9) * 0.0004 } });
+  const cands = replicate(base, target);
   const cold = performance.now();
   recommend(cands, ctx, policies);
   const coldMs = performance.now() - cold;
