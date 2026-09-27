@@ -59,17 +59,28 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   return ordered;
 }
 
-export function selectShortlist(all: Evaluation[], ctx: RequestContext, opts: { size?: number; offset?: number } = {}): Shortlist {
+/**
+ * Deepest page start served ("More options" 100 times). The engine owns this limit: it clamps the
+ * requested offset to it and never offers a next page beyond it, so a caller that clamps to the same
+ * constant can never be sent back to a page it has already shown.
+ */
+export const MAX_OFFSET = 300;
+
+export function selectShortlist(all: Evaluation[], ctx: RequestContext, opts: { size?: number; offset?: number; maxOffset?: number } = {}): Shortlist {
   const size = opts.size ?? 3;
-  const offset = Math.max(0, opts.offset ?? 0);
+  const maxOffset = opts.maxOffset ?? MAX_OFFSET;
+  const offset = Math.min(Math.max(0, Math.floor(opts.offset ?? 0)), maxOffset);
   const ordered = orderForDisplay(all, ctx);
   const items = ordered.slice(offset, offset + size);
   const fewer = items.length < size && offset === 0;
+  const next = offset + items.length;
+  const hasMore = items.length > 0 && ordered.length > next && next <= maxOffset;
   return {
     items,
     all,
     offset,
-    hasMore: ordered.length > offset + size,
+    hasMore,
+    nextOffset: hasMore ? next : null,
     fewerThanThree: fewer,
     relaxations: fewer ? relaxations(all, ctx) : [],
     engineVersion: ENGINE_VERSION,

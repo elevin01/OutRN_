@@ -62,7 +62,7 @@ export function registerRecommend(program: Command): void {
         console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}`);
       });
       if (s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.join(" · ") || "a different time"}`);
-      if (s.hasMore) console.log(`\nMore options: --offset ${s.offset + s.items.length}`);
+      if (s.nextOffset !== null) console.log(`\nMore options: --offset ${s.nextOffset}`);
       if (o["all"]) {
         console.log("\n— all candidates —");
         const byClass = [...s.all].sort((a, b) => (a.class > b.class ? 1 : a.class < b.class ? -1 : 0));

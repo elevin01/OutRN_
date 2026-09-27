@@ -23,7 +23,7 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
   });
 }
 
-export function recommend(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>, opts: { size?: number; offset?: number } = {}): Shortlist {
+export function recommend(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>, opts: { size?: number; offset?: number; maxOffset?: number } = {}): Shortlist {
   const all = evaluateAll(candidates, ctx, policies);
   return selectShortlist(all, ctx, opts);
 }

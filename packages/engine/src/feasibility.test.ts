@@ -181,6 +181,45 @@ describe("feasibility: fixed-start occurrences", () => {
   });
 });
 
+describe("pagination", () => {
+  const cafes = (n: number) => Array.from({ length: n }, (_, i) => venue({ id: `cafe${String(i).padStart(2, "0")}`, category: "cafe", hours: "Mo-Su 07:00-23:00" }));
+  const x = () => ctx("2026-10-03 15:00", 180, { categories: ["cafe"] });
+
+  /** Follow nextOffset like the "More options" link does; fail on a repeated page. */
+  function walk(n: number, opts: { maxOffset?: number } = {}) {
+    const all = cafes(n);
+    const seen: string[] = [];
+    const offsets: number[] = [];
+    let offset: number | null = 0;
+    while (offset !== null) {
+      if (offsets.includes(offset)) throw new Error(`page at offset ${offset} served twice`);
+      offsets.push(offset);
+      const s = recommend(all, x(), POLICIES, { offset, ...opts });
+      seen.push(...s.items.map((e) => e.candidate.id));
+      offset = s.nextOffset;
+    }
+    return { seen, offsets };
+  }
+
+  it("follows More options past 63 results to the end, each result exactly once", () => {
+    const { seen, offsets } = walk(70);
+    expect(seen).toHaveLength(70);
+    expect(new Set(seen).size).toBe(70);
+    expect(offsets.at(-1)).toBe(69);
+  });
+
+  it("at the page limit it stops offering More options instead of looping back (26 Sep re-review: cap 60)", () => {
+    const { seen, offsets } = walk(70, { maxOffset: 60 });
+    expect(offsets.at(-1)).toBe(60);
+    expect(new Set(seen).size).toBe(seen.length);
+    expect(seen).toHaveLength(63);
+    // A request past the limit is clamped to it and still offers no next page.
+    const beyond = recommend(cafes(70), x(), POLICIES, { offset: 63, maxOffset: 60 });
+    expect(beyond.offset).toBe(60);
+    expect(beyond.nextOffset).toBeNull();
+  });
+});
+
 describe("feasibility: programme venues", () => {
   it("a cinema with no occurrence loaded for the window is ineligible (NO_PROGRAMME), whatever its hours", () => {
     const withHours = one(venue({ category: "cinema", hours: "Mo-Su 12:00-23:30", admission: "ticket" }), ctx("2026-09-26 21:37", 120));

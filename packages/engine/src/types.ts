@@ -174,8 +174,10 @@ export interface Shortlist {
   all: Evaluation[];
   /** Position of items[0] in the display order ("More options" pages by offset). */
   offset: number;
-  /** More eligible options exist after this page. */
+  /** More eligible options exist after this page (and within the served page limit). */
   hasMore: boolean;
+  /** Offset of the next page, or null. Callers link to this rather than computing it. */
+  nextOffset: number | null;
   fewerThanThree: boolean;
   /** Specific relaxations to offer when fewer than three qualify. */
   relaxations: string[];

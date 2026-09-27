@@ -36,7 +36,7 @@ export interface RecommendationOutput {
   fewerThanThree: boolean;
   relaxations: string[];
   offset: number;
-  hasMore: boolean;
+  nextOffset: number | null;
   runId: string;
   durationMs: number;
 }
@@ -89,7 +89,7 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
     fewerThanThree: shortlist.fewerThanThree,
     relaxations: shortlist.relaxations,
     offset: shortlist.offset,
-    hasMore: shortlist.hasMore,
+    nextOffset: shortlist.nextOffset,
     runId,
     durationMs,
   };

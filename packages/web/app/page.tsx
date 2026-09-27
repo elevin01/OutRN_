@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PlaceCard } from "../components/PlaceCard";
 import { SearchForm } from "../components/SearchForm";
 import { areas, runRecommendation } from "../lib/data";
+import { MAX_OFFSET } from "@outrn/engine";
 import { integer, one, type Search } from "../lib/query";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
         company: one(query["company"]),
         category: one(query["category"]),
         at: one(query["at"]) || undefined,
-        offset: integer(query["offset"], 0, 0, 60),
+        offset: integer(query["offset"], 0, 0, MAX_OFFSET),
       })
     : null;
   // "More options" re-runs the same request one page further, pinned to the first page's instant
@@ -68,10 +69,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <div className="card-grid">
             {output.items.map(({ evaluation, copy }, index) => <PlaceCard key={evaluation.candidate.id} evaluation={evaluation} copy={copy} index={output.offset + index} />)}
           </div>
-          {(output.hasMore || output.offset > 0) && (
+          {(output.nextOffset !== null || output.offset > 0) && (
             <div className="more-options">
               {output.offset > 0 && <Link className="text-button" href={pageHref(Math.max(0, output.offset - 3))}>← Previous</Link>}
-              {output.hasMore && <Link className="text-button" href={pageHref(output.offset + output.items.length)}>More options →</Link>}
+              {output.nextOffset !== null && <Link className="text-button" href={pageHref(output.nextOffset)}>More options →</Link>}
             </div>
           )}
           {output.fewerThanThree && (
