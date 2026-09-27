@@ -24,8 +24,11 @@ export interface AppOptions {
   log?: (line: string) => void;
 }
 
-/** Largest request body accepted. A valid request is a few hundred bytes; anything bigger is refused before it is read. */
-export const MAX_BODY_BYTES = 16 * 1024;
+/**
+ * Largest request body accepted; anything bigger is refused before it is read. A search is a few
+ * hundred bytes; the headroom is for id lists (hundreds of UUIDs of seen or dismissed items).
+ */
+export const MAX_BODY_BYTES = 64 * 1024;
 
 /**
  * Whether ops routes may run without a token: only when NODE_ENV says development. An unset or
