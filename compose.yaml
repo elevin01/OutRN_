@@ -28,6 +28,25 @@ services:
       db:
         condition: service_healthy
 
+  web:
+    build:
+      context: .
+    entrypoint: ["pnpm"]
+    command: ["--filter", "@outrn/web", "start", "--hostname", "0.0.0.0"]
+    environment:
+      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    depends_on:
+      db:
+        condition: service_healthy
+
   test:
     build:
       context: .

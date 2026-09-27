@@ -76,6 +76,23 @@ docker compose down
 Set `OUTRN_USER_AGENT` in the shell or a local `.env` before making live source requests. Compose
 uses the named `outrn_postgres-data` volume so application data survives container replacement.
 
+## Consumer web app
+
+The Next.js app runs the recommendation engine on the server, persists each run, and includes the
+three-card consumer view, place details, a Google Maps directions handoff, and an ops browser for
+the full eligible-now decision set and recent recommendation runs.
+
+```bash
+# Database + production web build at http://localhost:3000
+docker compose up --build web
+
+# Or, with Node 22 and pnpm 10 installed locally
+pnpm web:dev
+```
+
+Open `/ops/eligible` to evaluate candidates and inspect recent runs. Each consumer search also links
+to its persisted run so the card selection can be traced without querying the database directly.
+
 `fixtures/osm/*-synthetic.json` are **invented** — see `fixtures/README.md`. They exist so the pipeline
 runs identically offline; the identity-resolution traps in them (node+way duplicate, chain branches,
 museum café, closed bar, six-year-old hours) are the acceptance cases.
