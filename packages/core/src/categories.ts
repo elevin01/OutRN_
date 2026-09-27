@@ -26,6 +26,10 @@ export const CATEGORIES = [
   "attraction",
   "library",
   "bookshop",
+  "bowling",
+  "arcade",
+  "nightclub",
+  "activity",
   "other",
 ] as const;
 
@@ -55,6 +59,10 @@ export const ACTIVITY_OF_CATEGORY: Record<Category, ActivityType> = {
   waterfront: "outdoors",
   viewpoint: "outdoors",
   attraction: "culture",
+  bowling: "entertainment",
+  arcade: "entertainment",
+  activity: "entertainment",
+  nightclub: "drink",
   other: "browse",
 };
 

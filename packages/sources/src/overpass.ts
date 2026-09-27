@@ -2,10 +2,11 @@ import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import type { LatLon } from "@outrn/core";
 import { guardedFetch } from "./fetch.js";
+import { OSM_CATEGORY_KEYS, OSM_QUALIFIED_TAGS, OSM_TAG_CATEGORIES } from "./osm-tags.js";
 
 /**
- * Overpass connector. Builds the same category query the 26 Sep audit used, so counts
- * are comparable, and returns typed elements with a resolved point (nodes have lat/lon;
+ * Overpass connector. Builds the category query from OSM_TAG_CATEGORIES (the same table
+ * normalization maps with) and returns typed elements with a resolved point (nodes have lat/lon;
  * ways and relations come back with `center` because we ask for `out center`).
  *
  * Production never hits the free public instance; OVERPASS_URL points at our own or a
@@ -13,18 +14,12 @@ import { guardedFetch } from "./fetch.js";
  * development use identical code paths.
  */
 
-export const OSM_CATEGORY_FILTERS = {
-  amenity: ["restaurant", "cafe", "bar", "pub", "ice_cream", "theatre", "cinema", "arts_centre", "community_centre", "marketplace", "library"],
-  tourism: ["museum", "gallery", "attraction", "viewpoint"],
-  leisure: ["park", "garden", "nature_reserve"],
-  shop: ["books"],
-} as const;
-
 export function buildAreaQuery(center: LatLon, radiusM: number, opts: { timeoutSec?: number } = {}): string {
   const around = `(around:${Math.round(radiusM)},${center.lat.toFixed(5)},${center.lon.toFixed(5)})`;
-  const clauses = Object.entries(OSM_CATEGORY_FILTERS)
-    .map(([k, vals]) => `  nwr["name"]["${k}"~"^(${vals.join("|")})$"]${around};`)
-    .join("\n");
+  const clauses = [
+    ...OSM_CATEGORY_KEYS.map((k) => `  nwr["name"]["${k}"~"^(${Object.keys(OSM_TAG_CATEGORIES[k]).join("|")})$"]${around};`),
+    ...OSM_QUALIFIED_TAGS.map((q) => `  nwr["name"]["${q.key}"="${q.value}"]["${q.qualifierKey}"~"${q.qualifierPattern}"]${around};`),
+  ].join("\n");
   return `[out:json][timeout:${opts.timeoutSec ?? 180}];\n(\n${clauses}\n);\nout center tags meta;`;
 }
 

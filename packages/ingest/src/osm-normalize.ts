@@ -1,5 +1,6 @@
 import { type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
+import { categoryEvidence, categoryFromOsmTags } from "@outrn/sources";
 
 /**
  * OSM tags → controlled category + facts. Pure function so it is trivially testable.
@@ -31,21 +32,9 @@ export interface OsmNormalized {
   facts: Omit<FactInput, "subjectId" | "subjectKind" | "fetchedAt" | "ingestionRunId">[];
 }
 
-const AMENITY: Record<string, Category> = {
-  restaurant: "restaurant", cafe: "cafe", bar: "bar", pub: "bar", ice_cream: "dessert",
-  theatre: "theatre", cinema: "cinema", arts_centre: "arts_centre", community_centre: "community",
-  marketplace: "market", library: "library", nightclub: "live_music", biergarten: "bar", food_court: "restaurant",
-};
-const TOURISM: Record<string, Category> = { museum: "museum", gallery: "gallery", attraction: "attraction", viewpoint: "viewpoint" };
-const LEISURE: Record<string, Category> = { park: "park", garden: "garden", nature_reserve: "park" };
-const SHOP: Record<string, Category> = { books: "bookshop" };
-
+/** Tag → category lives in @outrn/sources (OSM_TAG_CATEGORIES) so the Overpass query can never drift from it. */
 export function categoryFromTags(tags: Record<string, string>): Category | null {
-  if (tags["amenity"] && AMENITY[tags["amenity"]]) return AMENITY[tags["amenity"]]!;
-  if (tags["tourism"] && TOURISM[tags["tourism"]]) return TOURISM[tags["tourism"]]!;
-  if (tags["leisure"] && LEISURE[tags["leisure"]]) return LEISURE[tags["leisure"]]!;
-  if (tags["shop"] && SHOP[tags["shop"]]) return SHOP[tags["shop"]]!;
-  return null;
+  return categoryFromOsmTags(tags);
 }
 
 /** 0.62 for a fresh edit, decaying ~0.06 per year of age, floor 0.3. */
@@ -72,7 +61,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     facts.push({ ...base, attribute, value, evidence: null, confidence, evidenceClass: "estimate" });
 
   if (name) pub("name", { value: name }, `name=${name}`, 0.9);
-  if (category) pub("category", { value: category }, `${Object.entries(t).find(([k]) => ["amenity", "tourism", "leisure", "shop"].includes(k))?.join("=")}`, 0.8);
+  if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
 
   // Closure signals are conservative: any disused:/abandoned: key, or hours "off", marks closed.
   const disused = Object.keys(t).some((k) => k.startsWith("disused:") || k.startsWith("abandoned:") || k.startsWith("was:"));
@@ -99,17 +88,21 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // Admission
   if (t["reservation"] === "required") pub("admission", { requirement: "reservation" }, "reservation=required", 0.7);
   else if (t["fee"] === "yes" && category && ["museum", "attraction", "gallery", "garden"].includes(category)) pub("admission", { requirement: "ticket" }, "fee=yes", 0.6);
+  else if (t["leisure"] === "escape_game") est("admission", { requirement: "reservation" }, 0.6); // escape rooms are booked by the slot
+  else if (t["amenity"] === "karaoke_box") est("admission", { requirement: "reservation_available" }, 0.45);
   else if (category && ["cafe", "bar", "dessert", "bookshop", "library", "park", "viewpoint", "waterfront", "market", "community"].includes(category)) est("admission", { requirement: "walk_in" }, 0.55);
+  else if (category && ["bowling", "arcade", "nightclub", "activity"].includes(category)) est("admission", { requirement: "walk_in" }, 0.45);
   else if (category === "restaurant") est("admission", { requirement: t["reservation"] === "yes" || t["reservation"] === "recommended" ? "reservation_available" : "walk_in" }, 0.45);
   else if (category && ["theatre", "cinema", "live_music"].includes(category)) est("admission", { requirement: "ticket" }, 0.6);
   else est("admission", { requirement: "unknown" }, 0.2);
 
-  // Price: only what the tags actually say.
+  // Price: only what the tags actually say. Beaches are not assumed free (many are resident-permit or paid).
   if (t["fee"] === "no") pub("price", { currency: "USD", free: true, basis: "per_person" }, "fee=no", 0.7);
   else if (t["fee"] === "yes") pub("price", { currency: "USD", basis: "per_person", unknown: true, paid: true }, "fee=yes", 0.6);
-  else if (category && OUTDOOR.has(category)) est("price", { currency: "USD", free: true, basis: "per_person" }, 0.6);
+  else if (category && OUTDOOR.has(category) && t["natural"] !== "beach") est("price", { currency: "USD", free: true, basis: "per_person" }, 0.6);
 
-  if (category) est("indoor_outdoor", { value: OUTDOOR.has(category) ? "outdoor" : t["outdoor_seating"] === "yes" ? "mixed" : "indoor" }, 0.6);
+  const outdoor = (category && OUTDOOR.has(category)) || t["leisure"] === "miniature_golf";
+  if (category) est("indoor_outdoor", { value: outdoor ? "outdoor" : t["outdoor_seating"] === "yes" ? "mixed" : "indoor" }, 0.6);
 
   if (t["parking"] || t["amenity"] === "parking") pub("parking", { kind: t["parking"] ?? "lot", cost: t["parking:fee"] === "no" ? "free" : t["parking:fee"] === "yes" ? "paid" : "unknown" }, `parking=${t["parking"] ?? "yes"}`, 0.6);
 

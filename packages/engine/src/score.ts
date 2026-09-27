@@ -16,9 +16,9 @@ const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
 };
 const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, string[]> = {
   alone: ["cafe", "bookshop", "library", "gallery", "museum", "park", "cinema"],
-  date: ["restaurant", "bar", "viewpoint", "waterfront", "cinema", "live_music", "gallery"],
-  friends: ["bar", "restaurant", "live_music", "market", "park", "theatre"],
-  family: ["park", "garden", "museum", "market", "dessert", "attraction", "library"],
+  date: ["restaurant", "bar", "viewpoint", "waterfront", "cinema", "live_music", "gallery", "bowling", "activity"],
+  friends: ["bar", "restaurant", "live_music", "market", "park", "theatre", "bowling", "arcade", "nightclub", "activity"],
+  family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
 
 export function scoreCandidate(c: Candidate, ctx: RequestContext, f: FeasibilityOutcome, policy: CategoryPolicy, maxTravel: number): { scores: Scores; extraReasons: ReasonCode[] } {

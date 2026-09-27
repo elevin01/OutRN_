@@ -55,4 +55,26 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant", reservation: "required" }), "admission")).toMatchObject({ evidenceClass: "published", value: { requirement: "reservation" } });
     expect(fact(rec({ name: "M", tourism: "museum", fee: "yes" }), "admission")).toMatchObject({ value: { requirement: "ticket" } });
   });
+
+  it("activity venues map into the widened vocabulary (26 Sep: bowling alleys and nightclubs were invisible)", () => {
+    expect(categoryFromTags({ leisure: "bowling_alley" })).toBe("bowling");
+    expect(categoryFromTags({ leisure: "amusement_arcade" })).toBe("arcade");
+    expect(categoryFromTags({ amenity: "nightclub" })).toBe("nightclub");
+    expect(categoryFromTags({ amenity: "music_venue" })).toBe("live_music");
+    for (const tags of [{ leisure: "escape_game" }, { leisure: "miniature_golf" }, { leisure: "ice_rink" }, { amenity: "karaoke_box" }, { amenity: "casino" }]) expect(categoryFromTags(tags)).toBe("activity");
+    expect(categoryFromTags({ leisure: "sports_centre", sport: "climbing" })).toBe("activity");
+    expect(categoryFromTags({ leisure: "sports_centre", sport: "soccer" })).toBeNull();
+    expect(categoryFromTags({ tourism: "zoo" })).toBe("attraction");
+    expect(categoryFromTags({ tourism: "aquarium" })).toBe("attraction");
+    expect(categoryFromTags({ natural: "beach" })).toBe("waterfront");
+    expect(categoryFromTags({ amenity: "events_venue" })).toBeNull(); // banquet halls: deliberately out
+  });
+
+  it("activity venues get admission estimates by kind; beaches are not assumed free", () => {
+    expect(fact(rec({ name: "Homefield Bowl", leisure: "bowling_alley" }), "admission")).toMatchObject({ evidenceClass: "estimate", value: { requirement: "walk_in" } });
+    expect(fact(rec({ name: "Room 13", leisure: "escape_game" }), "admission")).toMatchObject({ evidenceClass: "estimate", value: { requirement: "reservation" } });
+    expect(fact(rec({ name: "Wall", leisure: "sports_centre", sport: "climbing" }), "category")).toMatchObject({ value: { value: "activity" }, evidence: "leisure=sports_centre + sport=climbing" });
+    expect(fact(rec({ name: "Beach", natural: "beach" }), "price")).toBeUndefined();
+    expect(fact(rec({ name: "Beach", natural: "beach" }), "indoor_outdoor")).toMatchObject({ value: { value: "outdoor" } });
+  });
 });
