@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { databaseReachable, reset } from "@outrn/db";
+import { testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { loadCandidates } from "../src/load.js";
 
@@ -14,7 +14,7 @@ const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 
 let db: pg.Pool;
 // Decided when the file loads: describe.skipIf reads it before any beforeAll runs.
-const available = await databaseReachable(BASE);
+const available = await testDatabaseAvailable(BASE);
 
 beforeAll(async () => {
   if (!available) return;

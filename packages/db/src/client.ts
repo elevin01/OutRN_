@@ -30,6 +30,17 @@ export async function databaseReachable(url: string, timeoutMs = 2000): Promise<
   }
 }
 
+/**
+ * For DB-backed test files: is the database there? Locally, no database means those tests skip.
+ * With OUTRN_REQUIRE_DB set (CI's database job) it is an error instead, so a broken service
+ * container can never turn the suite green by skipping it.
+ */
+export async function testDatabaseAvailable(url: string): Promise<boolean> {
+  const ok = await databaseReachable(url);
+  if (!ok && process.env["OUTRN_REQUIRE_DB"]) throw new Error(`OUTRN_REQUIRE_DB is set but no database is reachable at ${url}`);
+  return ok;
+}
+
 export function getDb(): Db {
   if (!pool) {
     pool = new pg.Pool({

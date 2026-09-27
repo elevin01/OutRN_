@@ -18,13 +18,15 @@
     "outrn": "tsx --conditions=outrn-src src/main.ts"
   },
   "dependencies": {
+    "@outrn/api": "workspace:*",
+    "@outrn/contracts": "workspace:*",
     "@outrn/core": "workspace:*",
     "@outrn/db": "workspace:*",
-    "@outrn/sources": "workspace:*",
-    "@outrn/ingest": "workspace:*",
-    "@outrn/identity": "workspace:*",
-    "@outrn/facts": "workspace:*",
     "@outrn/engine": "workspace:*",
+    "@outrn/facts": "workspace:*",
+    "@outrn/identity": "workspace:*",
+    "@outrn/ingest": "workspace:*",
+    "@outrn/sources": "workspace:*",
     "commander": "^12.1.0"
   },
   "bin": {

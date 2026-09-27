@@ -1,0 +1,41 @@
+{
+  "name": "@outrn/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The backend's HTTP boundary: validates requests, runs the engine, maps results to @outrn/contracts, serves pages from frozen snapshots. Also serves the fixtures as a mock.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "outrn-src": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "dev": "tsx watch --conditions=outrn-src src/bin/server.ts",
+    "dev:mock": "tsx --conditions=outrn-src src/bin/mock.ts",
+    "start": "tsx --conditions=outrn-src src/bin/server.ts",
+    "mock": "tsx --conditions=outrn-src src/bin/mock.ts",
+    "fixtures": "tsx --conditions=outrn-src scripts/fixtures.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "@outrn/contracts": "workspace:*",
+    "@outrn/core": "workspace:*",
+    "@outrn/db": "workspace:*",
+    "@outrn/engine": "workspace:*",
+    "@outrn/facts": "workspace:*",
+    "hono": "^4.13.9",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@outrn/ingest": "workspace:*",
+    "pg": "^8.13.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.0"
+  }
+}
