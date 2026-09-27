@@ -11,6 +11,7 @@ import {
   persistRun,
   recommend,
   type Evaluation,
+  type FactRecord,
   type RequestContext,
 } from "@outrn/engine";
 
@@ -102,7 +103,7 @@ export interface PlaceDetail {
   lon: number;
   timezone: string;
   publishState: string;
-  facts: Record<string, { value: unknown; confidence: number; evidenceClass: string; validUntil: string | null }>;
+  facts: Record<string, FactRecord & { validUntil: string | null }>;
   tags: Record<string, string>;
 }
 
@@ -116,7 +117,7 @@ export async function place(id: string): Promise<PlaceDetail | null> {
       lon: number;
       timezone: string;
       publish_state: string;
-      facts: Record<string, { value: unknown; confidence: string; evidenceClass: string; validUntil: string | null }>;
+      facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; validUntil: string | null; sources: string[]; conflict: boolean; asOf: string | null; fetchedAt: string | null }>;
       tags: Record<string, string> | null;
     }>(
       `select v.id, v.canonical_name, v.category,
@@ -124,7 +125,10 @@ export async function place(id: string): Promise<PlaceDetail | null> {
               v.timezone, v.publish_state,
               coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object(
                 'value', cf.value, 'confidence', cf.confidence,
-                'evidenceClass', cf.evidence_class, 'validUntil', cf.valid_until))
+                'evidenceClass', cf.evidence_class, 'validUntil', cf.valid_until,
+                'sources', cf.source_ids, 'conflict', cf.conflict,
+                'asOf', (select max(coalesce(f.observed_at, f.source_updated_at)) from facts f where f.id = any(cf.input_fact_ids)),
+                'fetchedAt', (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids))))
                 from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) facts,
               (select se.raw->'tags' from entity_links el join source_entities se on se.id = el.source_entity_id
                 where el.venue_id = v.id and el.superseded_by is null order by el.decided_at desc limit 1) tags
@@ -141,7 +145,12 @@ export async function place(id: string): Promise<PlaceDetail | null> {
     lon: Number(row.lon),
     timezone: row.timezone,
     publishState: row.publish_state,
-    facts: Object.fromEntries(Object.entries(row.facts).map(([key, fact]) => [key, { ...fact, confidence: Number(fact.confidence) }])),
+    facts: Object.fromEntries(
+      Object.entries(row.facts).map(([key, fact]) => [
+        key,
+        { ...fact, confidence: Number(fact.confidence), sources: fact.sources ?? [], asOf: fact.asOf ? new Date(fact.asOf) : null, fetchedAt: fact.fetchedAt ? new Date(fact.fetchedAt) : null },
+      ]),
+    ),
     tags: row.tags ?? {},
   };
 }
