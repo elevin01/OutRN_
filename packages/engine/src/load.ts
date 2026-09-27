@@ -126,7 +126,7 @@ export function sunsetAt(p: LatLon, date: Date): Date | null {
 
 /** Persist a run for replay and the debug view. Context is coarsened: no precise coordinates. */
 export async function persistRun(q: Queryable, areaId: string | null, ctx: RequestContext, s: Shortlist, durationMs: number): Promise<string> {
-  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) } };
+  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset };
   const results = s.all.map((e) => ({
     item_kind: e.candidate.kind,
     item_id: e.candidate.id,

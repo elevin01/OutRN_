@@ -21,6 +21,9 @@ const POLICIES = new Map<string, CategoryPolicy>([
   ["park", { category: "park", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "outdoors" }],
   ["live_music", { category: "live_music", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["bookshop", { category: "bookshop", minUsefulMinutes: 30, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" }],
+  ["dessert", { category: "dessert", minUsefulMinutes: 25, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "food" }],
+  ["gallery", { category: "gallery", minUsefulMinutes: 40, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: 30, activityType: "culture" }],
+  ["cinema", { category: "cinema", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
 ]);
 
 let n = 0;
@@ -270,5 +273,58 @@ describe("selection: diversity and fewer than three", () => {
     const ids = s.items.map((e) => e.candidate.id);
     expect(ids).toContain("m");
     expect(ids).not.toContain("mc");
+  });
+
+  // 26 Sep 2026, 9:37 pm, Bronxville: Ernie's (Ready bar) took "drink", every other Ready bar was
+  // skipped for diversity, and a Check-first cinema took the third slot.
+  const saturdayNight = () => [
+    venue({ id: "ernies", category: "bar", hours: "Tu-Sa 16:30-24:00" }),
+    venue({ id: "growlers", category: "bar", hours: "Mo-Fr 16:00-24:00; Sa-Su 11:00-24:00" }),
+    venue({ id: "haagen", category: "dessert", hours: "Su-Th 11:00-22:00; Fr-Sa 11:00-23:00" }),
+    { ...venue({ id: "picturehouse", category: "cinema", hours: null, admission: "ticket" }), hasLandmarkId: true },
+  ];
+
+  it("Bronxville 26 Sep regression: the second Ready bar shows, the Check-first cinema does not", () => {
+    const s = recommend(saturdayNight(), ctx("2026-09-26 21:37", 120), POLICIES);
+    const ids = s.items.map((e) => e.candidate.id);
+    expect(ids).toHaveLength(3);
+    expect(ids).toEqual(expect.arrayContaining(["ernies", "growlers", "haagen"]));
+    expect(ids).not.toContain("picturehouse");
+    expect(s.items.every((e) => e.class === "ready")).toBe(true);
+  });
+
+  it("class beats diversity: a Check-first venue with a fresh activity type never displaces a Ready one", () => {
+    const cands = [
+      venue({ id: "bar1", category: "bar", hours: "Mo-Su 16:00-24:00" }),
+      venue({ id: "bar2", category: "bar", hours: "Mo-Su 16:00-24:00" }),
+      venue({ id: "sweet", category: "dessert", hours: "Mo-Su 11:00-23:00" }),
+      { ...venue({ id: "gal", category: "gallery", hours: null }), hasLandmarkId: true },
+    ];
+    const s = recommend(cands, ctx("2026-09-26 21:37", 120), POLICIES);
+    const ids = s.items.map((e) => e.candidate.id);
+    expect(ids.sort()).toEqual(["bar1", "bar2", "sweet"]);
+    // Within Ready, distinct activity types still come first: the dessert place is not pushed out by a third bar.
+    const three = recommend([...cands, venue({ id: "bar3", category: "bar", hours: "Mo-Su 16:00-24:00" })], ctx("2026-09-26 21:37", 120), POLICIES);
+    expect(three.items.map((e) => e.candidate.id)).toContain("sweet");
+  });
+
+  it("More options pages through the same ordering by offset", () => {
+    const cands = [
+      venue({ id: "bar1", category: "bar", hours: "Mo-Su 16:00-24:00" }),
+      venue({ id: "bar2", category: "bar", hours: "Mo-Su 16:00-24:00" }),
+      venue({ id: "sweet", category: "dessert", hours: "Mo-Su 11:00-23:00" }),
+      venue({ id: "bar3", category: "bar", hours: "Mo-Su 16:00-24:00" }),
+      venue({ id: "gal", category: "gallery", hours: null }),
+    ];
+    const x = ctx("2026-09-26 21:37", 120);
+    const first = recommend(cands, x, POLICIES);
+    const second = recommend(cands, x, POLICIES, { offset: 3 });
+    expect(first.hasMore).toBe(true);
+    expect(second.offset).toBe(3);
+    expect(second.items.map((e) => e.candidate.id)).toEqual(["bar3", "gal"]);
+    expect(second.hasMore).toBe(false);
+    expect(second.fewerThanThree).toBe(false); // a short last page is not a supply failure
+    const seen = new Set([...first.items, ...second.items].map((e) => e.candidate.id));
+    expect(seen.size).toBe(5);
   });
 });

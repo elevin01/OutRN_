@@ -24,7 +24,7 @@ export function PlaceCard({ evaluation, copy, index }: Props) {
   return (
     <article className="place-card">
       <div className="card-topline">
-        <span className="card-number">0{index + 1}</span>
+        <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
         <span className={`status-pill ${evaluation.class}`}>{copy.cta}</span>
       </div>
       <div>

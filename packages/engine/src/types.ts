@@ -161,6 +161,10 @@ export interface Shortlist {
   items: Evaluation[];
   /** Everything evaluated, for the "eligible right now" debug view. */
   all: Evaluation[];
+  /** Position of items[0] in the display order ("More options" pages by offset). */
+  offset: number;
+  /** More eligible options exist after this page. */
+  hasMore: boolean;
   fewerThanThree: boolean;
   /** Specific relaxations to offer when fewer than three qualify. */
   relaxations: string[];

@@ -95,6 +95,7 @@ nav a:hover { border-color: var(--ink); }
 .card-actions { align-items: center; border-top: 1px solid var(--line); display: flex; justify-content: space-between; margin-top: 30px; padding-top: 18px; }
 .text-button { font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .map-button { background: var(--moss); border-radius: 3px; color: white; font-size: 11px; font-weight: 700; padding: 12px 14px; }
+.more-options { display: flex; gap: 28px; justify-content: flex-end; margin: 28px auto 0; max-width: 1280px; }
 .honest-empty { background: var(--cream); display: flex; gap: 14px; margin: 72px auto 0; max-width: 1280px; padding: 18px 22px; }
 
 .principles { border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 clamp(24px, 6vw, 92px) 100px; }

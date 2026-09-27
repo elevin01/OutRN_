@@ -20,8 +20,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
         mood: one(query["mood"]),
         company: one(query["company"]),
         category: one(query["category"]),
+        at: one(query["at"]) || undefined,
+        offset: integer(query["offset"], 0, 0, 60),
       })
     : null;
+  // "More options" re-runs the same request one page further, pinned to the first page's instant
+  // so the ordering cannot shift underneath the user between pages.
+  const pageHref = (offset: number) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(defaults)) if (value !== undefined && key !== "offset" && key !== "at") params.set(key, value);
+    if (output) params.set("at", output.context.now.toISOString());
+    if (offset > 0) params.set("offset", String(offset));
+    return `/?${params.toString()}`;
+  };
 
   return (
     <>
@@ -50,13 +61,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <div className="results-heading">
             <div>
               <p className="eyebrow">{output.area.name} · {output.context.windowMinutes} minutes</p>
-              <h2>{output.items.length === 3 ? "Three ways out" : `${output.items.length} honest option${output.items.length === 1 ? "" : "s"}`}</h2>
+              <h2>{output.offset > 0 ? "More ways out" : output.items.length === 3 ? "Three ways out" : `${output.items.length} honest option${output.items.length === 1 ? "" : "s"}`}</h2>
             </div>
             <Link className="run-link" href={`/ops/runs/${output.runId}`}>Inspect run <span>{output.runId.slice(0, 8)}</span></Link>
           </div>
           <div className="card-grid">
-            {output.items.map(({ evaluation, copy }, index) => <PlaceCard key={evaluation.candidate.id} evaluation={evaluation} copy={copy} index={index} />)}
+            {output.items.map(({ evaluation, copy }, index) => <PlaceCard key={evaluation.candidate.id} evaluation={evaluation} copy={copy} index={output.offset + index} />)}
           </div>
+          {(output.hasMore || output.offset > 0) && (
+            <div className="more-options">
+              {output.offset > 0 && <Link className="text-button" href={pageHref(Math.max(0, output.offset - 3))}>← Previous</Link>}
+              {output.hasMore && <Link className="text-button" href={pageHref(output.offset + output.items.length)}>More options →</Link>}
+            </div>
+          )}
           {output.fewerThanThree && (
             <div className="honest-empty">
               <strong>We won’t pad the answer.</strong>

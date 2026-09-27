@@ -22,6 +22,8 @@ export interface RecommendationInput {
   company?: string | undefined;
   category?: string | undefined;
   at?: string | undefined;
+  /** "More options": how many options to skip in the display order. */
+  offset?: number | undefined;
 }
 
 export interface RecommendationOutput {
@@ -31,6 +33,8 @@ export interface RecommendationOutput {
   all: Evaluation[];
   fewerThanThree: boolean;
   relaxations: string[];
+  offset: number;
+  hasMore: boolean;
   runId: string;
   durationMs: number;
 }
@@ -68,7 +72,7 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
     loadCandidates(db, context.origin, mode, now, windowEnd),
     loadPolicies(db),
   ]);
-  const shortlist = recommend(candidates, context, policies);
+  const shortlist = recommend(candidates, context, policies, { offset: input.offset ?? 0 });
   const durationMs = Date.now() - started;
   const runId = await persistRun(db, area.id, context, shortlist, durationMs);
   return {
@@ -78,6 +82,8 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
     all: shortlist.all,
     fewerThanThree: shortlist.fewerThanThree,
     relaxations: shortlist.relaxations,
+    offset: shortlist.offset,
+    hasMore: shortlist.hasMore,
     runId,
     durationMs,
   };

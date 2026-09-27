@@ -20,6 +20,7 @@ export function registerRecommend(program: Command): void {
     .option("--company <alone|date|friends|family>")
     .option("--categories <list>", "comma-separated categories to narrow to")
     .option("--wheelchair", "require wheelchair access")
+    .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
     .option("--all", "print every candidate with its class and exclusion reason")
     .option("--no-persist", "do not record the run")
     .action(async (o: Record<string, unknown>) => {
@@ -39,7 +40,7 @@ export function registerRecommend(program: Command): void {
       const t0 = Date.now();
       const windowEnd = new Date(now.getTime() + (ctx.windowMinutes ?? 180) * 60_000);
       const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes), loadPolicies(db)]);
-      const s = recommend(candidates, ctx, policies);
+      const s = recommend(candidates, ctx, policies, { offset: o["offset"] as number });
       const ms = Date.now() - t0;
       const runId = o["persist"] === false ? null : await persistRun(db, area?.id ?? null, ctx, s, ms);
 
@@ -50,13 +51,14 @@ export function registerRecommend(program: Command): void {
       console.log("");
       s.items.forEach((e, i) => {
         const copy = explain(e, ctx.timezone);
-        console.log(`${i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
+        console.log(`${s.offset + i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
         console.log(`   ${copy.factLine}`);
         if (copy.sentence) console.log(`   ${copy.sentence}`);
         if (copy.caveat) console.log(`   ${copy.caveat}`);
         console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}`);
       });
       if (s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.join(" · ") || "a different time"}`);
+      if (s.hasMore) console.log(`\nMore options: --offset ${s.offset + s.items.length}`);
       if (o["all"]) {
         console.log("\n— all candidates —");
         const byClass = [...s.all].sort((a, b) => (a.class > b.class ? 1 : a.class < b.class ? -1 : 0));
