@@ -62,6 +62,18 @@ one frozen list (`requestId`), so nothing reshuffles. Pages expire after 20 minu
 (`expiresAt`); the API then answers `CURSOR_EXPIRED` with `restart`, which the home page turns into
 a fresh search.
 
+## Available from the API, not used by the screens yet
+
+Contract 1.1 accepts these on a search. Each is optional, so adopt them when the design is ready:
+
+- `origin`: the device's location (for example, from `navigator.geolocation`). Travel is then
+  planned from where the user is instead of the neighborhood's center, which matters most in big
+  areas like the Bronx and Yonkers. The API rounds it to about 100 m and rejects a point outside
+  the chosen area.
+- `backBy`: "be home by 11". The return trip counts against the plan.
+- `seenIds` / `dismissedIds`: items this device already showed (ranked lower) or the user
+  dismissed (never shown). Keep them in local storage; send up to 200 of each.
+
 ## Rules
 
 - Import only `@outrn/contracts` from the workspace. Engine, db, api and ingestion packages are

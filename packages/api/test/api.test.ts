@@ -61,7 +61,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.0.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.1.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -149,6 +149,70 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(n).toBeGreaterThan(3);
     expect(new Set(seen).size).toBe(seen.length);
     expect(await runCount()).toBe(before);
+  });
+
+  it("plans from the device's location (rounded, inside the area) and stores only the rounded point", async () => {
+    now = SAT_EVENING;
+    const fromCenter = await search({ areaId: "les", windowMinutes: 180 });
+    expect(fromCenter.request).toMatchObject({ originIsDefault: true, origin: { lat: 40.7185, lon: -73.988 }, backBy: null });
+    const device = { lat: 40.714567891, lon: -73.99123456 };
+    const fromDevice = await search({ areaId: "les", windowMinutes: 180, origin: device });
+    expect(fromDevice.request).toMatchObject({ originIsDefault: false, origin: { lat: 40.715, lon: -73.991 } });
+    const stored = (await db.query<{ request: { origin?: unknown } }>("select request from recommendation_snapshots where run_id = $1", [fromDevice.requestId])).rows[0]!;
+    expect(stored.request.origin).toEqual({ lat: 40.715, lon: -73.991 });
+    // Same venue, different start: travel differs for at least one shared item.
+    const all = async (first: RecommendationResponse) => {
+      const items = [...first.items];
+      let p = first;
+      while (p.page.nextCursor) {
+        p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+        items.push(...p.items);
+      }
+      return new Map(items.map((i) => [i.id, i.timing.travel.minutes]));
+    };
+    const a = await all(fromCenter);
+    const b = await all(fromDevice);
+    expect([...b].some(([id, minutes]) => a.has(id) && a.get(id) !== minutes)).toBe(true);
+    // Bronxville is not on the Lower East Side.
+    const far = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, origin: { lat: 40.941, lon: -73.835 } });
+    expect(far.status).toBe(400);
+    expect(ApiError.parse(far.json).error.fields?.[0]?.path).toBe("origin");
+  });
+
+  it("honours be-back-by, dismissals and recently seen items", async () => {
+    now = SAT_EVENING;
+    const backBy = new Date(SAT_EVENING.getTime() + 100 * 60_000);
+    const back = await search({ areaId: "les", windowMinutes: 180, backBy: backBy.toISOString() });
+    expect(back.request.backBy).toBe(backBy.toISOString());
+    let p = back;
+    for (;;) {
+      for (const item of p.items) expect(Date.parse(item.timing.finishBy), item.name).toBeLessThanOrEqual(backBy.getTime());
+      if (!p.page.nextCursor) break;
+      p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+    }
+    const early = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, backBy: SAT_EVENING.toISOString() });
+    expect(ApiError.parse(early.json).error.fields?.[0]?.path).toBe("backBy");
+
+    const plain = await search({ areaId: "les", windowMinutes: 180 });
+    const first = plain.items[0]!;
+    const dismissed = await search({ areaId: "les", windowMinutes: 180, dismissedIds: [first.id] });
+    const ids: string[] = [];
+    for (let q = dismissed; ; ) {
+      ids.push(...q.items.map((i) => i.id));
+      if (!q.page.nextCursor) break;
+      q = await search({ cursor: q.page.nextCursor } as unknown as RecommendationRequest);
+    }
+    expect(ids).not.toContain(first.id);
+    const seen = await search({ areaId: "les", windowMinutes: 180, seenIds: [first.id] });
+    expect(seen.items[0]!.id).not.toBe(first.id);
+  });
+
+  it("knows when the sun sets: outdoor places get the sunset window before dusk", async () => {
+    now = new Date("2026-10-03T21:50:00Z"); // 5:50pm; sunset ~6:36pm
+    const page = await search({ areaId: "les", windowMinutes: 120, categories: ["park"] });
+    const reasons = page.items.flatMap((i) => i.reasons.map((r) => r.code));
+    expect(reasons).toContain("SUNSET_WINDOW");
+    now = SAT_EVENING;
   });
 
   it("keeps a search's pages stable while the data underneath changes", async () => {

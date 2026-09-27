@@ -1,5 +1,5 @@
 import SunCalc from "suncalc";
-import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
+import { DEFAULT_MAX_TRAVEL_MINUTES, fromLocal, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
 import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
@@ -152,6 +152,11 @@ export async function loadParkingBuffer(q: Queryable, areaSlug: string, now: Dat
 export function sunsetAt(p: LatLon, date: Date): Date | null {
   const t = SunCalc.getTimes(date, p.lat, p.lon).sunset;
   return t && !Number.isNaN(t.getTime()) ? t : null;
+}
+
+/** Sunset on the local calendar day of `at` (at 10pm in New York the UTC day is already tomorrow). */
+export function sunsetOn(p: LatLon, at: Date, timezone: string): Date | null {
+  return sunsetAt(p, fromLocal(localClock(at, timezone).date, 12 * 60, timezone));
 }
 
 /** Persist a run for replay and the debug view. Context is coarsened: no precise coordinates. */

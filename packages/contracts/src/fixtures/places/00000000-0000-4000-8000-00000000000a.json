@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-00000000000a",
-  "name": "Ludlow Kitchen",
+  "name": "Delancey Coffee",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "cafe",
+    "label": "Cafe"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.712607,
-    "lon": -73.984996
+    "lat": 40.724198,
+    "lon": -73.987295
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T02:00:00.000Z",
+    "closesAt": "2026-10-04T00:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 10pm"
+    "summary": "Open now until 8pm"
   },
   "price": {
     "kind": "unknown"
@@ -27,8 +27,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:30-15:00,17:00-22:00",
-      "detail": "Open now until 10pm",
+      "value": "Mo-Su 08:00-20:00",
+      "detail": "Open now until 8pm",
       "provenance": {
         "sources": [
           {
@@ -37,14 +37,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.568,
+        "confidence": 0.615,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-11-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2025",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2025 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -62,12 +62,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-11-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2025",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -83,20 +83,43 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-11-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2025",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Limited access",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -108,24 +131,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-11-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2025",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://ludlowkitchen.example/",
-    "phone": "+1 212 555 6594"
+    "websiteUrl": "https://delanceycoffee.example/",
+    "phone": "+1 212 555 6384"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

@@ -1,34 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000007",
-  "name": "Delancey Kitchen",
+  "name": "Norfolk Park",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "park",
+    "label": "Park"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.719101,
-    "lon": -73.993416
+    "lat": 40.722865,
+    "lon": -73.985733
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T05:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 1am"
   },
   "price": {
-    "kind": "unknown"
+    "kind": "free",
+    "evidence": "estimate"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 06:00-01:00",
+      "detail": "Open now until 1am",
       "provenance": {
         "sources": [
           {
@@ -37,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.493,
+        "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · published"
       }
     },
     {
@@ -60,14 +61,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.35,
+        "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     },
     {
@@ -83,20 +84,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     },
     {
-      "attribute": "indoor_outdoor",
-      "label": "Setting",
-      "value": "Mixed",
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
       "detail": null,
       "provenance": {
         "sources": [
@@ -108,24 +109,47 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Outdoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://allenkitchen.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 1075"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

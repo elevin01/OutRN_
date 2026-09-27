@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract: 1.0.0`.
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.1.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -22,6 +22,14 @@ All JSON. A non-2xx response is always `ApiError`. Every response carries `x-out
 | `GET /ops/v1/runs/:id` | — | `OpsRunDetail` |
 
 Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consumer screens.
+
+## Changelog
+
+- **1.1.0** (additive). A request can say where the user is (`origin`, rounded by the API to
+  ~100 m and required to be inside the area), when they must be back (`backBy`), and which items
+  this device showed recently (`seenIds`, ranked lower) or the user dismissed (`dismissedIds`, never
+  shown). `ResolvedRequest` echoes `origin`, `originIsDefault` and `backBy`.
+- **1.0.0** The first contract.
 
 ## Semantics
 

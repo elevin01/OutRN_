@@ -12,8 +12,13 @@
     "at": "2026-10-04T05:15:00.000Z",
     "mood": null,
     "areaId": "mock-family",
+    "backBy": null,
     "budget": {
       "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
     },
     "company": "family",
     "categories": [
@@ -23,6 +28,7 @@
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 120,
+    "originIsDefault": true,
     "travelModeIsDefault": true
   },
   "items": [

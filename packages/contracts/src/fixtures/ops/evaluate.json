@@ -14,6 +14,7 @@
       "lat": 40.72,
       "lon": -73.99
     },
+    "sunset": "2026-10-03T22:36:53.632Z",
     "timezone": "America/New_York",
     "windowMinutes": 180
   },
@@ -169,9 +170,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000003",
+      "itemId": "00000000-0000-4000-8000-000000000004",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000003",
+      "placeId": "00000000-0000-4000-8000-000000000004",
       "name": "Clinton Bar",
       "category": "bar",
       "class": "ready",
@@ -424,9 +425,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000000c",
+      "itemId": "00000000-0000-4000-8000-00000000000d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
       "name": "Ridge Bar",
       "category": "bar",
       "class": "ready",
@@ -496,9 +497,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000004",
+      "itemId": "00000000-0000-4000-8000-000000000005",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000004",
+      "placeId": "00000000-0000-4000-8000-000000000005",
       "name": "Delancey Books",
       "category": "bookshop",
       "class": "ready",
@@ -516,7 +517,7 @@
         "appeal": 0.567,
         "novelty": 1
       },
-      "shortlisted": true
+      "shortlisted": false
     },
     {
       "itemId": "00000000-0000-4000-8000-00000000002e",
@@ -561,9 +562,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000008",
+      "itemId": "00000000-0000-4000-8000-00000000000a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000008",
+      "placeId": "00000000-0000-4000-8000-00000000000a",
       "name": "Delancey Coffee",
       "category": "cafe",
       "class": "ready",
@@ -687,9 +688,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000000b",
+      "itemId": "00000000-0000-4000-8000-00000000000c",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000b",
+      "placeId": "00000000-0000-4000-8000-00000000000c",
       "name": "Eldridge Coffee",
       "category": "cafe",
       "class": "ready",
@@ -1331,7 +1332,8 @@
       "excludedBy": null,
       "reasons": [
         "FREE",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [
         "HOURS_UNKNOWN"
@@ -1341,15 +1343,15 @@
       "scores": {
         "evidence": 0.215,
         "fit": 0.562,
-        "appeal": 0.533,
+        "appeal": 0.683,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000009",
+      "itemId": "00000000-0000-4000-8000-000000000007",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000009",
+      "placeId": "00000000-0000-4000-8000-000000000007",
       "name": "Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -1358,7 +1360,8 @@
         "OPEN_LATE",
         "FREE",
         "SHORT_TRAVEL",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [],
       "travelMinutes": 9,
@@ -1366,7 +1369,7 @@
       "scores": {
         "evidence": 0.56,
         "fit": 0.706,
-        "appeal": 0.567,
+        "appeal": 0.717,
         "novelty": 1
       },
       "shortlisted": false
@@ -1382,7 +1385,8 @@
       "reasons": [
         "FREE",
         "SHORT_TRAVEL",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [
         "HOURS_UNKNOWN"
@@ -1392,15 +1396,15 @@
       "scores": {
         "evidence": 0.26,
         "fit": 0.69,
-        "appeal": 0.567,
+        "appeal": 0.717,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000052",
+      "itemId": "00000000-0000-4000-8000-000000000008",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000052",
+      "placeId": "00000000-0000-4000-8000-000000000008",
       "name": "Rivington Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -1408,7 +1412,8 @@
       "reasons": [
         "OPEN_LATE",
         "FREE",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [],
       "travelMinutes": 14,
@@ -1416,15 +1421,15 @@
       "scores": {
         "evidence": 0.462,
         "fit": 0.626,
-        "appeal": 0.6,
+        "appeal": 0.75,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000005",
+      "itemId": "00000000-0000-4000-8000-000000000002",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000005",
+      "placeId": "00000000-0000-4000-8000-000000000002",
       "name": "Pitt Park",
       "category": "park",
       "class": "ready",
@@ -1433,7 +1438,8 @@
         "OPEN_LATE",
         "FREE",
         "SHORT_TRAVEL",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [],
       "travelMinutes": 8,
@@ -1441,15 +1447,15 @@
       "scores": {
         "evidence": 0.538,
         "fit": 0.722,
-        "appeal": 0.567,
+        "appeal": 0.717,
         "novelty": 1
       },
-      "shortlisted": false
+      "shortlisted": true
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000053",
+      "itemId": "00000000-0000-4000-8000-000000000052",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000053",
+      "placeId": "00000000-0000-4000-8000-000000000052",
       "name": "Stanton Park",
       "category": "park",
       "class": "ineligible",
@@ -1469,9 +1475,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000054",
+      "itemId": "00000000-0000-4000-8000-000000000053",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000054",
+      "placeId": "00000000-0000-4000-8000-000000000053",
       "name": "Grand Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1494,9 +1500,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000000a",
+      "itemId": "00000000-0000-4000-8000-00000000000b",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "placeId": "00000000-0000-4000-8000-00000000000b",
       "name": "Ludlow Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1516,9 +1522,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000002",
+      "itemId": "00000000-0000-4000-8000-000000000003",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000002",
+      "placeId": "00000000-0000-4000-8000-000000000003",
       "name": "Forsyth Clinton Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1540,9 +1546,9 @@
       "shortlisted": true
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000055",
+      "itemId": "00000000-0000-4000-8000-000000000054",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000055",
+      "placeId": "00000000-0000-4000-8000-000000000054",
       "name": "Essex Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1562,9 +1568,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000056",
+      "itemId": "00000000-0000-4000-8000-000000000055",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000056",
+      "placeId": "00000000-0000-4000-8000-000000000055",
       "name": "Hester Lane Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1586,9 +1592,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000057",
+      "itemId": "00000000-0000-4000-8000-000000000056",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000057",
+      "placeId": "00000000-0000-4000-8000-000000000056",
       "name": "Grand Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1608,9 +1614,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000007",
+      "itemId": "00000000-0000-4000-8000-000000000009",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000007",
+      "placeId": "00000000-0000-4000-8000-000000000009",
       "name": "Delancey Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1632,9 +1638,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000058",
+      "itemId": "00000000-0000-4000-8000-000000000057",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000058",
+      "placeId": "00000000-0000-4000-8000-000000000057",
       "name": "Clinton Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1656,9 +1662,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000059",
+      "itemId": "00000000-0000-4000-8000-000000000058",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000059",
+      "placeId": "00000000-0000-4000-8000-000000000058",
       "name": "Clinton Norfolk Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1679,9 +1685,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005a",
+      "itemId": "00000000-0000-4000-8000-000000000059",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005a",
+      "placeId": "00000000-0000-4000-8000-000000000059",
       "name": "Stanton Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1702,9 +1708,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000000d",
+      "itemId": "00000000-0000-4000-8000-00000000005a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000d",
+      "placeId": "00000000-0000-4000-8000-00000000005a",
       "name": "Eldridge Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -1776,7 +1782,8 @@
       "excludedBy": null,
       "reasons": [
         "FREE",
-        "ENOUGH_TIME"
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
       ],
       "unresolved": [
         "HOURS_UNKNOWN"
@@ -1786,7 +1793,7 @@
       "scores": {
         "evidence": 0.26,
         "fit": 0.562,
-        "appeal": 0.5,
+        "appeal": 0.65,
         "novelty": 1
       },
       "shortlisted": false

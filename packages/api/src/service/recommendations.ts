@@ -110,7 +110,8 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
   const generatedAt = clock();
   const snapshot: Snapshot = {
     runId: run.runId!,
-    request,
+    // Stored as used (origin rounded), never as received.
+    request: run.request,
     resolved: run.resolved,
     area: areaOf(run.area),
     items: shortlist.ordered.map((e) => toItem(e, ctx)),
@@ -124,7 +125,7 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
   await q.query(
     `insert into recommendation_snapshots (run_id, request, resolved, area, items, insufficient, attributions, as_of, generated_at, expires_at)
      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-    [snapshot.runId, JSON.stringify(request), JSON.stringify(snapshot.resolved), JSON.stringify(snapshot.area), JSON.stringify(snapshot.items), JSON.stringify(snapshot.insufficient), JSON.stringify(snapshot.attributions), snapshot.asOf, generatedAt, snapshot.expiresAt],
+    [snapshot.runId, JSON.stringify(snapshot.request), JSON.stringify(snapshot.resolved), JSON.stringify(snapshot.area), JSON.stringify(snapshot.items), JSON.stringify(snapshot.insufficient), JSON.stringify(snapshot.attributions), snapshot.asOf, generatedAt, snapshot.expiresAt],
   );
   return pageOf(snapshot, 0);
 }
