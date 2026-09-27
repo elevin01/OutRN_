@@ -159,9 +159,13 @@ export function sunsetOn(p: LatLon, at: Date, timezone: string): Date | null {
   return sunsetAt(p, fromLocal(localClock(at, timezone).date, 12 * 60, timezone));
 }
 
-/** Persist a run for replay and the debug view. Context is coarsened: no precise coordinates. */
+/**
+ * Persist a run for replay and the debug view. Context is coarsened: no precise coordinates, and a
+ * device's seen/dismissed history is reduced to counts, so runs never become an activity log.
+ */
 export async function persistRun(q: Queryable, areaId: string | null, ctx: RequestContext, s: Shortlist, durationMs: number): Promise<string> {
-  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset };
+  const { seenIds, dismissedIds, ...rest } = ctx;
+  const coarse = { ...rest, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset, seenCount: seenIds?.length ?? 0, dismissedCount: dismissedIds?.length ?? 0 };
   const results = s.all.map((e) => ({
     item_kind: e.candidate.kind,
     item_id: e.candidate.id,
@@ -180,4 +184,17 @@ export async function persistRun(q: Queryable, areaId: string | null, ctx: Reque
     [areaId, JSON.stringify(coarse), s.all.length, JSON.stringify(results), JSON.stringify(shortlist), s.engineVersion, s.weightsVersion, durationMs],
   );
   return r.rows[0]!.id;
+}
+
+/** How long recommendation runs are kept (they hold coarsened request context). */
+export const RUN_RETENTION_DAYS = 30;
+
+/** Delete runs older than the retention period, oldest first, at most `limit` per call. Returns how many. */
+export async function pruneRuns(q: Queryable, now: Date, limit = 500): Promise<number> {
+  const cutoff = new Date(now.getTime() - RUN_RETENTION_DAYS * 86_400_000);
+  const r = await q.query(
+    `delete from recommendation_runs where id in (select id from recommendation_runs where created_at < $1 order by created_at limit $2)`,
+    [cutoff, limit],
+  );
+  return r.rowCount ?? 0;
 }

@@ -205,6 +205,35 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(ids).not.toContain(first.id);
     const seen = await search({ areaId: "les", windowMinutes: 180, seenIds: [first.id] });
     expect(seen.items[0]!.id).not.toBe(first.id);
+    // A run keeps how many ids a device sent, never which ones.
+    const ctxRow = (await db.query<{ context: Record<string, unknown> }>("select context from recommendation_runs where id = $1", [seen.requestId])).rows[0]!;
+    expect(ctxRow.context).toMatchObject({ seenCount: 1, dismissedCount: 0 });
+    expect(ctxRow.context).not.toHaveProperty("seenIds");
+    expect(ctxRow.context).not.toHaveProperty("dismissedIds");
+  });
+
+  it("accepts only item ids (UUIDs) in seen and dismissed lists", async () => {
+    for (const bad of ["x".repeat(1_000_000), "not-a-uuid", ""]) {
+      const r = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, seenIds: [bad] });
+      expect(r.status).toBe(400);
+      expect(ApiError.parse(r.json).error.fields?.[0]?.path).toBe("seenIds.0");
+    }
+    const tooMany = Array.from({ length: 201 }, () => crypto.randomUUID());
+    expect((await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, dismissedIds: tooMany })).status).toBe(400);
+  });
+
+  it("keeps recommendation runs for 30 days, without breaking rows that point at them", async () => {
+    now = SAT_EVENING;
+    const old = (await db.query<{ id: string }>(
+      `insert into recommendation_runs (area_id, context, candidate_count, results, shortlist, engine_version, weights_version, created_at)
+       values (null, '{}', 0, '[]', '[]', 'test', 'test', $1) returning id`,
+      [new Date(SAT_EVENING.getTime() - 31 * 86_400_000)],
+    )).rows[0]!.id;
+    const event = (await db.query<{ id: string }>(`insert into interaction_events (device_id, run_id, type) values ('device-1', $1, 'impression') returning id`, [old])).rows[0]!.id;
+    const recent = await search({ areaId: "les", windowMinutes: 120 }); // a search prunes, and its own run is new
+    expect((await db.query("select 1 from recommendation_runs where id = $1", [old])).rowCount).toBe(0);
+    expect((await db.query("select 1 from recommendation_runs where id = $1", [recent.requestId])).rowCount).toBe(1);
+    expect((await db.query<{ run_id: string | null }>("select run_id from interaction_events where id = $1", [event])).rows[0]!.run_id).toBeNull();
   });
 
   it("knows when the sun sets: outdoor places get the sunset window before dusk", async () => {

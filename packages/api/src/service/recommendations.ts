@@ -1,6 +1,6 @@
 import type { RecommendationItem, RecommendationRequest, RecommendationResponse, RecommendationsBody, ResolvedRequest } from "@outrn/contracts";
 import type { Queryable, ServiceAreaRow } from "@outrn/db";
-import { loadCandidates, loadPolicies, MAX_OFFSET, persistRun, recommend, type Candidate, type Shortlist } from "@outrn/engine";
+import { loadCandidates, loadPolicies, MAX_OFFSET, persistRun, pruneRuns, recommend, type Candidate, type Shortlist } from "@outrn/engine";
 import { PAGE_SIZE, SNAPSHOT_RETENTION_HOURS, SNAPSHOT_TTL_MINUTES } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
 import { sourcesOf, toItem } from "../map/item.js";
@@ -122,6 +122,8 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
     expiresAt: new Date(generatedAt.getTime() + SNAPSHOT_TTL_MINUTES * 60_000),
   };
   await q.query(`delete from recommendation_snapshots where expires_at < $1`, [new Date(generatedAt.getTime() - SNAPSHOT_RETENTION_HOURS * 3_600_000)]);
+  // Retention for runs, a bounded batch per search so no request pays for a backlog.
+  await pruneRuns(q, generatedAt);
   await q.query(
     `insert into recommendation_snapshots (run_id, request, resolved, area, items, insufficient, attributions, as_of, generated_at, expires_at)
      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,

@@ -29,10 +29,10 @@ export const RecommendationRequest = z.strictObject({
   origin: LatLon.optional(),
   /** Be back where you started by this instant: the return trip counts against the plan. */
   backBy: IsoDateTime.optional(),
-  /** Item ids this device showed recently. Ranked lower, never hidden. */
-  seenIds: z.array(z.string().min(1)).max(200).optional(),
-  /** Item ids the user dismissed. Never shown. */
-  dismissedIds: z.array(z.string().min(1)).max(200).optional(),
+  /** Item ids (RecommendationItem.id, a UUID) this device showed recently. Ranked lower, never hidden. */
+  seenIds: z.array(z.uuid()).max(200).optional(),
+  /** Item ids (RecommendationItem.id, a UUID) the user dismissed. Never shown. */
+  dismissedIds: z.array(z.uuid()).max(200).optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
