@@ -1,4 +1,7 @@
-import { domainKey, haversineMetres, normalizeName, phoneKey, type Category, type LatLon } from "@outrn/core";
+import { domainKey, haversineMetres, matchKey, phoneKey, type Category, type LatLon } from "@outrn/core";
+
+// matchKey moved to @outrn/core so materialization can keep venues.name_key in step with the winning name.
+export { matchKey };
 
 /**
  * Pairwise identity scoring. Pure and unit-tested; the resolver only adds the database around it.
@@ -33,15 +36,7 @@ export interface PairScore {
 export const AUTO_MERGE_THRESHOLD = 0.85;
 export const REVIEW_THRESHOLD = 0.55;
 
-const ABBREV: Record<string, string> = { st: "street", ave: "avenue", av: "avenue", blvd: "boulevard", rd: "road", pl: "place", sq: "square", ln: "lane", dr: "drive", pkwy: "parkway", ct: "court", mt: "mount", ft: "fort" };
 const CHILD_SUFFIX = /\b(cafe|coffee|shop|store|restaurant|bar|bookshop|gift shop|kitchen|bistro|terrace|garden|theater|theatre)\b/;
-
-export function matchKey(name: string): string {
-  return normalizeName(name)
-    .split(" ")
-    .map((w) => ABBREV[w] ?? w)
-    .join(" ");
-}
 
 function tokens(s: string): Set<string> {
   return new Set(s.split(" ").filter((w) => w.length > 1));

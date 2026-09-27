@@ -23,6 +23,16 @@ export function normalizeName(name: string): string {
     .trim();
 }
 
+const ABBREV: Record<string, string> = { st: "street", ave: "avenue", av: "avenue", blvd: "boulevard", rd: "road", pl: "place", sq: "square", ln: "lane", dr: "drive", pkwy: "parkway", ct: "court", mt: "mount", ft: "fort" };
+
+/** Name key for identity matching and venues.name_key: normalizeName plus street-word expansion. */
+export function matchKey(name: string): string {
+  return normalizeName(name)
+    .split(" ")
+    .map((w) => ABBREV[w] ?? w)
+    .join(" ");
+}
+
 /** Registrable domain-ish key from a URL: strips scheme, www, path. Not a full PSL implementation. */
 export function domainKey(url: string | null | undefined): string | null {
   if (!url) return null;

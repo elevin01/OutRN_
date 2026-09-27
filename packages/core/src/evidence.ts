@@ -22,6 +22,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - indoor_outdoor     : { value: "indoor"|"covered"|"outdoor"|"mixed" }
  *  - parking            : { kind: "lot"|"street"|"garage"|"none"|"unknown", cost?: "free"|"paid"|"unknown", note?: string }
  *  - wheelchair         : { value: "yes"|"limited"|"no"|"unknown" }
+ *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
+ *  - age_limit          : { minAge: number }  minimum admission age; 0 = no age limit; absent = unknown
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -41,6 +43,8 @@ export const ATTRIBUTES = [
   "indoor_outdoor",
   "parking",
   "wheelchair",
+  "subtype",
+  "age_limit",
   "crowd_level",
   "queue",
   "open_state",
@@ -75,6 +79,22 @@ export interface FactInput {
   /** Sources sharing an upstream share a lineage group and count as one. */
   lineageGroup?: string | null;
   ingestionRunId?: string | null;
+}
+
+/**
+ * A "confirmed" claim needs a verification event, not a retrieval: the founder's check date
+ * (source_updated_at on a founder fact) or an observation's observed_at. It holds for this many days,
+ * and never while the fact is in conflict; older checks go to the recheck queue.
+ */
+export const CONFIRMATION_MAX_AGE_DAYS = 90;
+
+/** SQL for a current_facts row's verification time: latest founder check or observation among its agreeing inputs (never fetched_at). */
+export const VERIFIED_AT_SQL = `(select max(case when f.source_id = 'founder' then f.source_updated_at when f.evidence_class = 'observation' then f.observed_at end) from facts f where f.id = any(cf.input_fact_ids))`;
+
+export function isFreshConfirmation(verifiedAt: Date | null | undefined, conflict: boolean | undefined, now: Date): boolean {
+  if (!verifiedAt || conflict) return false;
+  const age = now.getTime() - verifiedAt.getTime();
+  return age >= -86_400_000 && age <= CONFIRMATION_MAX_AGE_DAYS * 86_400_000;
 }
 
 /** Default usefulness windows by attribute, in minutes. Policy, not fact. */

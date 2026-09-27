@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.1.0";
-export const WEIGHTS_VERSION = "2026-09-26.1";
+export const ENGINE_VERSION = "0.2.0";
+export const WEIGHTS_VERSION = "2026-09-27.4";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -18,11 +18,18 @@ export interface RequestContext {
   mode: TravelMode;
   /** Max one-way travel, minutes. Defaults by mode. */
   maxTravelMinutes?: number;
+  /** Drive parking buffer for this departure (from the area's parking rule). Default 8 min. */
+  parkingBufferMinutes?: number;
   /** Per-person cap in USD, or "free". Missing = any. */
   budget?: number | "free";
   mood?: Mood;
   company?: Company;
   requireWheelchair?: boolean;
+  /**
+   * Age of the youngest person going. Age limits are a gate against it. With company "family" and no
+   * age given, the party is assumed to include a minor of unknown age.
+   */
+  youngestAge?: number;
   /** Narrow to these categories (user tapped a chip). Diversity across activity types is skipped. */
   categories?: Category[];
   /** Items shown recently on this device, and items dismissed. */
@@ -40,6 +47,12 @@ export interface FactView {
   evidenceClass: EvidenceClass;
   validUntil: Date | null;
   independentSources: number;
+  /** Sources behind the winning value (current_facts.source_ids), e.g. ["founder"], ["osm"]. */
+  sources?: string[];
+  /** Disagreement inside the winning evidence class (current_facts.conflict). */
+  conflict?: boolean;
+  /** Latest verification of the winning value (founder check or observation); never a fetch time. */
+  verifiedAt?: Date | null;
 }
 
 export interface OccurrenceView {
@@ -67,6 +80,8 @@ export interface Candidate {
   boost: number;
   excluded: boolean;
   hasLandmarkId: boolean;
+  /** Chain brand from the source record (OSM `brand`), if any. */
+  brand?: string | null;
 }
 
 export interface CategoryPolicy {
@@ -101,8 +116,10 @@ export type ReasonCode =
   | "PRICE_UNKNOWN"
   | "LATE_ENTRY_UNCERTAIN"
   | "ACCESS_LIMITED"
-  | "SHOWTIMES_UNKNOWN"
-  | "WAIT_FOR_OPENING";
+  | "WAIT_FOR_OPENING"
+  | "HOURS_CONFIRMED"
+  | "AGE_LIMIT_LIKELY"
+  | "AGE_LIMIT_UNCERTAIN";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -121,7 +138,9 @@ export type ExclusionCode =
   | "ACCESS_UNKNOWN"
   | "NOT_ACCESSIBLE"
   | "DISMISSED"
-  | "CHILD_OF_SHOWN_PARENT";
+  | "CHILD_OF_SHOWN_PARENT"
+  | "NO_PROGRAMME"
+  | "AGE_RESTRICTED";
 
 export interface Timing {
   travel: TravelEstimate;
@@ -161,6 +180,12 @@ export interface Shortlist {
   items: Evaluation[];
   /** Everything evaluated, for the "eligible right now" debug view. */
   all: Evaluation[];
+  /** Position of items[0] in the display order ("More options" pages by offset). */
+  offset: number;
+  /** More eligible options exist after this page (and within the served page limit). */
+  hasMore: boolean;
+  /** Offset of the next page, or null. Callers link to this rather than computing it. */
+  nextOffset: number | null;
   fewerThanThree: boolean;
   /** Specific relaxations to offer when fewer than three qualify. */
   relaxations: string[];

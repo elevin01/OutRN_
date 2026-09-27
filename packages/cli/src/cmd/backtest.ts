@@ -2,7 +2,7 @@ import { writeFileSync } from "node:fs";
 import type { Command } from "commander";
 import { fromLocal, type LatLon } from "@outrn/core";
 import { getArea, getDb } from "@outrn/db";
-import { loadCandidates, loadPolicies, recommend, type RequestContext } from "@outrn/engine";
+import { loadCandidates, loadParkingBuffer, loadPolicies, recommend, type RequestContext } from "@outrn/engine";
 
 /**
  * Coverage backtest: the gate that matters most. For a grid of sample points across an area and a
@@ -65,15 +65,17 @@ export function registerBacktest(program: Command): void {
             for (const budget of budgets) {
               const now = fromLocal(dateStr, hour * 60, area.timezone);
               const end = new Date(now.getTime() + window * 60_000);
+              const parking = area.travel_mode === "drive" ? await loadParkingBuffer(db, area.slug, now, area.timezone) : undefined;
               let three = 0;
               let ready3 = 0;
               let eligibleSum = 0;
               const exclusions = new Map<string, number>();
               for (const p of pts) {
                 const ctx: RequestContext = { origin: p, now, windowMinutes: window, mode: area.travel_mode, timezone: area.timezone };
+                if (parking !== undefined) ctx.parkingBufferMinutes = parking;
                 if (budget === "free") ctx.budget = "free";
                 else if (budget !== "any") ctx.budget = Number(budget);
-                const cands = await loadCandidates(db, p, area.travel_mode, now, end);
+                const cands = await loadCandidates(db, p, area.travel_mode, now, end, undefined, parking);
                 const s = recommend(cands, ctx, policies);
                 runs++;
                 if (s.items.length >= 3) three++;

@@ -1,6 +1,6 @@
-import { ACTIVITY_OF_CATEGORY, minutesBetween } from "@outrn/core";
+import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
-import type { FeasibilityOutcome } from "./feasibility.js";
+import { ageLimitOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -8,6 +8,10 @@ import type { FeasibilityOutcome } from "./feasibility.js";
  */
 
 const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
+/** What a 9pm+ window is for: bars and late food. */
+const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
+
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1 } as const;
 const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
   relaxed: ["food", "outdoors", "browse"],
   active: ["outdoors", "entertainment"],
@@ -16,9 +20,9 @@ const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
 };
 const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, string[]> = {
   alone: ["cafe", "bookshop", "library", "gallery", "museum", "park", "cinema"],
-  date: ["restaurant", "bar", "viewpoint", "waterfront", "cinema", "live_music", "gallery"],
-  friends: ["bar", "restaurant", "live_music", "market", "park", "theatre"],
-  family: ["park", "garden", "museum", "market", "dessert", "attraction", "library"],
+  date: ["restaurant", "bar", "viewpoint", "waterfront", "cinema", "live_music", "gallery", "bowling", "activity"],
+  friends: ["bar", "restaurant", "live_music", "market", "park", "theatre", "bowling", "arcade", "nightclub", "activity"],
+  family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
 
 export function scoreCandidate(c: Candidate, ctx: RequestContext, f: FeasibilityOutcome, policy: CategoryPolicy, maxTravel: number): { scores: Scores; extraReasons: ReasonCode[] } {
@@ -31,7 +35,16 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
   if (ctx.mood) chips += MOOD_ACTIVITY[ctx.mood].includes(activity) ? 0.25 : -0.15;
-  if (ctx.company) chips += COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category) ? 0.25 : 0;
+  if (ctx.company) {
+    // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
+    // gets the family bonus its category would otherwise earn when a minor is in the party. Feasibility
+    // has already excluded published limits; this sinks estimated ones.
+    const youngest = partyYoungest(ctx);
+    const minorPresent = youngest === "minor" || (typeof youngest === "number" && youngest < 18);
+    const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
+    if (minorPresent && adultLimit) chips -= 0.25;
+    else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
+  }
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = OUTDOOR.has(c.category) || (c.facts["indoor_outdoor"]?.value as { value?: string } | undefined)?.value === "outdoor";
@@ -56,6 +69,17 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += 0.15;
+  // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
+  if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
+  const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
+  if ((arrivalHour >= 21 || arrivalHour < 4) && LATE_NIGHT.has(c.category)) appeal += APPEAL_WEIGHTS.lateNight;
+  // "Confirmed" needs a recent verification (a founder check or an observation) and no dispute;
+  // which source published the hours is not enough, and a fetch date is not a verification.
+  const hours = c.kind === "venue" ? c.facts.opening_hours : undefined;
+  if (hours && isFreshConfirmation(hours.verifiedAt, hours.conflict, ctx.now)) {
+    appeal += APPEAL_WEIGHTS.hoursConfirmed;
+    extra.push("HOURS_CONFIRMED");
+  }
   if (ctx.sunset && outdoor && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
     const m = minutesBetween(t.arrival, ctx.sunset);
     const clear = (ctx.weather?.precipProbability ?? 0) < 50;

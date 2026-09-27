@@ -1,15 +1,17 @@
 import "server-only";
 
 import type { Category, TravelMode } from "@outrn/core";
-import { CATEGORIES } from "@outrn/core";
+import { CATEGORIES, VERIFIED_AT_SQL } from "@outrn/core";
 import { getArea, getDb, listAreas, type ServiceAreaRow } from "@outrn/db";
 import {
   explain,
   loadCandidates,
+  loadParkingBuffer,
   loadPolicies,
   persistRun,
   recommend,
   type Evaluation,
+  type FactRecord,
   type RequestContext,
 } from "@outrn/engine";
 
@@ -22,6 +24,10 @@ export interface RecommendationInput {
   company?: string | undefined;
   category?: string | undefined;
   at?: string | undefined;
+  /** "More options": how many options to skip in the display order. */
+  offset?: number | undefined;
+  /** Age of the youngest person going, if the request states it. */
+  youngest?: number | undefined;
 }
 
 export interface RecommendationOutput {
@@ -31,6 +37,8 @@ export interface RecommendationOutput {
   all: Evaluation[];
   fewerThanThree: boolean;
   relaxations: string[];
+  offset: number;
+  nextOffset: number | null;
   runId: string;
   durationMs: number;
 }
@@ -60,15 +68,20 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
   else if (input.budget && Number.isFinite(Number(input.budget))) context.budget = Math.max(0, Number(input.budget));
   if (input.mood && MOODS.has(input.mood)) context.mood = input.mood as NonNullable<RequestContext["mood"]>;
   if (input.company && COMPANIES.has(input.company)) context.company = input.company as NonNullable<RequestContext["company"]>;
+  if (input.youngest !== undefined) context.youngestAge = input.youngest;
   if (input.category && (CATEGORIES as readonly string[]).includes(input.category)) context.categories = [input.category as Category];
+  if (mode === "drive") {
+    const parking = await loadParkingBuffer(db, area.slug, now, area.timezone);
+    if (parking !== undefined) context.parkingBufferMinutes = parking;
+  }
 
   const started = Date.now();
   const windowEnd = new Date(now.getTime() + input.minutes * 60_000);
   const [candidates, policies] = await Promise.all([
-    loadCandidates(db, context.origin, mode, now, windowEnd),
+    loadCandidates(db, context.origin, mode, now, windowEnd, undefined, context.parkingBufferMinutes),
     loadPolicies(db),
   ]);
-  const shortlist = recommend(candidates, context, policies);
+  const shortlist = recommend(candidates, context, policies, { offset: input.offset ?? 0 });
   const durationMs = Date.now() - started;
   const runId = await persistRun(db, area.id, context, shortlist, durationMs);
   return {
@@ -78,6 +91,8 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
     all: shortlist.all,
     fewerThanThree: shortlist.fewerThanThree,
     relaxations: shortlist.relaxations,
+    offset: shortlist.offset,
+    nextOffset: shortlist.nextOffset,
     runId,
     durationMs,
   };
@@ -91,7 +106,7 @@ export interface PlaceDetail {
   lon: number;
   timezone: string;
   publishState: string;
-  facts: Record<string, { value: unknown; confidence: number; evidenceClass: string; validUntil: string | null }>;
+  facts: Record<string, FactRecord & { validUntil: string | null }>;
   tags: Record<string, string>;
 }
 
@@ -105,7 +120,7 @@ export async function place(id: string): Promise<PlaceDetail | null> {
       lon: number;
       timezone: string;
       publish_state: string;
-      facts: Record<string, { value: unknown; confidence: string; evidenceClass: string; validUntil: string | null }>;
+      facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; validUntil: string | null; sources: string[]; conflict: boolean; asOf: string | null; fetchedAt: string | null; verifiedAt: string | null }>;
       tags: Record<string, string> | null;
     }>(
       `select v.id, v.canonical_name, v.category,
@@ -113,7 +128,11 @@ export async function place(id: string): Promise<PlaceDetail | null> {
               v.timezone, v.publish_state,
               coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object(
                 'value', cf.value, 'confidence', cf.confidence,
-                'evidenceClass', cf.evidence_class, 'validUntil', cf.valid_until))
+                'evidenceClass', cf.evidence_class, 'validUntil', cf.valid_until,
+                'sources', cf.source_ids, 'conflict', cf.conflict,
+                'asOf', (select max(coalesce(f.observed_at, f.source_updated_at)) from facts f where f.id = any(cf.input_fact_ids)),
+                'fetchedAt', (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids)),
+                'verifiedAt', ${VERIFIED_AT_SQL}))
                 from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) facts,
               (select se.raw->'tags' from entity_links el join source_entities se on se.id = el.source_entity_id
                 where el.venue_id = v.id and el.superseded_by is null order by el.decided_at desc limit 1) tags
@@ -130,7 +149,12 @@ export async function place(id: string): Promise<PlaceDetail | null> {
     lon: Number(row.lon),
     timezone: row.timezone,
     publishState: row.publish_state,
-    facts: Object.fromEntries(Object.entries(row.facts).map(([key, fact]) => [key, { ...fact, confidence: Number(fact.confidence) }])),
+    facts: Object.fromEntries(
+      Object.entries(row.facts).map(([key, fact]) => [
+        key,
+        { ...fact, confidence: Number(fact.confidence), sources: fact.sources ?? [], asOf: fact.asOf ? new Date(fact.asOf) : null, fetchedAt: fact.fetchedAt ? new Date(fact.fetchedAt) : null, verifiedAt: fact.verifiedAt ? new Date(fact.verifiedAt) : null },
+      ]),
+    ),
     tags: row.tags ?? {},
   };
 }

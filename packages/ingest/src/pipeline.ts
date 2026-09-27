@@ -1,9 +1,9 @@
 import { writeFile } from "node:fs/promises";
-import type { Category } from "@outrn/core";
-import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
+import { DEFAULT_MAX_TRAVEL_MINUTES, maxReachMetres, parkingBufferAt, type Category, type ParkingRule } from "@outrn/core";
+import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
-import { fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type OsmElement } from "@outrn/sources";
+import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
 import { normalizeOsm } from "./osm-normalize.js";
 
 /**
@@ -18,12 +18,16 @@ export interface IngestOptions {
   fromFile?: string;
   /** Save the fetched response for later replay (only meaningful with a live fetch). */
   saveTo?: string;
+  /** Override the derived ingest radius (live fetch), or declare what a replayed capture covers. */
+  radiusM?: number;
   log?: (line: string) => void;
 }
 
 export interface IngestSummary {
   runId: string;
   area: string;
+  /** Extent the snapshot covers (and tombstones within), metres from the area center. */
+  extentM: number;
   fetched: number;
   dropped: number;
   raw: { new: number; changed: number; unchanged: number; tombstoned: number };
@@ -33,18 +37,35 @@ export interface IngestSummary {
   osmBaseTimestamp: string | null;
 }
 
+/**
+ * How far to ingest around an area: its origin catchment plus the farthest the engine could ever
+ * call reachable within the mode's max travel time (with the area's parking rule), rounded up to
+ * 100 m. For a drive catchment this is kilometres, not the walkable village center.
+ */
+export function ingestExtentFor(area: Pick<ServiceAreaRow, "radius_m" | "travel_mode">, parking: ParkingRule | null): { catchmentM: number; reachM: number; radiusM: number } {
+  const catchmentM = area.radius_m ?? 1500;
+  const reachM = Math.round(maxReachMetres(area.travel_mode, DEFAULT_MAX_TRAVEL_MINUTES[area.travel_mode], { parkingBufferForHour: (h) => parkingBufferAt(parking, h) }));
+  return { catchmentM, reachM, radiusM: Math.ceil((catchmentM + reachM) / 100) * 100 };
+}
+
 export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<IngestSummary> {
   const log = opts.log ?? (() => undefined);
   const area = await getArea(db, opts.areaSlug);
   if (!opts.fromFile) await assertSourceAllowed(db, "osm", "fetch");
-  const runId = await startRun(db, { sourceId: "osm", areaId: area.id, kind: opts.fromFile ? "replay" : "overpass_area", params: { radius_m: area.radius_m, from_file: opts.fromFile ?? null } });
+  const derived = ingestExtentFor(area, await loadParkingRule(db, area.slug));
+  const radiusM = opts.radiusM ?? derived.radiusM;
+  const runId = await startRun(db, { sourceId: "osm", areaId: area.id, kind: opts.fromFile ? "replay" : "overpass_area", params: { radius_m: radiusM, catchment_m: derived.catchmentM, reach_m: derived.reachM, override: opts.radiusM ?? null, from_file: opts.fromFile ?? null } });
   try {
-    const result = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea({ lat: area.lat, lon: area.lon }, area.radius_m ?? 1500);
-    if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(result.response), "utf8");
+    const center = { lat: area.lat, lon: area.lon };
+    if (!opts.fromFile) log(`fetching ${radiusM} m around ${area.slug}${opts.radiusM ? " (override)" : ` (catchment ${derived.catchmentM} m + ${area.travel_mode} reach ${derived.reachM} m)`}`);
+    const result = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea(center, radiusM);
+    // A replay without a saved extent is treated as covering the catchment only (the old capture size).
+    const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
+    if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
     const { elements, baseTimestamp, dropped } = normalizeElements(result.response);
     log(`fetched ${elements.length} named elements (${dropped} dropped: no name or no geometry)`);
 
-    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, area.id, elements, result.fetchedAt));
+    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);
 
     const proc = await withTx(db, (tx) => processSourceEntities(tx, rawOut.touchedIds, { areaId: area.id, timezone: area.timezone, runId, fetchedAt: result.fetchedAt, log }));
@@ -55,6 +76,7 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     return {
       runId,
       area: area.slug,
+      extentM: extent.radiusM,
       fetched: elements.length,
       dropped,
       raw: rawOut.counts,

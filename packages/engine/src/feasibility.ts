@@ -1,4 +1,4 @@
-import { addMinutes, estimateTravel, localClock, minutesBetween, type Attribute } from "@outrn/core";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing } from "./types.js";
 
@@ -13,7 +13,21 @@ import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, 
  *   useful         = latest_finish − arrival     must clear min useful duration
  */
 
-const DEFAULT_MAX_TRAVEL: Record<RequestContext["mode"], number> = { walk: 25, drive: 30, transit: 35 };
+/**
+ * Youngest person in the party: a number when known, "minor" when company is family and no age was
+ * given (a child of unknown age), undefined when there is no reason to assume a minor.
+ */
+export function partyYoungest(ctx: RequestContext): number | "minor" | undefined {
+  if (typeof ctx.youngestAge === "number") return ctx.youngestAge;
+  return ctx.company === "family" ? "minor" : undefined;
+}
+
+/** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
+export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
+  const f = c.facts.age_limit;
+  const minAge = (f?.value as { minAge?: unknown } | undefined)?.minAge;
+  return f && typeof minAge === "number" ? { minAge, isEstimate: f.evidenceClass === "estimate" } : null;
+}
 
 export function deadlineOf(ctx: RequestContext): Date {
   if (ctx.endAt) return ctx.endAt;
@@ -49,10 +63,29 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out("CLOSED_PERMANENTLY");
 
+  // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
+  // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
+  const limit = ageLimitOf(c);
+  const youngest = partyYoungest(ctx);
+  if (limit && limit.minAge > 0 && youngest !== undefined) {
+    const tooYoung = youngest === "minor" ? limit.minAge >= 18 : youngest < limit.minAge;
+    if (tooYoung) {
+      if (!limit.isEstimate) return out("AGE_RESTRICTED");
+      unresolved.push("AGE_LIMIT_LIKELY");
+    } else if (youngest === "minor") {
+      unresolved.push("AGE_LIMIT_UNCERTAIN"); // e.g. 16+ with children whose ages we do not know
+    }
+  }
+
+  // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
+  // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".
+  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) return out("NO_PROGRAMME");
+
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
-  const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour });
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL[ctx.mode];
+  const parking = ctx.parkingBufferMinutes === undefined ? {} : { parkingBufferMinutes: ctx.parkingBufferMinutes };
+  const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });
+  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   if (travel.minutes > maxTravel) return out("TOO_FAR");
   const departAt = ctx.now;
   let arrival = addMinutes(departAt, travel.minutes + policy.admissionBufferMinutes);
@@ -62,7 +95,7 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   let returnTravel = null;
   if (ctx.backBy) {
     const backHour = localClock(ctx.backBy, ctx.timezone).hour;
-    returnTravel = estimateTravel(c.point, ctx.origin, ctx.mode, { hourLocal: backHour });
+    returnTravel = estimateTravel(c.point, ctx.origin, ctx.mode, { hourLocal: backHour, ...parking });
     const mustLeaveBy = addMinutes(ctx.backBy, -(returnTravel.minutes + 5));
     if (mustLeaveBy < deadline) deadline = mustLeaveBy;
   }
@@ -105,9 +138,6 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
-
-  // A cinema, theatre or music venue without a loaded occurrence has hours but no programme.
-  if (["cinema", "theatre", "live_music"].includes(c.category)) unresolved.push("SHOWTIMES_UNKNOWN");
 
   // Flexible visit: hours
   const hoursFact = fact(c, "opening_hours");

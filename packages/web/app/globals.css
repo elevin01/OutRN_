@@ -95,6 +95,7 @@ nav a:hover { border-color: var(--ink); }
 .card-actions { align-items: center; border-top: 1px solid var(--line); display: flex; justify-content: space-between; margin-top: 30px; padding-top: 18px; }
 .text-button { font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .map-button { background: var(--moss); border-radius: 3px; color: white; font-size: 11px; font-weight: 700; padding: 12px 14px; }
+.more-options { display: flex; gap: 28px; justify-content: flex-end; margin: 72px auto 0; max-width: 1280px; }
 .honest-empty { background: var(--cream); display: flex; gap: 14px; margin: 72px auto 0; max-width: 1280px; padding: 18px 22px; }
 
 .principles { border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 clamp(24px, 6vw, 92px) 100px; }
@@ -115,7 +116,10 @@ nav a:hover { border-color: var(--ink); }
 .fact-list { margin: 0; }
 .fact-list div { border-bottom: 1px solid var(--line); display: grid; gap: 24px; grid-template-columns: 180px 1fr; padding: 18px 0; }
 .fact-list dt { color: var(--muted); font-family: var(--mono); font-size: 10px; text-transform: uppercase; }
-.fact-list dd { margin: 0; text-transform: capitalize; }
+.fact-list dd { margin: 0; overflow-wrap: anywhere; }
+.fact-list .fact-hours dd { font-family: var(--mono); font-size: 15px; }
+.fact-detail { display: block; font-family: var(--mono); font-size: 12px; font-weight: 700; margin-top: 6px; }
+.fact-list small em { color: var(--coral); font-style: normal; }
 .fact-list small { color: var(--muted); display: block; font-family: var(--mono); font-size: 9px; margin-top: 6px; text-transform: none; }
 .contact-panel { background: var(--moss); color: white; padding: 30px; }
 .contact-panel p { color: rgba(255,255,255,.7); font-size: 13px; line-height: 1.6; }

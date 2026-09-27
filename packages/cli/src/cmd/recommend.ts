@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { Category, TravelMode } from "@outrn/core";
 import { getArea, getDb } from "@outrn/db";
-import { explain, loadCandidates, loadPolicies, persistRun, recommend, type RequestContext } from "@outrn/engine";
+import { explain, loadCandidates, loadParkingBuffer, loadPolicies, persistRun, recommend, type RequestContext } from "@outrn/engine";
 
 export function registerRecommend(program: Command): void {
   program
@@ -20,6 +20,8 @@ export function registerRecommend(program: Command): void {
     .option("--company <alone|date|friends|family>")
     .option("--categories <list>", "comma-separated categories to narrow to")
     .option("--wheelchair", "require wheelchair access")
+    .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
+    .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
     .option("--all", "print every candidate with its class and exclusion reason")
     .option("--no-persist", "do not record the run")
     .action(async (o: Record<string, unknown>) => {
@@ -36,10 +38,15 @@ export function registerRecommend(program: Command): void {
       if (o["company"]) ctx.company = o["company"] as NonNullable<RequestContext["company"]>;
       if (o["categories"]) ctx.categories = String(o["categories"]).split(",").map((x) => x.trim()) as Category[];
       if (o["wheelchair"]) ctx.requireWheelchair = true;
+      if (typeof o["youngest"] === "number" && Number.isFinite(o["youngest"])) ctx.youngestAge = o["youngest"];
+      if (area && mode === "drive") {
+        const parking = await loadParkingBuffer(db, area.slug, now, ctx.timezone);
+        if (parking !== undefined) ctx.parkingBufferMinutes = parking;
+      }
       const t0 = Date.now();
       const windowEnd = new Date(now.getTime() + (ctx.windowMinutes ?? 180) * 60_000);
-      const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes), loadPolicies(db)]);
-      const s = recommend(candidates, ctx, policies);
+      const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes, ctx.parkingBufferMinutes), loadPolicies(db)]);
+      const s = recommend(candidates, ctx, policies, { offset: o["offset"] as number });
       const ms = Date.now() - t0;
       const runId = o["persist"] === false ? null : await persistRun(db, area?.id ?? null, ctx, s, ms);
 
@@ -50,13 +57,14 @@ export function registerRecommend(program: Command): void {
       console.log("");
       s.items.forEach((e, i) => {
         const copy = explain(e, ctx.timezone);
-        console.log(`${i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
+        console.log(`${s.offset + i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
         console.log(`   ${copy.factLine}`);
         if (copy.sentence) console.log(`   ${copy.sentence}`);
         if (copy.caveat) console.log(`   ${copy.caveat}`);
         console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}`);
       });
       if (s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.join(" · ") || "a different time"}`);
+      if (s.nextOffset !== null) console.log(`\nMore options: --offset ${s.nextOffset}`);
       if (o["all"]) {
         console.log("\n— all candidates —");
         const byClass = [...s.all].sort((a, b) => (a.class > b.class ? 1 : a.class < b.class ? -1 : 0));

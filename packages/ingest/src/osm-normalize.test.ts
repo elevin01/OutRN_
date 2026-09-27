@@ -55,4 +55,49 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant", reservation: "required" }), "admission")).toMatchObject({ evidenceClass: "published", value: { requirement: "reservation" } });
     expect(fact(rec({ name: "M", tourism: "museum", fee: "yes" }), "admission")).toMatchObject({ value: { requirement: "ticket" } });
   });
+
+  it("activity venues map into the widened vocabulary (26 Sep: bowling alleys and nightclubs were invisible)", () => {
+    expect(categoryFromTags({ leisure: "bowling_alley" })).toBe("bowling");
+    expect(categoryFromTags({ leisure: "amusement_arcade" })).toBe("arcade");
+    expect(categoryFromTags({ amenity: "nightclub" })).toBe("nightclub");
+    expect(categoryFromTags({ amenity: "music_venue" })).toBe("live_music");
+    for (const tags of [{ leisure: "escape_game" }, { leisure: "miniature_golf" }, { leisure: "ice_rink" }, { amenity: "karaoke_box" }, { amenity: "casino" }]) expect(categoryFromTags(tags)).toBe("activity");
+    expect(categoryFromTags({ leisure: "sports_centre", sport: "climbing" })).toBe("activity");
+    expect(categoryFromTags({ leisure: "sports_centre", sport: "soccer" })).toBeNull();
+    expect(categoryFromTags({ tourism: "zoo" })).toBe("attraction");
+    expect(categoryFromTags({ tourism: "aquarium" })).toBe("attraction");
+    expect(categoryFromTags({ natural: "beach" })).toBe("waterfront");
+    expect(categoryFromTags({ amenity: "events_venue" })).toBeNull(); // banquet halls: deliberately out
+  });
+
+  it("activity venues get admission estimates by kind; beaches are not assumed free", () => {
+    expect(fact(rec({ name: "Homefield Bowl", leisure: "bowling_alley" }), "admission")).toMatchObject({ evidenceClass: "estimate", value: { requirement: "walk_in" } });
+    expect(fact(rec({ name: "Room 13", leisure: "escape_game" }), "admission")).toMatchObject({ evidenceClass: "estimate", value: { requirement: "reservation" } });
+    expect(fact(rec({ name: "Wall", leisure: "sports_centre", sport: "climbing" }), "category")).toMatchObject({ value: { value: "activity" }, evidence: "leisure=sports_centre + sport=climbing" });
+    expect(fact(rec({ name: "Beach", natural: "beach" }), "price")).toBeUndefined();
+    expect(fact(rec({ name: "Beach", natural: "beach" }), "indoor_outdoor")).toMatchObject({ value: { value: "outdoor" } });
+  });
+
+  it("OSM parking=* values map into the controlled parking kinds, never passed through raw", () => {
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "multi-storey" }), "parking")).toMatchObject({ value: { kind: "garage" } });
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "street_side", "parking:fee": "no" }), "parking")).toMatchObject({ value: { kind: "street", cost: "free" } });
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "something_new" }), "parking")).toMatchObject({ value: { kind: "unknown" } });
+  });
+
+  it("activity venues carry their kind; age limits are one number, published from min_age or estimated by kind", () => {
+    const casino = rec({ name: "Empire City", amenity: "casino" });
+    expect(fact(casino, "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "casino" } });
+    expect(fact(casino, "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 } });
+    expect(fact(rec({ name: "Club", amenity: "nightclub" }), "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 } });
+    const golf = rec({ name: "Putt", leisure: "miniature_golf" });
+    expect(fact(golf, "subtype")).toMatchObject({ value: { value: "miniature_golf" } });
+    expect(fact(golf, "age_limit")).toBeUndefined(); // unknown, not "all ages"
+    for (const [tag, minAge] of [["0", 0], ["16", 16], ["18", 18], ["21", 21]] as const) {
+      expect(fact(rec({ name: "Arcade", leisure: "amusement_arcade", min_age: tag }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge }, evidence: `min_age=${tag}` });
+    }
+    // A published min_age beats the kind's default.
+    expect(fact(rec({ name: "Kids casino night", amenity: "casino", min_age: "18" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 18 } });
+    expect(fact(rec({ name: "Wall", leisure: "sports_centre", sport: "climbing" }), "subtype")).toMatchObject({ value: { value: "climbing" } });
+    expect(fact(rec({ name: "R", amenity: "restaurant" }), "subtype")).toBeUndefined();
+  });
 });

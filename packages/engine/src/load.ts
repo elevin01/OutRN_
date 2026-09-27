@@ -1,6 +1,6 @@
 import SunCalc from "suncalc";
-import type { Attribute, Category, LatLon, TravelMode } from "@outrn/core";
-import { loadCategoryPolicies, type Queryable } from "@outrn/db";
+import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
+import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
 /**
@@ -8,8 +8,6 @@ import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContex
  * occurrences and overrides only — never raw source records and never an external API.
  */
 
-const METRES_PER_MIN: Record<TravelMode, number> = { walk: 80 / 1.3, drive: 500, transit: 250 };
-const DEFAULT_MAX_TRAVEL: Record<TravelMode, number> = { walk: 25, drive: 30, transit: 35 };
 
 interface VenueRow {
   id: string;
@@ -19,10 +17,11 @@ interface VenueRow {
   lon: number;
   timezone: string;
   parent_venue_id: string | null;
-  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number }>;
+  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number; sources: string[] | null; conflict: boolean | null; verified_at: string | null }>;
   boost: string | null;
   excluded: boolean;
   has_landmark: boolean;
+  brand: string | null;
 }
 
 interface OccRow {
@@ -41,21 +40,25 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   for (const [k, v] of Object.entries(raw ?? {})) {
     const validUntil = v.valid_until ? new Date(v.valid_until) : null;
     if (validUntil && validUntil <= now) continue; // expiry enforced at request time even if the job is late
-    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources };
+    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources, sources: v.sources ?? [], conflict: v.conflict ?? false, verifiedAt: v.verified_at ? new Date(v.verified_at) : null };
   }
   return out;
 }
 
-export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number): Promise<Candidate[]> {
-  const radius = (maxTravelMinutes ?? DEFAULT_MAX_TRAVEL[mode]) * METRES_PER_MIN[mode] * 1.15;
+export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number, parkingBufferMinutes?: number): Promise<Candidate[]> {
+  // Search exactly as far as the travel estimate could ever call reachable (the same bound ingest uses), plus 5%.
+  const buffer = parkingBufferMinutes === undefined ? {} : { parkingBufferForHour: () => parkingBufferMinutes };
+  const radius = maxReachMetres(mode, maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[mode], buffer) * 1.05;
   const venues = (
     await q.query<VenueRow>(
       `select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon, v.timezone, v.parent_venue_id,
-              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources))
+              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids,
+                                                         'conflict', cf.conflict, 'verified_at', ${VERIFIED_AT_SQL}))
                           from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) as facts,
               (select sum(weight) from venue_overrides o where o.venue_id = v.id and o.kind = 'boost' and (o.expires_at is null or o.expires_at > $4)) as boost,
               exists(select 1 from venue_overrides o where o.venue_id = v.id and o.kind = 'exclude' and (o.expires_at is null or o.expires_at > $4)) as excluded,
-              exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark
+              exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark,
+              (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'brand' limit 1) as brand
          from venues v
         where v.publish_state = 'eligible'
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
@@ -76,6 +79,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
     boost: Number(v.boost ?? 0),
     excluded: v.excluded,
     hasLandmarkId: v.has_landmark,
+    brand: v.brand,
   }));
   if (!venues.length) return candidates;
   const occ = (
@@ -86,14 +90,18 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       [venues.map((v) => v.id), now, windowEnd],
     )
   ).rows;
+  // A programme venue with occurrences in the window is represented by them, not by a venue row;
+  // the venue row stays only when nothing is loaded, and the engine excludes it as NO_PROGRAMME.
+  const withProgramme = new Set(occ.map((o) => o.venue_id));
+  const kept = candidates.filter((c) => !(withProgramme.has(c.venueId) && PROGRAMME_CATEGORIES.has(c.category)));
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
-    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number }>(`select attribute, value, confidence, evidence_class, valid_until, independent_sources from current_facts where subject_kind = 'occurrence' and subject_id = $1`, [o.id])).rows;
+    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(`select cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = $1`, [o.id])).rows;
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
-    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources };
-    candidates.push({
+    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
+    kept.push({
       kind: "occurrence",
       id: o.id,
       venueId: o.venue_id,
@@ -107,9 +115,10 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       boost: Number(v.boost ?? 0),
       excluded: v.excluded,
       hasLandmarkId: v.has_landmark,
+      brand: v.brand,
     });
   }
-  return candidates;
+  return kept;
 }
 
 export async function loadPolicies(q: Queryable): Promise<Map<string, CategoryPolicy>> {
@@ -119,6 +128,12 @@ export async function loadPolicies(q: Queryable): Promise<Map<string, CategoryPo
   return out;
 }
 
+/** Parking buffer for a drive departing at `now`, from the area's parking rule (undefined = engine default). */
+export async function loadParkingBuffer(q: Queryable, areaSlug: string, now: Date, timezone: string): Promise<number | undefined> {
+  const rule = await loadParkingRule(q, areaSlug);
+  return rule ? parkingBufferAt(rule, localClock(now, timezone).hour) : undefined;
+}
+
 export function sunsetAt(p: LatLon, date: Date): Date | null {
   const t = SunCalc.getTimes(date, p.lat, p.lon).sunset;
   return t && !Number.isNaN(t.getTime()) ? t : null;
@@ -126,7 +141,7 @@ export function sunsetAt(p: LatLon, date: Date): Date | null {
 
 /** Persist a run for replay and the debug view. Context is coarsened: no precise coordinates. */
 export async function persistRun(q: Queryable, areaId: string | null, ctx: RequestContext, s: Shortlist, durationMs: number): Promise<string> {
-  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) } };
+  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset };
   const results = s.all.map((e) => ({
     item_kind: e.candidate.kind,
     item_id: e.candidate.id,

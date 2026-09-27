@@ -23,6 +23,8 @@
     "suncalc": "^1.9.0"
   },
   "devDependencies": {
-    "@types/suncalc": "^1.9.2"
+    "@types/suncalc": "^1.9.2",
+    "pg": "^8.13.0",
+    "@types/pg": "^8.11.10"
   }
 }

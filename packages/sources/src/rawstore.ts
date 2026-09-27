@@ -1,7 +1,7 @@
 import { contentHash } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 import { assertSourceAllowed, getSourcePolicy } from "@outrn/db";
-import type { OsmElement } from "./overpass.js";
+import type { OsmElement, SnapshotExtent } from "./overpass.js";
 
 /**
  * Source-owned storage. Raw records are versioned by content hash and kept per policy.
@@ -35,8 +35,10 @@ export interface UpsertCounts {
  * Upsert OSM elements as source_entities. Returns ids of records that are new or changed
  * so downstream normalization only touches what moved. Records present before but absent
  * from this full-area snapshot are tombstoned (deleted_at) — the source no longer lists them.
+ * Only records inside the snapshot's own extent can be tombstoned: a small replay must never
+ * retract what a wider fetch found.
  */
-export async function upsertOsmElements(q: Queryable, runId: string, areaId: string, elements: OsmElement[], fetchedAt: Date): Promise<{ counts: UpsertCounts; touchedIds: string[] }> {
+export async function upsertOsmElements(q: Queryable, runId: string, extent: SnapshotExtent, elements: OsmElement[], fetchedAt: Date): Promise<{ counts: UpsertCounts; touchedIds: string[] }> {
   const policy = await assertSourceAllowed(q, "osm", "retain");
   const retentionUntil = policy.retention_days ? new Date(fetchedAt.getTime() + policy.retention_days * 86_400_000) : null;
   const counts: UpsertCounts = { fetched: elements.length, new: 0, changed: 0, unchanged: 0, tombstoned: 0 };
@@ -75,15 +77,14 @@ export async function upsertOsmElements(q: Queryable, runId: string, areaId: str
       counts.unchanged++;
     }
   }
-  // Tombstone records in this area's extent that the snapshot no longer contains.
+  // Tombstone records in this snapshot's extent that it no longer contains.
   const tomb = await q.query<{ id: string }>(
     `update source_entities s set deleted_at = now()
-       from service_areas a
-      where s.source_id = 'osm' and s.kind = 'venue' and s.deleted_at is null and a.id = $1
-        and ST_DWithin(s.geom, a.center, coalesce(a.radius_m, 1500))
-        and not (s.external_id = any($2::text[]))
+      where s.source_id = 'osm' and s.kind = 'venue' and s.deleted_at is null
+        and ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4)
+        and not (s.external_id = any($1::text[]))
       returning s.id`,
-    [areaId, seen],
+    [seen, extent.lon, extent.lat, extent.radiusM],
   );
   counts.tombstoned = tomb.rowCount ?? 0;
   touched.push(...tomb.rows.map((r) => r.id));

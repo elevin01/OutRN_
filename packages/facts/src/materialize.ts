@@ -1,4 +1,4 @@
-import { contentHash, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
+import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 
 /**
@@ -9,16 +9,22 @@ import type { Queryable } from "@outrn/db";
  *  2. Class beats confidence: a published fact always outranks an estimate for the same attribute.
  *  3. Within a class, order by source trust, then confidence, then recency.
  *  4. Agreement counts once per lineage group. Independent agreeing sources raise confidence
- *     as 1 − Π(1 − cᵢ), capped. Disagreement inside the winning class marks conflict and dampens.
+ *     as 1 − Π(1 − cᵢ), capped. Disagreement inside the winning class marks conflict and dampens,
+ *     unless the disagreeing claim is both less trusted and older than the winner: a founder's
+ *     call on 26 Sep corrects a 2020 OSM tag, it does not contest it. An OSM edit made after the
+ *     call, or a claim from an equally trusted source, is still a conflict for review.
  *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim.
+ *  6. The venue row's canonical name and category follow the winning name/category facts, so
+ *     filtering and recommendations never disagree with current_facts (no source writes them directly).
  */
 
-export const MATERIALIZE_POLICY_VERSION = "2026-09-26.1";
+export const MATERIALIZE_POLICY_VERSION = "2026-09-27.1";
 
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
 const SOURCE_TRUST: Record<string, number> = {
   firstparty: 0.9,
+  founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
   user_observation: 0.7,
   osm: 0.6,
   foursquare_os: 0.6,
@@ -90,7 +96,8 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
       const winnerHash = contentHash(winner.value);
       const sameClass = list.filter((f) => f.evidence_class === winner.evidence_class);
       const agreeing = sameClass.filter((f) => contentHash(f.value) === winnerHash);
-      const disagreeing = sameClass.length - agreeing.length;
+      const winnerTrust = SOURCE_TRUST[winner.source_id] ?? 0.5;
+      const disagreeing = sameClass.filter((f) => contentHash(f.value) !== winnerHash && ((SOURCE_TRUST[f.source_id] ?? 0.5) >= winnerTrust || recency(f) > recency(winner))).length;
       // One vote per lineage group (or per source when no group is declared).
       const groups = new Map<string, number>();
       for (const f of agreeing) {
@@ -128,6 +135,17 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   const excluded = (await q.query(`select 1 from venue_overrides where venue_id = $1 and kind = 'exclude' and (expires_at is null or expires_at > $2) limit 1`, [venueId, now])).rowCount ?? 0;
   const v = (await q.query<{ publish_state: string; canonical_name: string; category: string }>(`select publish_state, canonical_name, category from venues where id = $1`, [venueId])).rows[0];
   if (!v) return 0;
+  if (v.publish_state !== "merged") {
+    const winName = (get("name")?.value as { value?: unknown } | undefined)?.value;
+    const winCategory = (get("category")?.value as { value?: unknown } | undefined)?.value;
+    const name = typeof winName === "string" && winName.trim() ? winName.trim() : v.canonical_name;
+    const category = typeof winCategory === "string" && isCategory(winCategory) ? winCategory : v.category;
+    if (name !== v.canonical_name || category !== v.category) {
+      await q.query(`update venues set canonical_name = $2, name_key = $3, category = $4, updated_at = now() where id = $1`, [venueId, name, matchKey(name), category]);
+      v.canonical_name = name;
+      v.category = category;
+    }
+  }
   let next = v.publish_state;
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";

@@ -24,7 +24,7 @@ export function PlaceCard({ evaluation, copy, index }: Props) {
   return (
     <article className="place-card">
       <div className="card-topline">
-        <span className="card-number">0{index + 1}</span>
+        <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
         <span className={`status-pill ${evaluation.class}`}>{copy.cta}</span>
       </div>
       <div>
@@ -35,7 +35,7 @@ export function PlaceCard({ evaluation, copy, index }: Props) {
         {copy.caveat && <p className="caveat">{copy.caveat}</p>}
       </div>
       <div className="card-actions">
-        <Link className="text-button" href={`/places/${item.venueId}`}>Details</Link>
+        <Link className="text-button" href={`/places/${item.venueId}${evaluation.timing ? `?mode=${evaluation.timing.travel.mode}` : ""}`}>Details</Link>
         <a className="map-button" href={mapsUrl(evaluation)} target="_blank" rel="noreferrer">Open in Maps <span aria-hidden="true">↗</span></a>
       </div>
     </article>

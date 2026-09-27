@@ -12,12 +12,13 @@ export function registerIngest(program: Command): void {
     .requiredOption("--area <slug>", "service area slug, e.g. les")
     .option("--from-file <path>", "replay a saved Overpass JSON response instead of fetching")
     .option("--save <path>", "save the fetched response for later replay")
-    .action(async (o: { area: string; fromFile?: string; save?: string }) => {
+    .option("--radius <m>", "override the derived ingest radius (catchment + max reach), metres", (v) => parseInt(v, 10))
+    .action(async (o: { area: string; fromFile?: string; save?: string; radius?: number }) => {
       const db = getDb();
       const t0 = Date.now();
-      const s = await ingestOsmArea(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
+      const s = await ingestOsmArea(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.radius ? { radiusM: o.radius } : {}), log: (l) => console.log(l) });
       console.log("");
-      console.log(`run ${s.runId} · area ${s.area} · ${Date.now() - t0} ms`);
+      console.log(`run ${s.runId} · area ${s.area} · extent ${s.extentM} m · ${Date.now() - t0} ms`);
       console.log(`  elements   ${s.fetched} kept, ${s.dropped} dropped${s.osmBaseTimestamp ? ` · OSM base ${s.osmBaseTimestamp}` : ""}`);
       console.log(`  raw        ${s.raw.new} new · ${s.raw.changed} changed · ${s.raw.unchanged} unchanged · ${s.raw.tombstoned} tombstoned`);
       console.log(`  venues     ${s.venues.created} created · ${s.venues.linked} linked to existing · ${s.venues.review} flagged for review · ${s.venues.children} child venues · ${s.venues.skipped} skipped`);

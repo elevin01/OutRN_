@@ -1,4 +1,4 @@
-import { contentHash, DEFAULT_VALIDITY_MINUTES, DYNAMIC_ATTRIBUTES, type FactInput } from "@outrn/core";
+import { contentHash, DEFAULT_VALIDITY_MINUTES, DYNAMIC_ATTRIBUTES, validateFactValue, type FactInput } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 
 /**
@@ -20,7 +20,8 @@ function validate(f: FactInput): string | null {
   if (f.evidenceClass === "observation" && !f.observedAt) return "observations need observed_at";
   if (DYNAMIC_ATTRIBUTES.has(f.attribute) && f.evidenceClass !== "observation") return `${f.attribute} may only be an observation`;
   if (f.value === undefined || f.value === null) return "value is required";
-  return null;
+  // Shape, not just presence: a malformed value must never reach the engine.
+  return validateFactValue(f.attribute, f.value);
 }
 
 export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<WriteResult> {

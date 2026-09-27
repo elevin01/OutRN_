@@ -32,7 +32,9 @@ export function SearchForm({ areas, defaults = {}, ops = false }: Props) {
       </label>
       <label>
         <span>Getting there</span>
-        <select name="mode" defaultValue={defaults["mode"] ?? "walk"}>
+        <select name="mode" defaultValue={defaults["mode"] ?? ""}>
+          {/* Empty = the area's own travel mode (drive in Bronxville, walk on the LES), resolved server-side. */}
+          <option value="">Area default</option>
           <option value="walk">Walk</option>
           <option value="transit">Transit</option>
           <option value="drive">Drive</option>

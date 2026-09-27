@@ -105,6 +105,7 @@ const BUSINESS_TYPES = new Set([
   "LocalBusiness", "Restaurant", "CafeOrCoffeeShop", "BarOrPub", "Bakery", "IceCreamShop", "FoodEstablishment",
   "Museum", "ArtGallery", "MovieTheater", "PerformingArtsTheater", "MusicVenue", "Library", "BookStore", "Store",
   "TouristAttraction", "Park", "NightClub", "Organization", "EntertainmentBusiness", "Winery", "Brewery",
+  "BowlingAlley", "Casino", "AmusementPark",
 ]);
 
 export function openingHoursFromSpec(spec: unknown): { weekly: WeeklyIntervals; evidence: string } | null {
