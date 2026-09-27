@@ -1,4 +1,4 @@
-import { contentHash, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
+import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 
 /**
@@ -14,6 +14,8 @@ import type { Queryable } from "@outrn/db";
  *     call on 26 Sep corrects a 2020 OSM tag, it does not contest it. An OSM edit made after the
  *     call, or a claim from an equally trusted source, is still a conflict for review.
  *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim.
+ *  6. The venue row's canonical name and category follow the winning name/category facts, so
+ *     filtering and recommendations never disagree with current_facts (no source writes them directly).
  */
 
 export const MATERIALIZE_POLICY_VERSION = "2026-09-27.1";
@@ -133,6 +135,17 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   const excluded = (await q.query(`select 1 from venue_overrides where venue_id = $1 and kind = 'exclude' and (expires_at is null or expires_at > $2) limit 1`, [venueId, now])).rowCount ?? 0;
   const v = (await q.query<{ publish_state: string; canonical_name: string; category: string }>(`select publish_state, canonical_name, category from venues where id = $1`, [venueId])).rows[0];
   if (!v) return 0;
+  if (v.publish_state !== "merged") {
+    const winName = (get("name")?.value as { value?: unknown } | undefined)?.value;
+    const winCategory = (get("category")?.value as { value?: unknown } | undefined)?.value;
+    const name = typeof winName === "string" && winName.trim() ? winName.trim() : v.canonical_name;
+    const category = typeof winCategory === "string" && isCategory(winCategory) ? winCategory : v.category;
+    if (name !== v.canonical_name || category !== v.category) {
+      await q.query(`update venues set canonical_name = $2, name_key = $3, category = $4, updated_at = now() where id = $1`, [venueId, name, matchKey(name), category]);
+      v.canonical_name = name;
+      v.category = category;
+    }
+  }
   let next = v.publish_state;
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";

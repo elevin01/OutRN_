@@ -102,9 +102,9 @@ export async function setFounderFact(db: Db, input: FounderFactInput): Promise<{
   return withTx(db, async (tx) => {
     const w = await writeFacts(tx, [founderFact(input.venueId, input.attribute, input.value, input.evidence, input.verifiedAt ?? now, confidence, now)]);
     if (w.rejected.length) throw new Error(`fact rejected: ${w.rejected.map((r) => r.reason).join("; ")}`);
-    if (input.attribute === "category") await tx.query(`update venues set category = $2, updated_at = now() where id = $1`, [input.venueId, (input.value as { value: Category }).value]);
-    if (input.attribute === "name") await tx.query(`update venues set canonical_name = $2, name_key = $3, updated_at = now() where id = $1`, [input.venueId, (input.value as { value: string }).value, matchKey((input.value as { value: string }).value)]);
     await audit(tx, { actor: input.actor ?? "founder", action: `fact.set.${input.attribute}`, targetKind: "venue", targetId: input.venueId, after: { value: input.value, evidence: input.evidence, verified_at: (input.verifiedAt ?? now).toISOString() } });
+    // Materialization decides the winner and keeps venues.name/category in step with it; a founder
+    // correction changes the venue row only if it actually wins over higher-trust sources.
     await materializeSubjects(tx, "venue", [input.venueId], now);
     const cur = await tx.query<{ source_ids: string[] }>(`select source_ids from current_facts where subject_kind = 'venue' and subject_id = $1 and attribute = $2`, [input.venueId, input.attribute]);
     return { inserted: w.inserted, superseded: w.superseded, winnerSources: cur.rows[0]?.source_ids ?? [] };

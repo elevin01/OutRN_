@@ -64,6 +64,33 @@ describe.skipIf(!available)("founder-entered supply", () => {
     expect(cf.rows[0]).toMatchObject({ conflict: true, source_ids: ["founder"] });
   });
 
+  const venueRow = async (id: string) => (await db.query<{ canonical_name: string; name_key: string; category: string }>(`select canonical_name, name_key, category from venues where id = $1`, [id])).rows[0]!;
+
+  it("a founder name/category correction that wins materialization updates the venue row", async () => {
+    const v = await resolveVenueRef(db, "Essex Kitchen");
+    await setFounderFact(db, { venueId: v.id, attribute: "category", value: { value: "bar" }, evidence: "visited 9/26: it's a bar now" });
+    const r = await setFounderFact(db, { venueId: v.id, attribute: "name", value: { value: "Essex Kitchen & Bar" }, evidence: "sign on the door, 9/26" });
+    expect(r.winnerSources).toEqual(["founder"]);
+    expect(await venueRow(v.id)).toEqual({ canonical_name: "Essex Kitchen & Bar", name_key: "essex kitchen and bar", category: "bar" });
+  });
+
+  it("a disagreeing first-party fact outranks a founder correction, and the venue row follows the winner", async () => {
+    const v = await resolveVenueRef(db, "Grand Kitchen");
+    const now = new Date();
+    const fp = (attribute: "name" | "category", value: unknown) => ({ subjectKind: "venue" as const, subjectId: v.id, attribute, value, evidenceClass: "published" as const, sourceId: "firstparty", evidence: "https://grandkitchen.example :: JSON-LD", fetchedAt: now, confidence: 0.85, lineageGroup: "firstparty:grandkitchen.example" });
+    await writeFacts(db, [fp("name", { value: "Grand Kitchen NYC" }), fp("category", { value: "restaurant" })]);
+    await materializeSubjects(db, "venue", [v.id]);
+    expect(await venueRow(v.id)).toMatchObject({ canonical_name: "Grand Kitchen NYC", category: "restaurant" });
+
+    const cat = await setFounderFact(db, { venueId: v.id, attribute: "category", value: { value: "bar" }, evidence: "looked like a bar" });
+    const name = await setFounderFact(db, { venueId: v.id, attribute: "name", value: { value: "Grand Kitchen Bar" }, evidence: "awning" });
+    expect(cat.winnerSources).toEqual(["firstparty", "osm"]); // OSM agrees with the venue's own site
+    expect(cat.winnerSources).not.toContain("founder");
+    expect(name.winnerSources).toEqual(["firstparty"]);
+    expect((await current(v.id, "category"))!.value).toEqual({ value: "restaurant" });
+    expect(await venueRow(v.id)).toMatchObject({ canonical_name: "Grand Kitchen NYC", category: "restaurant" });
+  });
+
   it("venues add links to the venue OSM already has instead of duplicating it", async () => {
     const existing = await db.query<{ id: string; lat: number; lon: number }>(`select id, ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues where canonical_name = 'Pitt Street Nightcap'`);
     const e = existing.rows[0]!;
