@@ -1,0 +1,42 @@
+{
+  "name": "@outrn/mobile",
+  "version": "0.1.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@outrn/contracts": "workspace:*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native/metro-config": "0.86.3",
+    "expo": "~57.0.25",
+    "expo-constants": "~57.0.19",
+    "expo-font": "~57.0.4",
+    "expo-linking": "~57.0.11",
+    "expo-router": "~57.0.23",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.2",
+    "react-native-web": "^0.21.3",
+    "react-native-worklets": "0.10.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "@types/react-dom": "~19.2.7",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "pnpm --filter @outrn/contracts build && expo start",
+    "android": "pnpm --filter @outrn/contracts build && expo start --android",
+    "ios": "pnpm --filter @outrn/contracts build && expo start --ios",
+    "web": "pnpm --filter @outrn/contracts build && expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint",
+    "export": "pnpm --filter @outrn/contracts build && expo export"
+  },
+  "private": true
+}
