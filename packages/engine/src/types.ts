@@ -82,6 +82,8 @@ export interface Candidate {
   hasLandmarkId: boolean;
   /** Chain brand from the source record (OSM `brand`), if any. */
   brand?: string | null;
+  /** The venue's own name. For an occurrence `name` is the event title; this is where it happens. */
+  venueName?: string;
 }
 
 export interface CategoryPolicy {
@@ -176,10 +178,22 @@ export interface Evaluation {
   price: { text: string; isEstimate: boolean; unknown: boolean };
 }
 
+/** A specific change that would admit more options: "allow a longer walk" (+4). */
+export interface Relaxation {
+  /** Stable id, e.g. "longer_travel". */
+  code: string;
+  /** Default wording, lower case so it reads inside a sentence. */
+  text: string;
+  /** How many currently excluded candidates this change alone would admit. */
+  admits: number;
+}
+
 export interface Shortlist {
   items: Evaluation[];
   /** Everything evaluated, for the "eligible right now" debug view. */
   all: Evaluation[];
+  /** Every eligible candidate in display order, up to the deepest page served. Pages are slices of this. */
+  ordered: Evaluation[];
   /** Position of items[0] in the display order ("More options" pages by offset). */
   offset: number;
   /** More eligible options exist after this page (and within the served page limit). */
@@ -188,7 +202,7 @@ export interface Shortlist {
   nextOffset: number | null;
   fewerThanThree: boolean;
   /** Specific relaxations to offer when fewer than three qualify. */
-  relaxations: string[];
+  relaxations: Relaxation[];
   engineVersion: string;
   weightsVersion: string;
 }

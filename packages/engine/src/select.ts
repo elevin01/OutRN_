@@ -1,5 +1,5 @@
 import { ACTIVITY_OF_CATEGORY } from "@outrn/core";
-import type { Evaluation, RequestContext, ResultClass, Shortlist } from "./types.js";
+import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
 import { compareEvaluations } from "./score.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
@@ -78,6 +78,7 @@ export function selectShortlist(all: Evaluation[], ctx: RequestContext, opts: { 
   return {
     items,
     all,
+    ordered: ordered.slice(0, maxOffset + size),
     offset,
     hasMore,
     nextOffset: hasMore ? next : null,
@@ -89,23 +90,24 @@ export function selectShortlist(all: Evaluation[], ctx: RequestContext, opts: { 
 }
 
 /** Which single change would admit the most currently-ineligible candidates? Offer that, specifically. */
-export function relaxations(all: Evaluation[], ctx: RequestContext): string[] {
+export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[] {
   const counts = new Map<string, number>();
   for (const e of all) {
     if (e.class !== "ineligible" || !e.excludedBy) continue;
     counts.set(e.excludedBy, (counts.get(e.excludedBy) ?? 0) + 1);
   }
-  const out: string[] = [];
-  const add = (code: string, text: string) => {
-    if ((counts.get(code) ?? 0) > 0) out.push(`${text} (+${counts.get(code)})`);
+  const out: Relaxation[] = [];
+  const add = (exclusion: string, code: string, text: string) => {
+    const admits = counts.get(exclusion) ?? 0;
+    if (admits > 0) out.push({ code, text, admits });
   };
-  add("TOO_FAR", ctx.mode === "walk" ? "allow a longer walk" : "allow a longer drive");
-  add("NOT_ENOUGH_TIME", "give it more time");
-  add("CLOSED_ON_ARRIVAL", "try a different time");
-  add("OVER_BUDGET", "raise the budget");
-  add("NOT_FREE", "include paid options");
-  add("NOT_REQUESTED", "widen the categories");
-  add("EVENT_ENDS_AFTER_DEADLINE", "stay out later");
+  add("TOO_FAR", "longer_travel", ctx.mode === "walk" ? "allow a longer walk" : ctx.mode === "drive" ? "allow a longer drive" : "allow a longer trip");
+  add("NOT_ENOUGH_TIME", "more_time", "give it more time");
+  add("CLOSED_ON_ARRIVAL", "different_time", "try a different time");
+  add("OVER_BUDGET", "higher_budget", "raise the budget");
+  add("NOT_FREE", "include_paid", "include paid options");
+  add("NOT_REQUESTED", "more_categories", "widen the categories");
+  add("EVENT_ENDS_AFTER_DEADLINE", "stay_later", "stay out later");
   // Accessibility and dismissals are never offered as relaxations.
   return out.slice(0, 3);
 }
