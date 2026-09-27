@@ -3,6 +3,7 @@ import { isCategory } from "@outrn/core";
 import { getDb } from "@outrn/db";
 import { parseFounderValue } from "@outrn/facts";
 import { addFounderVenue, findVenues } from "@outrn/ingest";
+import { parseVerifiedDate } from "./facts.js";
 
 export function registerVenues(program: Command): void {
   const venues = program.command("venues").description("Find venues; add places OSM does not have");
@@ -35,7 +36,7 @@ export function registerVenues(program: Command): void {
       if (!Number.isFinite(o.lat) || !Number.isFinite(o.lon)) throw new Error("--lat and --lon must be numbers");
       if (o.hours) parseFounderValue("opening_hours", o.hours);
       if (o.website) parseFounderValue("website", o.website);
-      const verifiedAt = o.verified ? new Date(o.verified) : undefined;
+      const verifiedAt = parseVerifiedDate(o.verified);
       const r = await addFounderVenue(getDb(), {
         name: o.name,
         category: o.category,

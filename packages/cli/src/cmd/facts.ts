@@ -4,6 +4,19 @@ import { isAttribute, parseFounderValue } from "@outrn/facts";
 import { resolveVenueRef, setFounderFact } from "@outrn/ingest";
 
 /**
+ * `--verified 2026-09-26` means that calendar day where the founder is. A bare date parses as UTC
+ * midnight, which is the previous evening in New York; anchor it at 12:00 UTC so the day survives
+ * rendering in any US timezone.
+ */
+export function parseVerifiedDate(s: string | undefined): Date | undefined {
+  if (!s) return undefined;
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(`${s}T12:00:00Z`) : new Date(s);
+  if (Number.isNaN(d.getTime())) throw new Error(`--verified is not a date: ${s}`);
+  if (d.getTime() > Date.now() + 86_400_000) throw new Error(`--verified is in the future: ${s}`);
+  return d;
+}
+
+/**
  * Founder-entered facts. `facts set` writes a published fact with source 'founder' and your
  * evidence; `facts show` prints what the engine currently believes, with source and age.
  */
@@ -23,8 +36,7 @@ export function registerFacts(program: Command): void {
       if (!isAttribute(attribute)) throw new Error(`unknown attribute '${attribute}'`);
       const value = parseFounderValue(attribute, raw, { json: o.json ?? false });
       const venue = await resolveVenueRef(db, venueRef, o.area ? { areaSlug: o.area } : {});
-      const verifiedAt = o.verified ? new Date(o.verified) : undefined;
-      if (verifiedAt && Number.isNaN(verifiedAt.getTime())) throw new Error(`--verified is not a date: ${o.verified}`);
+      const verifiedAt = parseVerifiedDate(o.verified);
       const r = await setFounderFact(db, { venueId: venue.id, attribute, value, evidence: o.evidence, ...(verifiedAt ? { verifiedAt } : {}), ...(o.confidence !== undefined ? { confidence: o.confidence } : {}), actor: "cli" });
       console.log(`${venue.name} [${venue.category}] · ${attribute} = ${JSON.stringify(value)}`);
       console.log(`  ${r.inserted ? "recorded" : "unchanged"}${r.superseded ? ` · superseded ${r.superseded} earlier founder value` : ""} · engine now uses: ${r.winnerSources.join(", ") || "—"}`);
