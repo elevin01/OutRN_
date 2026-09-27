@@ -35,4 +35,13 @@ describe("founder fact values", () => {
     expect(() => parseFounderValue("queue", "none")).toThrow(/observation/);
     expect(() => parseFounderValue("vibe", "great")).toThrow(/unknown attribute/);
   });
+
+  it("--json values are held to the same schema and founder checks as typed values", () => {
+    expect(() => parseFounderValue("business_status", "{}", { json: true })).toThrow(/invalid business_status value: business_status\.status/);
+    expect(() => parseFounderValue("price", '{"min": 40, "max": 20, "currency": "USD"}', { json: true })).toThrow(/min is above max/);
+    expect(() => parseFounderValue("opening_hours", '{"osm": "whenever"}', { json: true })).toThrow(/OSM syntax/);
+    expect(() => parseFounderValue("website", '{"value": "thepicturehouse.org"}', { json: true })).toThrow(/full URL/);
+    expect(parseFounderValue("parking", '{"kind": "lot", "cost": "free", "note": "village lot behind the station"}', { json: true })).toMatchObject({ kind: "lot", note: "village lot behind the station" });
+    expect(parseFounderValue("opening_hours", '{"weekly": [{"weekday": 5, "startMin": 960, "endMin": 1680}]}', { json: true })).toMatchObject({ weekly: [{ weekday: 5 }] });
+  });
 });

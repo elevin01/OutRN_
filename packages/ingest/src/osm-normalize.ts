@@ -46,6 +46,18 @@ export function hoursConfidence(sourceUpdatedAt: Date | null, now: Date): number
 
 const OUTDOOR: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint"]);
 
+/** OSM parking=* values → the controlled parking kinds (core fact-values). Unmapped values are "unknown", never passed through. */
+const PARKING_KIND: Record<string, "lot" | "street" | "garage" | "none"> = {
+  surface: "lot", lot: "lot", yes: "lot",
+  "multi-storey": "garage", underground: "garage", rooftop: "garage", garage: "garage", garage_boxes: "garage", carports: "garage",
+  street_side: "street", lane: "street", on_kerb: "street", half_on_kerb: "street", layby: "street", street: "street",
+  no: "none",
+};
+export function parkingKind(tag: string | undefined): "lot" | "street" | "garage" | "none" | "unknown" {
+  if (tag === undefined) return "lot"; // amenity=parking with no parking=* tag is a lot
+  return PARKING_KIND[tag] ?? "unknown";
+}
+
 export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const t = rec.tags;
   const rejects: string[] = [];
@@ -104,7 +116,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const outdoor = (category && OUTDOOR.has(category)) || t["leisure"] === "miniature_golf";
   if (category) est("indoor_outdoor", { value: outdoor ? "outdoor" : t["outdoor_seating"] === "yes" ? "mixed" : "indoor" }, 0.6);
 
-  if (t["parking"] || t["amenity"] === "parking") pub("parking", { kind: t["parking"] ?? "lot", cost: t["parking:fee"] === "no" ? "free" : t["parking:fee"] === "yes" ? "paid" : "unknown" }, `parking=${t["parking"] ?? "yes"}`, 0.6);
+  if (t["parking"] || t["amenity"] === "parking") pub("parking", { kind: parkingKind(t["parking"]), cost: t["parking:fee"] === "no" ? "free" : t["parking:fee"] === "yes" ? "paid" : "unknown" }, `parking=${t["parking"] ?? "yes"}`, 0.6);
 
   return {
     name,

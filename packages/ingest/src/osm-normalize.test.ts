@@ -77,4 +77,10 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Beach", natural: "beach" }), "price")).toBeUndefined();
     expect(fact(rec({ name: "Beach", natural: "beach" }), "indoor_outdoor")).toMatchObject({ value: { value: "outdoor" } });
   });
+
+  it("OSM parking=* values map into the controlled parking kinds, never passed through raw", () => {
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "multi-storey" }), "parking")).toMatchObject({ value: { kind: "garage" } });
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "street_side", "parking:fee": "no" }), "parking")).toMatchObject({ value: { kind: "street", cost: "free" } });
+    expect(fact(rec({ name: "Lot", amenity: "cafe", parking: "something_new" }), "parking")).toMatchObject({ value: { kind: "unknown" } });
+  });
 });

@@ -1,4 +1,4 @@
-import { ATTRIBUTES, CATEGORIES, DYNAMIC_ATTRIBUTES, isCategory, type Attribute } from "@outrn/core";
+import { ATTRIBUTES, CATEGORIES, DYNAMIC_ATTRIBUTES, isCategory, validateFactValue, type Attribute } from "@outrn/core";
 import { parseOsmHours } from "./hours.js";
 
 /**
@@ -19,9 +19,38 @@ export function isAttribute(x: string): x is Attribute {
   return (ATTRIBUTES as readonly string[]).includes(x);
 }
 
+/**
+ * Every founder value, typed or --json, must pass the attribute's runtime schema and the founder-only
+ * checks (hours that the evaluator can parse, a real http(s) website). A founder fact is published
+ * class and outranks OSM, so it gets the strictest gate.
+ */
+function checkFounderValue(attribute: Attribute, value: unknown): unknown {
+  const bad = validateFactValue(attribute, value);
+  if (bad) throw new Error(`invalid ${attribute} value: ${bad}`);
+  const v = value as Record<string, unknown>;
+  if (attribute === "opening_hours" && typeof v["osm"] === "string" && v["osm"].trim() !== "24/7") {
+    const { oh, error } = parseOsmHours(v["osm"]);
+    if (!oh) throw new Error(`opening_hours must be OSM syntax, e.g. "Mo-Su 16:00-04:00" (${error})`);
+  }
+  if (attribute === "website") {
+    let u: URL;
+    try {
+      u = new URL(String(v["value"]));
+    } catch {
+      throw new Error(`website must be a full URL, e.g. https://example.com`);
+    }
+    if (u.protocol !== "https:" && u.protocol !== "http:") throw new Error(`website must be http(s)`);
+  }
+  return value;
+}
+
 export function parseFounderValue(attribute: string, raw: string, opts: { json?: boolean } = {}): unknown {
   if (!isAttribute(attribute)) throw new Error(`unknown attribute '${attribute}'. One of: ${ATTRIBUTES.join(", ")}`);
   if (DYNAMIC_ATTRIBUTES.has(attribute)) throw new Error(`${attribute} changes minute to minute and can only be an observation, not a founder fact`);
+  return checkFounderValue(attribute, parseText(attribute, raw, opts));
+}
+
+function parseText(attribute: Attribute, raw: string, opts: { json?: boolean }): unknown {
   const text = raw.trim();
   if (opts.json) {
     try {
