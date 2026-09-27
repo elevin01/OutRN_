@@ -30,13 +30,15 @@ changes. For the real API, use its address and set `EXPO_PUBLIC_DEMO_MODE=false`
 environment variables are bundled into the app; never put secrets in them. Production APIs should
 use HTTPS and allow the web preview's origin if web access is required.
 
-Implementation screenshots and validation notes: [review](docs/REVIEW.md).
+Latest activity-first revision: [design and screenshots](docs/ACTIVITY-DECK.md).
+Original implementation and validation notes: [review](docs/REVIEW.md).
 
 ## Included
 
 - Warm paper, DM Sans, orange actions, category artwork, accessible 44+ point controls, safe areas,
   native stack navigation, and Now / Saved / You tabs.
-- API-generated area and filter choices, three-card shortlist, frozen cursor paging, pull to refresh,
+- One activity per screen, centered facts, swipe or button browsing, hidden filters, API-generated
+  area choices, frozen cursor paging, pull to refresh,
   low-supply explanations, expired searches, connection errors, and loading states.
 - Details with every required caveat, age restriction, unknown price, per-fact evidence, and source
   attribution. Estimates remain estimates. Clock times use the response area's timezone.
@@ -46,8 +48,10 @@ Implementation screenshots and validation notes: [review](docs/REVIEW.md).
   tab navigation but deliberately does not survive process restart. No location permission is used.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 
-The category artwork is original decorative UI, not a photo of a venue. The contract has no image
-field, so concept stock photos are not shipped as if they depict real places. DM Sans is bundled
+The contract has no image field. Production uses original decorative category artwork. Demo mode
+uses bundled mood photography with an explicit “not the venue” label; see
+[photo sources](assets/photos/README.md). Accurate venue photography needs a separate data change.
+DM Sans is bundled
 under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices

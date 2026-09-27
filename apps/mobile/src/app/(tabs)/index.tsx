@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { Pressable, RefreshControl, View } from "react-native";
+import { RefreshControl, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
+import type { RecommendationResponse } from "@outrn/contracts";
 import { useApp } from "../../state/app";
 import {
   Button,
   Copy,
-  Eyebrow,
   Heading,
-  Icon,
   IconButton,
   Loading,
   Panel,
@@ -17,25 +16,31 @@ import {
   colors,
   s,
 } from "../../components/ui";
-import { PlaceCard } from "../../components/PlaceCard";
+import { ActivityProfile } from "../../components/ActivityProfile";
 import { demoMode } from "../../lib/api";
-import { duration, isExpired } from "../../lib/presentation";
+import { isExpired } from "../../lib/presentation";
 export default function NowScreen() {
   const { areas, query, result, busy, error, search, initialize, outing } =
     useApp();
+  const [startAtEnd, setStartAtEnd] = useState<{
+    requestId: string;
+    offset: number;
+    queryKey: string;
+  }>();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
   const refresh = () => {
+    setStartAtEnd(undefined);
     if (query) void search(query);
     else void initialize();
   };
-  const area = areas?.areas.find((a) => a.id === query?.areaId);
   const expired = result && !demoMode && isExpired(result, now);
   return (
     <Screen
+      contentStyle={styles.screen}
       refreshControl={
         <RefreshControl
           refreshing={busy}
@@ -44,65 +49,21 @@ export default function NowScreen() {
         />
       }
     >
-      <Row style={s.between}>
-        <Copy style={{ fontSize: 26, fontWeight: "800", letterSpacing: -1 }}>
-          OutRN<Copy style={{ color: colors.signal, fontSize: 28 }}>↗</Copy>
+      <View style={styles.header}>
+        <IconButton
+          name={outing ? "navigation" : "refresh-cw"}
+          label={outing ? "Open your outing" : "Refresh activities"}
+          onPress={outing ? () => router.push("/outing") : refresh}
+        />
+        <Copy style={styles.wordmark}>
+          OutRN<Copy style={{ color: colors.signal, fontSize: 26 }}>↗</Copy>
         </Copy>
         <IconButton
           name="sliders"
           label="Adjust your plans"
           onPress={() => router.push("/filters")}
         />
-      </Row>
-      <View style={{ gap: 8 }}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Choose your area"
-          onPress={() => router.push("/areas")}
-          style={{ minHeight: 44, justifyContent: "center" }}
-        >
-          <Row>
-            <Icon name="map-pin" size={15} color={colors.accent} />
-            <Eyebrow>{area?.name || "Choose your area"}</Eyebrow>
-            <Icon name="chevron-down" size={14} />
-          </Row>
-        </Pressable>
-        <Heading>A good few{"\n"}hours ahead.</Heading>
-        <Copy style={s.muted}>Less planning. More getting out.</Copy>
       </View>
-      {query && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Edit time, travel and budget"
-          onPress={() => router.push("/filters")}
-          style={{
-            padding: 17,
-            backgroundColor: colors.sage,
-            borderRadius: 18,
-          }}
-        >
-          <Row style={s.between}>
-            <Row>
-              <Icon name="clock" size={18} />
-              <Copy style={{ fontWeight: "600" }}>
-                {duration(query.windowMinutes)} free
-              </Copy>
-            </Row>
-            <Copy style={{ textTransform: "capitalize" }}>
-              {query.travelMode || area?.defaultTravelMode}{" "}
-              <Icon name="chevron-down" size={14} />
-            </Copy>
-          </Row>
-        </Pressable>
-      )}
-      {outing && (
-        <Button
-          label={`Your outing · ${outing.item.name}`}
-          secondary
-          icon="arrow-right"
-          onPress={() => router.push("/outing")}
-        />
-      )}
       {busy ? (
         <Loading />
       ) : error ? (
@@ -134,86 +95,219 @@ export default function NowScreen() {
       ) : (
         result && (
           <>
-            {expired && (
+            {expired ? (
               <Panel warm>
-                <Copy>These plans have aged. Refresh before heading out.</Copy>
+                <Heading>Time for a fresh plan.</Heading>
+                <Copy>
+                  These recommendations have aged. Refresh before heading out.
+                </Copy>
                 <Button label="Find fresh options" onPress={refresh} />
               </Panel>
-            )}
-            <Row style={s.between}>
-              <Eyebrow>
-                {result.page.offset
-                  ? "A few more possibilities"
-                  : "Your shortlist"}
-              </Eyebrow>
-              <Copy style={{ fontSize: 13, color: colors.muted }}>
-                {result.items.length}{" "}
-                {result.items.length === 1 ? "option" : "options"}
-              </Copy>
-            </Row>
-            {result.insufficient && (
-              <Panel>
-                <Heading>
-                  {result.items.length
-                    ? "A shorter shortlist."
-                    : "Nothing quite fits. Yet."}
-                </Heading>
-                <Copy>
-                  {result.insufficient.found} of {result.insufficient.wanted}{" "}
-                  options fit this search.
-                </Copy>
-                {result.insufficient.relaxations.map((r) => (
-                  <Copy key={r.code}>
-                    {r.text} · {r.admits} more
-                  </Copy>
-                ))}
-                <Button
-                  label="Adjust your plans"
-                  secondary
-                  onPress={() => router.push("/filters")}
-                />
-              </Panel>
-            )}
-            {result.items.map((item, i) => (
-              <PlaceCard
-                key={item.id}
-                item={item}
-                index={result.page.offset + i}
-                featured={i === 0}
+            ) : (
+              <ActivityDeck
+                key={`${result.requestId}:${result.page.offset}`}
+                result={result}
+                startAtEnd={
+                  startAtEnd?.requestId === result.requestId &&
+                  startAtEnd?.offset === result.page.offset &&
+                  startAtEnd?.queryKey === JSON.stringify(query)
+                }
+                page={async (cursor, backwards) => {
+                  setStartAtEnd(
+                    backwards
+                      ? {
+                          requestId: result.requestId,
+                          queryKey: JSON.stringify(query),
+                          offset: Math.max(
+                            0,
+                            result.page.offset - result.page.size,
+                          ),
+                        }
+                      : undefined,
+                  );
+                  await search({ cursor });
+                }}
               />
-            ))}
-            <Row>
-              {result.page.prevCursor && (
-                <View style={{ flex: 1 }}>
-                  <Button
-                    label="Previous"
-                    secondary
-                    onPress={() =>
-                      void search({ cursor: result.page.prevCursor! })
-                    }
-                  />
-                </View>
-              )}
-              {result.page.nextCursor && (
-                <View style={{ flex: 1 }}>
-                  <Button
-                    label="More options"
-                    secondary
-                    icon="arrow-right"
-                    onPress={() =>
-                      void search({ cursor: result.page.nextCursor! })
-                    }
-                  />
-                </View>
-              )}
-            </Row>
-            <Copy style={[s.muted, { fontSize: 12, textAlign: "center" }]}>
-              A shortlist, not an endless scroll.{"\n"}
-              {result.attributions.join(" · ")}
-            </Copy>
+            )}
           </>
         )
       )}
     </Screen>
   );
 }
+function ActivityDeck({
+  result,
+  startAtEnd,
+  page,
+}: {
+  result: RecommendationResponse;
+  startAtEnd: boolean;
+  page: (cursor: string, backwards: boolean) => Promise<void>;
+}) {
+  const { saved, toggleSaved, hydrated, storageError } = useApp();
+  const [index, setIndex] = useState(
+    startAtEnd ? Math.max(0, result.items.length - 1) : 0,
+  );
+  const item = result.items[index];
+  const atEnd = index === result.items.length;
+  const back = () => {
+    if (index > 0) setIndex(index - 1);
+    else if (result.page.prevCursor) void page(result.page.prevCursor, true);
+  };
+  const next = () => {
+    if (index < result.items.length - 1) setIndex(index + 1);
+    else if (result.page.nextCursor) void page(result.page.nextCursor, false);
+    else setIndex(result.items.length);
+  };
+  const isSaved = !!item && saved.some((p) => p.id === item.placeId);
+  return (
+    <>
+      {item ? (
+        <>
+          <ActivityProfile
+            item={item}
+            onNext={next}
+            onPrevious={back}
+            position={`${result.page.offset + index + 1}`}
+          />
+          <Row style={styles.actions}>
+            <View style={styles.smallAction}>
+              <IconButton
+                name="chevron-left"
+                label="Previous activity"
+                disabled={index === 0 && !result.page.prevCursor}
+                onPress={back}
+              />
+              <Copy style={styles.actionLabel}>Back</Copy>
+            </View>
+            <View style={styles.primary}>
+              <Button
+                label="Details"
+                icon="arrow-up-right"
+                onPress={() =>
+                  router.push({
+                    pathname: "/place/[id]",
+                    params: { id: item.placeId, itemId: item.id },
+                  })
+                }
+              />
+            </View>
+            <View style={styles.smallAction}>
+              <IconButton
+                name="bookmark"
+                selected={isSaved}
+                disabled={!hydrated}
+                label={isSaved ? "Remove activity from saved" : "Save activity"}
+                onPress={() => {
+                  if (hydrated)
+                    toggleSaved({
+                      id: item.placeId,
+                      name: item.name,
+                      category: item.category.id,
+                    });
+                }}
+              />
+              <Copy style={styles.actionLabel}>
+                {isSaved ? "Saved" : "Save"}
+              </Copy>
+            </View>
+            <View style={styles.smallAction}>
+              <IconButton
+                name="arrow-right"
+                label="Next activity"
+                onPress={next}
+              />
+              <Copy style={styles.actionLabel}>Next</Copy>
+            </View>
+          </Row>
+          {storageError && (
+            <Copy accessibilityRole="alert">{storageError}</Copy>
+          )}
+          {result.insufficient && (
+            <Copy style={styles.supply}>
+              {result.insufficient.found}{" "}
+              {result.insufficient.found === 1
+                ? "activity fits"
+                : "activities fit"}{" "}
+              this search. More possibilities in your preferences.
+            </Copy>
+          )}
+        </>
+      ) : (
+        <Panel>
+          <Heading>
+            {atEnd && result.items.length
+              ? "That’s your shortlist."
+              : "Nothing quite fits. Yet."}
+          </Heading>
+          <Copy>
+            {result.items.length
+              ? "A few good possibilities. Revisit one, or adjust what you’re looking for."
+              : "Try a different time, budget, or kind of place."}
+          </Copy>
+          {result.items.length > 0 && (
+            <Button label="See activities again" onPress={() => setIndex(0)} />
+          )}
+          <Button
+            label="Adjust your plans"
+            secondary
+            onPress={() => router.push("/filters")}
+          />
+        </Panel>
+      )}
+      {(!item || result.insufficient) &&
+        result.insufficient?.relaxations.map((r) => (
+          <Copy key={r.code} style={styles.supply}>
+            {r.text} · {r.admits} more
+          </Copy>
+        ))}
+      <Copy style={styles.attribution}>
+        {result.attributions.join(" · ")}
+        {demoMode ? " · Mood photos: Unsplash" : ""}
+      </Copy>
+    </>
+  );
+}
+const styles = StyleSheet.create({
+  screen: {
+    padding: 12,
+    paddingTop: 8,
+    gap: 12,
+    maxWidth: 560,
+    paddingBottom: 20,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+  },
+  wordmark: {
+    fontSize: 25,
+    fontWeight: "800",
+    letterSpacing: -1,
+    textAlign: "center",
+  },
+  actions: {
+    justifyContent: "space-evenly",
+    gap: 10,
+    paddingHorizontal: 4,
+    alignItems: "flex-start",
+  },
+  smallAction: { alignItems: "center", gap: 4 },
+  actionLabel: { fontSize: 10, lineHeight: 14, color: colors.muted },
+  primary: { flex: 1, paddingTop: 0 },
+  supply: {
+    ...s.muted,
+    textAlign: "center",
+    fontSize: 13,
+    lineHeight: 19,
+    paddingHorizontal: 12,
+  },
+  attribution: {
+    ...s.muted,
+    textAlign: "center",
+    fontSize: 10,
+    lineHeight: 15,
+  },
+});

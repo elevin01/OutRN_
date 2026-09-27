@@ -10,6 +10,7 @@ import {
   type ColorValue,
   type RefreshControlProps,
   type ViewStyle,
+  type StyleProp,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Feather from "@expo/vector-icons/Feather";
@@ -97,20 +98,24 @@ export function IconButton({
   label,
   onPress,
   selected,
+  disabled,
 }: {
   name: IconName;
   label: string;
   onPress: () => void;
   selected?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         s.iconButton,
+        disabled && { opacity: 0.35 },
         selected && { backgroundColor: colors.sage },
         pressed && { opacity: 0.65 },
       ]}
@@ -150,15 +155,17 @@ export function Screen({
   children,
   footer,
   refreshControl,
+  contentStyle,
 }: {
   children: ReactNode;
   footer?: ReactNode;
+  contentStyle?: StyleProp<ViewStyle>;
   refreshControl?: React.ReactElement<RefreshControlProps>;
 }) {
   return (
     <SafeAreaView edges={["top", "left", "right"]} style={s.safe}>
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={[s.content, contentStyle]}
         keyboardShouldPersistTaps="handled"
         refreshControl={refreshControl}
       >
