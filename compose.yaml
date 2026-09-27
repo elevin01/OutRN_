@@ -36,7 +36,8 @@ services:
       DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
       HOST: 0.0.0.0
       PORT: "4000"
-      # Set to require a bearer token on /ops/v1/*. Unset: ops routes are open (development only).
+      # Set to require a bearer token on /ops/v1/*. Unset: ops routes are disabled (401). They are
+      # open without a token only under NODE_ENV=development (`pnpm dev`), never in this container.
       OUTRN_OPS_TOKEN: ${OUTRN_OPS_TOKEN:-}
       OUTRN_WEB_ORIGINS: http://localhost:3000
     ports:

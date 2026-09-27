@@ -28,7 +28,7 @@ pnpm api:mock    # the mock, no database
 | --- | --- | --- |
 | `DATABASE_URL` | — | Postgres with the OutRN schema |
 | `PORT` / `HOST` | `4000` / `127.0.0.1` | |
-| `OUTRN_OPS_TOKEN` | unset | Bearer token for `/ops/v1/*`. Unset: open in development, disabled when `NODE_ENV=production` |
+| `OUTRN_OPS_TOKEN` | unset | Bearer token for `/ops/v1/*`. Unset: disabled (401), except under `NODE_ENV=development` (`pnpm dev`) where they are open. An unset `NODE_ENV` is not development |
 | `OUTRN_WEB_ORIGINS` | `http://localhost:3000,…` | Browser origins allowed to call `/v1/*` directly (CORS) |
 
 ## Paging snapshots

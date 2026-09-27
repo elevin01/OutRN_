@@ -31,11 +31,13 @@ export function basicPassword(authorization: string | null | undefined): string 
   return colon === -1 ? null : decoded.slice(colon + 1);
 }
 
-/** Compare without an early exit, so timing does not reveal how much of a guess was right. */
-export function sameSecret(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+/**
+ * Compare without an early exit. The loop runs over the secret whatever was presented, so timing
+ * reveals neither how much of a guess was right nor the secret's length.
+ */
+export function sameSecret(presented: string, secret: string): boolean {
+  let diff = presented.length ^ secret.length;
+  for (let i = 0; i < secret.length; i++) diff |= (presented.charCodeAt(i) | 0) ^ secret.charCodeAt(i);
   return diff === 0;
 }
 

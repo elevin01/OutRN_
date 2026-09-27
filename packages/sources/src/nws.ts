@@ -1,12 +1,14 @@
 import { z } from "zod";
 import type { LatLon } from "@outrn/core";
-import { guardedFetch } from "./fetch.js";
+import { FetchBlocked, guardedFetch } from "./fetch.js";
 
 /**
  * National Weather Service hourly forecast for a point. Two calls: /points to find the
  * grid, then the hourly forecast URL it returns. Output is a compact hourly series the
  * engine's context rules consume. Weather is a suitability signal; closures win.
  */
+
+const NWS_HOST = "api.weather.gov";
 
 const PointsSchema = z.object({
   properties: z.object({ forecastHourly: z.string().url(), timeZone: z.string().optional() }),
@@ -44,9 +46,11 @@ export interface ForecastResult {
 
 export async function fetchHourlyForecast(p: LatLon): Promise<ForecastResult> {
   const common = { sourceId: "nws", accept: "application/geo+json, application/json", allowedContentTypes: ["application/geo+json", "application/json", "application/ld+json"], minIntervalMs: 1000, allowCrossHostRedirect: false };
-  const pts = await guardedFetch(`https://api.weather.gov/points/${p.lat.toFixed(4)},${p.lon.toFixed(4)}`, common);
-  const forecastUrl = PointsSchema.parse(JSON.parse(pts.text)).properties.forecastHourly;
-  const hr = await guardedFetch(forecastUrl, common);
+  const pts = await guardedFetch(`https://${NWS_HOST}/points/${p.lat.toFixed(4)},${p.lon.toFixed(4)}`, common);
+  // The second URL comes from the first response: follow it only to the NWS API itself.
+  const forecastUrl = new URL(PointsSchema.parse(JSON.parse(pts.text)).properties.forecastHourly);
+  if (forecastUrl.protocol !== "https:" || forecastUrl.host !== NWS_HOST) throw new FetchBlocked(`forecast URL points off ${NWS_HOST}: ${forecastUrl.host}`);
+  const hr = await guardedFetch(forecastUrl.toString(), common);
   const parsed = HourlySchema.parse(JSON.parse(hr.text));
   const hours = parsed.properties.periods.map((pe) => ({
     start: new Date(pe.startTime),
