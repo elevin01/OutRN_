@@ -58,6 +58,31 @@ farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
 
+## Areas
+
+| Area | Default mode | State |
+| --- | --- | --- |
+| Lower East Side, Bronxville | walk, drive | test (served) |
+| The Bronx | transit | ingest_only |
+| Yonkers, Mount Vernon, New Rochelle, Scarsdale, White Plains, Mamaroneck & Larchmont, Rye, Port Chester, Tarrytown & Sleepy Hollow | drive | ingest_only |
+
+An area's `launch_state` decides whether the API serves it: `test`, `private_beta` and `live` are
+served; `ingest_only` areas are being filled and checked; `paused` ones are withdrawn. To bring one
+online (needs network access to Overpass):
+
+```bash
+pnpm outrn areas list                                   # state, catchment, derived ingest extent, supply
+pnpm outrn ingest osm --area white_plains --save fixtures/live/white_plains.json
+pnpm outrn backtest --area white_plains                 # how often three options exist, by context
+pnpm outrn recommend --area white_plains --all          # eyeball a run (works before launch)
+pnpm outrn areas launch white_plains                    # the API and the UI dropdown now include it
+```
+
+`outrn areas add <slug> --name --lat --lon [--radius m] [--mode]` adds another town;
+`outrn areas set` corrects a center or catchment. The new areas' centers were placed by hand on
+each downtown's main street; check them on a map before launch. Drive areas' ingest extents are
+~13–15 km and overlap, so venues are shared between neighbours.
+
 ## Container quick start
 
 Docker Compose packages Node 22, the pinned pnpm dependency tree, the CLI, and PostgreSQL 16 with
@@ -132,6 +157,7 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | `outrn facts set <venue> <attribute> <value> --evidence "called 9/26" [--verified date] [--json]` | Record a fact you checked (published, source `founder`, trust 0.85); `<venue>` is an id or a unique name |
 | `outrn facts show <venue>` | What the engine believes about a venue: value, evidence class, source, confidence, age |
 | `outrn venues add --name --category --lat --lon --evidence [--hours --website --phone --area]` | Add a place OSM lacks; links to the existing venue instead if OSM has it |
+| `outrn areas list` / `add` / `set` / `launch` / `pause` | Service areas and their lifecycle (see Areas) |
 
 ## Layout
 

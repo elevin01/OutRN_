@@ -1,3 +1,7 @@
+// Opening-hours evaluation shifts wall clocks in the runtime's local zone; UTC keeps that exact on
+// every machine (the CLI does the same).
+process.env["TZ"] = "UTC";
+
 import { serve } from "@hono/node-server";
 import { getDb } from "@outrn/db";
 import { createApp } from "../http/app.js";

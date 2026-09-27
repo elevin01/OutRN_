@@ -2,9 +2,9 @@ import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
-import { reset, testDatabaseAvailable } from "@outrn/db";
+import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestExtentFor, ingestOsmArea } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -66,6 +66,49 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
     expect(areas.filters.categories.map((c) => c.id)).toContain("bowling");
+  });
+
+  it("serves only launched areas; operators can evaluate one before it opens", async () => {
+    now = SAT_EVENING;
+    const listed = AreasResponse.parse((await call("GET", "/v1/areas")).json).areas.map((a) => a.id);
+    expect(listed).toEqual(expect.arrayContaining(["les", "bronxville"]));
+    expect(listed).not.toContain("yonkers");
+    const closed = await call("POST", "/v1/recommendations", { areaId: "yonkers", windowMinutes: 120 });
+    expect(closed.status).toBe(400);
+    expect(ApiError.parse(closed.json).error.fields).toEqual([{ path: "areaId", message: '"yonkers" is not open yet' }]);
+    const ops = await call("POST", "/ops/v1/evaluate", { areaId: "yonkers", windowMinutes: 120 }, { authorization: `Bearer ${TOKEN}` });
+    expect(ops.status).toBe(200);
+    expect(OpsRunDetail.parse(ops.json).areaName).toBe("Yonkers");
+    await setLaunchState(db, "yonkers", "private_beta");
+    try {
+      expect(AreasResponse.parse((await call("GET", "/v1/areas")).json).areas.map((a) => a.id)).toContain("yonkers");
+      const open = await search({ areaId: "yonkers", windowMinutes: 120 });
+      expect(open.request.travelMode).toBe("drive");
+      expect(open.area.name).toBe("Yonkers");
+    } finally {
+      await setLaunchState(db, "yonkers", "ingest_only");
+    }
+  });
+
+  it("seeds the Westchester and Bronx areas with parking estimates, and derives their ingest extents", async () => {
+    const rows = (await db.query<{ slug: string; travel_mode: string; launch_state: string }>("select slug, travel_mode, launch_state from service_areas order by slug")).rows;
+    const added = ["bronx", "mamaroneck", "mount_vernon", "new_rochelle", "port_chester", "rye", "scarsdale", "tarrytown", "white_plains", "yonkers"];
+    for (const slug of added) expect(rows.find((r) => r.slug === slug), slug).toMatchObject({ launch_state: "ingest_only" });
+    expect(rows.find((r) => r.slug === "bronx")?.travel_mode).toBe("transit");
+    for (const slug of added) {
+      const area = await getArea(db, slug);
+      const parking = await loadParkingRule(db, slug);
+      const extent = ingestExtentFor(area, parking);
+      if (area.travel_mode === "drive") {
+        expect(parking, slug).not.toBeNull();
+        expect(extent.radiusM, slug).toBeGreaterThan(12_000);
+        expect(extent.radiusM, slug).toBeLessThan(17_000);
+      } else {
+        expect(extent.radiusM, slug).toBeGreaterThan(10_000);
+        expect(extent.radiusM, slug).toBeLessThan(14_000);
+      }
+    }
+    expect(await loadParkingRule(db, "bronx")).toMatchObject({ defaultMinutes: 15 });
   });
 
   it("answers a search with the engine's own first page, resolved defaults, and a frozen snapshot", async () => {

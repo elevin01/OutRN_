@@ -4,6 +4,7 @@
  *
  *   pnpm --filter @outrn/engine bench [area=les] [at=2026-10-03T22:30:00Z]
  */
+process.env["TZ"] = "UTC";
 import pg from "pg";
 import { getArea } from "@outrn/db";
 import { loadCandidates, loadPolicies, recommend, type Candidate, type RequestContext } from "../src/index.js";

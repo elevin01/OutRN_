@@ -30,7 +30,8 @@ function candidateOf(e: Evaluation, shortlisted: Set<string>): OpsCandidate {
 }
 
 export async function evaluate(q: Queryable, request: RecommendationRequest, opts: ServiceOptions = {}): Promise<OpsRunDetail> {
-  const run = await runEngine(q, request, opts);
+  // Operators may evaluate an area before it opens.
+  const run = await runEngine(q, request, { ...opts, overrides: { ...opts.overrides, includeUnlaunched: true } });
   const shortlisted = new Set(run.shortlist.items.map((e) => e.candidate.id));
   const results = run.shortlist.all.map((e) => candidateOf(e, shortlisted));
   const stored = (await q.query<{ context: Record<string, unknown>; created_at: Date }>(`select context, created_at from recommendation_runs where id = $1`, [run.runId])).rows[0]!;

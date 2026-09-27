@@ -1,6 +1,6 @@
 import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
 import type { Category, LatLon } from "@outrn/core";
-import { findArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
+import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadParkingBuffer, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
 import { invalid } from "../errors.js";
@@ -16,6 +16,8 @@ export interface InternalOverrides {
   backBy?: Date;
   maxTravelMinutes?: number;
   requireWheelchair?: boolean;
+  /** Evaluate an area that is not open yet (operators checking a new area before launch). */
+  includeUnlaunched?: boolean;
 }
 
 export interface ResolvedContext {
@@ -29,6 +31,7 @@ export interface ResolvedContext {
 export async function resolveRequest(q: Queryable, request: RecommendationRequest, now: Date, overrides: InternalOverrides = {}): Promise<ResolvedContext> {
   const area = await findArea(q, request.areaId);
   if (!area) throw invalid("areaId", `unknown area "${request.areaId}"`);
+  if (!isServedArea(area) && !overrides.includeUnlaunched) throw invalid("areaId", `"${request.areaId}" is not open yet`);
   if (request.mood !== undefined && !(request.mood in MOODS)) throw invalid("mood", `unknown mood "${request.mood}"`);
   if (request.company !== undefined && !(request.company in COMPANIES)) throw invalid("company", `unknown company "${request.company}"`);
   const categories = request.categories ?? [];

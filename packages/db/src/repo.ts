@@ -44,6 +44,66 @@ export async function listAreas(q: Queryable): Promise<ServiceAreaRow[]> {
   return r.rows;
 }
 
+export const LAUNCH_STATES = ["test", "ingest_only", "private_beta", "live", "paused"] as const;
+export type LaunchState = (typeof LAUNCH_STATES)[number];
+
+/** States the public API serves. 'ingest_only' areas are still being filled; 'paused' ones are withdrawn. */
+export const SERVED_LAUNCH_STATES: readonly LaunchState[] = ["test", "private_beta", "live"];
+
+export function isServedArea(area: Pick<ServiceAreaRow, "launch_state">): boolean {
+  return (SERVED_LAUNCH_STATES as readonly string[]).includes(area.launch_state);
+}
+
+export interface NewArea {
+  slug: string;
+  name: string;
+  lat: number;
+  lon: number;
+  /** Origin catchment, metres. */
+  radiusM: number;
+  travelMode: ServiceAreaRow["travel_mode"];
+  timezone?: string;
+}
+
+/** A new area starts 'ingest_only': fill it, check it, then launch it. */
+export async function insertArea(q: Queryable, a: NewArea): Promise<ServiceAreaRow> {
+  await q.query(
+    `insert into service_areas (slug, name, center, radius_m, timezone, travel_mode, launch_state)
+     values ($1, $2, ST_SetSRID(ST_MakePoint($4, $3), 4326)::geography, $5, $6, $7, 'ingest_only')`,
+    [a.slug, a.name, a.lat, a.lon, a.radiusM, a.timezone ?? "America/New_York", a.travelMode],
+  );
+  return getArea(q, a.slug);
+}
+
+export async function updateArea(q: Queryable, slug: string, changes: { name?: string; lat?: number; lon?: number; radiusM?: number; travelMode?: ServiceAreaRow["travel_mode"] }): Promise<ServiceAreaRow> {
+  const current = await getArea(q, slug);
+  const lat = changes.lat ?? current.lat;
+  const lon = changes.lon ?? current.lon;
+  await q.query(
+    `update service_areas set name = $2, center = ST_SetSRID(ST_MakePoint($4, $3), 4326)::geography, radius_m = $5, travel_mode = $6 where slug = $1`,
+    [slug, changes.name ?? current.name, lat, lon, changes.radiusM ?? current.radius_m, changes.travelMode ?? current.travel_mode],
+  );
+  return getArea(q, slug);
+}
+
+export async function setLaunchState(q: Queryable, slug: string, state: LaunchState): Promise<ServiceAreaRow> {
+  const r = await q.query(`update service_areas set launch_state = $2 where slug = $1`, [slug, state]);
+  if (!r.rowCount) throw new Error(`unknown service area: ${slug}`);
+  return getArea(q, slug);
+}
+
+/** Supply inside an area's ingest extent, and when it was last ingested. */
+export async function areaSupply(q: Queryable, area: ServiceAreaRow, extentM: number): Promise<{ eligibleVenues: number; lastIngestAt: Date | null }> {
+  const r = await q.query<{ eligible: string; last_ingest: Date | null }>(
+    `select (select count(*) from venues v
+              where v.publish_state = 'eligible'
+                and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4)) as eligible,
+            (select max(finished_at) from ingestion_runs where area_id = $1 and status = 'succeeded') as last_ingest`,
+    [area.id, area.lon, area.lat, extentM],
+  );
+  return { eligibleVenues: Number(r.rows[0]!.eligible), lastIngestAt: r.rows[0]!.last_ingest };
+}
+
 /** The area's parking context rule, if one applies (context_rules key parking_*, effect.applies_to.area). */
 export async function loadParkingRule(q: Queryable, areaSlug: string): Promise<ParkingRule | null> {
   const r = await q.query<{ effect: { default_minutes?: number; by_hour?: { from: number; to: number; minutes: number }[] } }>(
