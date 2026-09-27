@@ -101,7 +101,6 @@ export type ReasonCode =
   | "PRICE_UNKNOWN"
   | "LATE_ENTRY_UNCERTAIN"
   | "ACCESS_LIMITED"
-  | "SHOWTIMES_UNKNOWN"
   | "WAIT_FOR_OPENING";
 
 export type ExclusionCode =
@@ -121,7 +120,8 @@ export type ExclusionCode =
   | "ACCESS_UNKNOWN"
   | "NOT_ACCESSIBLE"
   | "DISMISSED"
-  | "CHILD_OF_SHOWN_PARENT";
+  | "CHILD_OF_SHOWN_PARENT"
+  | "NO_PROGRAMME";
 
 export interface Timing {
   travel: TravelEstimate;

@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { PROGRAMME_CATEGORIES } from "@outrn/core";
 import { audit, getDb } from "@outrn/db";
 import { materializeSubjects } from "@outrn/facts";
 import { confirmSplit, mergeVenues } from "@outrn/identity";
@@ -36,6 +37,20 @@ export function registerOps(program: Command): void {
       console.log(`\neligible venues missing essentials (${rows.length}):`);
       for (const r of rows.slice(0, 40)) console.log(`  ${r.name.padEnd(34)} ${r.category.padEnd(12)} missing ${r.missing.join(", ")}`);
       if (rows.length > 40) console.log(`  … ${rows.length - 40} more`);
+      const programme = await db.query<{ id: string; name: string; category: string; website: string | null }>(
+        `select v.id, v.canonical_name as name, v.category,
+                (select cf.value->>'value' from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id and cf.attribute = 'website') as website
+           from venues v
+          where v.publish_state = 'eligible' and v.category = any($1::text[])
+            and not exists (select 1 from firstparty_sites s where s.venue_id = v.id and s.enabled)
+          order by v.canonical_name`,
+        [[...PROGRAMME_CATEGORIES]],
+      );
+      console.log(`\nprogramme venues with no showtimes source (${programme.rowCount}) — never shown until one is registered:`);
+      for (const r of programme.rows) {
+        console.log(`  ${r.name.padEnd(34)} ${r.category.padEnd(12)} ${r.id}`);
+        console.log(`    outrn firstparty add ${r.id} ${r.website ?? "<showtimes-url>"} --reason "showtimes"`);
+      }
       const sites = await db.query<{ url: string; last_status: string }>(`select url, last_status from firstparty_sites where enabled and last_status is not null and last_status <> 'ok' order by last_fetched_at desc limit 20`);
       console.log(`\nfirst-party sites not ok (${sites.rowCount}):`);
       for (const r of sites.rows) console.log(`  ${r.url} → ${r.last_status}`);

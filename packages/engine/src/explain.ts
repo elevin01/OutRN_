@@ -30,7 +30,6 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   PRICE_UNKNOWN: "price unknown",
   LATE_ENTRY_UNCERTAIN: "may be past last entry",
   ACCESS_LIMITED: "limited accessibility",
-  SHOWTIMES_UNKNOWN: "showtimes not loaded",
 };
 
 export interface CardCopy {

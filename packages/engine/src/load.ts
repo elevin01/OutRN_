@@ -1,5 +1,5 @@
 import SunCalc from "suncalc";
-import type { Attribute, Category, LatLon, TravelMode } from "@outrn/core";
+import { PROGRAMME_CATEGORIES, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
 import { loadCategoryPolicies, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
@@ -86,6 +86,10 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       [venues.map((v) => v.id), now, windowEnd],
     )
   ).rows;
+  // A programme venue with occurrences in the window is represented by them, not by a venue row;
+  // the venue row stays only when nothing is loaded, and the engine excludes it as NO_PROGRAMME.
+  const withProgramme = new Set(occ.map((o) => o.venue_id));
+  const kept = candidates.filter((c) => !(withProgramme.has(c.venueId) && PROGRAMME_CATEGORIES.has(c.category)));
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
@@ -93,7 +97,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
     for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources };
-    candidates.push({
+    kept.push({
       kind: "occurrence",
       id: o.id,
       venueId: o.venue_id,
@@ -109,7 +113,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       hasLandmarkId: v.has_landmark,
     });
   }
-  return candidates;
+  return kept;
 }
 
 export async function loadPolicies(q: Queryable): Promise<Map<string, CategoryPolicy>> {

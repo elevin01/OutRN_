@@ -1,4 +1,4 @@
-import { addMinutes, estimateTravel, localClock, minutesBetween, type Attribute } from "@outrn/core";
+import { addMinutes, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing } from "./types.js";
 
@@ -48,6 +48,10 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
 
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out("CLOSED_PERMANENTLY");
+
+  // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
+  // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".
+  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) return out("NO_PROGRAMME");
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
@@ -105,9 +109,6 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
-
-  // A cinema, theatre or music venue without a loaded occurrence has hours but no programme.
-  if (["cinema", "theatre", "live_music"].includes(c.category)) unresolved.push("SHOWTIMES_UNKNOWN");
 
   // Flexible visit: hours
   const hoursFact = fact(c, "opening_hours");

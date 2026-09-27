@@ -179,6 +179,26 @@ describe("feasibility: fixed-start occurrences", () => {
   });
 });
 
+describe("feasibility: programme venues", () => {
+  it("a cinema with no occurrence loaded for the window is ineligible (NO_PROGRAMME), whatever its hours", () => {
+    const withHours = one(venue({ category: "cinema", hours: "Mo-Su 12:00-23:30", admission: "ticket" }), ctx("2026-09-26 21:37", 120));
+    expect(withHours.excludedBy).toBe("NO_PROGRAMME");
+    const noHours = one(venue({ category: "theatre", hours: null }), ctx("2026-09-26 21:37", 120));
+    expect(noHours.excludedBy).toBe("NO_PROGRAMME");
+  });
+
+  it("a screening that fits the window is still a candidate, and NO_PROGRAMME is never offered as a relaxation", () => {
+    const start = fromLocal("2026-09-26", 22 * 60, TZ);
+    const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);
+    const screening = venue({ kind: "occurrence", category: "cinema", hours: null, admission: "ticket", occurrence: { id: "s1", title: "10pm show", start, end, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    const e = one(screening, ctx("2026-09-26 21:37", 120));
+    expect(e.class).toBe("check_first");
+    expect(e.cta).toBe("book");
+    const s = recommend([venue({ category: "cinema", hours: null })], ctx("2026-09-26 21:37", 120), POLICIES);
+    expect(s.relaxations.join(" ")).not.toMatch(/programme/i);
+  });
+});
+
 describe("feasibility: travel, deadlines, budget, access", () => {
   it("beyond max travel → TOO_FAR", () => {
     expect(one(venue({ point: FAR }), ctx("2026-10-03 15:00", 240)).excludedBy).toBe("TOO_FAR");
@@ -291,6 +311,8 @@ describe("selection: diversity and fewer than three", () => {
     expect(ids).toEqual(expect.arrayContaining(["ernies", "growlers", "haagen"]));
     expect(ids).not.toContain("picturehouse");
     expect(s.items.every((e) => e.class === "ready")).toBe(true);
+    // And the cinema had nothing on: it is not an option at all, not a "check first".
+    expect(s.all.find((e) => e.candidate.id === "picturehouse")!.excludedBy).toBe("NO_PROGRAMME");
   });
 
   it("class beats diversity: a Check-first venue with a fresh activity type never displaces a Ready one", () => {
