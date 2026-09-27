@@ -1,0 +1,236 @@
+{
+  "areas": [
+    {
+      "id": "bronxville",
+      "name": "Bronxville (test point)",
+      "timezone": "America/New_York",
+      "defaultTravelMode": "drive",
+      "center": {
+        "lat": 40.941,
+        "lon": -73.835
+      }
+    },
+    {
+      "id": "les",
+      "name": "Lower East Side (test point)",
+      "timezone": "America/New_York",
+      "defaultTravelMode": "walk",
+      "center": {
+        "lat": 40.7185,
+        "lon": -73.988
+      }
+    }
+  ],
+  "defaultAreaId": "les",
+  "filters": {
+    "windows": [
+      {
+        "minutes": 60,
+        "label": "1 hour"
+      },
+      {
+        "minutes": 120,
+        "label": "2 hours"
+      },
+      {
+        "minutes": 180,
+        "label": "3 hours"
+      },
+      {
+        "minutes": 240,
+        "label": "4 hours"
+      }
+    ],
+    "defaultWindowMinutes": 180,
+    "travelModes": [
+      {
+        "id": "walk",
+        "label": "Walk"
+      },
+      {
+        "id": "transit",
+        "label": "Transit"
+      },
+      {
+        "id": "drive",
+        "label": "Drive"
+      }
+    ],
+    "budgets": [
+      {
+        "id": "any",
+        "label": "Any",
+        "budget": {
+          "kind": "any"
+        }
+      },
+      {
+        "id": "free",
+        "label": "Free",
+        "budget": {
+          "kind": "free"
+        }
+      },
+      {
+        "id": "max_2500",
+        "label": "Up to $25",
+        "budget": {
+          "kind": "max",
+          "maxCents": 2500,
+          "currency": "USD"
+        }
+      },
+      {
+        "id": "max_5000",
+        "label": "Up to $50",
+        "budget": {
+          "kind": "max",
+          "maxCents": 5000,
+          "currency": "USD"
+        }
+      }
+    ],
+    "moods": [
+      {
+        "id": "relaxed",
+        "label": "Relaxed"
+      },
+      {
+        "id": "active",
+        "label": "Active"
+      },
+      {
+        "id": "food",
+        "label": "Food"
+      },
+      {
+        "id": "culture",
+        "label": "Culture"
+      }
+    ],
+    "companies": [
+      {
+        "id": "alone",
+        "label": "Just me"
+      },
+      {
+        "id": "date",
+        "label": "Date"
+      },
+      {
+        "id": "friends",
+        "label": "Friends"
+      },
+      {
+        "id": "family",
+        "label": "Family"
+      }
+    ],
+    "categories": [
+      {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      {
+        "id": "cafe",
+        "label": "Cafe"
+      },
+      {
+        "id": "bar",
+        "label": "Bar"
+      },
+      {
+        "id": "dessert",
+        "label": "Dessert"
+      },
+      {
+        "id": "museum",
+        "label": "Museum"
+      },
+      {
+        "id": "gallery",
+        "label": "Gallery"
+      },
+      {
+        "id": "theatre",
+        "label": "Theatre"
+      },
+      {
+        "id": "cinema",
+        "label": "Cinema"
+      },
+      {
+        "id": "live_music",
+        "label": "Live music"
+      },
+      {
+        "id": "arts_centre",
+        "label": "Arts centre"
+      },
+      {
+        "id": "community",
+        "label": "Community"
+      },
+      {
+        "id": "market",
+        "label": "Market"
+      },
+      {
+        "id": "park",
+        "label": "Park"
+      },
+      {
+        "id": "garden",
+        "label": "Garden"
+      },
+      {
+        "id": "waterfront",
+        "label": "Waterfront"
+      },
+      {
+        "id": "viewpoint",
+        "label": "Viewpoint"
+      },
+      {
+        "id": "attraction",
+        "label": "Attraction"
+      },
+      {
+        "id": "library",
+        "label": "Library"
+      },
+      {
+        "id": "bookshop",
+        "label": "Bookshop"
+      },
+      {
+        "id": "bowling",
+        "label": "Bowling"
+      },
+      {
+        "id": "arcade",
+        "label": "Arcade"
+      },
+      {
+        "id": "nightclub",
+        "label": "Nightclub"
+      },
+      {
+        "id": "activity",
+        "label": "Activity"
+      }
+    ]
+  },
+  "limits": {
+    "windowMinutes": {
+      "min": 30,
+      "max": 480
+    },
+    "youngestAge": {
+      "min": 0,
+      "max": 120
+    },
+    "maxCategories": 5,
+    "pageSize": 3
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "id": "00000000-0000-4000-8000-000000000018",
+  "name": "Ridge Tavern",
+  "category": {
+    "id": "bar",
+    "label": "Bar"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.720409,
+    "lon": -73.998263
+  },
+  "address": null,
+  "status": "operating",
+  "hoursNow": {
+    "state": "open",
+    "closesAt": "2026-10-04T06:00:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 2am"
+  },
+  "price": {
+    "kind": "unknown"
+  },
+  "ageLimit": null,
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Mo-Su 12:00-02:00",
+      "detail": "Open now until 2am",
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.554,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Indoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+      }
+    }
+  ],
+  "contact": {
+    "websiteUrl": null,
+    "phone": null
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=driving"
+    }
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

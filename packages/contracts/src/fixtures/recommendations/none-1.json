@@ -1,0 +1,52 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000024",
+  "asOf": "2026-10-04T08:30:00.000Z",
+  "generatedAt": "2026-10-04T08:30:00.000Z",
+  "expiresAt": "2026-10-04T08:50:00.000Z",
+  "area": {
+    "id": "mock-none",
+    "name": "Mock · nothing fits",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "areaId": "mock-none",
+    "windowMinutes": 30,
+    "travelMode": "walk",
+    "travelModeIsDefault": true,
+    "budget": {
+      "kind": "free"
+    },
+    "mood": null,
+    "company": null,
+    "youngestAge": null,
+    "categories": [
+      "museum"
+    ],
+    "at": "2026-10-04T08:30:00.000Z",
+    "atIsExplicit": false
+  },
+  "items": [],
+  "page": {
+    "offset": 0,
+    "size": 3,
+    "nextCursor": null,
+    "prevCursor": null
+  },
+  "insufficient": {
+    "found": 0,
+    "wanted": 3,
+    "relaxations": [
+      {
+        "code": "different_time",
+        "text": "try a different time",
+        "admits": 4
+      },
+      {
+        "code": "more_categories",
+        "text": "widen the categories",
+        "admits": 76
+      }
+    ]
+  },
+  "attributions": []
+}

@@ -21,8 +21,54 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.20.4)
 
+  packages/api:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^2.1.1
+        version: 2.1.1(hono@4.13.9)
+      '@outrn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@outrn/core':
+        specifier: workspace:*
+        version: link:../core
+      '@outrn/db':
+        specifier: workspace:*
+        version: link:../db
+      '@outrn/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@outrn/facts':
+        specifier: workspace:*
+        version: link:../facts
+      hono:
+        specifier: ^4.13.9
+        version: 4.13.9
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@outrn/ingest':
+        specifier: workspace:*
+        version: link:../ingest
+      '@types/pg':
+        specifier: ^8.11.10
+        version: 8.23.1
+      pg:
+        specifier: ^8.13.0
+        version: 8.23.0
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.15
+
   packages/cli:
     dependencies:
+      '@outrn/api':
+        specifier: workspace:*
+        version: link:../api
+      '@outrn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
       '@outrn/core':
         specifier: workspace:*
         version: link:../core
@@ -47,6 +93,16 @@ importers:
       commander:
         specifier: ^12.1.0
         version: 12.1.0
+    devDependencies:
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.15
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       tsx:
         specifier: ^4.19.0
@@ -162,15 +218,9 @@ importers:
 
   packages/web:
     dependencies:
-      '@outrn/core':
+      '@outrn/contracts':
         specifier: workspace:*
-        version: link:../core
-      '@outrn/db':
-        specifier: workspace:*
-        version: link:../db
-      '@outrn/engine':
-        specifier: workspace:*
-        version: link:../engine
+        version: link:../contracts
       next:
         specifier: 16.3.6
         version: 16.3.6(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -180,6 +230,9 @@ importers:
       react-dom:
         specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@types/react':
         specifier: 19.3.0
@@ -486,6 +539,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@hono/node-server@2.1.1':
+    resolution: {integrity: sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      hono: ^4
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -946,6 +1005,10 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  hono@4.13.9:
+    resolution: {integrity: sha512-7dMkQmZoC4E6F7AtaQSPhlWAdnBti+j7rreMZl8QB4jFiEhP9TWbGWUMi8WYzBCgmgulxuvLQupKqo+Co6Omyg==}
+    engines: {node: '>=16.9.0'}
+
   i18next@26.4.2:
     resolution: {integrity: sha512-RX+R0VLg13IbvRuJSxnqykUFS9vQZTl8wYpWPCIUDWVrSGjsQywB5Y+pjzrkboxGAuYfJZVH1InFTdgBdxq6ug==}
     peerDependencies:
@@ -1389,6 +1452,10 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
+  '@hono/node-server@2.1.1(hono@4.13.9)':
+    dependencies:
+      hono: 4.13.9
+
   '@img/colour@1.1.0':
     optional: true
 
@@ -1766,6 +1833,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  hono@4.13.9: {}
 
   i18next@26.4.2(typescript@5.9.3):
     optionalDependencies:

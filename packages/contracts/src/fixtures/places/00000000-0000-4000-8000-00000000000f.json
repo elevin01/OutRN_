@@ -1,0 +1,159 @@
+{
+  "id": "00000000-0000-4000-8000-00000000000f",
+  "name": "Suffolk Park",
+  "category": {
+    "id": "park",
+    "label": "Park"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.935386,
+    "lon": -73.836374
+  },
+  "address": null,
+  "status": "operating",
+  "hoursNow": {
+    "state": "open",
+    "closesAt": "2026-10-04T02:00:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 10pm"
+  },
+  "price": {
+    "kind": "free",
+    "evidence": "estimate"
+  },
+  "ageLimit": null,
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Mo-Su 06:00-22:00",
+      "detail": "Open now until 10pm",
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.474,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · published"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.35,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Outdoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
+      }
+    }
+  ],
+  "contact": {
+    "websiteUrl": "https://suffolkpark.example/",
+    "phone": null
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=driving"
+    }
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

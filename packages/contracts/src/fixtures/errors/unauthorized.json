@@ -1,0 +1,10 @@
+{
+  "status": 401,
+  "body": {
+    "error": {
+      "code": "UNAUTHORIZED",
+      "message": "Ops routes need Authorization: Bearer <OUTRN_OPS_TOKEN>.",
+      "retryable": false
+    }
+  }
+}

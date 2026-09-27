@@ -1,0 +1,161 @@
+{
+  "id": "00000000-0000-4000-8000-000000000014",
+  "name": "Pitt Street Nightcap",
+  "category": {
+    "id": "bar",
+    "label": "Bar"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.715594,
+    "lon": -73.996037
+  },
+  "address": null,
+  "status": "operating",
+  "hoursNow": {
+    "state": "closed",
+    "closesAt": null,
+    "opensAt": "2026-10-04T00:00:00.000Z",
+    "summary": "Closed now · opens 8pm today"
+  },
+  "price": {
+    "kind": "unknown"
+  },
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Mo-Su 20:00-04:00",
+      "detail": "Closed now · opens 8pm today",
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.507,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · published"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "category_policy",
+            "label": "category default"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": null,
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "retrieved Sep 20",
+        "summary": "category default · retrieved Sep 20 · estimate"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Indoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+      }
+    }
+  ],
+  "contact": {
+    "websiteUrl": null,
+    "phone": null
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=driving"
+    }
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

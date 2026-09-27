@@ -1,0 +1,246 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000011",
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "generatedAt": "2026-10-03T22:30:00.000Z",
+  "expiresAt": "2026-10-03T22:50:00.000Z",
+  "area": {
+    "id": "mock-bars",
+    "name": "Mock · bars, date night",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "areaId": "mock-bars",
+    "windowMinutes": 180,
+    "travelMode": "walk",
+    "travelModeIsDefault": true,
+    "budget": {
+      "kind": "any"
+    },
+    "mood": null,
+    "company": "date",
+    "youngestAge": null,
+    "categories": [
+      "bar"
+    ],
+    "at": "2026-10-03T22:30:00.000Z",
+    "atIsExplicit": false
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000003",
+      "name": "Clinton Bar",
+      "placeName": "Clinton Bar",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.723404,
+        "lon": -73.980264
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 14,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:49:00.000Z",
+        "usefulMinutes": 161,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 161
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "HOURS_CONFIRMED",
+          "text": "hours confirmed",
+          "params": {
+            "verifiedAt": "2026-09-29T16:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown",
+        "sentence": "Plenty of time, open late, hours confirmed.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+        "websiteUrl": null,
+        "phone": "+1 212 555 8297"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000000c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "name": "Ridge Bar",
+      "placeName": "Ridge Bar",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.725116,
+        "lon": -73.989173
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:48:00.000Z",
+        "usefulMinutes": 162,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 162
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~13 min walk · until 2am, you'd have 2h42 · price unknown",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking",
+        "websiteUrl": "https://stantonallenkitchen.example/",
+        "phone": "+1 212 555 7512"
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000012",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000012",
+      "name": "Broome Bar",
+      "placeName": "Broome Bar",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.727149,
+        "lon": -73.992962
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:53:00.000Z",
+        "usefulMinutes": 157,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 157
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T07:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~18 min walk · until 3am, you'd have 2h37 · price unknown",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
+        "websiteUrl": "https://broomebar.example/",
+        "phone": "+1 212 555 3125"
+      }
+    }
+  ],
+  "page": {
+    "offset": 0,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6M30",
+    "prevCursor": null
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

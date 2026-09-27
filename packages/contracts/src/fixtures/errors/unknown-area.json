@@ -1,0 +1,16 @@
+{
+  "status": 400,
+  "body": {
+    "error": {
+      "code": "VALIDATION_FAILED",
+      "message": "areaId: unknown area \"atlantis\"",
+      "retryable": false,
+      "fields": [
+        {
+          "path": "areaId",
+          "message": "unknown area \"atlantis\""
+        }
+      ]
+    }
+  }
+}

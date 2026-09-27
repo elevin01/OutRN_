@@ -1,0 +1,10 @@
+{
+  "status": 400,
+  "body": {
+    "error": {
+      "code": "CURSOR_INVALID",
+      "message": "This page link is not valid. Start a new search.",
+      "retryable": false
+    }
+  }
+}
