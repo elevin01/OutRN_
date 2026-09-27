@@ -1,0 +1,57 @@
+name: outrn
+
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_DB: outrn
+      POSTGRES_USER: outrn
+      POSTGRES_PASSWORD: outrn
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U outrn -d outrn"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+      OUTRN_USER_AGENT: "${OUTRN_USER_AGENT:-outrn-container (contact: local@example.invalid)}"
+      OVERPASS_URL: ${OVERPASS_URL:-https://overpass-api.de/api/interpreter}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  test:
+    build:
+      context: .
+    entrypoint: ["pnpm"]
+    command: ["test"]
+    environment:
+      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+      OUTRN_USER_AGENT: "outrn-test (contact: local@example.invalid)"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["test"]
+
+  e2e:
+    build:
+      context: .
+    entrypoint: ["bash", "scripts/e2e.sh"]
+    environment:
+      DATABASE_URL: postgres://outrn:outrn@db:5432/outrn
+      OUTRN_USER_AGENT: "outrn-e2e (contact: local@example.invalid)"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["test"]
+
+volumes:
+  postgres-data:

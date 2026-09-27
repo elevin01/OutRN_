@@ -50,6 +50,32 @@ pnpm outrn ingest osm --area les --save fixtures/live/les.json
 pnpm outrn ingest osm --area bronxville --save fixtures/live/bronxville.json
 ```
 
+## Container quick start
+
+Docker Compose packages Node 22, the pinned pnpm dependency tree, the CLI, and PostgreSQL 16 with
+PostGIS. No host Node, pnpm, or PostgreSQL installation is needed.
+
+```bash
+# Build the application image and start the database
+docker compose build app
+docker compose up -d db
+
+# Initialize the schema and use the CLI
+docker compose run --rm app migrate
+docker compose run --rm app ingest osm --area les --from-file fixtures/osm/les-synthetic.json
+docker compose run --rm app recommend --area les --at 2026-10-03T22:30:00Z --minutes 180 --all
+
+# Run all tests (including the PostgreSQL/PostGIS integration test) and the full offline workflow
+docker compose --profile test run --rm test
+docker compose --profile test run --rm e2e
+
+# Stop services. Add -v only when you also want to delete the local database volume.
+docker compose down
+```
+
+Set `OUTRN_USER_AGENT` in the shell or a local `.env` before making live source requests. Compose
+uses the named `outrn_postgres-data` volume so application data survives container replacement.
+
 `fixtures/osm/*-synthetic.json` are **invented** — see `fixtures/README.md`. They exist so the pipeline
 runs identically offline; the identity-resolution traps in them (node+way duplicate, chain branches,
 museum café, closed bar, six-year-old hours) are the acceptance cases.
