@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.1.0";
-export const WEIGHTS_VERSION = "2026-09-27.2";
+export const WEIGHTS_VERSION = "2026-09-27.3";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -44,6 +44,10 @@ export interface FactView {
   independentSources: number;
   /** Sources behind the winning value (current_facts.source_ids), e.g. ["founder"], ["osm"]. */
   sources?: string[];
+  /** Disagreement inside the winning evidence class (current_facts.conflict). */
+  conflict?: boolean;
+  /** Latest verification of the winning value (founder check or observation); never a fetch time. */
+  verifiedAt?: Date | null;
 }
 
 export interface OccurrenceView {

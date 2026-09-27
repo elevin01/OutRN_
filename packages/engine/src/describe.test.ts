@@ -40,12 +40,20 @@ describe("detail page facts", () => {
   });
 
   it("founder hours read as confirmed on the check date; OSM dates are never called verification", () => {
-    const [hours] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, sources: ["founder"], asOf: new Date("2026-09-26T20:00:00Z") }) }, { tz: TZ, point: P, now: NOW });
-    expect(hours).toMatchObject({ label: "Hours", value: "Mo-Su 16:00-04:00", detail: "Open now until 4am", source: "OutRN", age: "confirmed Sep 26", evidence: "published" });
+    const [hours] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, sources: ["founder", "osm"], asOf: new Date("2026-09-26T20:00:00Z"), verifiedAt: new Date("2026-09-26T12:00:00Z") }) }, { tz: TZ, point: P, now: NOW });
+    expect(hours).toMatchObject({ label: "Hours", value: "Mo-Su 16:00-04:00", detail: "Open now until 4am", source: "OutRN + OpenStreetMap", age: "confirmed Sep 26", evidence: "published" });
     const [osm] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" } }) }, { tz: TZ, point: P, now: NOW });
     expect(osm!.age).not.toMatch(/confirm|verif/);
     const [site] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, sources: ["firstparty"], asOf: null }) }, { tz: TZ, point: P, now: NOW });
     expect(site).toMatchObject({ source: "venue website", age: "retrieved Sep 26" });
+  });
+
+  it("the confirmed date is the check, not a later OSM edit of the same value; old checks are due for recheck", () => {
+    const agreed = rec({ value: { osm: "Mo-Su 16:00-04:00" }, sources: ["founder", "osm"], asOf: new Date("2026-09-20T12:00:00Z"), verifiedAt: new Date("2026-06-01T12:00:00Z") });
+    const [row] = describeFacts({ opening_hours: agreed }, { tz: TZ, point: P, now: NOW });
+    expect(row!.age).toBe("confirmed Jun 1 · due for recheck");
+    const [fresh] = describeFacts({ opening_hours: { ...agreed, verifiedAt: new Date("2026-09-01T12:00:00Z") } }, { tz: TZ, point: P, now: NOW });
+    expect(fresh!.age).toBe("confirmed Sep 1");
   });
 
   it("kind and audience rows", () => {

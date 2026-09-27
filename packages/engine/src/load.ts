@@ -1,5 +1,5 @@
 import SunCalc from "suncalc";
-import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
+import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
 import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
@@ -17,7 +17,7 @@ interface VenueRow {
   lon: number;
   timezone: string;
   parent_venue_id: string | null;
-  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number; sources: string[] | null }>;
+  facts: Record<string, { value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: string | null; independent_sources: number; sources: string[] | null; conflict: boolean | null; verified_at: string | null }>;
   boost: string | null;
   excluded: boolean;
   has_landmark: boolean;
@@ -40,7 +40,7 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   for (const [k, v] of Object.entries(raw ?? {})) {
     const validUntil = v.valid_until ? new Date(v.valid_until) : null;
     if (validUntil && validUntil <= now) continue; // expiry enforced at request time even if the job is late
-    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources, sources: v.sources ?? [] };
+    out[k as Attribute] = { value: v.value, confidence: Number(v.confidence), evidenceClass: v.evidence_class, validUntil, independentSources: v.independent_sources, sources: v.sources ?? [], conflict: v.conflict ?? false, verifiedAt: v.verified_at ? new Date(v.verified_at) : null };
   }
   return out;
 }
@@ -52,7 +52,8 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   const venues = (
     await q.query<VenueRow>(
       `select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon, v.timezone, v.parent_venue_id,
-              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids))
+              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids,
+                                                         'conflict', cf.conflict, 'verified_at', ${VERIFIED_AT_SQL}))
                           from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) as facts,
               (select sum(weight) from venue_overrides o where o.venue_id = v.id and o.kind = 'boost' and (o.expires_at is null or o.expires_at > $4)) as boost,
               exists(select 1 from venue_overrides o where o.venue_id = v.id and o.kind = 'exclude' and (o.expires_at is null or o.expires_at > $4)) as excluded,
@@ -96,10 +97,10 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
-    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[] }>(`select attribute, value, confidence, evidence_class, valid_until, independent_sources, source_ids from current_facts where subject_kind = 'occurrence' and subject_id = $1`, [o.id])).rows;
+    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(`select cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = $1`, [o.id])).rows;
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
-    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids };
+    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
     kept.push({
       kind: "occurrence",
       id: o.id,

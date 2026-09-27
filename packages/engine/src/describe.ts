@@ -1,4 +1,4 @@
-import { localClock, type LatLon } from "@outrn/core";
+import { isFreshConfirmation, localClock, type LatLon } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { fmtTime } from "./explain.js";
 
@@ -19,6 +19,8 @@ export interface FactRecord {
   asOf: Date | null;
   /** When we retrieved it. Never rendered as a verification. */
   fetchedAt: Date | null;
+  /** Latest verification (founder check or observation). The only date that may read as "confirmed". */
+  verifiedAt?: Date | null;
 }
 
 export interface FactRow {
@@ -157,7 +159,10 @@ export function sourceLabel(sources: string[]): string {
 /** Age wording by what the date actually means for the winning source. */
 export function ageLabel(f: FactRecord, tz: string, now: Date): string | null {
   const primary = f.sources[0];
-  if (primary === "founder" && f.asOf) return `confirmed ${fmtDate(f.asOf, tz, now)}`;
+  if (f.verifiedAt && primary !== "user_observation") {
+    const recheck = !isFreshConfirmation(f.verifiedAt, false, now) ? " · due for recheck" : "";
+    return `confirmed ${fmtDate(f.verifiedAt, tz, now)}${recheck}`;
+  }
   if (primary === "user_observation" && f.asOf) {
     const mins = Math.round((now.getTime() - f.asOf.getTime()) / 60_000);
     return mins < 90 ? `reported ${Math.max(1, mins)} min ago` : `reported ${fmtDate(f.asOf, tz, now)}`;

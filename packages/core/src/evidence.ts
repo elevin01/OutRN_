@@ -81,6 +81,22 @@ export interface FactInput {
   ingestionRunId?: string | null;
 }
 
+/**
+ * A "confirmed" claim needs a verification event, not a retrieval: the founder's check date
+ * (source_updated_at on a founder fact) or an observation's observed_at. It holds for this many days,
+ * and never while the fact is in conflict; older checks go to the recheck queue.
+ */
+export const CONFIRMATION_MAX_AGE_DAYS = 90;
+
+/** SQL for a current_facts row's verification time: latest founder check or observation among its agreeing inputs (never fetched_at). */
+export const VERIFIED_AT_SQL = `(select max(case when f.source_id = 'founder' then f.source_updated_at when f.evidence_class = 'observation' then f.observed_at end) from facts f where f.id = any(cf.input_fact_ids))`;
+
+export function isFreshConfirmation(verifiedAt: Date | null | undefined, conflict: boolean | undefined, now: Date): boolean {
+  if (!verifiedAt || conflict) return false;
+  const age = now.getTime() - verifiedAt.getTime();
+  return age >= -86_400_000 && age <= CONFIRMATION_MAX_AGE_DAYS * 86_400_000;
+}
+
 /** Default usefulness windows by attribute, in minutes. Policy, not fact. */
 export const DEFAULT_VALIDITY_MINUTES: Partial<Record<Attribute, number>> = {
   crowd_level: 30,

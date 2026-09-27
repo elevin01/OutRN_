@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Category, TravelMode } from "@outrn/core";
-import { CATEGORIES } from "@outrn/core";
+import { CATEGORIES, VERIFIED_AT_SQL } from "@outrn/core";
 import { getArea, getDb, listAreas, type ServiceAreaRow } from "@outrn/db";
 import {
   explain,
@@ -117,7 +117,7 @@ export async function place(id: string): Promise<PlaceDetail | null> {
       lon: number;
       timezone: string;
       publish_state: string;
-      facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; validUntil: string | null; sources: string[]; conflict: boolean; asOf: string | null; fetchedAt: string | null }>;
+      facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; validUntil: string | null; sources: string[]; conflict: boolean; asOf: string | null; fetchedAt: string | null; verifiedAt: string | null }>;
       tags: Record<string, string> | null;
     }>(
       `select v.id, v.canonical_name, v.category,
@@ -128,7 +128,8 @@ export async function place(id: string): Promise<PlaceDetail | null> {
                 'evidenceClass', cf.evidence_class, 'validUntil', cf.valid_until,
                 'sources', cf.source_ids, 'conflict', cf.conflict,
                 'asOf', (select max(coalesce(f.observed_at, f.source_updated_at)) from facts f where f.id = any(cf.input_fact_ids)),
-                'fetchedAt', (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids))))
+                'fetchedAt', (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids)),
+                'verifiedAt', ${VERIFIED_AT_SQL}))
                 from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) facts,
               (select se.raw->'tags' from entity_links el join source_entities se on se.id = el.source_entity_id
                 where el.venue_id = v.id and el.superseded_by is null order by el.decided_at desc limit 1) tags
@@ -148,7 +149,7 @@ export async function place(id: string): Promise<PlaceDetail | null> {
     facts: Object.fromEntries(
       Object.entries(row.facts).map(([key, fact]) => [
         key,
-        { ...fact, confidence: Number(fact.confidence), sources: fact.sources ?? [], asOf: fact.asOf ? new Date(fact.asOf) : null, fetchedAt: fact.fetchedAt ? new Date(fact.fetchedAt) : null },
+        { ...fact, confidence: Number(fact.confidence), sources: fact.sources ?? [], asOf: fact.asOf ? new Date(fact.asOf) : null, fetchedAt: fact.fetchedAt ? new Date(fact.fetchedAt) : null, verifiedAt: fact.verifiedAt ? new Date(fact.verifiedAt) : null },
       ]),
     ),
     tags: row.tags ?? {},

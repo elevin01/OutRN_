@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { PROGRAMME_CATEGORIES } from "@outrn/core";
+import { CONFIRMATION_MAX_AGE_DAYS, PROGRAMME_CATEGORIES } from "@outrn/core";
 import { audit, getDb } from "@outrn/db";
 import { materializeSubjects } from "@outrn/facts";
 import { confirmSplit, mergeVenues } from "@outrn/identity";
@@ -52,6 +52,23 @@ export function registerOps(program: Command): void {
         console.log(`  ${r.name.padEnd(34)} ${r.category.padEnd(12)} ${r.id}`);
         console.log(`    outrn firstparty add ${r.id} ${r.website ?? "<showtimes-url>"} --reason "showtimes"`);
       }
+      // Recheck policy: a founder check holds CONFIRMATION_MAX_AGE_DAYS; older or disputed material facts come back here.
+      const recheck = await db.query<{ id: string; name: string; attribute: string; verified: Date; conflict: boolean }>(
+        `select v.id, v.canonical_name as name, cf.attribute, max(f.source_updated_at) as verified, cf.conflict
+           from current_facts cf
+           join venues v on v.id = cf.subject_id and v.publish_state = 'eligible'
+           join facts f on f.id = any(cf.input_fact_ids) and f.source_id = 'founder'
+          where cf.subject_kind = 'venue' and cf.attribute = any($1::text[])
+          group by v.id, v.canonical_name, cf.attribute, cf.conflict
+         having max(f.source_updated_at) < now() - make_interval(days => $2) or cf.conflict
+          order by max(f.source_updated_at) limit 60`,
+        [["opening_hours", "admission", "business_status"], CONFIRMATION_MAX_AGE_DAYS],
+      );
+      console.log(`\nfounder checks due for recheck (${recheck.rowCount}) — older than ${CONFIRMATION_MAX_AGE_DAYS} days or disputed; no longer shown as confirmed:`);
+      for (const r of recheck.rows) {
+        console.log(`  ${r.name.padEnd(34)} ${r.attribute.padEnd(16)} checked ${r.verified.toISOString().slice(0, 10)}${r.conflict ? " · DISPUTED" : ""}  ${r.id}`);
+      }
+      if (recheck.rowCount) console.log(`  re-check with: outrn facts set <id> <attribute> <value> --evidence "called <date>"`);
       const sites = await db.query<{ url: string; last_status: string }>(`select url, last_status from firstparty_sites where enabled and last_status is not null and last_status <> 'ok' order by last_fetched_at desc limit 20`);
       console.log(`\nfirst-party sites not ok (${sites.rowCount}):`);
       for (const r of sites.rows) console.log(`  ${r.url} → ${r.last_status}`);

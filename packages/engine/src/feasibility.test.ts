@@ -29,14 +29,14 @@ const POLICIES = new Map<string, CategoryPolicy>([
 ]);
 
 let n = 0;
-function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number }): Candidate {
+function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number }): Candidate {
   const id = over.id ?? `v${++n}`;
   const facts: Candidate["facts"] = {
     name: { value: { value: over.name ?? id }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 },
     business_status: { value: { status: "operating" }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 },
     admission: { value: { requirement: over.admission ?? "walk_in" }, confidence: 0.6, evidenceClass: over.admission ? "published" : "estimate", validUntil: null, independentSources: 1 },
   };
-  if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1, sources: over.hoursSources ?? ["osm"] };
+  if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1, sources: over.hoursSources ?? ["osm"], verifiedAt: over.hoursVerifiedAt ?? null, conflict: over.hoursConflict ?? false };
   if (over.price !== undefined) facts.price = { value: over.price, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.wheelchair) facts.wheelchair = { value: { value: over.wheelchair }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.lastEntry) facts.last_entry_offset = { value: { minutes: over.lastEntry }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
@@ -379,15 +379,31 @@ describe("appeal signals", () => {
     expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
   });
 
-  it("hours confirmed by the founder or the venue's own site earn a boost and say so", () => {
-    const checked = venue({ id: "checked", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.9, hoursSources: ["founder"] });
+  const daysBefore = (x: RequestContext, days: number) => new Date(x.now.getTime() - days * 86_400_000);
+
+  it("hours checked recently and undisputed earn the 'confirmed' boost and say so", () => {
+    const x = ctx("2026-09-26 21:37", 120);
+    const checked = venue({ id: "checked", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.9, hoursSources: ["founder"], hoursVerifiedAt: daysBefore(x, 10) });
     const mapped = venue({ id: "mapped", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.9 });
-    const [a, b] = evaluateAll([checked, mapped], ctx("2026-09-26 21:37", 120), POLICIES);
+    const [a, b] = evaluateAll([checked, mapped], x, POLICIES);
     expect(a!.scores.appeal - b!.scores.appeal).toBeCloseTo(0.1, 3);
     expect(a!.reasons).toContain("HOURS_CONFIRMED");
     expect(explain(a!, TZ).sentence).toMatch(/hours confirmed/);
-    const s = recommend([mapped, checked], ctx("2026-09-26 21:37", 120), POLICIES);
+    const s = recommend([mapped, checked], x, POLICIES);
     expect(s.items[0]!.candidate.id).toBe("checked");
+  });
+
+  it("an old check, a disputed one, or hours merely published by the venue site are not 'confirmed'", () => {
+    const x = ctx("2026-09-26 21:37", 120);
+    const stale = venue({ id: "stale", category: "bar", hours: "Mo-Su 16:00-04:00", hoursSources: ["founder"], hoursVerifiedAt: daysBefore(x, 120) });
+    const disputed = venue({ id: "disputed", category: "bar", hours: "Mo-Su 16:00-04:00", hoursSources: ["founder"], hoursVerifiedAt: daysBefore(x, 10), hoursConflict: true });
+    const site = venue({ id: "site", category: "bar", hours: "Mo-Su 16:00-04:00", hoursConf: 0.85, hoursSources: ["firstparty"] }); // retrieved, never verified
+    const plain = venue({ id: "plain", category: "bar", hours: "Mo-Su 16:00-04:00" });
+    const [s1, s2, s3, p] = evaluateAll([stale, disputed, site, plain], x, POLICIES);
+    for (const e of [s1!, s2!, s3!]) {
+      expect(e.reasons).not.toContain("HOURS_CONFIRMED");
+      expect(e.scores.appeal).toBe(p!.scores.appeal);
+    }
   });
 });
 

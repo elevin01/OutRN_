@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { reset } from "@outrn/db";
+import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { loadCandidates } from "../src/load.js";
 
 /**
@@ -61,5 +62,23 @@ describe.skipIf(!available)("loadCandidates", () => {
     expect(rows).not.toContain(`venue:${cinemaWithShow}`);
     expect(rows).toContain(`venue:${cinemaDark}`);
     expect(rows).toContain(`venue:${bar}`);
+  });
+
+  it("carries the verification time of the winning value (a founder check), never a fetch time", async () => {
+    const origin = { lat: 40.941, lon: -73.835 };
+    const checked = await venue("Checked Tavern", "bar", 40.9413, -73.8353);
+    const site = await venue("Site Tavern", "bar", 40.9414, -73.8354);
+    const checkedOn = new Date("2026-09-26T12:00:00Z");
+    const now = new Date("2026-09-27T01:37:00Z");
+    await writeFacts(db, [
+      { subjectKind: "venue", subjectId: checked, attribute: "opening_hours", value: { osm: "Mo-Su 16:00-04:00" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: called 9/26", sourceUpdatedAt: checkedOn, fetchedAt: now, confidence: 0.9, lineageGroup: "founder" },
+      { subjectKind: "venue", subjectId: site, attribute: "opening_hours", value: { osm: "Mo-Su 16:00-02:00" }, evidenceClass: "published", sourceId: "firstparty", evidence: "https://site.example :: JSON-LD", sourceUpdatedAt: null, fetchedAt: now, confidence: 0.85, lineageGroup: "firstparty:site.example" },
+    ]);
+    await materializeSubjects(db, "venue", [checked, site]);
+    const cands = await loadCandidates(db, origin, "drive", now, new Date(now.getTime() + 7_200_000));
+    const hours = (id: string) => cands.find((c) => c.id === id)!.facts.opening_hours!;
+    expect(hours(checked).verifiedAt?.toISOString()).toBe(checkedOn.toISOString());
+    expect(hours(checked).conflict).toBe(false);
+    expect(hours(site).verifiedAt).toBeNull();
   });
 });
