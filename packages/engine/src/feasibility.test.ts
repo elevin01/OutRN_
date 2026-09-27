@@ -204,6 +204,13 @@ describe("feasibility: travel, deadlines, budget, access", () => {
     expect(one(venue({ point: FAR }), ctx("2026-10-03 15:00", 240)).excludedBy).toBe("TOO_FAR");
   });
 
+  it("a drive uses the area's parking buffer when the request carries one", () => {
+    const c = venue({ category: "bar", hours: "Mo-Su 16:00-24:00", point: { lat: 40.745, lon: -73.988 } });
+    const base = one(c, ctx("2026-10-03 19:00", 120, { mode: "drive" }));
+    const evening = one(c, ctx("2026-10-03 19:00", 120, { mode: "drive", parkingBufferMinutes: 5 }));
+    expect(evening.timing!.travel.minutes).toBe(base.timing!.travel.minutes - 3);
+  });
+
   it("a 'back by' deadline subtracts the return trip", () => {
     const c = venue({ category: "cafe", hours: "Mo-Su 07:00-23:00" });
     const x = ctx("2026-10-03 15:00", 240, { backBy: fromLocal("2026-10-03", 16 * 60, TZ) });

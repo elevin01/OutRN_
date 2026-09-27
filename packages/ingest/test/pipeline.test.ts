@@ -104,4 +104,25 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const overlook = await db.query<{ n: string }>(`select count(*) as n from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'East River Overlook'`);
     expect(Number(overlook.rows[0]!.n)).toBe(0);
   });
+
+  it("a replayed capture only tombstones inside the extent it was saved with", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags: Record<string, string> }[] };
+    const center = { lat: 40.7185, lon: -73.988 };
+    const metres = (p: { lat: number; lon: number }) => Math.hypot((p.lat - center.lat) * 111_195, (p.lon - center.lon) * 111_195 * Math.cos((center.lat * Math.PI) / 180));
+    const pointOf = (e: (typeof fixture.elements)[number]) => (e.lat !== undefined ? { lat: e.lat, lon: e.lon! } : e.center!);
+    const inner = fixture.elements.filter((e) => metres(pointOf(e)) < 400);
+    expect(inner.length).toBeGreaterThan(1);
+    expect(inner.length).toBeLessThan(fixture.elements.length);
+    const dropped = inner.pop()!;
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-inner.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: inner, outrn_extent: { ...center, radius_m: 400 } }));
+
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.extentM).toBe(400);
+    // Only the one element removed inside the 400 m extent is tombstoned; everything outside it is untouched.
+    expect(s.raw.tombstoned).toBe(1);
+    const gone = await db.query<{ deleted: boolean }>(`select deleted_at is not null as deleted from source_entities where raw->'tags'->>'name' = $1`, [dropped.tags["name"]]);
+    expect(gone.rows[0]!.deleted).toBe(true);
+  });
 });

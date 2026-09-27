@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { Category, TravelMode } from "@outrn/core";
 import { getArea, getDb } from "@outrn/db";
-import { explain, loadCandidates, loadPolicies, persistRun, recommend, type RequestContext } from "@outrn/engine";
+import { explain, loadCandidates, loadParkingBuffer, loadPolicies, persistRun, recommend, type RequestContext } from "@outrn/engine";
 
 export function registerRecommend(program: Command): void {
   program
@@ -37,9 +37,13 @@ export function registerRecommend(program: Command): void {
       if (o["company"]) ctx.company = o["company"] as NonNullable<RequestContext["company"]>;
       if (o["categories"]) ctx.categories = String(o["categories"]).split(",").map((x) => x.trim()) as Category[];
       if (o["wheelchair"]) ctx.requireWheelchair = true;
+      if (area && mode === "drive") {
+        const parking = await loadParkingBuffer(db, area.slug, now, ctx.timezone);
+        if (parking !== undefined) ctx.parkingBufferMinutes = parking;
+      }
       const t0 = Date.now();
       const windowEnd = new Date(now.getTime() + (ctx.windowMinutes ?? 180) * 60_000);
-      const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes), loadPolicies(db)]);
+      const [candidates, policies] = await Promise.all([loadCandidates(db, origin, mode, now, windowEnd, ctx.maxTravelMinutes, ctx.parkingBufferMinutes), loadPolicies(db)]);
       const s = recommend(candidates, ctx, policies, { offset: o["offset"] as number });
       const ms = Date.now() - t0;
       const runId = o["persist"] === false ? null : await persistRun(db, area?.id ?? null, ctx, s, ms);

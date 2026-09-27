@@ -1,3 +1,4 @@
+import { DEFAULT_PARKING_BUFFER_MINUTES, type ParkingRule } from "@outrn/core";
 import type { Queryable } from "./client.js";
 
 export interface ServiceAreaRow {
@@ -30,6 +31,20 @@ export async function listAreas(q: Queryable): Promise<ServiceAreaRow[]> {
             radius_m, timezone, travel_mode, launch_state from service_areas order by slug`,
   );
   return r.rows;
+}
+
+/** The area's parking context rule, if one applies (context_rules key parking_*, effect.applies_to.area). */
+export async function loadParkingRule(q: Queryable, areaSlug: string): Promise<ParkingRule | null> {
+  const r = await q.query<{ effect: { default_minutes?: number; by_hour?: { from: number; to: number; minutes: number }[] } }>(
+    `select effect from context_rules
+      where enabled and key like 'parking\\_%' and effect->'applies_to'->'area' ? $1
+        and (active_from is null or active_from <= current_date) and (active_to is null or active_to >= current_date)
+      order by version desc limit 1`,
+    [areaSlug],
+  );
+  const e = r.rows[0]?.effect;
+  if (!e) return null;
+  return { defaultMinutes: e.default_minutes ?? DEFAULT_PARKING_BUFFER_MINUTES, byHour: e.by_hour ?? [] };
 }
 
 export interface SourcePolicyRow {

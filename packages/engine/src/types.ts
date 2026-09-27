@@ -18,6 +18,8 @@ export interface RequestContext {
   mode: TravelMode;
   /** Max one-way travel, minutes. Defaults by mode. */
   maxTravelMinutes?: number;
+  /** Drive parking buffer for this departure (from the area's parking rule). Default 8 min. */
+  parkingBufferMinutes?: number;
   /** Per-person cap in USD, or "free". Missing = any. */
   budget?: number | "free";
   mood?: Mood;

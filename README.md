@@ -50,6 +50,12 @@ pnpm outrn ingest osm --area les --save fixtures/live/les.json
 pnpm outrn ingest osm --area bronxville --save fixtures/live/bronxville.json
 ```
 
+The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
+people open the app from; the backtest samples origins there), and ingest covers that plus the
+farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive ~13 km at night
+with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
+in the capture so a replay only tombstones records inside the area it actually covers.
+
 ## Container quick start
 
 Docker Compose packages Node 22, the pinned pnpm dependency tree, the CLI, and PostgreSQL 16 with
@@ -102,9 +108,9 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | Command | What it does |
 | --- | --- |
 | `outrn migrate [--reset]` | Apply SQL migrations (reset drops everything; dev only) |
-| `outrn ingest osm --area <slug> [--from-file p] [--save p]` | Overpass → raw store → identity → facts → materialize |
+| `outrn ingest osm --area <slug> [--from-file p] [--save p] [--radius m]` | Overpass → raw store → identity → facts → materialize; extent = catchment + max reach |
 | `outrn materialize [--area <slug>]` | Rebuild `current_facts`, publish states and verification tasks |
-| `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--all]` | Run the engine; `--all` prints every candidate with its class and exclusion reason (the debug view) |
+| `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all]` | Run the engine; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason (the debug view) |
 | `outrn backtest --area <slug> [--grid n] [--hours ..] [--windows ..] [--budgets ..] [--days ..] [--out p]` | Coverage matrix: % of sample points × contexts with three options |
 | `outrn ops queue` / `ops conflicts` / `ops health` | The two founder queues and the health strip |
 | `outrn ops merge <from> <into> --reason` / `ops split <sourceEntityId> --reason` | Identity decisions, audited and reversible |

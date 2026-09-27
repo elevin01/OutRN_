@@ -6,6 +6,7 @@ import { getArea, getDb, listAreas, type ServiceAreaRow } from "@outrn/db";
 import {
   explain,
   loadCandidates,
+  loadParkingBuffer,
   loadPolicies,
   persistRun,
   recommend,
@@ -65,11 +66,15 @@ export async function runRecommendation(input: RecommendationInput): Promise<Rec
   if (input.mood && MOODS.has(input.mood)) context.mood = input.mood as NonNullable<RequestContext["mood"]>;
   if (input.company && COMPANIES.has(input.company)) context.company = input.company as NonNullable<RequestContext["company"]>;
   if (input.category && (CATEGORIES as readonly string[]).includes(input.category)) context.categories = [input.category as Category];
+  if (mode === "drive") {
+    const parking = await loadParkingBuffer(db, area.slug, now, area.timezone);
+    if (parking !== undefined) context.parkingBufferMinutes = parking;
+  }
 
   const started = Date.now();
   const windowEnd = new Date(now.getTime() + input.minutes * 60_000);
   const [candidates, policies] = await Promise.all([
-    loadCandidates(db, context.origin, mode, now, windowEnd),
+    loadCandidates(db, context.origin, mode, now, windowEnd, undefined, context.parkingBufferMinutes),
     loadPolicies(db),
   ]);
   const shortlist = recommend(candidates, context, policies, { offset: input.offset ?? 0 });

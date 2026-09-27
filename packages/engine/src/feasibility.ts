@@ -1,4 +1,4 @@
-import { addMinutes, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing } from "./types.js";
 
@@ -12,8 +12,6 @@ import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, 
  *   latest_finish  = min(effective close, deadline)
  *   useful         = latest_finish − arrival     must clear min useful duration
  */
-
-const DEFAULT_MAX_TRAVEL: Record<RequestContext["mode"], number> = { walk: 25, drive: 30, transit: 35 };
 
 export function deadlineOf(ctx: RequestContext): Date {
   if (ctx.endAt) return ctx.endAt;
@@ -55,8 +53,9 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
-  const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour });
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL[ctx.mode];
+  const parking = ctx.parkingBufferMinutes === undefined ? {} : { parkingBufferMinutes: ctx.parkingBufferMinutes };
+  const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });
+  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   if (travel.minutes > maxTravel) return out("TOO_FAR");
   const departAt = ctx.now;
   let arrival = addMinutes(departAt, travel.minutes + policy.admissionBufferMinutes);
@@ -66,7 +65,7 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   let returnTravel = null;
   if (ctx.backBy) {
     const backHour = localClock(ctx.backBy, ctx.timezone).hour;
-    returnTravel = estimateTravel(c.point, ctx.origin, ctx.mode, { hourLocal: backHour });
+    returnTravel = estimateTravel(c.point, ctx.origin, ctx.mode, { hourLocal: backHour, ...parking });
     const mustLeaveBy = addMinutes(ctx.backBy, -(returnTravel.minutes + 5));
     if (mustLeaveBy < deadline) deadline = mustLeaveBy;
   }

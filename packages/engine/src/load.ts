@@ -1,6 +1,6 @@
 import SunCalc from "suncalc";
-import { PROGRAMME_CATEGORIES, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
-import { loadCategoryPolicies, type Queryable } from "@outrn/db";
+import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
+import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
 /**
@@ -8,8 +8,6 @@ import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContex
  * occurrences and overrides only — never raw source records and never an external API.
  */
 
-const METRES_PER_MIN: Record<TravelMode, number> = { walk: 80 / 1.3, drive: 500, transit: 250 };
-const DEFAULT_MAX_TRAVEL: Record<TravelMode, number> = { walk: 25, drive: 30, transit: 35 };
 
 interface VenueRow {
   id: string;
@@ -46,8 +44,10 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   return out;
 }
 
-export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number): Promise<Candidate[]> {
-  const radius = (maxTravelMinutes ?? DEFAULT_MAX_TRAVEL[mode]) * METRES_PER_MIN[mode] * 1.15;
+export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number, parkingBufferMinutes?: number): Promise<Candidate[]> {
+  // Search exactly as far as the travel estimate could ever call reachable (the same bound ingest uses), plus 5%.
+  const buffer = parkingBufferMinutes === undefined ? {} : { parkingBufferForHour: () => parkingBufferMinutes };
+  const radius = maxReachMetres(mode, maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[mode], buffer) * 1.05;
   const venues = (
     await q.query<VenueRow>(
       `select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon, v.timezone, v.parent_venue_id,
@@ -121,6 +121,12 @@ export async function loadPolicies(q: Queryable): Promise<Map<string, CategoryPo
   const out = new Map<string, CategoryPolicy>();
   for (const [k, r] of rows) out.set(k, { category: r.category, minUsefulMinutes: r.min_useful_minutes, admissionBufferMinutes: r.admission_buffer_minutes, kitchenCloseOffsetMinutes: r.kitchen_close_offset_minutes, lastEntryDefaultMinutes: r.last_entry_default_minutes, activityType: r.activity_type });
   return out;
+}
+
+/** Parking buffer for a drive departing at `now`, from the area's parking rule (undefined = engine default). */
+export async function loadParkingBuffer(q: Queryable, areaSlug: string, now: Date, timezone: string): Promise<number | undefined> {
+  const rule = await loadParkingRule(q, areaSlug);
+  return rule ? parkingBufferAt(rule, localClock(now, timezone).hour) : undefined;
 }
 
 export function sunsetAt(p: LatLon, date: Date): Date | null {

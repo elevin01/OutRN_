@@ -25,7 +25,7 @@ export function buildAreaQuery(center: LatLon, radiusM: number, opts: { timeoutS
   const clauses = Object.entries(OSM_CATEGORY_FILTERS)
     .map(([k, vals]) => `  nwr["name"]["${k}"~"^(${vals.join("|")})$"]${around};`)
     .join("\n");
-  return `[out:json][timeout:${opts.timeoutSec ?? 60}];\n(\n${clauses}\n);\nout center tags meta;`;
+  return `[out:json][timeout:${opts.timeoutSec ?? 180}];\n(\n${clauses}\n);\nout center tags meta;`;
 }
 
 const TagsSchema = z.record(z.string());
@@ -85,13 +85,29 @@ export function normalizeElements(resp: OverpassResponse): { elements: OsmElemen
   return { elements: out, baseTimestamp: base, dropped };
 }
 
+/** The area a snapshot covers. Tombstoning is only valid inside it. */
+export interface SnapshotExtent {
+  lat: number;
+  lon: number;
+  radiusM: number;
+}
+
 export interface OverpassFetchResult {
   response: OverpassResponse;
   fetchedAt: Date;
   bytes: number;
   url: string;
   query: string;
+  /** Known for live fetches, and for replays of captures saved with `outrn_extent`. */
+  extent: SnapshotExtent | null;
 }
+
+/** What `ingest osm --save` writes: the Overpass response plus the extent it covers, so a replay tombstones correctly. */
+export function captureWithExtent(response: OverpassResponse, extent: SnapshotExtent): unknown {
+  return { ...response, outrn_extent: { lat: extent.lat, lon: extent.lon, radius_m: extent.radiusM } };
+}
+
+const CaptureExtentSchema = z.object({ outrn_extent: z.object({ lat: z.number(), lon: z.number(), radius_m: z.number() }).optional() });
 
 export async function fetchArea(center: LatLon, radiusM: number, opts: { minIntervalMs?: number } = {}): Promise<OverpassFetchResult> {
   const url = process.env["OVERPASS_URL"] ?? "https://overpass-api.de/api/interpreter";
@@ -103,16 +119,19 @@ export async function fetchArea(center: LatLon, radiusM: number, opts: { minInte
     accept: "application/json",
     allowedContentTypes: ["application/json"],
     minIntervalMs: opts.minIntervalMs ?? 2000,
-    timeoutMs: 90_000,
+    timeoutMs: 200_000, // wide drive catchments take a while on Overpass
     retries: 2,
   });
   const parsed = OverpassResponseSchema.parse(JSON.parse(res.text));
-  return { response: parsed, fetchedAt: res.fetchedAt, bytes: res.bytes, url: res.url, query };
+  return { response: parsed, fetchedAt: res.fetchedAt, bytes: res.bytes, url: res.url, query, extent: { lat: center.lat, lon: center.lon, radiusM } };
 }
 
 /** Replay a saved Overpass JSON response (fixtures, or a capture from a machine with network). */
 export async function loadAreaFromFile(path: string): Promise<OverpassFetchResult> {
   const text = await readFile(path, "utf8");
-  const parsed = OverpassResponseSchema.parse(JSON.parse(text));
-  return { response: parsed, fetchedAt: new Date(), bytes: Buffer.byteLength(text), url: `file://${path}`, query: "(replay)" };
+  const json = JSON.parse(text) as unknown;
+  const parsed = OverpassResponseSchema.parse(json);
+  const saved = CaptureExtentSchema.parse(json).outrn_extent;
+  const extent = saved ? { lat: saved.lat, lon: saved.lon, radiusM: saved.radius_m } : null;
+  return { response: parsed, fetchedAt: new Date(), bytes: Buffer.byteLength(text), url: `file://${path}`, query: "(replay)", extent };
 }
