@@ -19,12 +19,30 @@ export interface Finding {
 const isObj = (v: unknown): v is Schema => Boolean(v) && typeof v === "object" && !Array.isArray(v);
 const variants = (s: Schema): Schema[] | null => (Array.isArray(s["anyOf"]) ? (s["anyOf"] as Schema[]) : Array.isArray(s["oneOf"]) ? (s["oneOf"] as Schema[]) : null);
 
-function variantKey(s: Schema, i: number): string {
-  const props = isObj(s["properties"]) ? (s["properties"] as Record<string, Schema>) : {};
-  for (const [k, p] of Object.entries(props)) if (isObj(p) && "const" in p) return `${k}=${JSON.stringify(p["const"])}`;
-  if (typeof s["type"] === "string") return `type=${s["type"]}`;
-  if ("const" in s) return `const=${JSON.stringify(s["const"])}`;
-  return `#${i}`;
+/**
+ * Keys that pair up the members of a union across versions. A discriminated member is keyed by its
+ * discriminator. Any other member is keyed by its type and its position among members of that type
+ * (zod emits members in declaration order): the request body's two objects are type=object#0 and
+ * type=object#1, never one collapsed key.
+ */
+function variantKeys(list: Schema[]): string[] {
+  const seen = new Map<string, number>();
+  return list.map((s) => {
+    const props = isObj(s["properties"]) ? (s["properties"] as Record<string, Schema>) : {};
+    for (const [k, p] of Object.entries(props)) if (isObj(p) && "const" in p) return `${k}=${JSON.stringify(p["const"])}`;
+    if ("const" in s) return `const=${JSON.stringify(s["const"])}`;
+    const type = typeof s["type"] === "string" ? `type=${s["type"]}` : "untyped";
+    const n = seen.get(type) ?? 0;
+    seen.set(type, n + 1);
+    return `${type}#${n}`;
+  });
+}
+
+/** The values a schema allows: its enum, its const, or null for any value of its type. */
+function allowedValues(s: Schema): unknown[] | null {
+  if (Array.isArray(s["enum"])) return s["enum"] as unknown[];
+  if ("const" in s) return [s["const"]];
+  return null;
 }
 
 export function compareSchemas(base: Schema, head: Schema, dir: Direction, path: string, out: Finding[]): void {
@@ -33,8 +51,10 @@ export function compareSchemas(base: Schema, head: Schema, dir: Direction, path:
   if (bv || hv) {
     const bList = bv ?? [base];
     const hList = hv ?? [head];
-    const bMap = new Map(bList.map((s, i) => [variantKey(s, i), s]));
-    const hMap = new Map(hList.map((s, i) => [variantKey(s, i), s]));
+    const bKeys = variantKeys(bList);
+    const hKeys = variantKeys(hList);
+    const bMap = new Map(bList.map((s, i) => [bKeys[i]!, s]));
+    const hMap = new Map(hList.map((s, i) => [hKeys[i]!, s]));
     for (const [k, s] of bMap) {
       const h = hMap.get(k);
       if (h) compareSchemas(s, h, dir, `${path}<${k}>`, out);
@@ -47,18 +67,18 @@ export function compareSchemas(base: Schema, head: Schema, dir: Direction, path:
     out.push({ path, message: `type changed from ${JSON.stringify(base["type"])} to ${JSON.stringify(head["type"])}` });
     return;
   }
-  if ("const" in base && JSON.stringify(base["const"]) !== JSON.stringify(head["const"])) out.push({ path, message: `constant changed from ${JSON.stringify(base["const"])} to ${JSON.stringify(head["const"])}` });
-  if (Array.isArray(base["enum"]) || Array.isArray(head["enum"])) {
-    const b = new Set((base["enum"] as unknown[] | undefined) ?? []);
-    const h = new Set((head["enum"] as unknown[] | undefined) ?? []);
-    if (!Array.isArray(head["enum"]) && dir === "input") {
-      // widened to any value: fine for input
-    } else if (!Array.isArray(base["enum"]) && dir === "output") {
-      out.push({ path, message: "now a closed enum; an older UI may receive values it cannot parse" });
-    } else {
-      for (const v of b) if (!h.has(v) && dir === "input") out.push({ path, message: `no longer accepts ${JSON.stringify(v)}` });
-      for (const v of h) if (!b.has(v) && dir === "output") out.push({ path, message: `may now return ${JSON.stringify(v)}, which an older UI's enum rejects` });
-    }
+  // Value sets. No enum/const means unrestricted, never empty. A response breaks readers when it may
+  // produce a value the old set excluded; a request breaks clients when it stops accepting one.
+  const b = allowedValues(base);
+  const h = allowedValues(head);
+  const has = (set: unknown[], v: unknown) => set.some((x) => JSON.stringify(x) === JSON.stringify(v));
+  if (dir === "output" && b !== null) {
+    if (h === null) out.push({ path, message: `was limited to ${JSON.stringify(b)}, now any value; an older UI rejects values outside that set` });
+    else for (const v of h) if (!has(b, v)) out.push({ path, message: `may now return ${JSON.stringify(v)}, which an older UI's enum rejects` });
+  }
+  if (dir === "input" && h !== null) {
+    if (b === null) out.push({ path, message: `now accepts only ${JSON.stringify(h)}; requests that were valid are rejected` });
+    else for (const v of b) if (!has(h, v)) out.push({ path, message: `no longer accepts ${JSON.stringify(v)}` });
   }
   if (isObj(base["properties"]) || isObj(head["properties"])) {
     const bp = (base["properties"] ?? {}) as Record<string, Schema>;
