@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
+import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parkingKind, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
 const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
@@ -317,6 +317,14 @@ describe("tag values that name what every object inherits", () => {
       const unknown = normalizeOsm(rec({ name: "X", amenity: "not_a_known_value" }), new Date("2026-09-28T12:00:00Z"));
       expect(bare.category, v).toBe(unknown.category);
       expect(typeof bare.category === "string" || bare.category === null, v).toBe(true);
+    }
+  });
+
+  it("are not parking kinds: they read as unknown, like any unmapped parking=* value", () => {
+    for (const v of INHERITED) {
+      expect(parkingKind(v), v).toBe("unknown");
+      const n = normalizeOsm(rec({ name: "X", amenity: "cafe", parking: v }), new Date("2026-09-28T12:00:00Z"));
+      expect(n.facts.find((f) => f.attribute === "parking")?.value, v).toEqual({ kind: "unknown", cost: "unknown" });
     }
   });
 });

@@ -11,6 +11,13 @@ describe("identity scoring", () => {
     expect(matchKey("Tenement Museum")).not.toBe(matchKey("Tenement Museum Café"));
   });
 
+  it("keeps name words that every object inherits as the words they are", () => {
+    // A venue can be called anything; "constructor" is not a street abbreviation.
+    expect(matchKey("constructor")).toBe("constructor");
+    expect(matchKey("The Constructor Bar")).toBe("constructor bar");
+    expect(matchKey("valueOf St.")).toBe("valueof street");
+  });
+
   it("same café mapped as node and building way → auto merge", () => {
     const s = scorePair(base, { ...base, name: "Orchard Street Coffee", point: near(16) });
     expect(s.relation).toBe("same");

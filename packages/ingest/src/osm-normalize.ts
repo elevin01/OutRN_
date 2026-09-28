@@ -213,7 +213,7 @@ const PARKING_KIND: Record<string, "lot" | "street" | "garage" | "none"> = {
 };
 export function parkingKind(tag: string | undefined): "lot" | "street" | "garage" | "none" | "unknown" {
   if (tag === undefined) return "lot"; // amenity=parking with no parking=* tag is a lot
-  return PARKING_KIND[tag] ?? "unknown";
+  return ownValue(PARKING_KIND, tag) ?? "unknown";
 }
 
 export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
