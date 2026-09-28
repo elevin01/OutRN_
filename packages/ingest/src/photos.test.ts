@@ -53,6 +53,16 @@ describe("which Commons files may be shown", () => {
 });
 
 describe("text from Commons' HTML metadata", () => {
+  it("keeps an entity that names no character as written, instead of throwing: metadata is external input", () => {
+    for (const bad of ["&#1114112;", "&#x110000;", "&#xD800;", "&#57343;", "&#0;", "&#99999999999999999999;"]) {
+      expect(() => plainText(`Jane ${bad} Doe`, 100), bad).not.toThrow();
+      expect(plainText(`Jane ${bad} Doe`, 100), bad).toBe(`Jane ${bad} Doe`);
+    }
+    expect(plainText("Ren&#233;e &#x1F4F7;", 100)).toBe("Renée 📷");
+    // Through photoFrom too: a malformed credit is shown as written, never a crash.
+    expect(photoFrom(file({ Artist: "&#1114112;", LicenseShortName: "CC BY 4.0", ImageDescription: "&#xD800; lawn" }), "osm:image")).toMatchObject({ author: "&#1114112;", alt: "&#xD800; lawn" });
+  });
+
   it("drops tags, decodes entities, collapses space, and truncates", () => {
     expect(plainText("<b>Jane</b>&nbsp;&amp;&#32;<i>John</i>&#x21;", 100)).toBe("Jane & John!");
     expect(plainText("  <br/> ", 100)).toBeNull();

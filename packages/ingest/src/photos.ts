@@ -5,6 +5,7 @@ import {
   finishRun,
   liveWikimediaFetcher,
   loadWikimediaCapture,
+  recordingFetcher,
   replayWikimediaFetcher,
   saveWikimediaCapture,
   startRun,
@@ -41,6 +42,15 @@ export interface VenuePhoto {
 
 const PHOTO_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
+/**
+ * A numeric entity's character, when it names one: a Unicode scalar value (not NUL, not a surrogate,
+ * at most U+10FFFF). Commons metadata is external input, so anything else is kept as written
+ * rather than allowed to throw.
+ */
+function codePoint(cp: number, entity: string): string {
+  return Number.isInteger(cp) && cp > 0 && cp <= 0x10ffff && (cp < 0xd800 || cp > 0xdfff) ? String.fromCodePoint(cp) : entity;
+}
+
 /** Plain text from Commons' HTML metadata: tags dropped, entities decoded, whitespace collapsed. */
 export function plainText(html: string | undefined, max: number): string | null {
   if (!html) return null;
@@ -49,8 +59,8 @@ export function plainText(html: string | undefined, max: number): string | null 
     .replace(/<[^>]*>/g, "")
     .replace(/&(#\d+|#x[0-9a-f]+|amp|lt|gt|quot|apos|nbsp);/gi, (m, e: string) => {
       const k = e.toLowerCase();
-      if (k.startsWith("#x")) return String.fromCodePoint(parseInt(k.slice(2), 16));
-      if (k.startsWith("#")) return String.fromCodePoint(parseInt(k.slice(1), 10));
+      if (k.startsWith("#x")) return codePoint(parseInt(k.slice(2), 16), m);
+      if (k.startsWith("#")) return codePoint(parseInt(k.slice(1), 10), m);
       return ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " } as Record<string, string>)[k] ?? m;
     })
     .replace(/\s+/g, " ")
@@ -120,6 +130,8 @@ export interface PhotoIngestOptions {
   saveTo?: string;
   /** Override the derived extent, metres from the area center. */
   radiusM?: number;
+  /** Answers the requests instead of the live APIs (tests). `saveTo` still records what it answers. */
+  fetcher?: JsonFetcher;
   clock?: () => Date;
   log?: (line: string) => void;
 }
@@ -176,7 +188,8 @@ export async function ingestPhotos(db: Db, opts: PhotoIngestOptions): Promise<Ph
   const runId = await startRun(db, { sourceId: "wikimedia", areaId: area.id, kind: opts.fromFile ? "replay" : "commons_photos", params: { radius_m: radiusM, from_file: opts.fromFile ?? null } });
   try {
     const record = opts.saveTo && !opts.fromFile ? new Map<string, unknown>() : undefined;
-    const fetcher: JsonFetcher = opts.fromFile ? replayWikimediaFetcher(await loadWikimediaCapture(opts.fromFile)) : liveWikimediaFetcher(record);
+    const source: JsonFetcher = opts.fetcher ?? (opts.fromFile ? replayWikimediaFetcher(await loadWikimediaCapture(opts.fromFile)) : liveWikimediaFetcher());
+    const fetcher = record ? recordingFetcher(source, record) : source;
     const now = (opts.clock ?? (() => new Date()))();
 
     const venues = await venueRefs(db, { lat: area.lat, lon: area.lon }, radiusM);
@@ -198,7 +211,13 @@ export async function ingestPhotos(db: Db, opts: PhotoIngestOptions): Promise<Ph
           continue;
         }
         seen.add(f.title);
-        const p = photoFrom(f, ref.via);
+        // One bad file never fails the area: whatever it throws, it is skipped like any unusable one.
+        let p: VenuePhoto | null;
+        try {
+          p = photoFrom(f, ref.via);
+        } catch {
+          p = null;
+        }
         if (!p) {
           skipped++;
           continue;
@@ -206,6 +225,9 @@ export async function ingestPhotos(db: Db, opts: PhotoIngestOptions): Promise<Ph
         rows.push({ venueId: v.id, rank: rank++, p });
       }
     }
+
+    // The capture is written before anything changes, so a run that can't save it changes nothing.
+    if (record && opts.saveTo) await saveWikimediaCapture(opts.saveTo, record);
 
     // The extent's photos are replaced as a whole: a tag removed upstream, or a file relicensed or
     // deleted on Commons, takes its photo along.
@@ -229,7 +251,6 @@ export async function ingestPhotos(db: Db, opts: PhotoIngestOptions): Promise<Ph
         );
       }
     });
-    if (record && opts.saveTo) await saveWikimediaCapture(opts.saveTo, record);
     const withPhotos = new Set(rows.map((r) => r.venueId)).size;
     const summary: PhotoIngestSummary = { runId, area: area.slug, venues: venues.length, withPhotos, photos: rows.length, skipped };
     await finishRun(db, runId, { status: "succeeded", counts: { venues: summary.venues, with_photos: withPhotos, photos: rows.length, skipped } });

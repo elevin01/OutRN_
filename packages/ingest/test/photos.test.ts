@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { reset, testDatabaseAvailable } from "@outrn/db";
-import { commonsImageInfoUrl, type WikimediaCapture } from "@outrn/sources";
+import { commonsImageInfoUrl, replayWikimediaFetcher, type WikimediaCapture } from "@outrn/sources";
 import { ingestPhotos } from "../src/photos.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -86,6 +86,44 @@ describe.skipIf(!available)("venue photos from Wikimedia Commons (replayed)", ()
     await ingestOsmArea(db, { areaSlug: "les", fromFile: OSM });
     await ingestPhotos(db, { areaSlug: "les", fromFile: CAPTURE });
     expect(await photos()).toHaveLength(3);
+  });
+
+  /** The synthetic capture, with a change to what Commons says about one file. */
+  const captureWith = (title: string, meta: Record<string, string>): WikimediaCapture => {
+    const capture = JSON.parse(readFileSync(CAPTURE, "utf8")) as WikimediaCapture;
+    for (const response of Object.values(capture.responses) as { query?: { pages?: { title: string; imageinfo: { extmetadata: Record<string, { value: string }> }[] }[] } }[]) {
+      const page = response.query?.pages?.find((p) => p.title === title);
+      if (page) for (const [k, v] of Object.entries(meta)) page.imageinfo[0]!.extmetadata[k] = { value: v };
+    }
+    return capture;
+  };
+
+  it("malformed metadata from Commons can't fail the run: an entity that names no character is kept as written", async () => {
+    const capture = captureWith("File:OutRN synthetic Pitt Park lawn.jpg", { Artist: "Synthetic &#1114112; Photographer", ImageDescription: "&#xD800; lawn" });
+    const s = await ingestPhotos(db, { areaSlug: "les", fromFile: tmp("malformed.json", capture) });
+    expect(s).toMatchObject({ photos: 3, skipped: 3 });
+    const lawn = await db.query<{ author: string; alt: string }>(`select author, alt from venue_photos where file_title = 'File:OutRN synthetic Pitt Park lawn.jpg'`);
+    expect(lawn.rows[0]).toEqual({ author: "Synthetic &#1114112; Photographer", alt: "&#xD800; lawn" });
+    await ingestPhotos(db, { areaSlug: "les", fromFile: CAPTURE });
+  });
+
+  it("a live run that can't save its capture changes nothing; one that can saves exactly what it used", async () => {
+    // What Commons would now say: the Norfolk Park photo is no longer free, so a completed run would drop it.
+    const relicensed = replayWikimediaFetcher(captureWith("File:OutRN synthetic Norfolk Park.jpg", { LicenseShortName: "Fair use" }));
+    const before = await photos();
+    await expect(ingestPhotos(db, { areaSlug: "les", fetcher: relicensed, saveTo: join(tmpdir(), "outrn-no-such-dir", "nested", "capture.json") })).rejects.toThrow(/ENOENT/);
+    expect(await photos()).toEqual(before);
+    const failed = await db.query<{ status: string }>(`select status from ingestion_runs where source_id = 'wikimedia' order by started_at desc limit 1`);
+    expect(failed.rows[0]!.status).toBe("failed");
+
+    // A writable destination: the run completes, and the saved capture replays to the same result.
+    const saved = join(mkdtempSync(join(tmpdir(), "outrn-")), "capture.json");
+    expect(await ingestPhotos(db, { areaSlug: "les", fetcher: relicensed, saveTo: saved })).toMatchObject({ photos: 2 });
+    const after = await photos();
+    expect(after.map((p) => p.venue)).toEqual(["Pitt Park", "Pitt Park"]);
+    await ingestPhotos(db, { areaSlug: "les", fromFile: saved });
+    expect(await photos()).toEqual(after);
+    await ingestPhotos(db, { areaSlug: "les", fromFile: CAPTURE });
   });
 
   it("a replay that doesn't hold a request fails loudly rather than dropping photos", async () => {

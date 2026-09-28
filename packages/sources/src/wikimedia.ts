@@ -21,13 +21,22 @@ export interface JsonFetcher {
   get(url: string): Promise<unknown>;
 }
 
-/** Live fetches, paced for Wikimedia and identified by OUTRN_USER_AGENT. Records each response when asked. */
-export function liveWikimediaFetcher(record?: Map<string, unknown>): JsonFetcher {
+/** Live fetches, paced for Wikimedia and identified by OUTRN_USER_AGENT. */
+export function liveWikimediaFetcher(): JsonFetcher {
   return {
     async get(url) {
       const res = await guardedFetch(url, { sourceId: "wikimedia", accept: "application/json", allowedContentTypes: ["application/json"], minIntervalMs: 1000, timeoutMs: 30_000, retries: 2, maxBytes: 5 * 1024 * 1024 });
-      const json = JSON.parse(res.text) as unknown;
-      record?.set(url, json);
+      return JSON.parse(res.text) as unknown;
+    },
+  };
+}
+
+/** Answers from `inner` and keeps every response by its URL, for `--save`. */
+export function recordingFetcher(inner: JsonFetcher, record: Map<string, unknown>): JsonFetcher {
+  return {
+    async get(url) {
+      const json = await inner.get(url);
+      record.set(url, json);
       return json;
     },
   };
