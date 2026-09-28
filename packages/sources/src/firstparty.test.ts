@@ -81,3 +81,16 @@ describe("JSON-LD block scan on hostile pages", () => {
     expect(extractJsonLdBlocks(page)).toEqual([{ "@type": "Bar", name: "A" }, { "@type": "Bar", name: "B" }]);
   });
 });
+
+describe("JSON-LD days that name what every object inherits", () => {
+  it("are not days of the week", () => {
+    for (const day of ["__proto__", "constructor", "toString", "https://schema.org/constructor"]) {
+      const x = extractFromJsonLd([{ "@type": "Restaurant", name: "R", openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: day, opens: "10:00", closes: "12:00" }] }], "https://r.example/", new Date("2026-09-28T12:00:00Z"));
+      const hours = x.facts.find((f) => f.attribute === "opening_hours");
+      const weekly = (hours?.value as { weekly?: { weekday: unknown }[] } | undefined)?.weekly ?? [];
+      expect(weekly.every((w) => typeof w.weekday === "number"), day).toBe(true);
+      expect(weekly, day).toHaveLength(0);
+    }
+  });
+});
+

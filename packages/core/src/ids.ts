@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { ownValue } from "./lookup.js";
 
 export function uuid(): string {
   return randomUUID();
@@ -29,7 +30,7 @@ const ABBREV: Record<string, string> = { st: "street", ave: "avenue", av: "avenu
 export function matchKey(name: string): string {
   return normalizeName(name)
     .split(" ")
-    .map((w) => ABBREV[w] ?? w)
+    .map((w) => ownValue(ABBREV, w) ?? w)
     .join(" ");
 }
 

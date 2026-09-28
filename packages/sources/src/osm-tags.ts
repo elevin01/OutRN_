@@ -1,4 +1,4 @@
-import type { Category } from "@outrn/core";
+import { ownValue, type Category } from "@outrn/core";
 
 /**
  * The one place OSM tags map into the controlled vocabulary. The Overpass query is built from
@@ -32,8 +32,8 @@ export const OSM_QUALIFIED_TAGS: readonly { key: string; value: string; qualifie
 export function categoryFromOsmTags(tags: Record<string, string>): Category | null {
   for (const key of OSM_CATEGORY_KEYS) {
     const v = tags[key];
-    const map = OSM_TAG_CATEGORIES[key] as Record<string, Category>;
-    if (v && map[v]) return map[v]!;
+    const category = ownValue(OSM_TAG_CATEGORIES[key] as Record<string, Category>, v);
+    if (category) return category;
   }
   for (const q of OSM_QUALIFIED_TAGS) {
     if (tags[q.key] === q.value && new RegExp(q.qualifierPattern).test(tags[q.qualifierKey] ?? "")) return q.category;
@@ -45,7 +45,7 @@ export function categoryFromOsmTags(tags: Record<string, string>): Category | nu
 export function subtypeFromOsmTags(tags: Record<string, string>): string | null {
   for (const key of OSM_CATEGORY_KEYS) {
     const v = tags[key];
-    if (v && (OSM_TAG_CATEGORIES[key] as Record<string, Category>)[v]) return v;
+    if (v && ownValue(OSM_TAG_CATEGORIES[key] as Record<string, Category>, v)) return v;
   }
   for (const q of OSM_QUALIFIED_TAGS) {
     if (tags[q.key] === q.value && new RegExp(q.qualifierPattern).test(tags[q.qualifierKey] ?? "")) return q.qualifierPattern;
@@ -57,7 +57,7 @@ export function subtypeFromOsmTags(tags: Record<string, string>): string | null 
 export function categoryEvidence(tags: Record<string, string>): string | null {
   for (const key of OSM_CATEGORY_KEYS) {
     const v = tags[key];
-    if (v && (OSM_TAG_CATEGORIES[key] as Record<string, Category>)[v]) return `${key}=${v}`;
+    if (v && ownValue(OSM_TAG_CATEGORIES[key] as Record<string, Category>, v)) return `${key}=${v}`;
   }
   for (const q of OSM_QUALIFIED_TAGS) {
     if (tags[q.key] === q.value && new RegExp(q.qualifierPattern).test(tags[q.qualifierKey] ?? "")) return `${q.key}=${q.value} + ${q.qualifierKey}=${tags[q.qualifierKey]}`;

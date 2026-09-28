@@ -1,4 +1,4 @@
-import { fromLocal, isPublicWebHost, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { fromLocal, isPublicWebHost, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -213,7 +213,7 @@ const PARKING_KIND: Record<string, "lot" | "street" | "garage" | "none"> = {
 };
 export function parkingKind(tag: string | undefined): "lot" | "street" | "garage" | "none" | "unknown" {
   if (tag === undefined) return "lot"; // amenity=parking with no parking=* tag is a lot
-  return PARKING_KIND[tag] ?? "unknown";
+  return ownValue(PARKING_KIND, tag) ?? "unknown";
 }
 
 export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
@@ -238,7 +238,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // Age limit: a published min_age wins (0 = none); otherwise kinds with a default limit get an estimate. Everything else stays unknown.
   const minAge = t["min_age"] && /^\d{1,2}$/.test(t["min_age"].trim()) ? Number(t["min_age"].trim()) : null;
   if (minAge !== null && minAge <= 25) pub("age_limit", { minAge }, `min_age=${t["min_age"]}`, 0.75);
-  else if (subtype && DEFAULT_AGE_LIMIT[subtype]) est("age_limit", { minAge: DEFAULT_AGE_LIMIT[subtype] }, 0.7);
+  else if (subtype && ownValue(DEFAULT_AGE_LIMIT, subtype)) est("age_limit", { minAge: ownValue(DEFAULT_AGE_LIMIT, subtype)! }, 0.7);
   // A bar that serves no food is usually 21+ in practice. Low confidence: a family sees Check first, never an exclusion.
   else if (category === "bar" && !servesFood(t)) est("age_limit", { minAge: 21 }, 0.5);
 

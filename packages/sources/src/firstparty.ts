@@ -1,4 +1,4 @@
-import type { WeeklyIntervals } from "@outrn/core";
+import { ownValue, type WeeklyIntervals } from "@outrn/core";
 import { guardedFetch } from "./fetch.js";
 
 /**
@@ -50,7 +50,7 @@ function dayFromSchema(v: unknown): number[] {
   for (const d of list) {
     if (typeof d !== "string") continue;
     const key = d.split("/").pop()!.toLowerCase();
-    const idx = DAY_INDEX[key];
+    const idx = ownValue(DAY_INDEX, key);
     if (idx !== undefined) out.push(idx);
   }
   return out;
