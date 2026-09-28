@@ -311,6 +311,7 @@
           "lon": -73.8491
         },
         "walkMinutes": 1,
+        "openingHours": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
         "distanceMetres": 54
       },

@@ -64,7 +64,7 @@ export function directionsUrl(point: { lat: number; lon: number }, mode: TravelM
 /** Public parking near a place, as the contract shows it, with driving directions to the parking itself. */
 export function parkingFrom(p: EngineParking | null | undefined): NearbyParking | null {
   if (!p) return null;
-  return { name: p.name, kind: p.kind, fee: p.fee, location: { lat: p.point.lat, lon: p.point.lon }, distanceMetres: p.distanceM, walkMinutes: p.walkMinutes, directionsUrl: directionsUrl(p.point, "drive"), text: parkingText(p) };
+  return { name: p.name, kind: p.kind, fee: p.fee, openingHours: p.openingHours, location: { lat: p.point.lat, lon: p.point.lon }, distanceMetres: p.distanceM, walkMinutes: p.walkMinutes, directionsUrl: directionsUrl(p.point, "drive"), text: parkingText(p) };
 }
 
 const LINK_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook", menu: "Menu" };

@@ -121,6 +121,7 @@
     "name": "Rivington Garage",
     "kind": "garage",
     "fee": "paid",
+    "openingHours": null,
     "location": {
       "lat": 40.9325,
       "lon": -73.8458

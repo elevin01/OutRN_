@@ -84,8 +84,8 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   }));
   if (!venues.length) return candidates;
   // Where a driver would park, for every venue (occurrences share their venue's).
-  const parking = mode === "drive" ? await loadNearbyParking(q, venues.map((v) => v.id)) : new Map<string, NearbyParking>();
-  for (const c of candidates) c.parking = parking.get(c.venueId) ?? null;
+  const parking = mode === "drive" ? await loadNearbyParking(q, venues.map((v) => v.id)) : new Map<string, NearbyParking[]>();
+  for (const c of candidates) c.parkingOptions = parking.get(c.venueId) ?? [];
   const occ = (
     await q.query<OccRow>(
       `select id, venue_id, title, start_at, end_at, entry_cutoff_at, late_entry, status from occurrences
@@ -135,7 +135,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       excluded: v.excluded,
       hasLandmarkId: v.has_landmark,
       brand: v.brand,
-      parking: parking.get(o.venue_id) ?? null,
+      parkingOptions: parking.get(o.venue_id) ?? [],
     });
   }
   return kept;

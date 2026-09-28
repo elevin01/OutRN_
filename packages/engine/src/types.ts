@@ -76,6 +76,8 @@ export interface NearbyParking {
   /** Straight line to the venue. */
   distanceM: number;
   walkMinutes: number;
+  /** OSM opening_hours as the lot lists them; null when it lists none. */
+  openingHours: string | null;
 }
 
 export interface Candidate {
@@ -97,8 +99,8 @@ export interface Candidate {
   brand?: string | null;
   /** The venue's own name. For an occurrence `name` is the event title; this is where it happens. */
   venueName?: string;
-  /** The nearest public parking within a short walk (loaded for drive requests), or null. */
-  parking?: NearbyParking | null;
+  /** Public parking within a short walk, nearest first (loaded for drive requests). */
+  parkingOptions?: NearbyParking[];
 }
 
 export interface CategoryPolicy {
@@ -189,7 +191,10 @@ export interface TimingBase {
   closesAt: Date | null;
   deadline: Date;
   returnTravel: TravelEstimate | null;
-  /** Drive only: minutes of `travel` allowed for parking, and where (null: no public parking nearby is known). */
+  /**
+   * Drive only: minutes of `travel` allowed for parking, and where: the nearest public parking that
+   * is open from parking until the car is collected (null: none nearby is known to be).
+   */
   parkingMinutes: number | null;
   parking: NearbyParking | null;
 }

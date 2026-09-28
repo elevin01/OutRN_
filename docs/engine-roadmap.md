@@ -49,10 +49,13 @@ changelog.
   - Contract 1.3 (additive): `conditions` on every item. The summary shows "~15–30 min wait".
 - **Batch 3b, part 2 (this PR): parking near the venue.**
   - Ingest brings in OSM `amenity=parking` (named or not) and derives the places anyone may park:
-    lots, garages and street spaces, with whether they charge. Private, customer-only, permit and
-    resident lots, carports and garage boxes are left out.
-  - A drive plan parks at the nearest one within about 400 m: "Park at Orchard Street Lot (paid),
-    then walk ~2 min". The time allowed for parking is at least the walk from it.
+    lots, garages and street spaces, with whether they charge and their hours. Private,
+    customer-only, permit and resident lots are left out, as are carports and garage boxes. The
+    most specific access tag for a car decides (`motorcar`, then `motor_vehicle`, `vehicle`,
+    `access`).
+  - A drive plan parks at the nearest one within about 400 m that is open from parking until the
+    car is collected: "Park at Orchard Street Lot (paid), then walk ~2 min". The time allowed for
+    parking is at least the walk from it.
   - Place details show the nearest public parking whatever the mode.
   - Contract 1.4 (additive): `parking` on items, `parkingNearby` on place details, the `park` step.
 

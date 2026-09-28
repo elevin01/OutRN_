@@ -20,7 +20,21 @@ export interface ParkingFacility {
 }
 
 /** Access values that let anyone park. Missing access on a parking lot means public in OSM practice. */
-const PUBLIC_ACCESS = new Set(["yes", "public", "permissive", "destination"]);
+const PUBLIC_ACCESS = new Set(["yes", "public", "permissive", "destination", "designated"]);
+
+/** Access tags from the most specific for a car to the most general: the first one present decides. */
+const ACCESS_KEYS = ["motorcar", "motor_vehicle", "vehicle", "access"] as const;
+
+/**
+ * Whether anyone may leave a car here. The most specific tag that applies to a car wins
+ * (motorcar=no overrides access=yes, and motorcar=yes a general access=private). A restriction
+ * only at some times (`*:conditional`) is not a plain yes, so such a place is left out.
+ */
+export function publicForCars(tags: Record<string, string>): boolean {
+  if (ACCESS_KEYS.some((k) => tags[`${k}:conditional`] !== undefined)) return false;
+  const key = ACCESS_KEYS.find((k) => tags[k] !== undefined);
+  return key === undefined || PUBLIC_ACCESS.has(tags[key]!.trim());
+}
 
 /** OSM parking=* → what a driver finds there. Private kinds (carports, garage boxes, sheds) are not parking for visitors. */
 const KIND: Record<string, ParkingFacility["kind"] | null> = {
@@ -40,8 +54,7 @@ const KIND: Record<string, ParkingFacility["kind"] | null> = {
 
 export function parkingFromTags(tags: Record<string, string>): ParkingFacility | null {
   if (tags["amenity"] !== "parking") return null;
-  const access = tags["access"];
-  if (access !== undefined && !PUBLIC_ACCESS.has(access)) return null;
+  if (!publicForCars(tags)) return null;
   const type = tags["parking"];
   const kind = type === undefined ? "lot" : KIND[type];
   if (kind === null || kind === undefined) return null;
@@ -93,24 +106,29 @@ export async function syncParking(q: Queryable, runId: string, extent: SnapshotE
   return { facilities: keep.length, removed: removed.rowCount ?? 0 };
 }
 
+/** Public parking kept per venue, nearest first: a plan passes over one that is closed for the visit. */
+export const PARKING_CHOICES = 3;
+
 /**
- * Each venue's nearest public parking within NEARBY_PARKING_METRES, for every venue that parking in
- * this snapshot could be nearest to: the extent plus that distance. Ties go to the lower id, so the
- * answer is stable across runs.
+ * Each venue's nearest public parking within NEARBY_PARKING_METRES (up to PARKING_CHOICES), for
+ * every venue that parking in this snapshot could be near: the extent plus that distance. Ties go to
+ * the lower id, so the answer is stable across runs.
  */
 export async function refreshVenueParking(q: Queryable, extent: SnapshotExtent): Promise<void> {
-  const args = [extent.lon, extent.lat, extent.radiusM + NEARBY_PARKING_METRES, NEARBY_PARKING_METRES];
+  const args = [extent.lon, extent.lat, extent.radiusM + NEARBY_PARKING_METRES, NEARBY_PARKING_METRES, PARKING_CHOICES];
   const near = `ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`;
   await q.query(`delete from venue_parking vp using venues v where v.id = vp.venue_id and ${near}`, args.slice(0, 3));
   await q.query(
-    `insert into venue_parking (venue_id, source_entity_id, distance_m)
-     select v.id, p.source_entity_id, ST_Distance(p.geom, v.geom)
+    `insert into venue_parking (venue_id, rank, source_entity_id, distance_m)
+     select v.id, p.rank - 1, p.source_entity_id, p.distance_m
        from venues v
        cross join lateral (
-         select p.source_entity_id, p.geom from parking_facilities p
+         select p.source_entity_id, ST_Distance(p.geom, v.geom) as distance_m,
+                row_number() over (order by p.geom <-> v.geom, p.source_entity_id) as rank
+           from parking_facilities p
           where ST_DWithin(p.geom, v.geom, $4)
           order by p.geom <-> v.geom, p.source_entity_id
-          limit 1
+          limit $5
        ) p
       where ${near}`,
     args,

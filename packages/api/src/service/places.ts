@@ -1,7 +1,7 @@
 import type { PlaceDetails, PlaceFact, Provenance, TravelMode } from "@outrn/contracts";
 import { AS_OF_SQL, isFreshConfirmation, SURVEYED_AT_SQL, VERIFIED_AT_SQL } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
-import { describeFacts, hoursToday, loadNearbyParking, sourceName, type FactRecord } from "@outrn/engine";
+import { describeFacts, hoursToday, loadNearbyParking, PARKING_SOURCE, sourceName, type FactRecord } from "@outrn/engine";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { labelOf } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
@@ -96,8 +96,10 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
   }
 
   const status = (facts["business_status"]?.value as { status?: string } | undefined)?.status;
-  const parking = (await loadNearbyParking(q, [row.id])).get(row.id);
-  const allSources = [...new Set(Object.values(facts).flatMap((f) => f.sources))];
+  // The nearest public parking, with its hours: there is no visit here to check them against.
+  const parking = (await loadNearbyParking(q, [row.id])).get(row.id)?.[0];
+  // Credit every source shown: the facts', and OSM's for the parking even when no fact came from OSM.
+  const allSources = [...new Set([...Object.values(facts).flatMap((f) => f.sources), ...(parking ? [PARKING_SOURCE] : [])])];
   return {
     id: row.id,
     name: row.canonical_name,

@@ -1,6 +1,6 @@
 import type { RecommendationItem } from "@outrn/contracts";
 import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
-import { caveatNotes, explain, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
+import { caveatNotes, explain, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
 import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
 
@@ -59,9 +59,12 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
   };
 }
 
-/** Distinct source ids behind the facts of these evaluations (for attribution). */
+/** Distinct sources behind what these evaluations show (for attribution): their facts, and the parking a drive names. */
 export function sourcesOf(evaluations: Evaluation[]): string[] {
   const out = new Set<string>();
-  for (const e of evaluations) for (const f of Object.values(e.candidate.facts)) for (const s of f?.sources ?? []) out.add(s);
+  for (const e of evaluations) {
+    for (const f of Object.values(e.candidate.facts)) for (const s of f?.sources ?? []) out.add(s);
+    if (e.timing?.parking) out.add(PARKING_SOURCE);
+  }
   return [...out];
 }

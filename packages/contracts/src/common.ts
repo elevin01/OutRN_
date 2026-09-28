@@ -112,6 +112,11 @@ export const NearbyParking = z.object({
   kind: z.string().min(1),
   /** "unknown" when the source doesn't say, or it charges only at some times: check the signs. */
   fee: z.enum(["free", "paid", "unknown"]),
+  /**
+   * The parking's hours as OpenStreetMap lists them ("Mo-Sa 07:00-23:00"), or null when it lists
+   * none. A drive plan only parks where these hold from arriving until the car is collected.
+   */
+  openingHours: z.string().nullable(),
   location: LatLon,
   /** Straight-line distance to the place. */
   distanceMetres: z.int().min(0),

@@ -21,6 +21,21 @@ describe("parking from OSM tags", () => {
     expect(parkingFromTags({ amenity: "restaurant", name: "Not parking" })).toBeNull();
   });
 
+  it("the most specific access tag for a car decides, either way", () => {
+    // Restricted for cars even though the lot is open in general, or unrestricted at a general level.
+    expect(parkingFromTags({ amenity: "parking", motor_vehicle: "private" })).toBeNull();
+    expect(parkingFromTags({ amenity: "parking", motorcar: "customers" })).toBeNull();
+    expect(parkingFromTags({ amenity: "parking", access: "yes", vehicle: "no" })).toBeNull();
+    expect(parkingFromTags({ amenity: "parking", access: "yes", motor_vehicle: "permit", motorcar: "residents" })).toBeNull();
+    // Open to cars even though access in general is restricted.
+    expect(parkingFromTags({ amenity: "parking", access: "private", motorcar: "yes" })).not.toBeNull();
+    expect(parkingFromTags({ amenity: "parking", access: "no", motor_vehicle: "designated" })).not.toBeNull();
+    expect(parkingFromTags({ amenity: "parking", vehicle: "private", motorcar: "yes" })).not.toBeNull();
+    // Restricted only at some times is not plainly open.
+    expect(parkingFromTags({ amenity: "parking", "access:conditional": "no @ (Mo-Fr 07:00-19:00)" })).toBeNull();
+    expect(parkingFromTags({ amenity: "parking", access: "yes", "motorcar:conditional": "customers @ (Sa,Su)" })).toBeNull();
+  });
+
   it("a capacity that isn't a count is dropped", () => {
     expect(parkingFromTags({ amenity: "parking", capacity: "about 50" })?.capacity).toBeNull();
     expect(parkingFromTags({ amenity: "parking", capacity: "0" })?.capacity).toBeNull();

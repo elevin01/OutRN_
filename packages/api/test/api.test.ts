@@ -361,6 +361,34 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(details.parkingNearby).toMatchObject({ name: "Rivington Garage", fee: "paid" });
   });
 
+  it("credits OpenStreetMap for the parking shown, even when none of the place's facts came from it", async () => {
+    now = SAT_EVENING;
+    const kitchen = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Forsyth Clinton Kitchen'`)).rows[0]!.id;
+    const restaurants = async () => {
+      const ids: string[] = [];
+      for (let page = await search({ areaId: "les", windowMinutes: 180, travelMode: "drive", categories: ["restaurant"] }); ; page = await search({ cursor: page.page.nextCursor } as unknown as RecommendationRequest)) {
+        ids.push(...page.items.map((i) => i.id));
+        if (!page.page.nextCursor) return ids;
+      }
+    };
+    const others = (await restaurants()).filter((id) => id !== kitchen);
+    // Every fact about the place now comes from a founder check; the parking near it is OSM's.
+    await db.query(`update current_facts set source_ids = '{founder}' where subject_kind = 'venue' and subject_id = $1`, [kitchen]);
+    try {
+      const details = PlaceDetails.parse((await call("GET", `/v1/places/${kitchen}`)).json);
+      expect(details.facts.flatMap((f) => f.provenance.sources.map((x) => x.id))).not.toContain("osm");
+      expect(details.parkingNearby?.name).toBe("Rivington Garage");
+      expect(details.attributions).toContain("© OpenStreetMap contributors");
+
+      // A drive where that place is the only option.
+      const page = await search({ areaId: "les", windowMinutes: 180, travelMode: "drive", categories: ["restaurant"], dismissedIds: others });
+      expect(page.items.map((i) => [i.placeId, i.parking?.name])).toEqual([[kitchen, "Rivington Garage"]]);
+      expect(page.attributions).toContain("© OpenStreetMap contributors");
+    } finally {
+      await materializeSubjects(db, "venue", [kitchen], now);
+    }
+  });
+
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {
     now = SAT_EVENING;
     const page = await search({ areaId: "les", windowMinutes: 180 });

@@ -23,13 +23,16 @@ create index if not exists parking_facilities_geom_gix on parking_facilities usi
 -- Server-side only, like the raw store it is derived from.
 alter table parking_facilities enable row level security;
 
--- Each venue's nearest public parking within a short walk, worked out at ingest (a nearest-neighbour
--- search per venue is too slow for the request path at area scale). Recomputed for every venue near
+-- Each venue's nearest public parking within a short walk, nearest first (rank 0), worked out at
+-- ingest: a nearest-neighbour search per venue is too slow for the request path at area scale. A few
+-- are kept so a plan can pass over one that is closed for the visit. Recomputed for every venue near
 -- a snapshot's extent on each ingest.
 create table if not exists venue_parking (
-  venue_id          uuid primary key references venues(id) on delete cascade,
+  venue_id          uuid not null references venues(id) on delete cascade,
+  rank              smallint not null check (rank >= 0),
   source_entity_id  uuid not null references parking_facilities(source_entity_id) on delete cascade,
-  distance_m        real not null check (distance_m >= 0)
+  distance_m        real not null check (distance_m >= 0),
+  primary key (venue_id, rank)
 );
 create index if not exists venue_parking_source_idx on venue_parking (source_entity_id);
 

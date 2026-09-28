@@ -335,7 +335,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const lots = async () => (await db.query<{ name: string | null; fee: string }>(`select p.name, p.fee from parking_facilities p join source_entities s on s.id = p.source_entity_id order by s.external_id`)).rows;
     // Each venue's nearest public parking within about 400 m, worked out at ingest.
     const nearest = async () =>
-      (await db.query<{ name: string | null }>(`select p.name from venue_parking vp join venues v on v.id = vp.venue_id join parking_facilities p on p.source_entity_id = vp.source_entity_id where v.canonical_name = 'Forsyth Clinton Kitchen'`)).rows.map((r) => r.name);
+      (await db.query<{ name: string | null }>(`select p.name from venue_parking vp join venues v on v.id = vp.venue_id join parking_facilities p on p.source_entity_id = vp.source_entity_id where v.canonical_name = 'Forsyth Clinton Kitchen' order by vp.rank`)).rows.map((r) => r.name);
     await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
     expect(await lots()).toEqual([{ name: "Rivington Garage", fee: "paid" }]);
     expect(await nearest()).toEqual(["Rivington Garage"]);

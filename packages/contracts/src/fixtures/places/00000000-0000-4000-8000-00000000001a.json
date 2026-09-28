@@ -116,6 +116,7 @@
     "name": "Orchard Street Lot",
     "kind": "lot",
     "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
     "location": {
       "lat": 40.9296,
       "lon": -73.8434

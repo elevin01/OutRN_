@@ -1,8 +1,8 @@
 import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
-import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
+import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
-import { parkingMinutesFor } from "./parking.js";
+import { parkingMinutesFor, parkingOpenFor } from "./parking.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
 /**
@@ -80,17 +80,30 @@ export function kitchenAt(c: Candidate, at: Date): { opensAt: Date | null; lastO
 const TIME_EXCLUSIONS: ReadonlySet<ExclusionCode> = new Set(["NOT_ENOUGH_TIME", "CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED", "EVENT_ENDS_AFTER_DEADLINE"]);
 
 export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
-  const r = evaluateVisit(c, ctx, policy);
+  const r = evaluateWithParking(c, ctx, policy);
   // When a scheduled closure is what leaves no worthwhile visit, the place is closing for good, not
   // short of time: more time would not admit it. Decided exactly, by the same visit without it.
   if (r.excludedBy && TIME_EXCLUSIONS.has(r.excludedBy) && c.facts.scheduled_closure) {
     const { scheduled_closure: _closure, ...facts } = c.facts;
-    if (evaluateVisit({ ...c, facts }, ctx, policy).class !== "ineligible") return { ...r, excludedBy: "CLOSED_PERMANENTLY" };
+    if (evaluateWithParking({ ...c, facts }, ctx, policy).class !== "ineligible") return { ...r, excludedBy: "CLOSED_PERMANENTLY" };
   }
   return r;
 }
 
-function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
+/**
+ * A drive parks at the nearest public parking that works for the visit and is open from parking
+ * until the car is collected. With none, the plan names no lot and allows the area's usual time to
+ * find a space.
+ */
+function evaluateWithParking(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
+  for (const lot of ctx.mode === "drive" ? (c.parkingOptions ?? []) : []) {
+    const r = evaluateVisit(c, ctx, policy, lot);
+    if (r.class !== "ineligible" && r.timing && parkingOpenFor(lot, r.timing, c.timezone)) return r;
+  }
+  return evaluateVisit(c, ctx, policy, null);
+}
+
+function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy, lot: NearbyParking | null): FeasibilityOutcome {
   const reasons: ReasonCode[] = [];
   const unresolved: ReasonCode[] = [];
   const out = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing: null, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
@@ -134,8 +147,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
-  // A drive leaves the car in the nearest public lot when one is known, and the walk from it counts.
-  const lot = ctx.mode === "drive" ? (c.parking ?? null) : null;
+  // A drive that parks in a known lot counts the walk from it.
   const parkingMinutes = ctx.mode === "drive" ? parkingMinutesFor(lot, ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null;
   const parking = parkingMinutes === null ? {} : { parkingBufferMinutes: parkingMinutes };
   const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });

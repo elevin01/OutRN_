@@ -65,6 +65,7 @@
           "lon": -73.8434
         },
         "walkMinutes": 2,
+        "openingHours": "Mo-Su 06:00-24:00",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 102
       },
@@ -210,6 +211,7 @@
           "lon": -73.8434
         },
         "walkMinutes": 3,
+        "openingHours": "Mo-Su 06:00-24:00",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 160
       },
@@ -335,6 +337,7 @@
           "lon": -73.8434
         },
         "walkMinutes": 2,
+        "openingHours": "Mo-Su 06:00-24:00",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 74
       },

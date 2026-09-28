@@ -213,6 +213,7 @@
         "name": null,
         "kind": "lot",
         "fee": "free",
+        "openingHours": null,
         "location": {
           "lat": 40.934,
           "lon": -73.8304
@@ -358,6 +359,7 @@
         "name": null,
         "kind": "street",
         "fee": "unknown",
+        "openingHours": null,
         "location": {
           "lat": 40.9333,
           "lon": -73.8254
