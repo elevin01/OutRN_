@@ -9,6 +9,7 @@
 
 # UI: pages, components, styling, the API client.
 # /packages/web/                    @UI_OWNER_HANDLE
+# /apps/mobile/                     @UI_OWNER_HANDLE
 
 # The contract (schemas, fixtures, generated JSON Schema): both sides approve every change.
 /packages/contracts/                @elevin01

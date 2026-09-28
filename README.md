@@ -223,3 +223,10 @@ prompt endpoints, contributor reliability updates. Each has a table or a stub wh
 OpenStreetMap data is ODbL. Facts derived from it are stored with `source_id = 'osm'` and lineage
 `osm`, so the OSM-derived layer can be separated or the combined database published under ODbL —
 that decision is open in the plan and must be made before production.
+
+## Mobile app (Expo)
+
+`apps/mobile` implements the mobile discovery and outing flow against the same v1 HTTP contract.
+See [mobile setup and scope](apps/mobile/README.md). Start with `pnpm api:mock` and
+`pnpm mobile:dev`; use `pnpm mobile:web` for a browser preview. All changes require a new branch
+and a pull request.
