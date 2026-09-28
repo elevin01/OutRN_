@@ -19,9 +19,10 @@ program
   .command("migrate")
   .description("Apply pending SQL migrations")
   .option("--reset", "drop everything and re-apply (development only)")
-  .action(async (o: { reset?: boolean }) => {
+  .option("--reapply <file...>", "run an applied migration again (a database that applied an earlier draft of it)")
+  .action(async (o: { reset?: boolean; reapply?: string[] }) => {
     const db = getDb();
-    const r = o.reset ? await reset(db) : await migrate(db);
+    const r = o.reset ? await reset(db) : await migrate(db, undefined, { reapply: o.reapply ?? [] });
     console.log(`applied: ${r.applied.join(", ") || "none"}; already applied: ${r.skipped.length}`);
   });
 

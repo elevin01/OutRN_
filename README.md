@@ -145,7 +145,7 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 
 | Command | What it does |
 | --- | --- |
-| `outrn migrate [--reset]` | Apply SQL migrations (reset drops everything; dev only) |
+| `outrn migrate [--reset] [--reapply <file>]` | Apply SQL migrations (reset drops everything; dev only). Refuses to run if an applied migration was edited since; `--reapply` re-runs one on a database that applied an earlier draft |
 | `outrn ingest osm --area <slug> [--from-file p] [--save p] [--radius m]` | Overpass → raw store → identity → facts → materialize; extent = catchment + max reach |
 | `outrn materialize [--area <slug>]` | Rebuild `current_facts`, publish states and verification tasks |
 | `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all] [--json]` | Run the engine through the same request resolution as the API; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason; `--json` prints the exact v1 response the UI receives (`--cursor c` for more pages) |
