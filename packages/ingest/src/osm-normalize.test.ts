@@ -135,6 +135,9 @@ describe("OSM normalization", () => {
       const s = fact(rec({ name: "Open", amenity: "cafe", check_date: "2025-11-02" }), "business_status")!;
       expect(s).toMatchObject({ evidenceClass: "published", value: { status: "operating" }, evidence: "check_date=2025-11-02" });
       expect(s.observedAt).toEqual(new Date("2025-11-02T12:00:00Z"));
+      // It counts for three years from the survey, then lapses; ingest re-normalizes the record then.
+      expect(s.validUntil).toEqual(new Date("2028-11-02T12:00:00Z"));
+      expect(rec({ name: "Open", amenity: "cafe", check_date: "2025-11-02" }).changesAt).toEqual(new Date("2028-11-02T12:00:00Z"));
       expect(s.confidence).toBeGreaterThan(0.5); // above presence alone (a 0.5 estimate)
       expect(fact(rec({ name: "Open", amenity: "cafe", "survey:date": "2026-01" }), "business_status")).toMatchObject({ evidenceClass: "published", evidence: "survey:date=2026-01" });
       // Surveying the hours means someone saw it open: the latest survey of any kind counts.
@@ -159,7 +162,11 @@ describe("OSM normalization", () => {
       expect(fact(rec({ name: "Ended", amenity: "restaurant", end_date: "2025-12-31" }), "business_status")).toMatchObject({ evidenceClass: "published", value: { status: "closed_permanently" }, evidence: "end_date=2025-12-31", confidence: 0.75 });
       // This year, not over yet: likely gone, still at a confidence that excludes.
       expect(fact(rec({ name: "Ending", amenity: "restaurant", end_date: "2026" }), "business_status")).toMatchObject({ value: { status: "closed_permanently" }, confidence: 0.6 });
-      expect(fact(rec({ name: "Later", amenity: "restaurant", end_date: "2027-06-01" }), "business_status")).toMatchObject({ value: { status: "operating" } });
+      // A closing date still ahead: operating until then, and the record is due for another look that day.
+      const later = rec({ name: "Later", amenity: "restaurant", end_date: "2027-06-01" });
+      expect(fact(later, "business_status")).toMatchObject({ value: { status: "operating" }, validUntil: new Date("2027-06-01T12:00:00Z") });
+      expect(later.changesAt).toEqual(new Date("2027-06-01T12:00:00Z"));
+      expect(rec({ name: "Plain", amenity: "restaurant" }).changesAt).toBeNull();
     });
 
     it("opening_date in the future is closed until that day, then lapses", () => {

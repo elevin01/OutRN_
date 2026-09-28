@@ -38,6 +38,12 @@ export interface OsmNormalized {
   phone: string | null;
   /** Reasons a record cannot become a venue (empty = ok). */
   rejects: string[];
+  /**
+   * The next instant these same tags would say something different about the place being open for
+   * business (a closing or opening date arrives, a survey stops counting); null when nothing is
+   * scheduled. Ingest re-normalizes the record then, even if nothing upstream changed.
+   */
+  changesAt: Date | null;
   facts: Omit<FactInput, "subjectId" | "subjectKind" | "fetchedAt" | "ingestionRunId">[];
 }
 
@@ -62,6 +68,12 @@ export function surveyedHoursConfidence(checkedAt: Date, now: Date): number {
 
 /** A survey that saw the place operating counts for this long; after that, presence in OSM is all we have. */
 const SURVEY_STATUS_YEARS = 3;
+
+const addYears = (d: Date, years: number) => {
+  const out = new Date(d);
+  out.setUTCFullYear(out.getUTCFullYear() + years);
+  return out;
+};
 
 /**
  * An OSM date (YYYY, YYYY-MM or YYYY-MM-DD) as the first and last instant of the period it names,
@@ -179,24 +191,36 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     .reduce<{ tag: string; at: Date } | null>((a, b) => (!a || b.at > a.at ? b : a), null);
 
   // Closure signals are conservative: any disused:/abandoned: key, or hours "off", marks closed.
+  // A lifecycle date takes effect on its day (as that day's midday, like survey dates).
   const disused = Object.keys(t).some((k) => k.startsWith("disused:") || k.startsWith("abandoned:") || k.startsWith("was:"));
   const hours = t["opening_hours"]?.trim();
   const ended = osmDate(t["end_date"]);
   const opens = osmDate(t["opening_date"]);
+  const closesOn = ended ? midday(ended.start) : null;
+  const opensOn = opens ? midday(opens.start) : null;
+  // Scheduled changes to what these tags say: the record is due for re-normalization at the first.
+  const due: Date[] = [];
+  // An "operating" claim never outlives a closing date still ahead.
+  const operatingUntil = closesOn && closesOn > now ? closesOn : null;
+  if (operatingUntil) due.push(operatingUntil);
   if (disused || hours === "off" || hours === "closed") {
     pub("business_status", { status: "closed_permanently" }, disused ? Object.keys(t).find((k) => /^(disused|abandoned|was):/.test(k))! : `opening_hours=${hours}`, 0.75);
-  } else if (ended && ended.start <= now) {
+  } else if (ended && closesOn! <= now) {
     // Ended: certain once the whole period has passed; "end_date=2026" in September still means likely gone.
     pub("business_status", { status: "closed_permanently" }, `end_date=${t["end_date"]}`, ended.end <= now ? 0.75 : 0.6);
-  } else if (opens && opens.start > now) {
+    if (ended.end > now) due.push(new Date(ended.end.getTime() + 1));
+  } else if (opens && opensOn! > now) {
     // Not open yet: closed until the opening date, then the fact lapses and presence counts again.
-    facts.push({ ...base, attribute: "business_status", value: { status: "closed_temporarily" }, evidence: `opening_date=${t["opening_date"]}`, confidence: 0.7, evidenceClass: "published", validUntil: midday(opens.start) });
-  } else if (placeSurvey && yearsSince(placeSurvey.at, now) <= SURVEY_STATUS_YEARS) {
-    // A mapper saw it operating on that day.
-    facts.push({ ...base, attribute: "business_status", value: { status: "operating" }, evidence: `${placeSurvey.tag}=${t[placeSurvey.tag]}`, confidence: Math.max(0.45, +(0.65 - 0.06 * yearsSince(placeSurvey.at, now)).toFixed(3)), evidenceClass: "published", observedAt: placeSurvey.at });
+    facts.push({ ...base, attribute: "business_status", value: { status: "closed_temporarily" }, evidence: `opening_date=${t["opening_date"]}`, confidence: 0.7, evidenceClass: "published", validUntil: opensOn });
+    due.push(opensOn!);
+  } else if (placeSurvey && now < addYears(placeSurvey.at, SURVEY_STATUS_YEARS)) {
+    // A mapper saw it operating on that day. It counts for three years, or until a closing date.
+    const expires = addYears(placeSurvey.at, SURVEY_STATUS_YEARS);
+    due.push(expires);
+    facts.push({ ...base, attribute: "business_status", value: { status: "operating" }, evidence: `${placeSurvey.tag}=${t[placeSurvey.tag]}`, confidence: Math.max(0.45, +(0.65 - 0.06 * yearsSince(placeSurvey.at, now)).toFixed(3)), evidenceClass: "published", observedAt: placeSurvey.at, validUntil: operatingUntil && operatingUntil < expires ? operatingUntil : expires });
   } else {
     // Presence in OSM is weak evidence of operating; the source_updated_at age matters here too.
-    est("business_status", { status: "operating" }, rec.sourceUpdatedAt && now.getTime() - rec.sourceUpdatedAt.getTime() < 2 * 365 * 86_400_000 ? 0.5 : 0.35);
+    facts.push({ ...base, attribute: "business_status", value: { status: "operating" }, evidence: null, confidence: rec.sourceUpdatedAt && now.getTime() - rec.sourceUpdatedAt.getTime() < 2 * 365 * 86_400_000 ? 0.5 : 0.35, evidenceClass: "estimate", ...(operatingUntil ? { validUntil: operatingUntil } : {}) });
   }
 
   if (hours && hours !== "off" && hours !== "closed") {
@@ -255,5 +279,6 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     phone: phone ?? null,
     rejects,
     facts,
+    changesAt: due.reduce<Date | null>((a, b) => (!a || b < a ? b : a), null),
   };
 }

@@ -208,13 +208,15 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
       } else return out("CLOSED_ON_ARRIVAL");
     }
     closesAt = ev.interval.close;
+  }
+  // Published kitchen hours decide when a meal can start, whether or not the venue ever closes.
+  const kitchen = kitchenGate();
+  if (typeof kitchen === "string") return out(kitchen);
+  latestArrival = kitchen.latestArrival;
+  if (closesAt) {
     let effectiveClose = closesAt;
-    // Published kitchen hours replace the category's guess at when the kitchen stops.
-    const kitchen = kitchenGate();
-    if (typeof kitchen === "string") return out(kitchen);
-    if (kitchen.latestArrival) {
-      latestArrival = kitchen.latestArrival;
-    } else if (policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
+    // Without them, the category's guess at when the kitchen stops stands in.
+    if (!kitchen.latestArrival && policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
     // Last entry limits ARRIVAL, not the end of the visit.
     const lastEntryPub = fact<{ minutes: number }>(c, "last_entry_offset");
     if (lastEntryPub && !lastEntryPub.isEstimate) {

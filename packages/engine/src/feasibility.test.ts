@@ -542,6 +542,16 @@ describe("feasibility: kitchen hours", () => {
     expect(e.class).toBe("ready");
   });
 
+  it("kitchen hours bind a restaurant that is open 24/7", () => {
+    const c = venue({ category: "restaurant", hours: "24/7", kitchen: "Mo-Su 10:00-20:00" });
+    expect(one(c, ctx("2026-10-03 21:00", 120)).excludedBy).toBe("KITCHEN_CLOSED");
+    const e = one(c, ctx("2026-10-03 09:00", 180));
+    expect(e.class).not.toBe("ineligible");
+    expect(e.reasons).toContain("WAIT_FOR_OPENING");
+    expect(e.timing!.arrival.getTime()).toBe(fromLocal("2026-10-03", 10 * 60, TZ).getTime());
+    expect(e.timing!.latestArrival!.getTime()).toBe(fromLocal("2026-10-03", 19 * 60 + 45, TZ).getTime());
+  });
+
   it("kitchen hours bound a restaurant whose opening hours are unknown", () => {
     const c = venue({ category: "restaurant", hours: null, kitchen: "Mo-Su 12:00-22:00" });
     expect(one(c, ctx("2026-10-03 21:40", 180)).excludedBy).toBe("KITCHEN_CLOSED");

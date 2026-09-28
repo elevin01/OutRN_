@@ -43,11 +43,13 @@ export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<Writ
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        on conflict (subject_kind, subject_id, attribute, source_id, content_hash) do update
          set fetched_at = excluded.fetched_at,
-             -- The same value can come back on new evidence: an OSM estimate a mapper has since
-             -- surveyed becomes published, with the survey date as observed_at.
+             -- The same value can come back on new evidence, and the latest assertion's evidence is
+             -- the claim's: an OSM estimate a mapper has since surveyed becomes published with the
+             -- survey date as observed_at, and a survey tag removed upstream takes its date along.
+             -- (An observation always carries its own observed_at.)
              evidence_class = excluded.evidence_class,
              evidence = excluded.evidence,
-             observed_at = coalesce(excluded.observed_at, facts.observed_at),
+             observed_at = excluded.observed_at,
              source_updated_at = coalesce(excluded.source_updated_at, facts.source_updated_at),
              confidence = excluded.confidence,
              valid_until = excluded.valid_until,

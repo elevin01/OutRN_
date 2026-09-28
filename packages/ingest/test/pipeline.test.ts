@@ -207,5 +207,55 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     // Excluding it here would outlive the opening day: nothing re-materializes an unchanged record.
     expect(row.rows[0]).toMatchObject({ publish_state: "eligible", value: { status: "closed_temporarily" }, valid_until: new Date(`${opening}T12:00:00Z`) });
   });
+
+  it("a withdrawn or corrected survey date is cleared when the same hours come back without it", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Norfolk Kitchen")!;
+    const hours = async () =>
+      (await db.query<{ observed_at: Date | null; evidence: string; surveyed: Date | null }>(
+        `select f.observed_at, f.evidence,
+                (select max(x.observed_at) from facts x where x.id = any(cf.input_fact_ids) and x.evidence_class <> 'observation') as surveyed
+           from facts f join venues v on v.id = f.subject_id
+           join current_facts cf on cf.subject_id = v.id and cf.attribute = 'opening_hours'
+          where v.canonical_name = 'Norfolk Kitchen' and f.source_id = 'osm' and f.attribute = 'opening_hours' and f.superseded_at is null`,
+      )).rows[0]!;
+    const replay = async (tags: Record<string, string>, name: string) => {
+      const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+      const path = join(dir, `${name}.json`);
+      writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    };
+    await replay({ ...el.tags, "check_date:opening_hours": "2026-01-20" }, "surveyed");
+    expect((await hours()).observed_at).toEqual(new Date("2026-01-20T12:00:00Z"));
+    // The mapper's tag is removed upstream: same hours, no survey.
+    await replay(el.tags, "withdrawn");
+    expect(await hours()).toMatchObject({ observed_at: null, surveyed: null, evidence: `opening_hours=${el.tags["opening_hours"]}` });
+    // Surveyed again, then corrected to a date the normalizer refuses (in the future).
+    await replay({ ...el.tags, "check_date:opening_hours": "2026-01-20" }, "resurveyed");
+    await replay({ ...el.tags, "check_date:opening_hours": "2099-01-01" }, "corrected");
+    expect(await hours()).toMatchObject({ observed_at: null, surveyed: null });
+  });
+
+  it("a closing date takes effect once it passes, on a replay of the same data under the same rules", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Allen Kitchen")!;
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-closing.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags: { ...el.tags, end_date: "2026-11-10" } }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    const state = async () =>
+      (await db.query<{ publish_state: string; value: { status: string }; valid_until: Date | null }>(
+        `select v.publish_state, cf.value, cf.valid_until from venues v join current_facts cf on cf.subject_id = v.id and cf.attribute = 'business_status' where v.canonical_name = 'Allen Kitchen'`,
+      )).rows[0]!;
+
+    const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-01T15:00:00Z") });
+    expect(before.raw.changed).toBe(1);
+    // Still operating, but only until the closing date: the claim does not outlive what the tag says.
+    expect(await state()).toMatchObject({ publish_state: "eligible", value: { status: "operating" }, valid_until: new Date("2026-11-10T12:00:00Z") });
+
+    // Nothing upstream changes, the rules stay the same; only time passes.
+    const after = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-11T15:00:00Z") });
+    expect([after.raw.changed, after.raw.renormalized]).toEqual([0, 1]);
+    expect(await state()).toMatchObject({ publish_state: "excluded", value: { status: "closed_permanently" } });
+  });
 });
 
