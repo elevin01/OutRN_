@@ -128,6 +128,28 @@ export const PlanStep = z.object({
 });
 export type PlanStep = z.infer<typeof PlanStep>;
 
+/**
+ * What to expect there at the arrival. Render `text`; style `kind` and `level` when you know them.
+ * Basis "typical" is what's usual for this kind of place at that day and hour (an estimate, never a
+ * claim about the place: show it as "usually"); "report" is a recent report of the place itself.
+ */
+export const Condition = z.object({
+  /** "crowd" | "wait". Open-ended (traffic, transit and weather may follow): fall back to `text`. */
+  kind: z.string().min(1),
+  /** crowd: "quiet" | "moderate" | "busy". wait: "none" | "short" (up to 15 min) | "long". Open-ended. */
+  level: z.string().min(1),
+  /** "typical" | "report". Open-ended. */
+  basis: z.string().min(1),
+  isEstimate: z.boolean(),
+  /** What it may cost, as a range: a wait for a table is usually 15–30 minutes. Null when unknown. */
+  minutes: z.object({ min: z.int().min(0), max: z.int().min(0) }).nullable(),
+  /** When it was reported (basis "report"), if known. */
+  reportedAt: IsoDateTime.nullable(),
+  /** "Places like this are usually busy on Friday evenings", "Reported a short line at 7:12pm". */
+  text: z.string(),
+});
+export type Condition = z.infer<typeof Condition>;
+
 export const EventTimes = z.object({
   startsAt: IsoDateTime,
   endsAt: IsoDateTime.nullable(),
@@ -141,7 +163,7 @@ export const EventTimes = z.object({
  * fields next to it carry the same meaning for a UI that composes its own.
  */
 export const CardCopy = z.object({
-  /** "~12 min walk · until 10pm, you'd have 1h40 · $15–35" */
+  /** "~12 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · $15–35" */
   summary: z.string(),
   /** "A short walk, plenty of time, free." */
   sentence: z.string().nullable(),
@@ -175,6 +197,8 @@ export const RecommendationItem = z.object({
   timing: Timing,
   /** The plan behind the card as timed steps; always starts with "leave" and "arrive". */
   plan: z.array(PlanStep),
+  /** How busy it is and any wait, at the arrival: crowd first, then wait. Empty when nothing is known. */
+  conditions: z.array(Condition),
   price: Price,
   /** Must be shown when present. */
   ageLimit: AgeLimit.nullable(),

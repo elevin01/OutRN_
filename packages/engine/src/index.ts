@@ -6,3 +6,4 @@ export * from "./explain.js";
 export * from "./recommend.js";
 export * from "./load.js";
 export * from "./describe.js";
+export * from "./conditions.js";

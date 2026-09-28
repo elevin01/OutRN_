@@ -43,6 +43,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
       visit: { style: t.visit.style, label: VISIT_LABEL[t.visit.style] ?? "Visit", minMinutes: t.visit.minMinutes, typicalMinutes: t.visit.typicalMinutes, isEstimate: t.visit.isEstimate },
     },
     plan: planSteps(e, ctx).map((s) => ({ kind: s.kind, at: s.at.toISOString(), isEstimate: s.isEstimate, text: s.text })),
+    conditions: t.conditions.map((x) => ({ kind: x.kind, level: x.level, basis: x.basis, isEstimate: x.isEstimate, minutes: x.minutes, reportedAt: x.reportedAt?.toISOString() ?? null, text: x.text })),
     price: priceOf(c.facts.price),
     ageLimit: ageLimitFrom(c.facts.age_limit),
     reasons: reasonNotes(e, ctx.timezone).map((n) => ({ ...n, required: false })),

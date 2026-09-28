@@ -63,7 +63,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.2.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.3.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -295,6 +295,12 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
+    // Items a 1.2 API stored have no conditions: that search computed none, so they page with none.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'conditions') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    const before13 = await search(next);
+    expect(before13.items.map((i) => i.id)).toEqual(expected);
+    expect(before13.items.map((i) => i.conditions)).toEqual(expected.map(() => []));
+
     // Items written before 1.2 have no visit or plan, which cannot be rebuilt without the engine: that search restarts.
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i #- '{timing,visit}') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     const older = await call("POST", "/v1/recommendations", next);
@@ -310,6 +316,20 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     await db.query(`update recommendation_snapshots set request = '"garbage"' where run_id = $1`, [first.requestId]);
     const lost = await call("POST", "/v1/recommendations", next);
     expect([lost.status, ApiError.parse(lost.json).error.code]).toEqual([400, "CURSOR_INVALID"]);
+  });
+
+  it("says what to expect there: a Saturday dinner is usually busy, with a wait for a table", async () => {
+    now = SAT_EVENING;
+    const page = await search({ areaId: "les", windowMinutes: 180, categories: ["restaurant"] });
+    expect(page.items.length).toBeGreaterThan(0);
+    for (const item of page.items) {
+      expect(item.conditions.map((c) => [c.kind, c.level, c.basis, c.isEstimate])).toEqual([
+        ["crowd", "busy", "typical", true],
+        ["wait", "long", "typical", true],
+      ]);
+      expect(item.conditions[1]!.minutes).toEqual({ min: 15, max: 30 });
+      expect(item.copy.summary).toContain("~15–30 min wait");
+    }
   });
 
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {

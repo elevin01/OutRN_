@@ -141,6 +141,52 @@
         "freshness": "last edited in OSM Jan 2026",
         "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
+    },
+    {
+      "attribute": "queue",
+      "label": "Line",
+      "value": "Short",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "user_observation",
+            "label": "visitor report"
+          }
+        ],
+        "evidence": "reported",
+        "confidence": 0.7,
+        "verifiedAt": "2026-10-03T22:22:00.000Z",
+        "sourceUpdatedAt": "2026-10-03T22:22:00.000Z",
+        "retrievedAt": "2026-10-03T22:22:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "reported 8 min ago",
+        "summary": "visitor report · reported 8 min ago · reported"
+      }
+    },
+    {
+      "attribute": "crowd_level",
+      "label": "Crowd",
+      "value": "Busy",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "user_observation",
+            "label": "visitor report"
+          }
+        ],
+        "evidence": "reported",
+        "confidence": 0.7,
+        "verifiedAt": "2026-10-03T22:22:00.000Z",
+        "sourceUpdatedAt": "2026-10-03T22:22:00.000Z",
+        "retrievedAt": "2026-10-03T22:22:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "reported 8 min ago",
+        "summary": "visitor report · reported 8 min ago · reported"
+      }
     }
   ],
   "contact": {

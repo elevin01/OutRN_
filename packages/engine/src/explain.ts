@@ -1,5 +1,6 @@
-import { localClock } from "@outrn/core";
+import { waitFloorMinutes } from "./conditions.js";
 import { ageLimitOf } from "./feasibility.js";
+import { fmtDuration, fmtTime } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
 
 /**
@@ -7,19 +8,7 @@ import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
  * appears only when its inputs are valid. Estimates keep their tilde.
  */
 
-export function fmtTime(d: Date, tz: string): string {
-  const c = localClock(d, tz);
-  const h12 = c.hour % 12 === 0 ? 12 : c.hour % 12;
-  const m = c.minutes % 60;
-  return `${h12}${m ? ":" + String(m).padStart(2, "0") : ""}${c.hour < 12 ? "am" : "pm"}`;
-}
-
-export function fmtDuration(min: number): string {
-  if (min < 60) return `${min} min`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
-}
+export { fmtDuration, fmtTime } from "./format.js";
 
 const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   HOURS_UNKNOWN: "hours not listed",
@@ -31,6 +20,7 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   PRICE_UNKNOWN: "price unknown",
   LATE_ENTRY_UNCERTAIN: "may be past last entry",
   ACCESS_LIMITED: "limited accessibility",
+  WAIT_MAY_NOT_FIT: "a wait could leave too little time",
 };
 
 /** One reason or caveat as data: a stable code, its inputs, and default wording. */
@@ -86,7 +76,7 @@ export function caveatNotes(e: Evaluation): Note[] {
   return e.unresolved.map((code) => ({
     code,
     text: ageText[code] ?? UNRESOLVED_TEXT[code] ?? code.toLowerCase().replace(/_/g, " "),
-    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : {},
+    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : code === "WAIT_MAY_NOT_FIT" ? { waitMinutes: waitFloorMinutes(e.timing?.conditions ?? []) } : {},
   }));
 }
 
@@ -102,6 +92,10 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   } else {
     // What the visit takes, not how long the user may stay: their time is theirs.
     parts.push(t.visit.style === "takeout" ? `to go, about ${fmtDuration(t.visit.typicalMinutes)}` : `takes about ${fmtDuration(t.visit.typicalMinutes)}`);
+    // A wait is time the visit costs on top: its usual range, or what a report saw.
+    const wait = t.conditions.find((x) => x.kind === "wait");
+    if (wait?.minutes) parts.push(`~${wait.minutes.min}–${wait.minutes.max} min wait`);
+    else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
     if (t.closesAt) parts.push(`until ${fmtTime(t.closesAt, tz)}`);
   }
   parts.push(e.price.unknown ? "price unknown" : e.price.isEstimate && e.price.text === "free" ? "usually free" : e.price.text);

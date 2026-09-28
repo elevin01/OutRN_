@@ -6,8 +6,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.2.0",
-      "weightsVersion": "2026-09-27.4"
+      "engineVersion": "0.3.0",
+      "weightsVersion": "2026-09-28.1"
     },
     {
       "id": "00000000-0000-4000-8000-000000000067",
@@ -15,8 +15,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.2.0",
-      "weightsVersion": "2026-09-27.4"
+      "engineVersion": "0.3.0",
+      "weightsVersion": "2026-09-28.1"
     },
     {
       "id": "00000000-0000-4000-8000-000000000030",
@@ -24,8 +24,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.2.0",
-      "weightsVersion": "2026-09-27.4"
+      "engineVersion": "0.3.0",
+      "weightsVersion": "2026-09-28.1"
     },
     {
       "id": "00000000-0000-4000-8000-00000000002f",
@@ -33,8 +33,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.2.0",
-      "weightsVersion": "2026-09-27.4"
+      "engineVersion": "0.3.0",
+      "weightsVersion": "2026-09-28.1"
     },
     {
       "id": "00000000-0000-4000-8000-00000000002c",
@@ -42,8 +42,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.2.0",
-      "weightsVersion": "2026-09-27.4"
+      "engineVersion": "0.3.0",
+      "weightsVersion": "2026-09-28.1"
     }
   ]
 }

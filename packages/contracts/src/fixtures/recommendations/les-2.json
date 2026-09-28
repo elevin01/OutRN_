@@ -124,6 +124,17 @@
         "lon": -73.989625
       },
       "placeName": "Delancey Books",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday evenings",
+          "basis": "typical",
+          "level": "quiet",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -240,6 +251,17 @@
         "lon": -73.985733
       },
       "placeName": "Norfolk Park",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -347,6 +369,17 @@
         "lon": -73.988294
       },
       "placeName": "Rivington Norfolk Park",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],

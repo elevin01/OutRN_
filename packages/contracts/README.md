@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.2.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.3.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,12 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.3.0** (additive). What to expect there:
+  - `conditions` on every item: how busy it is and any wait, at the arrival. Crowd comes first, then wait. Each has a `kind` (`crowd`, `wait`; open-ended), a `level` (crowd: `quiet`, `moderate`, `busy`; wait: `none`, `short`, `long`), a `basis`, `isEstimate`, `minutes` (a wait's usual range, e.g. 15–30), `reportedAt`, and default `text`.
+  - Basis `typical` is what's usual for this kind of place at that day and hour. It's an estimate, never a claim about the place, and its text says "usually". Basis `report` is a recent visitor report of the place itself, and replaces the typical pattern while it's fresh.
+  - A new caveat, `WAIT_MAY_NOT_FIT` (params `waitMinutes`): the expected wait could leave too little time for the visit, or run past last orders. An expected wait never excludes a place.
+  - The default `copy.summary` shows an expected wait ("~15–30 min wait") or a reported line ("short line reported").
+  - Items stored by a 1.2 API page with `conditions: []`: that search computed none.
 - **1.2.0** (additive). What a visit takes, and the plan:
   - `timing.visit` gives the visit's style (`dine_in`, `counter`, `takeout`, `visit`, `event`; open-ended), a label, the minimum the engine checked, and the typical length ("takes about 1h20"). The typical length is not a limit on the user's time.
   - `plan` lists the card's timed steps: `leave`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` (open-ended kinds, default `text`, `isEstimate`).
@@ -61,8 +67,11 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 | Field | Values today |
 | --- | --- |
 | `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `FRESH_REPORT`, `LANDMARK` |
-| `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`) |
-| `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `stay_later` |
+| `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`) |
+| `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `takeout`, `dine_in`, `stay_later` |
+| `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |
+| `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event` |
+| `plan[].kind` | `leave`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` |
 | `category.id` | see `GET /v1/areas` → `filters.categories` |
 | `error.code` | `VALIDATION_FAILED` (400, with `fields`), `CURSOR_INVALID` (400), `UNAUTHORIZED` (401), `NOT_FOUND` (404), `CURSOR_EXPIRED` (410, with `restart`), `UNAVAILABLE` (503, retryable), `INTERNAL` (500) |
 

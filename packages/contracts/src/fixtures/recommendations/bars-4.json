@@ -128,6 +128,17 @@
         "lon": -73.988579
       },
       "placeName": "Ludlow Tavern",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -225,6 +236,17 @@
         "lon": -73.986194
       },
       "placeName": "Stanton Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -322,6 +344,17 @@
         "lon": -73.975001
       },
       "placeName": "Essex Hester Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],

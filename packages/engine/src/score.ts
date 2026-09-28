@@ -1,5 +1,6 @@
 import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
+import { waitFloorMinutes } from "./conditions.js";
 import { ageLimitOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
 
 /**
@@ -32,7 +33,8 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
 
   // Fit: travel slack, time slack, chips, weather
   const travelScore = Math.max(0, 1 - t.travel.minutes / Math.max(1, maxTravel));
-  const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
+  // Time spent waiting (for a table, in line) is not time there.
+  const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
   if (ctx.mood) chips += MOOD_ACTIVITY[ctx.mood].includes(activity) ? 0.25 : -0.15;
   if (ctx.company) {

@@ -91,6 +91,26 @@
           "text": "Wrap up by 9:30pm"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "report",
+          "isEstimate": false,
+          "minutes": null,
+          "reportedAt": "2026-10-03T22:22:00.000Z",
+          "text": "Reported busy at 6:22pm"
+        },
+        {
+          "kind": "wait",
+          "level": "short",
+          "basis": "report",
+          "isEstimate": false,
+          "minutes": null,
+          "reportedAt": "2026-10-03T22:22:00.000Z",
+          "text": "Reported a short line at 6:22pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -122,12 +142,18 @@
             "verifiedAt": "2026-09-29T16:00:00.000Z"
           },
           "required": false
+        },
+        {
+          "code": "FRESH_REPORT",
+          "text": "recent report",
+          "params": {},
+          "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late, hours confirmed.",
+        "summary": "~14 min walk · takes about 1h · short line reported · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late, hours confirmed, recent report.",
         "caveat": null,
         "action": "Go now"
       },
@@ -194,6 +220,17 @@
           "at": "2026-10-04T01:30:00.000Z",
           "isEstimate": false,
           "text": "Wrap up by 9:30pm"
+        }
+      ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
         }
       ],
       "price": {
@@ -291,6 +328,17 @@
           "at": "2026-10-04T01:30:00.000Z",
           "isEstimate": false,
           "text": "Wrap up by 9:30pm"
+        }
+      ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
         }
       ],
       "price": {

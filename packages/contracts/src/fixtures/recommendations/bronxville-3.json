@@ -36,7 +36,7 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~9 min drive incl. parking · takes about 1h20 · until 11pm · price unknown",
+        "summary": "~9 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
         "sentence": "A short drive, plenty of time, open late."
       },
       "kind": "venue",
@@ -132,6 +132,29 @@
         "lon": -73.82182
       },
       "placeName": "Stanton Kitchen",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -139,7 +162,7 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~9 min drive incl. parking · takes about 1h20 · until 10pm · price unknown",
+        "summary": "~9 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
         "sentence": "A short drive, plenty of time."
       },
       "kind": "venue",
@@ -227,6 +250,29 @@
         "lon": -73.842642
       },
       "placeName": "Essex Kitchen",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -234,7 +280,7 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~12 min drive incl. parking · takes about 1h20 · until 11pm · price unknown",
+        "summary": "~12 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
         "sentence": "A short drive, plenty of time, open late."
       },
       "kind": "venue",
@@ -330,6 +376,29 @@
         "lon": -73.849641
       },
       "placeName": "Attorney Kitchen",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],
