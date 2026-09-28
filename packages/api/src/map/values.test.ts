@@ -35,6 +35,10 @@ describe("fact values → contract values", () => {
     // A menu stored before the rule, on another site than the place's own, or with no site to compare: dropped.
     expect(linksFrom({ menu: "https://evil.example/menu" }, "https://bageldepot.example/")).toEqual([]);
     expect(linksFrom({ menu: "https://bageldepot.example/menu" })).toEqual([]);
+    // A free site builder, and another tenant of a host the website shares by path.
+    expect(linksFrom({ menu: "https://bagel-depot-order.square.site/" }, "https://bageldepot.example/")).toEqual([]);
+    expect(linksFrom({ menu: "https://www.facebook.com/SomeoneElsesPage" }, "https://www.facebook.com/bageldepot")).toEqual([]);
+    expect(linksFrom({ menu: "https://www.facebook.com/bageldepot/menu" }, "https://www.facebook.com/bageldepot")).toEqual([{ kind: "menu", label: "Menu", url: "https://www.facebook.com/bageldepot/menu" }]);
     expect(linksFrom({ menu: "https://www.toasttab.com/bagel-depot" })).toEqual([{ kind: "menu", label: "Menu", url: "https://www.toasttab.com/bagel-depot" }]);
     expect(linksFrom({ menu: "https://169.254.169.254/latest/meta-data/" })).toEqual([]);
     expect(linksFrom({ menu: "https://192.168.1.1/menu", facebook: "https://router.local/x" })).toEqual([]);

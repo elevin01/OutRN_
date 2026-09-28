@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isMenuHostFor, isPublicWebHost } from "./urls.js";
+import { isMenuUrlFor, isPublicWebHost } from "./urls.js";
 
 const hostOf = (url: string) => new URL(url).hostname;
 
@@ -55,23 +55,60 @@ describe("links shown to users point at public hosts only", () => {
 });
 
 describe("where a venue's menu may be", () => {
+  const site = "https://essexcoffee.com";
+
   it("on its own site, a subdomain of it, or a menu platform", () => {
-    expect(isMenuHostFor("essexcoffee.com", "www.essexcoffee.com")).toBe(true);
-    expect(isMenuHostFor("www.essexcoffee.com", "essexcoffee.com")).toBe(true);
-    expect(isMenuHostFor("order.essexcoffee.com", "essexcoffee.com")).toBe(true);
-    expect(isMenuHostFor("www.toasttab.com", null)).toBe(true);
-    expect(isMenuHostFor("essex-coffee.square.site", "essexcoffee.com")).toBe(true);
+    expect(isMenuUrlFor("https://essexcoffee.com/menu", "https://www.essexcoffee.com/")).toBe(true);
+    expect(isMenuUrlFor("https://www.essexcoffee.com/menu", "essexcoffee.com")).toBe(true);
+    expect(isMenuUrlFor("https://order.essexcoffee.com/", site)).toBe(true);
+    expect(isMenuUrlFor("https://www.toasttab.com/essex-coffee/v3", null)).toBe(true);
+    expect(isMenuUrlFor("https://essexcoffee.com/menu", "https://essexcoffee.com/?utm_source=gmb")).toBe(true);
   });
 
   it("nowhere else: another site, a lookalike, the site's parent, or with no website to compare", () => {
-    expect(isMenuHostFor("evil.example", "essexcoffee.com")).toBe(false);
-    expect(isMenuHostFor("essexcoffee.com.evil.example", "essexcoffee.com")).toBe(false);
-    expect(isMenuHostFor("evilessexcoffee.com", "essexcoffee.com")).toBe(false);
-    expect(isMenuHostFor("toasttab.com.evil.example", null)).toBe(false);
-    expect(isMenuHostFor("example.com", "shop.example.com")).toBe(false);
-    expect(isMenuHostFor("essexcoffee.com", null)).toBe(false);
-    expect(isMenuHostFor("192.168.1.1", "192.168.1.1")).toBe(false);
-    expect(isMenuHostFor("router.lan", "router.lan")).toBe(false);
+    expect(isMenuUrlFor("https://evil.example/menu", site)).toBe(false);
+    expect(isMenuUrlFor("https://essexcoffee.com.evil.example/menu", site)).toBe(false);
+    expect(isMenuUrlFor("https://evilessexcoffee.com/menu", site)).toBe(false);
+    expect(isMenuUrlFor("https://toasttab.com.evil.example/", null)).toBe(false);
+    expect(isMenuUrlFor("https://example.com/menu", "https://shop.example.com")).toBe(false);
+    expect(isMenuUrlFor("https://essexcoffee.com/menu", null)).toBe(false);
+    expect(isMenuUrlFor("https://192.168.1.1/menu", "https://192.168.1.1")).toBe(false);
+    expect(isMenuUrlFor("https://router.lan/menu", "https://router.lan")).toBe(false);
+  });
+
+  it("only over https, with no credentials, and only when it parses", () => {
+    expect(isMenuUrlFor("http://essexcoffee.com/menu", site)).toBe(false);
+    expect(isMenuUrlFor("https://user:pass@essexcoffee.com/menu", site)).toBe(false);
+    expect(isMenuUrlFor("https://essexcoffee.com@evil.example/menu", site)).toBe(false);
+    expect(isMenuUrlFor("javascript:alert(1)", site)).toBe(false);
+    expect(isMenuUrlFor("essexcoffee.com/menu", site)).toBe(false);
+  });
+
+  it("never on a free site builder, whatever the website says", () => {
+    for (const menu of ["https://essex-coffee-order.square.site/", "https://squareup.com/store/essex-coffee-order", "https://essex.menufy.com/", "https://www.beyondmenu.com/essex"]) {
+      expect(isMenuUrlFor(menu, site), menu).toBe(false);
+      expect(isMenuUrlFor(menu, null), menu).toBe(false);
+    }
+  });
+
+  it("on a host shared by path, only under the venue's own path", () => {
+    const fb = "https://www.facebook.com/essexcoffee";
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffee/menu", fb)).toBe(true);
+    expect(isMenuUrlFor("https://facebook.com/essexcoffee", `${fb}/`)).toBe(true);
+    expect(isMenuUrlFor("https://www.facebook.com/SomeoneElsesPage", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffeeorder", fb)).toBe(false);
+    expect(isMenuUrlFor("https://m.facebook.com/essexcoffee", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/", fb)).toBe(false);
+    expect(isMenuUrlFor("https://sites.google.com/view/someone-else/menu", "https://sites.google.com/view/essexcoffee")).toBe(false);
+    expect(isMenuUrlFor("https://linktr.ee/someoneelse", "https://linktr.ee/essexcoffee")).toBe(false);
+  });
+
+  it("with no way out of that path, and none when the website names its tenant in a query", () => {
+    const fb = "https://www.facebook.com/essexcoffee";
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffee/../SomeoneElsesPage", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffee/%2e%2e/SomeoneElsesPage", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffee/..%2fSomeoneElsesPage", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/essexcoffee/..%5CSomeoneElsesPage", fb)).toBe(false);
+    expect(isMenuUrlFor("https://www.facebook.com/profile.php?id=999", "https://www.facebook.com/profile.php?id=123")).toBe(false);
   });
 });
-

@@ -271,7 +271,10 @@ describe("OSM normalization", () => {
         { website: "https://essexcoffee.com", "website:menu": "https://evil.example/essexcoffee/menu" }, // another site
         { "website:menu": "https://essexcoffee.com/menu" }, // no website to compare
         { website: "not a site", "website:menu": "https://essexcoffee.com/menu" },
+        { website: "https://essexcoffee.com", "website:menu": "https://essex-coffee-order.square.site/" }, // a free site builder anyone can sign up to
+        { website: "https://www.facebook.com/essexcoffee", "website:menu": "https://www.facebook.com/SomeoneElsesPage" }, // another tenant of a shared host
       ]) expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
+      expect(venueLinks({ website: "https://www.facebook.com/essexcoffee", "website:menu": "https://www.facebook.com/essexcoffee/menu" })?.links.menu).toBe("https://www.facebook.com/essexcoffee/menu");
     });
 
     it("drops anything it cannot vouch for", () => {

@@ -1,5 +1,5 @@
 import type { AgeLimit, Evidence, NearbyParking, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
-import { isMenuHostFor, isPublicWebHost } from "@outrn/core";
+import { isMenuUrlFor, isPublicWebHost } from "@outrn/core";
 import { parkingText, type NearbyParking as EngineParking } from "@outrn/engine";
 import { labelOf } from "../config.js";
 
@@ -69,15 +69,6 @@ export function parkingFrom(p: EngineParking | null | undefined): NearbyParking 
 
 const LINK_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook", menu: "Menu" };
 
-function hostOf(site: string | null): string | null {
-  if (!site) return null;
-  try {
-    return new URL(/^https?:\/\//i.test(site) ? site : `https://${site}`).hostname;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * The place's own pages from its links fact, in a fixed order. Only https on a public host ever
  * reaches a user, and a menu only on the place's own website or a known menu platform.
@@ -90,7 +81,7 @@ export function linksFrom(value: unknown, website: string | null = null): VenueL
     if (typeof url !== "string") continue;
     try {
       const u = new URL(url);
-      const hostOk = kind === "menu" ? isMenuHostFor(u.hostname, hostOf(website)) : isPublicWebHost(u.hostname);
+      const hostOk = kind === "menu" ? isMenuUrlFor(url, website) : isPublicWebHost(u.hostname);
       if (u.protocol === "https:" && hostOk) out.push({ kind, label: LINK_LABEL[kind]!, url });
     } catch {
       // stored values are validated on write; anything else is dropped here too
