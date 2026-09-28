@@ -29,7 +29,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [
     {
@@ -61,8 +62,35 @@
         "arriveAt": "2026-10-03T22:49:00.000Z",
         "usefulMinutes": 161,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z"
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:49:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:49pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -98,7 +126,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown · usually 21+",
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
@@ -106,7 +134,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
         "websiteUrl": null,
-        "phone": "+1 212 555 8297"
+        "phone": "+1 212 555 8297",
+        "links": []
       }
     },
     {
@@ -138,8 +167,35 @@
         "arriveAt": "2026-10-03T22:53:00.000Z",
         "usefulMinutes": 157,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z"
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:53:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:53pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -167,7 +223,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~18 min walk · until 3am, you'd have 2h37 · price unknown · usually 21+",
+        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
@@ -175,7 +231,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
         "websiteUrl": "https://broomebar.example/",
-        "phone": "+1 212 555 3125"
+        "phone": "+1 212 555 3125",
+        "links": []
       }
     },
     {
@@ -207,8 +264,35 @@
         "arriveAt": "2026-10-03T22:51:00.000Z",
         "usefulMinutes": 159,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z"
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:51:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:51pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -236,7 +320,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~16 min walk · until 2am, you'd have 2h39 · price unknown · usually 21+",
+        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
@@ -244,7 +328,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking",
         "websiteUrl": "https://delanceytavern.example/",
-        "phone": null
+        "phone": null,
+        "links": []
       }
     }
   ],

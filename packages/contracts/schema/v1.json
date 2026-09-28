@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.1.0",
+  "contract": "1.2.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -480,6 +480,13 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
                 }
+              },
+              "visitStyle": {
+                "type": "string",
+                "enum": [
+                  "dine_in",
+                  "takeout"
+                ]
               }
             },
             "required": [
@@ -702,6 +709,13 @@
                     "type": "null"
                   }
                 ]
+              },
+              "visitStyle": {
+                "type": "string",
+                "enum": [
+                  "dine_in",
+                  "takeout"
+                ]
               }
             },
             "required": [
@@ -718,7 +732,8 @@
               "atIsExplicit",
               "origin",
               "originIsDefault",
-              "backBy"
+              "backBy",
+              "visitStyle"
             ],
             "additionalProperties": false
           },
@@ -956,6 +971,39 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "visit": {
+                      "type": "object",
+                      "properties": {
+                        "style": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "label": {
+                          "type": "string"
+                        },
+                        "minMinutes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "typicalMinutes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "isEstimate": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "style",
+                        "label",
+                        "minMinutes",
+                        "typicalMinutes",
+                        "isEstimate"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -964,9 +1012,40 @@
                     "arriveAt",
                     "usefulMinutes",
                     "finishBy",
-                    "closesAt"
+                    "closesAt",
+                    "visit"
                   ],
                   "additionalProperties": false
+                },
+                "plan": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-]\\d{2}:\\d{2})))$"
+                      },
+                      "isEstimate": {
+                        "type": "boolean"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "at",
+                      "isEstimate",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  }
                 },
                 "price": {
                   "anyOf": [
@@ -1270,12 +1349,38 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "url"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
                     "directionsUrl",
                     "websiteUrl",
-                    "phone"
+                    "phone",
+                    "links"
                   ],
                   "additionalProperties": false
                 }
@@ -1293,6 +1398,7 @@
                 "location",
                 "event",
                 "timing",
+                "plan",
                 "price",
                 "ageLimit",
                 "reasons",
@@ -1921,10 +2027,36 @@
                   "drive"
                 ],
                 "additionalProperties": false
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "label",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
-              "directionsUrls"
+              "directionsUrls",
+              "links"
             ],
             "additionalProperties": false
           },
@@ -2103,6 +2235,13 @@
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
             }
+          },
+          "visitStyle": {
+            "type": "string",
+            "enum": [
+              "dine_in",
+              "takeout"
+            ]
           }
         },
         "required": [
@@ -2832,6 +2971,13 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$"
                 }
+              },
+              "visitStyle": {
+                "type": "string",
+                "enum": [
+                  "dine_in",
+                  "takeout"
+                ]
               }
             },
             "required": [

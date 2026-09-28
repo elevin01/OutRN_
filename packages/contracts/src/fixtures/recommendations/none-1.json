@@ -29,7 +29,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [],
   "page": {

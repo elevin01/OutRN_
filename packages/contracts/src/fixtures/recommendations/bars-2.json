@@ -25,6 +25,7 @@
       "bar"
     ],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -37,17 +38,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~13 min walk · until 4am, you'd have 1h30 · price unknown · usually 21+",
+        "summary": "~13 min walk · takes about 1h · until 4am · price unknown · usually 21+",
         "sentence": "Opens at 8pm, plenty of time, open late."
       },
       "kind": "venue",
       "name": "Pitt Street Nightcap",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-04T00:00:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive as it opens at 8pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 13,
@@ -61,6 +89,7 @@
         "usefulMinutes": 90
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking"
@@ -114,17 +143,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~20 min walk · until 3am, you'd have 2h35 · price unknown · usually 21+",
+        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Ridge Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:55:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:55pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 20,
@@ -138,6 +194,7 @@
         "usefulMinutes": 155
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 6471",
         "websiteUrl": "https://ridgebar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking"
@@ -183,17 +240,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~17 min walk · until 1am, you'd have 2h38 · price unknown · usually 21+",
+        "summary": "~17 min walk · takes about 1h · until 1am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Hester Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:52:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:52pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 17,
@@ -207,6 +291,7 @@
         "usefulMinutes": 158
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://hesterbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"

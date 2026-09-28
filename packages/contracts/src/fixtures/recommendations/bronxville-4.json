@@ -23,6 +23,7 @@
     "company": null,
     "categories": [],
     "travelMode": "drive",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 120,
@@ -35,17 +36,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~11 min drive incl. parking · until 11pm, you'd have 1h39 · price unknown",
+        "summary": "~11 min drive incl. parking · takes about 1h20 · until 11pm · price unknown",
         "sentence": "A short drive, plenty of time, open late."
       },
       "kind": "venue",
       "name": "Delancey Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:51:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:51pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "drive",
           "minutes": 11,
@@ -59,6 +87,7 @@
         "usefulMinutes": 99
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
@@ -110,17 +139,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~10 min drive incl. parking · until 10pm, you'd have 1h30 · price unknown",
+        "summary": "~10 min drive incl. parking · takes about 1h20 · until 10pm · price unknown",
         "sentence": "A short drive, plenty of time."
       },
       "kind": "venue",
       "name": "Grand Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:50:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:50pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:20:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:20pm",
+          "isEstimate": true
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "drive",
           "minutes": 10,
@@ -134,6 +190,7 @@
         "usefulMinutes": 90
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=driving"
@@ -177,17 +234,44 @@
       "copy": {
         "action": "Check first",
         "caveat": "Check first: hours not listed",
-        "summary": "~10 min drive incl. parking · you'd have 1h45 · price unknown",
+        "summary": "~10 min drive incl. parking · takes about 45 min · price unknown",
         "sentence": "A short drive, plenty of time."
       },
       "kind": "venue",
       "name": "Forsyth Library",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:45:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:45pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "check_first",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 45
+        },
         "travel": {
           "mode": "drive",
           "minutes": 10,
@@ -201,6 +285,7 @@
         "usefulMinutes": 105
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 5589",
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=driving"

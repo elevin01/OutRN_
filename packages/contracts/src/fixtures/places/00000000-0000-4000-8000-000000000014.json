@@ -149,7 +149,8 @@
       "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=walking",
       "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=transit",
       "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
-    }
+    },
+    "links": []
   },
   "asOf": "2026-10-03T22:30:00.000Z",
   "attributions": [

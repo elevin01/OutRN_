@@ -79,6 +79,19 @@ Contract 1.1 accepts these on a search. Each is optional, so adopt them when the
 - `seenIds` / `dismissedIds`: item ids (UUIDs) this device already showed (ranked lower) or the
   user dismissed (never shown). Keep them in local storage; send up to 200 of each. The API
   stores only how many were sent, never the ids.
+- `visitStyle: "takeout"` (1.2): a "grab food to go" toggle. Food places become a ~15-minute stop,
+  and places that don't do takeout drop out.
+
+Contract 1.2 also adds, on every item:
+
+- `timing.visit`: how the visit is done (`label`, e.g. "Sit-down meal") and what it takes. Show
+  `typicalMinutes` as "takes about 1h20". It's not a limit on how long the user stays.
+- `plan`: the card's timed steps ("Leave at 7pm", "Arrive around 7:13pm", "Order by 9:45pm",
+  "Wrap up by 11pm, when it closes"). Show `isEstimate` times as "~7:13pm".
+- `actions.links` (and `actions.links` on place details): the place's own Menu, Instagram and
+  Facebook pages, always https.
+
+The default `copy.summary` now reads "takes about 1h20 · until 10pm" instead of "you'd have 1h40".
 
 ## Rules
 
