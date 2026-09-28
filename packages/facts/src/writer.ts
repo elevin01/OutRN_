@@ -2,10 +2,17 @@ import { contentHash, DEFAULT_VALIDITY_MINUTES, DYNAMIC_ATTRIBUTES, validateFact
 import type { Queryable } from "@outrn/db";
 
 /**
- * Append-only fact writer. Idempotent on (subject, attribute, source, content hash).
- * When the same source re-asserts a DIFFERENT value for the same attribute, the older
- * row is superseded rather than overwritten, so history is preserved.
+ * Append-only fact writer. A claim is its value AND the evidence behind it (class, evidence text,
+ * observed_at): writing is idempotent on (subject, attribute, source, hash of both). When the same
+ * source asserts a different value, or the same value on different evidence (an estimate a mapper
+ * has since surveyed, a survey date withdrawn), the older row is superseded rather than edited, so
+ * the ledger keeps when and how a claim changed.
  */
+
+/** Identity of a claim: what it says and what it rests on. The source's edit time is not part of it. */
+export function claimHash(f: Pick<FactInput, "value" | "evidenceClass" | "evidence" | "observedAt">): string {
+  return contentHash({ value: f.value, evidenceClass: f.evidenceClass, evidence: f.evidence ?? null, observedAt: f.observedAt?.toISOString() ?? null });
+}
 
 export interface WriteResult {
   inserted: number;
@@ -32,7 +39,7 @@ export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<Writ
       out.rejected.push({ attribute: f.attribute, reason: bad });
       continue;
     }
-    const hash = contentHash(f.value);
+    const hash = claimHash(f);
     let validUntil = f.validUntil ?? null;
     if (!validUntil && f.evidenceClass === "observation") {
       const mins = DEFAULT_VALIDITY_MINUTES[f.attribute];
@@ -43,13 +50,6 @@ export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<Writ
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        on conflict (subject_kind, subject_id, attribute, source_id, content_hash) do update
          set fetched_at = excluded.fetched_at,
-             -- The same value can come back on new evidence, and the latest assertion's evidence is
-             -- the claim's: an OSM estimate a mapper has since surveyed becomes published with the
-             -- survey date as observed_at, and a survey tag removed upstream takes its date along.
-             -- (An observation always carries its own observed_at.)
-             evidence_class = excluded.evidence_class,
-             evidence = excluded.evidence,
-             observed_at = excluded.observed_at,
              source_updated_at = coalesce(excluded.source_updated_at, facts.source_updated_at),
              confidence = excluded.confidence,
              valid_until = excluded.valid_until,

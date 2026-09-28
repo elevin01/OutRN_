@@ -142,7 +142,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(gone.rows[0]!.deleted).toBe(true);
   });
 
-  it("a mapper's survey upgrades the same stored facts in place: status becomes published, hours carry the survey date", async () => {
+  it("a mapper's survey supersedes the stored claims: status becomes published, hours carry the survey date, the ledger keeps both", async () => {
     const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; timestamp: string; tags: Record<string, string> }[] };
     const el = fixture.elements.find((e) => e.tags["name"] === "Grand Kitchen")!;
     const facts = async () =>
@@ -167,6 +167,13 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(after.map((f) => f.attribute)).toEqual(["business_status", "kitchen_hours", "opening_hours"]);
     expect(after[0]).toMatchObject({ evidence_class: "published", evidence: "check_date:opening_hours=2026-04-01", observed_at: new Date("2026-04-01T12:00:00Z") });
     expect(after[2]).toMatchObject({ evidence_class: "published", evidence: "opening_hours=Mo-Su 11:00-23:00; check_date:opening_hours=2026-04-01", observed_at: new Date("2026-04-01T12:00:00Z") });
+
+    // Append-only: the estimate was superseded by a new published row, not rewritten in place.
+    const history = await db.query<{ evidence_class: string; superseded: boolean }>(
+      `select f.evidence_class, f.superseded_at is not null as superseded from facts f join venues v on v.id = f.subject_id
+        where v.canonical_name = 'Grand Kitchen' and f.source_id = 'osm' and f.attribute = 'business_status' order by f.superseded_at nulls last`,
+    );
+    expect(history.rows).toEqual([{ evidence_class: "estimate", superseded: true }, { evidence_class: "published", superseded: false }]);
 
     const current = await db.query<{ attribute: string; evidence_class: string }>(
       `select cf.attribute, cf.evidence_class from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'Grand Kitchen' and cf.attribute in ('business_status', 'kitchen_hours') order by cf.attribute`,
@@ -257,6 +264,11 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const after = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-10T06:00:00Z") }); // 1am on the day
     expect([after.raw.changed, after.raw.renormalized]).toEqual([0, 1]);
     expect(await state()).toMatchObject({ publish_state: "excluded", value: { status: "closed_permanently" } });
+    // An open edit just delisted a published venue: someone is asked to confirm it.
+    const task = await db.query<{ attribute: string; question: string }>(
+      `select t.attribute, t.question from verification_tasks t join venues v on v.id = t.subject_id where v.canonical_name = 'Allen Kitchen' and t.dedupe_key like '%:osm_closure'`,
+    );
+    expect(task.rows).toEqual([{ attribute: "business_status", question: "OpenStreetMap now says this place has closed. Has it?" }]);
   });
 });
 

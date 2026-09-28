@@ -155,7 +155,7 @@ describe("OSM normalization", () => {
       expect(osmDate("2026-03-10")).toEqual({ start: new Date("2026-03-10T00:00:00Z"), end: new Date("2026-03-10T23:59:59.999Z") });
       expect(osmDate("2026-02")!.end).toEqual(new Date("2026-02-28T23:59:59.999Z"));
       expect(osmDate("2025")!.start).toEqual(new Date("2025-01-01T00:00:00Z"));
-      for (const bad of ["~1990", "before 2010", "2026-13", "2026-02-29", "2026-1-5", "", undefined]) expect(osmDate(bad)).toBeNull();
+      for (const bad of ["~1990", "before 2010", "2026-13", "2026-02-29", "2026-1-5", "", undefined, "9999-12-31", "9999", "0050", "0000-00-00", "+10000"]) expect(osmDate(bad)).toBeNull();
     });
 
     it("end_date in the past closes the place permanently", () => {
@@ -232,6 +232,20 @@ describe("OSM normalization", () => {
     const opening = { name: "S", amenity: "restaurant", opening_date: "2027-03-14" };
     expect(fact(rec(opening, null, new Date("2027-03-14T04:59:00Z")), "business_status")).toMatchObject({ value: { status: "closed_temporarily" }, validUntil: new Date("2027-03-14T05:00:00Z") });
     expect(fact(rec(opening, null, new Date("2027-03-14T05:01:00Z")), "business_status")).toMatchObject({ value: { status: "operating" } });
+  });
+
+  it("hostile dates never throw: one vandal edit must not abort an area's ingest", () => {
+    const values = ["9999-12-31", "9999", "9999-12", "0000-00-00", "0050", "+10000", "2026-02-30", "NaN", "", ";", "1e9", "__proto__", "x".repeat(255)];
+    for (const tag of ["end_date", "opening_date", "check_date", "survey:date", "check_date:opening_hours"]) {
+      for (const v of values) expect(() => rec({ name: "X", amenity: "cafe", opening_hours: "24/7", [tag]: v }), `${tag}=${v}`).not.toThrow();
+    }
+    // "Never" is not a closing date.
+    expect(fact(rec({ name: "X", amenity: "cafe", end_date: "9999-12-31" }), "scheduled_closure")).toBeUndefined();
+  });
+
+  it("an opening date more than a year ahead is not believed: anyone can edit OSM", () => {
+    expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: "2027-06-01" }), "business_status")).toMatchObject({ value: { status: "closed_temporarily" } });
+    for (const far of ["2027-12-01", "9998-12-31"]) expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: far }), "business_status"), far).toMatchObject({ value: { status: "operating" } });
   });
 });
 

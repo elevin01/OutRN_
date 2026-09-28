@@ -21,7 +21,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * Version of the rules below. Bump it whenever a change would turn the same tags into different
  * facts: the next ingest then re-normalizes every record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.3";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.4";
 
 export interface OsmRecord {
   externalId: string;
@@ -68,6 +68,12 @@ export function surveyedHoursConfidence(checkedAt: Date, now: Date): number {
   return Math.max(0.3, +(0.72 - 0.06 * yearsSince(checkedAt, now)).toFixed(3));
 }
 
+/**
+ * An opening date further ahead than this is not believed: anyone can edit OSM, and
+ * opening_date=9999-12-31 would otherwise hide a place for good. Like a future survey date, it is ignored.
+ */
+const OPENING_HORIZON_DAYS = 366;
+
 /** A survey that saw the place operating counts for this long; after that, presence in OSM is all we have. */
 const SURVEY_STATUS_YEARS = 3;
 
@@ -80,11 +86,14 @@ const addYears = (d: Date, years: number) => {
 /**
  * An OSM date (YYYY, YYYY-MM or YYYY-MM-DD) as the first and last instant of the period it names,
  * in UTC. Anything else (ranges, "~1990", "before 2010", impossible dates) is null: never guess.
+ * Years outside 1000–9998 are null too: "9999-12-31" means "never" rather than a date, its next day
+ * is not a four-digit date, and Date.UTC reads years below 100 as 19xx.
  */
 export function osmDate(value: string | undefined): { start: Date; end: Date } | null {
   const m = value?.trim().match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
   if (!m) return null;
   const y = Number(m[1]);
+  if (y < 1000 || y > 9998) return null;
   const mo = m[2] === undefined ? null : Number(m[2]) - 1;
   const d = m[3] === undefined ? null : Number(m[3]);
   if (mo !== null && (mo < 0 || mo > 11)) return null;
@@ -209,7 +218,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const opens = osmDate(t["opening_date"]);
   const endedPeriod = ended ? localPeriod(ended, rec.timezone) : null;
   const closesOn = endedPeriod?.from ?? null;
-  const opensOn = opens ? localPeriod(opens, rec.timezone).from : null;
+  const opensAt = opens ? localPeriod(opens, rec.timezone).from : null;
+  const opensOn = opensAt && opensAt.getTime() - now.getTime() <= OPENING_HORIZON_DAYS * 86_400_000 ? opensAt : null;
   // Scheduled changes to what these tags say: the record is due for re-normalization at the first.
   const due: Date[] = [];
   // A closing date still ahead: announced as a fact the engine enforces from that day, before any
@@ -225,10 +235,10 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     // Ended: certain once the whole period has passed; "end_date=2026" in September still means likely gone.
     pub("business_status", { status: "closed_permanently" }, `end_date=${t["end_date"]}`, endedPeriod!.until <= now ? 0.75 : 0.6);
     if (endedPeriod!.until > now) due.push(endedPeriod!.until);
-  } else if (opens && opensOn! > now) {
+  } else if (opensOn && opensOn > now) {
     // Not open yet: closed until the opening date, then the fact lapses and presence counts again.
     facts.push({ ...base, attribute: "business_status", value: { status: "closed_temporarily" }, evidence: `opening_date=${t["opening_date"]}`, confidence: 0.7, evidenceClass: "published", validUntil: opensOn });
-    due.push(opensOn!);
+    due.push(opensOn);
   } else if (placeSurvey && now < addYears(placeSurvey.at, SURVEY_STATUS_YEARS)) {
     // A mapper saw it operating on that day. It counts for three years, or until a closing date.
     const expires = addYears(placeSurvey.at, SURVEY_STATUS_YEARS);

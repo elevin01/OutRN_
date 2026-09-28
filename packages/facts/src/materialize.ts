@@ -134,7 +134,7 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
 const CONSEQUENCE: Partial<Record<Attribute, number>> = { opening_hours: 1.0, business_status: 1.0, admission: 0.8, price: 0.4 };
 
 async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Map<Attribute, FactRow[]>, now: Date): Promise<number> {
-  const cur = (await q.query<{ attribute: Attribute; value: unknown; confidence: string }>(`select attribute, value, confidence from current_facts where subject_kind = 'venue' and subject_id = $1`, [venueId])).rows;
+  const cur = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; source_ids: string[] }>(`select attribute, value, confidence, source_ids from current_facts where subject_kind = 'venue' and subject_id = $1`, [venueId])).rows;
   const get = (a: Attribute) => cur.find((c) => c.attribute === a);
   const status = (get("business_status")?.value as { status?: string } | undefined)?.status;
   const excluded = (await q.query(`select 1 from venue_overrides where venue_id = $1 and kind = 'exclude' and (expires_at is null or expires_at > $2) limit 1`, [venueId, now])).rowCount ?? 0;
@@ -159,9 +159,22 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
     else next = "candidate";
   }
   if (next !== v.publish_state) await q.query(`update venues set publish_state = $2 where id = $1`, [venueId, next]);
-  if (next !== "eligible") return 0;
-  // Verification tasks for material facts that are missing or weak.
   let created = 0;
+  // Anyone can edit OSM: when an OSM closure alone delists a published venue, someone should confirm
+  // it, so a vandal's edit (or a mistaken one) does not quietly hide a place.
+  const closure = get("business_status");
+  if (v.publish_state === "eligible" && next === "excluded" && !excluded && closure?.source_ids.length && closure.source_ids.every((s) => s === "osm")) {
+    const r = await q.query(
+      `insert into verification_tasks (subject_kind, subject_id, attribute, question, options, priority, dedupe_key, expires_at)
+       values ('venue', $1, 'business_status', $2, $3, 1.0, $4, $5)
+       on conflict (dedupe_key) do update set priority = excluded.priority, expires_at = excluded.expires_at
+       returning (xmax = 0) as inserted`,
+      [venueId, "OpenStreetMap now says this place has closed. Has it?", JSON.stringify(["operating", "closed", "not_sure"]), `venue:${venueId}:osm_closure`, new Date(now.getTime() + 14 * 86_400_000)],
+    );
+    if ((r.rows[0] as { inserted: boolean }).inserted) created++;
+  }
+  if (next !== "eligible") return created;
+  // Verification tasks for material facts that are missing or weak.
   for (const attr of MATERIAL_ATTRIBUTES) {
     const c = get(attr);
     const conf = c ? Number(c.confidence) : 0;

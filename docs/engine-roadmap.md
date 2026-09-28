@@ -47,6 +47,10 @@ changelog.
   4th, Thanksgiving and Christmas.
 - Contract 1.2 (additive): `visit`, `plan`, `media`, `links`.
 
+- **Per-record OSM claims.** Key OSM facts by the element they came from. A venue mapped as both
+  a node and a building then keeps each record's claims side by side; today they share one row,
+  and the last record processed decides its evidence.
+
 ### Batch 4: live conditions (free keys; jobs outside the request path)
 - **Weather:** an NWS hourly forecast per area. Rain or cold sinks outdoor options; clear evenings
   surface them.
