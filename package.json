@@ -27,7 +27,11 @@
     "db:start": "bash scripts/db-start.sh",
     "db:migrate": "tsx --conditions=outrn-src packages/db/src/bin.ts migrate",
     "db:reset": "tsx --conditions=outrn-src packages/db/src/bin.ts reset",
-    "outrn": "tsx --conditions=outrn-src packages/cli/src/main.ts"
+    "outrn": "tsx --conditions=outrn-src packages/cli/src/main.ts",
+    "mobile:dev": "pnpm --filter @outrn/mobile start",
+    "mobile:web": "pnpm --filter @outrn/mobile web",
+    "mobile:typecheck": "pnpm --filter @outrn/contracts build && pnpm --filter @outrn/mobile typecheck",
+    "mobile:export": "pnpm --filter @outrn/mobile export"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

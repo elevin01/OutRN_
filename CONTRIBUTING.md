@@ -14,6 +14,7 @@ on the **engine and the services behind it**. They meet at a single, versioned H
 
 | Path | Owner | Contains |
 | --- | --- | --- |
+| `apps/mobile` | UI | Expo mobile app, navigation, styling, local saves, v1 API client |
 | `packages/web` | UI | Pages, components, styling, accessibility, wording, the API client (`lib/api.ts`) |
 | `packages/contracts` | **Both** | v1 request/response schemas, types, error codes, fixtures, generated JSON Schema |
 | `packages/api` | Backend | HTTP server, request validation and defaults, result mapping, paging snapshots, ops routes, the mock server, the fixture generator |
@@ -23,7 +24,7 @@ on the **engine and the services behind it**. They meet at a single, versioned H
 
 ## The rules that keep the split working
 
-1. **The UI talks to the backend only over HTTP, through `@outrn/contracts`.** `packages/web` may
+1. **The UI talks to the backend only over HTTP, through `@outrn/contracts`.** `packages/web` and `apps/mobile` may
    not depend on or import any other workspace package; `pnpm check:boundaries` fails the build
    if it does. The engine's `Evaluation`, database rows and raw source tags never reach the UI.
 2. **The backend decides; the UI presents.** Eligibility, order, `ready` vs `check_first`, whether
@@ -84,3 +85,8 @@ leaves that database's history impossible to reproduce. A database that ran an e
 - **database**: the database-backed tests on PostgreSQL + PostGIS (a missing database fails, it
   never skips), the fixture generator, and a smoke test of the built UI against the real API.
 - **web**: UI typecheck and production build with no database, and a smoke test against the mock.
+
+## Branches and pull requests
+
+Create a new branch for each change and open a pull request before merging. Never commit UI work
+directly to `main`. See [mobile setup](apps/mobile/README.md) for Expo development.

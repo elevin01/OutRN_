@@ -2,8 +2,8 @@
 /**
  * Keeps the UI/backend split honest (CI runs this; `pnpm check:boundaries` locally).
  *
- *  1. packages/web may depend on and import only @outrn/contracts from the workspace — never the
- *     engine, db, ingestion or api packages, and never files outside packages/web by relative path.
+ *  1. packages/web and apps/mobile may depend on and import only @outrn/contracts from the workspace — never the
+ *     engine, db, ingestion or api packages, and never files outside their UI package by relative path.
  *  2. packages/contracts depends on zod only and imports nothing else, so it stays browser-safe.
  *  3. The mock API imports only the contract, its fixtures and Hono, so it runs without a database.
  */
@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const problems = [];
 const SOURCE = /\.(m?[jt]sx?|cjs)$/;
-const SKIP = new Set(["node_modules", ".next", "dist"]);
+const SKIP = new Set(["node_modules", ".next", "dist", "dist-review", ".expo"]);
 const SPECIFIER = /(?:import|export)\s[^'"`;]*?from\s*["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|require\(\s*["']([^"']+)["']\s*\)|import\s+["']([^"']+)["']/g;
 
 function files(dir) {
@@ -41,15 +41,17 @@ function checkPackageDeps(pkgDir, allowed, what) {
 }
 
 // 1. The UI reaches the backend only through the contract.
-const WEB = join(ROOT, "packages/web");
-checkPackageDeps("packages/web", (d) => !d.startsWith("@outrn/") || d === "@outrn/contracts", "the UI may depend on @outrn/contracts only");
-for (const file of files(WEB)) {
-  for (const spec of imports(file)) {
-    const rel = relative(ROOT, file);
-    if (spec.startsWith("@outrn/") && !/^@outrn\/contracts(\/|$)/.test(spec)) problems.push(`${rel}: imports "${spec}" — use the API client (lib/api.ts) and @outrn/contracts`);
-    if (spec.startsWith(".")) {
-      const target = resolve(dirname(file), spec);
-      if (!(target + sep).startsWith(WEB + sep)) problems.push(`${rel}: imports "${spec}", outside packages/web`);
+for (const ui of ["packages/web", "apps/mobile"]) {
+  const WEB = join(ROOT, ui);
+  checkPackageDeps(ui, (d) => !d.startsWith("@outrn/") || d === "@outrn/contracts", "the UI may depend on @outrn/contracts only");
+  for (const file of files(WEB)) {
+    for (const spec of imports(file)) {
+      const rel = relative(ROOT, file);
+      if (spec.startsWith("@outrn/") && !/^@outrn\/contracts(\/|$)/.test(spec)) problems.push(`${rel}: imports "${spec}" — use the API client (lib/api.ts) and @outrn/contracts`);
+      if (spec.startsWith(".")) {
+        const target = resolve(dirname(file), spec);
+        if (!(target + sep).startsWith(WEB + sep)) problems.push(`${rel}: imports "${spec}", outside ${ui}`);
+      }
     }
   }
 }
@@ -74,4 +76,4 @@ if (problems.length) {
   console.error(`Boundary check failed (${problems.length}):\n${problems.map((p) => `  ${p}`).join("\n")}`);
   process.exit(1);
 }
-console.log("boundaries ok: web → @outrn/contracts only; contracts → zod only; mock → no database");
+console.log("boundaries ok: web + mobile → @outrn/contracts only; contracts → zod only; mock → no database");
