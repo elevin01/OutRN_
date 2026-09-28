@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-00000000000c",
-  "name": "Ridge Bar",
+  "name": "Eldridge Coffee",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "cafe",
+    "label": "Cafe"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.725116,
-    "lon": -73.989173
+    "lat": 40.722789,
+    "lon": -73.98462
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "closesAt": "2026-10-04T00:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": "Open now until 8pm"
   },
   "price": {
     "kind": "unknown"
@@ -27,8 +27,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Mo-Su 08:00-20:00",
+      "detail": "Open now until 8pm",
       "provenance": {
         "sources": [
           {
@@ -37,14 +37,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.611,
+        "confidence": 0.52,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · published"
       }
     },
     {
@@ -62,12 +62,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -85,12 +85,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -108,24 +108,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://stantonallenkitchen.example/",
-    "phone": "+1 212 555 7512"
+    "websiteUrl": "https://eldridgecoffee.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

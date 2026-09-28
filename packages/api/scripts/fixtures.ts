@@ -10,6 +10,7 @@
  * Fixtures are the UI's development data, not a regression snapshot: regenerate them when the
  * contract changes or a scenario needs new data, not after every engine tweak.
  */
+process.env["TZ"] = "UTC";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

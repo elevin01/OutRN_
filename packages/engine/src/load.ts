@@ -1,5 +1,5 @@
 import SunCalc from "suncalc";
-import { DEFAULT_MAX_TRAVEL_MINUTES, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
+import { DEFAULT_MAX_TRAVEL_MINUTES, fromLocal, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
 import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
 import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
@@ -94,13 +94,27 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   // the venue row stays only when nothing is loaded, and the engine excludes it as NO_PROGRAMME.
   const withProgramme = new Set(occ.map((o) => o.venue_id));
   const kept = candidates.filter((c) => !(withProgramme.has(c.venueId) && PROGRAMME_CATEGORIES.has(c.category)));
+  // One query for every occurrence's facts, not one per occurrence.
+  const occFactRows = occ.length
+    ? (
+        await q.query<{ subject_id: string; attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(
+          `select cf.subject_id, cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at
+             from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = any($1::uuid[])`,
+          [occ.map((o) => o.id)],
+        )
+      ).rows
+    : [];
+  const factsByOccurrence = new Map<string, typeof occFactRows>();
+  for (const f of occFactRows) factsByOccurrence.set(f.subject_id, [...(factsByOccurrence.get(f.subject_id) ?? []), f]);
   for (const o of occ) {
     const v = byVenue.get(o.venue_id)!;
     const venueFacts = toFacts(v.facts, now);
-    const occFacts = (await q.query<{ attribute: Attribute; value: unknown; confidence: string; evidence_class: FactView["evidenceClass"]; valid_until: Date | null; independent_sources: number; source_ids: string[]; conflict: boolean; verified_at: Date | null }>(`select cf.attribute, cf.value, cf.confidence, cf.evidence_class, cf.valid_until, cf.independent_sources, cf.source_ids, cf.conflict, ${VERIFIED_AT_SQL} as verified_at from current_facts cf where cf.subject_kind = 'occurrence' and cf.subject_id = $1`, [o.id])).rows;
     const facts = { ...venueFacts };
     delete facts.opening_hours; // an occurrence has its own times
-    for (const f of occFacts) facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
+    for (const f of factsByOccurrence.get(o.id) ?? []) {
+      if (f.valid_until && f.valid_until <= now) continue; // expiry enforced at request time, as for venue facts
+      facts[f.attribute] = { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidence_class, validUntil: f.valid_until, independentSources: f.independent_sources, sources: f.source_ids, conflict: f.conflict, verifiedAt: f.verified_at };
+    }
     kept.push({
       kind: "occurrence",
       id: o.id,
@@ -140,9 +154,18 @@ export function sunsetAt(p: LatLon, date: Date): Date | null {
   return t && !Number.isNaN(t.getTime()) ? t : null;
 }
 
-/** Persist a run for replay and the debug view. Context is coarsened: no precise coordinates. */
+/** Sunset on the local calendar day of `at` (at 10pm in New York the UTC day is already tomorrow). */
+export function sunsetOn(p: LatLon, at: Date, timezone: string): Date | null {
+  return sunsetAt(p, fromLocal(localClock(at, timezone).date, 12 * 60, timezone));
+}
+
+/**
+ * Persist a run for replay and the debug view. Context is coarsened: no precise coordinates, and a
+ * device's seen/dismissed history is reduced to counts, so runs never become an activity log.
+ */
 export async function persistRun(q: Queryable, areaId: string | null, ctx: RequestContext, s: Shortlist, durationMs: number): Promise<string> {
-  const coarse = { ...ctx, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset };
+  const { seenIds, dismissedIds, ...rest } = ctx;
+  const coarse = { ...rest, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset, seenCount: seenIds?.length ?? 0, dismissedCount: dismissedIds?.length ?? 0 };
   const results = s.all.map((e) => ({
     item_kind: e.candidate.kind,
     item_id: e.candidate.id,
@@ -161,4 +184,17 @@ export async function persistRun(q: Queryable, areaId: string | null, ctx: Reque
     [areaId, JSON.stringify(coarse), s.all.length, JSON.stringify(results), JSON.stringify(shortlist), s.engineVersion, s.weightsVersion, durationMs],
   );
   return r.rows[0]!.id;
+}
+
+/** How long recommendation runs are kept (they hold coarsened request context). */
+export const RUN_RETENTION_DAYS = 30;
+
+/** Delete runs older than the retention period, oldest first, at most `limit` per call. Returns how many. */
+export async function pruneRuns(q: Queryable, now: Date, limit = 500): Promise<number> {
+  const cutoff = new Date(now.getTime() - RUN_RETENTION_DAYS * 86_400_000);
+  const r = await q.query(
+    `delete from recommendation_runs where id in (select id from recommendation_runs where created_at < $1 order by created_at limit $2)`,
+    [cutoff, limit],
+  );
+  return r.rowCount ?? 0;
 }

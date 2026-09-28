@@ -1,34 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000002",
-  "name": "Forsyth Clinton Kitchen",
+  "name": "Pitt Park",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "park",
+    "label": "Park"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.720713,
-    "lon": -73.98824
+    "lat": 40.722592,
+    "lon": -73.986782
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T05:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 1am"
   },
   "price": {
-    "kind": "unknown"
+    "kind": "free",
+    "evidence": "estimate"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 06:00-01:00",
+      "detail": "Open now until 1am",
       "provenance": {
         "sources": [
           {
@@ -37,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.594,
+        "confidence": 0.556,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
       }
     },
     {
@@ -62,12 +63,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
@@ -83,20 +84,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
-      "attribute": "indoor_outdoor",
-      "label": "Setting",
-      "value": "Mixed",
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
       "detail": null,
       "provenance": {
         "sources": [
@@ -108,24 +109,47 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Outdoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-09-04T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 9967"
+    "websiteUrl": "https://pittpark.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

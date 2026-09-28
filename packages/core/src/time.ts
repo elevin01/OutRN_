@@ -13,17 +13,33 @@ export interface LocalClock {
   hour: number;
 }
 
+// Building an Intl.DateTimeFormat costs far more than formatting with one, and these run for every
+// candidate on every request: keep one per zone.
+const clockFormats = new Map<string, Intl.DateTimeFormat>();
+const offsetFormats = new Map<string, Intl.DateTimeFormat>();
+
+function cached(cache: Map<string, Intl.DateTimeFormat>, timeZone: string, make: () => Intl.DateTimeFormat): Intl.DateTimeFormat {
+  let fmt = cache.get(timeZone);
+  if (!fmt) {
+    fmt = make();
+    cache.set(timeZone, fmt);
+  }
+  return fmt;
+}
+
 export function localClock(at: Date, timeZone: string): LocalClock {
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    weekday: "short",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const fmt = cached(clockFormats, timeZone, () =>
+    new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      weekday: "short",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  );
   const parts = Object.fromEntries(fmt.formatToParts(at).map((p) => [p.type, p.value]));
   const wd: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const hour = Number(parts["hour"]);
@@ -38,16 +54,18 @@ export function localClock(at: Date, timeZone: string): LocalClock {
 
 /** Offset in minutes of `timeZone` from UTC at instant `at` (positive east of UTC). */
 export function tzOffsetMinutes(at: Date, timeZone: string): number {
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  const fmt = cached(offsetFormats, timeZone, () =>
+    new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+  );
   const p = Object.fromEntries(fmt.formatToParts(at).map((x) => [x.type, x.value]));
   const asUtc = Date.UTC(+p["year"]!, +p["month"]! - 1, +p["day"]!, +p["hour"]!, +p["minute"]!, +p["second"]!);
   return Math.round((asUtc - at.getTime()) / 60_000);

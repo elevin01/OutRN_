@@ -23,7 +23,13 @@
       "theatre"
     ],
     "at": "2026-10-03T22:30:00.000Z",
-    "atIsExplicit": false
+    "atIsExplicit": false,
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "originIsDefault": true,
+    "backBy": null
   },
   "items": [
     {

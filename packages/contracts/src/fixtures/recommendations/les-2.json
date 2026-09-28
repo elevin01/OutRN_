@@ -12,8 +12,13 @@
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
     "areaId": "les",
+    "backBy": null,
     "budget": {
       "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
     },
     "company": null,
     "categories": [],
@@ -21,6 +26,7 @@
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
+    "originIsDefault": true,
     "travelModeIsDefault": true
   },
   "items": [
@@ -29,34 +35,33 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~8 min walk · until 1am, you'd have 2h47 · usually free",
-        "sentence": "A short walk, plenty of time, open late, free."
+        "summary": "~6 min walk · until 9pm, you'd have 2h19 · price unknown",
+        "sentence": "A short walk, plenty of time."
       },
       "kind": "venue",
-      "name": "Pitt Park",
+      "name": "Delancey Books",
       "event": null,
       "price": {
-        "kind": "free",
-        "evidence": "estimate"
+        "kind": "unknown"
       },
       "status": "ready",
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 8,
+          "minutes": 6,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:43:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 167
+        "arriveAt": "2026-10-03T22:41:00.000Z",
+        "closesAt": "2026-10-04T01:00:00.000Z",
+        "finishBy": "2026-10-04T01:00:00.000Z",
+        "usefulMinutes": 139
       },
       "actions": {
         "phone": null,
-        "websiteUrl": "https://pittpark.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking"
+        "websiteUrl": "https://delanceybooks.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking"
       },
       "caveats": [],
       "placeId": "00000000-0000-4000-8000-000000000005",
@@ -66,7 +71,7 @@
           "text": "a short walk",
           "params": {
             "mode": "walk",
-            "minutes": 8
+            "minutes": 6
           },
           "required": false
         },
@@ -74,36 +79,22 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 167
+            "usefulMinutes": 139
           },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "FREE",
-          "text": "free",
-          "params": {},
           "required": false
         }
       ],
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "park",
-        "label": "Park"
+        "id": "bookshop",
+        "label": "Bookshop"
       },
       "location": {
-        "lat": 40.722592,
-        "lon": -73.986782
+        "lat": 40.715671,
+        "lon": -73.989625
       },
-      "placeName": "Pitt Park",
+      "placeName": "Delancey Books",
       "callToAction": "go"
     },
     {
@@ -169,33 +160,34 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~8 min walk · until 11pm, you'd have 2h42 · price unknown",
-        "sentence": "A short walk, plenty of time, open late."
+        "summary": "~9 min walk · until 1am, you'd have 2h46 · usually free",
+        "sentence": "A short walk, plenty of time, open late, free, sunset window."
       },
       "kind": "venue",
-      "name": "Delancey Kitchen",
+      "name": "Norfolk Park",
       "event": null,
       "price": {
-        "kind": "unknown"
+        "kind": "free",
+        "evidence": "estimate"
       },
       "status": "ready",
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 8,
+          "minutes": 9,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:48:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
+        "arriveAt": "2026-10-03T22:44:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 162
+        "usefulMinutes": 166
       },
       "actions": {
-        "phone": null,
-        "websiteUrl": "https://allenkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=walking"
+        "phone": "+1 212 555 1075",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking"
       },
       "caveats": [],
       "placeId": "00000000-0000-4000-8000-000000000007",
@@ -205,7 +197,7 @@
           "text": "a short walk",
           "params": {
             "mode": "walk",
-            "minutes": 8
+            "minutes": 9
           },
           "required": false
         },
@@ -213,7 +205,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 162
+            "usefulMinutes": 166
           },
           "required": false
         },
@@ -221,22 +213,34 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
+            "closesAt": "2026-10-04T05:00:00.000Z"
           },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        },
+        {
+          "code": "SUNSET_WINDOW",
+          "text": "sunset window",
+          "params": {},
           "required": false
         }
       ],
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
+        "id": "park",
+        "label": "Park"
       },
       "location": {
-        "lat": 40.719101,
-        "lon": -73.993416
+        "lat": 40.722865,
+        "lon": -73.985733
       },
-      "placeName": "Delancey Kitchen",
+      "placeName": "Norfolk Park",
       "callToAction": "go"
     }
   ],

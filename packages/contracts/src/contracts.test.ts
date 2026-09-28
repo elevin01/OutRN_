@@ -99,6 +99,14 @@ describe("requests", () => {
     expect(PageRequest.safeParse({ cursor: "x", areaId: "les" }).success).toBe(false);
   });
 
+  it("take only item ids (UUIDs) in seen and dismissed lists, at most 200 each", () => {
+    const id = "00000000-0000-4000-8000-000000000001";
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, seenIds: [id], dismissedIds: [id] }).success).toBe(true);
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, seenIds: ["x".repeat(10_000)] }).success).toBe(false);
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, dismissedIds: ["abc"] }).success).toBe(false);
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, seenIds: Array.from({ length: 201 }, () => id) }).success).toBe(false);
+  });
+
   it("bound the window and the age", () => {
     expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 29 }).success).toBe(false);
     expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 481 }).success).toBe(false);

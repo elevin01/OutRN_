@@ -2,9 +2,9 @@ import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
-import { reset, testDatabaseAvailable } from "@outrn/db";
+import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestExtentFor, ingestOsmArea } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -61,11 +61,54 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.0.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.1.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
     expect(areas.filters.categories.map((c) => c.id)).toContain("bowling");
+  });
+
+  it("serves only launched areas; operators can evaluate one before it opens", async () => {
+    now = SAT_EVENING;
+    const listed = AreasResponse.parse((await call("GET", "/v1/areas")).json).areas.map((a) => a.id);
+    expect(listed).toEqual(expect.arrayContaining(["les", "bronxville"]));
+    expect(listed).not.toContain("yonkers");
+    const closed = await call("POST", "/v1/recommendations", { areaId: "yonkers", windowMinutes: 120 });
+    expect(closed.status).toBe(400);
+    expect(ApiError.parse(closed.json).error.fields).toEqual([{ path: "areaId", message: '"yonkers" is not open yet' }]);
+    const ops = await call("POST", "/ops/v1/evaluate", { areaId: "yonkers", windowMinutes: 120 }, { authorization: `Bearer ${TOKEN}` });
+    expect(ops.status).toBe(200);
+    expect(OpsRunDetail.parse(ops.json).areaName).toBe("Yonkers");
+    await setLaunchState(db, "yonkers", "private_beta");
+    try {
+      expect(AreasResponse.parse((await call("GET", "/v1/areas")).json).areas.map((a) => a.id)).toContain("yonkers");
+      const open = await search({ areaId: "yonkers", windowMinutes: 120 });
+      expect(open.request.travelMode).toBe("drive");
+      expect(open.area.name).toBe("Yonkers");
+    } finally {
+      await setLaunchState(db, "yonkers", "ingest_only");
+    }
+  });
+
+  it("seeds the Westchester and Bronx areas with parking estimates, and derives their ingest extents", async () => {
+    const rows = (await db.query<{ slug: string; travel_mode: string; launch_state: string }>("select slug, travel_mode, launch_state from service_areas order by slug")).rows;
+    const added = ["bronx", "mamaroneck", "mount_vernon", "new_rochelle", "port_chester", "rye", "scarsdale", "tarrytown", "white_plains", "yonkers"];
+    for (const slug of added) expect(rows.find((r) => r.slug === slug), slug).toMatchObject({ launch_state: "ingest_only" });
+    expect(rows.find((r) => r.slug === "bronx")?.travel_mode).toBe("transit");
+    for (const slug of added) {
+      const area = await getArea(db, slug);
+      const parking = await loadParkingRule(db, slug);
+      const extent = ingestExtentFor(area, parking);
+      if (area.travel_mode === "drive") {
+        expect(parking, slug).not.toBeNull();
+        expect(extent.radiusM, slug).toBeGreaterThan(12_000);
+        expect(extent.radiusM, slug).toBeLessThan(17_000);
+      } else {
+        expect(extent.radiusM, slug).toBeGreaterThan(10_000);
+        expect(extent.radiusM, slug).toBeLessThan(14_000);
+      }
+    }
+    expect(await loadParkingRule(db, "bronx")).toMatchObject({ defaultMinutes: 15 });
   });
 
   it("answers a search with the engine's own first page, resolved defaults, and a frozen snapshot", async () => {
@@ -108,6 +151,99 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(await runCount()).toBe(before);
   });
 
+  it("plans from the device's location (rounded, inside the area) and stores only the rounded point", async () => {
+    now = SAT_EVENING;
+    const fromCenter = await search({ areaId: "les", windowMinutes: 180 });
+    expect(fromCenter.request).toMatchObject({ originIsDefault: true, origin: { lat: 40.7185, lon: -73.988 }, backBy: null });
+    const device = { lat: 40.714567891, lon: -73.99123456 };
+    const fromDevice = await search({ areaId: "les", windowMinutes: 180, origin: device });
+    expect(fromDevice.request).toMatchObject({ originIsDefault: false, origin: { lat: 40.715, lon: -73.991 } });
+    const stored = (await db.query<{ request: { origin?: unknown } }>("select request from recommendation_snapshots where run_id = $1", [fromDevice.requestId])).rows[0]!;
+    expect(stored.request.origin).toEqual({ lat: 40.715, lon: -73.991 });
+    // Same venue, different start: travel differs for at least one shared item.
+    const all = async (first: RecommendationResponse) => {
+      const items = [...first.items];
+      let p = first;
+      while (p.page.nextCursor) {
+        p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+        items.push(...p.items);
+      }
+      return new Map(items.map((i) => [i.id, i.timing.travel.minutes]));
+    };
+    const a = await all(fromCenter);
+    const b = await all(fromDevice);
+    expect([...b].some(([id, minutes]) => a.has(id) && a.get(id) !== minutes)).toBe(true);
+    // Bronxville is not on the Lower East Side.
+    const far = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, origin: { lat: 40.941, lon: -73.835 } });
+    expect(far.status).toBe(400);
+    expect(ApiError.parse(far.json).error.fields?.[0]?.path).toBe("origin");
+  });
+
+  it("honours be-back-by, dismissals and recently seen items", async () => {
+    now = SAT_EVENING;
+    const backBy = new Date(SAT_EVENING.getTime() + 100 * 60_000);
+    const back = await search({ areaId: "les", windowMinutes: 180, backBy: backBy.toISOString() });
+    expect(back.request.backBy).toBe(backBy.toISOString());
+    let p = back;
+    for (;;) {
+      for (const item of p.items) expect(Date.parse(item.timing.finishBy), item.name).toBeLessThanOrEqual(backBy.getTime());
+      if (!p.page.nextCursor) break;
+      p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+    }
+    const early = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, backBy: SAT_EVENING.toISOString() });
+    expect(ApiError.parse(early.json).error.fields?.[0]?.path).toBe("backBy");
+
+    const plain = await search({ areaId: "les", windowMinutes: 180 });
+    const first = plain.items[0]!;
+    const dismissed = await search({ areaId: "les", windowMinutes: 180, dismissedIds: [first.id] });
+    const ids: string[] = [];
+    for (let q = dismissed; ; ) {
+      ids.push(...q.items.map((i) => i.id));
+      if (!q.page.nextCursor) break;
+      q = await search({ cursor: q.page.nextCursor } as unknown as RecommendationRequest);
+    }
+    expect(ids).not.toContain(first.id);
+    const seen = await search({ areaId: "les", windowMinutes: 180, seenIds: [first.id] });
+    expect(seen.items[0]!.id).not.toBe(first.id);
+    // A run keeps how many ids a device sent, never which ones.
+    const ctxRow = (await db.query<{ context: Record<string, unknown> }>("select context from recommendation_runs where id = $1", [seen.requestId])).rows[0]!;
+    expect(ctxRow.context).toMatchObject({ seenCount: 1, dismissedCount: 0 });
+    expect(ctxRow.context).not.toHaveProperty("seenIds");
+    expect(ctxRow.context).not.toHaveProperty("dismissedIds");
+  });
+
+  it("accepts only item ids (UUIDs) in seen and dismissed lists", async () => {
+    for (const bad of ["x".repeat(10_000), "not-a-uuid", ""]) {
+      const r = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, seenIds: [bad] });
+      expect(r.status).toBe(400);
+      expect(ApiError.parse(r.json).error.fields?.[0]?.path).toBe("seenIds.0");
+    }
+    const tooMany = Array.from({ length: 201 }, () => crypto.randomUUID());
+    expect((await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 180, dismissedIds: tooMany })).status).toBe(400);
+  });
+
+  it("keeps recommendation runs for 30 days, without breaking rows that point at them", async () => {
+    now = SAT_EVENING;
+    const old = (await db.query<{ id: string }>(
+      `insert into recommendation_runs (area_id, context, candidate_count, results, shortlist, engine_version, weights_version, created_at)
+       values (null, '{}', 0, '[]', '[]', 'test', 'test', $1) returning id`,
+      [new Date(SAT_EVENING.getTime() - 31 * 86_400_000)],
+    )).rows[0]!.id;
+    const event = (await db.query<{ id: string }>(`insert into interaction_events (device_id, run_id, type) values ('device-1', $1, 'impression') returning id`, [old])).rows[0]!.id;
+    const recent = await search({ areaId: "les", windowMinutes: 120 }); // a search prunes, and its own run is new
+    expect((await db.query("select 1 from recommendation_runs where id = $1", [old])).rowCount).toBe(0);
+    expect((await db.query("select 1 from recommendation_runs where id = $1", [recent.requestId])).rowCount).toBe(1);
+    expect((await db.query<{ run_id: string | null }>("select run_id from interaction_events where id = $1", [event])).rows[0]!.run_id).toBeNull();
+  });
+
+  it("knows when the sun sets: outdoor places get the sunset window before dusk", async () => {
+    now = new Date("2026-10-03T21:50:00Z"); // 5:50pm; sunset ~6:36pm
+    const page = await search({ areaId: "les", windowMinutes: 120, categories: ["park"] });
+    const reasons = page.items.flatMap((i) => i.reasons.map((r) => r.code));
+    expect(reasons).toContain("SUNSET_WINDOW");
+    now = SAT_EVENING;
+  });
+
   it("keeps a search's pages stable while the data underneath changes", async () => {
     now = SAT_EVENING;
     const first = await search({ areaId: "les", windowMinutes: 180 });
@@ -141,6 +277,29 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const r2 = ApiError.parse((await call("POST", "/v1/recommendations", { cursor: explicitAt.page.nextCursor })).json);
     expect(r2.error.restart).toEqual({ areaId: "les", windowMinutes: 120, at: "2026-10-04T15:00:00.000Z" });
     now = SAT_EVENING;
+  });
+
+  it("pages a snapshot written before contract 1.1, and expires one it cannot read", async () => {
+    now = SAT_EVENING;
+    const first = await search({ areaId: "les", windowMinutes: 180 });
+    const next = { cursor: first.page.nextCursor! } as unknown as RecommendationRequest;
+    const expected = (await search(next)).items.map((i) => i.id);
+    // Exactly what a v1.0 API stored: no origin, originIsDefault or backBy in the resolved request.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'origin' - 'originIsDefault' - 'backBy' where run_id = $1`, [first.requestId]);
+    const upgraded = await search(next);
+    expect(upgraded.items.map((i) => i.id)).toEqual(expected);
+    expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null });
+
+    // A shape nobody can read: expire it and hand back the search to run again.
+    await db.query(`update recommendation_snapshots set resolved = '{}' where run_id = $1`, [first.requestId]);
+    const unreadable = await call("POST", "/v1/recommendations", next);
+    expect(unreadable.status).toBe(410);
+    expect(ApiError.parse(unreadable.json).error).toMatchObject({ code: "CURSOR_EXPIRED", restart: { areaId: "les", windowMinutes: 180 } });
+
+    // Not even the request is readable: start over.
+    await db.query(`update recommendation_snapshots set request = '"garbage"' where run_id = $1`, [first.requestId]);
+    const lost = await call("POST", "/v1/recommendations", next);
+    expect([lost.status, ApiError.parse(lost.json).error.code]).toEqual([400, "CURSOR_INVALID"]);
   });
 
   it("rejects bad cursors and bad requests with field-level errors", async () => {

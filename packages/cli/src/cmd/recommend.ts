@@ -54,7 +54,8 @@ export function registerRecommend(program: Command): void {
         process.exitCode = 1;
         return;
       }
-      const overrides: InternalOverrides = {};
+      // The CLI is an operator tool: it can evaluate areas that are not open yet.
+      const overrides: InternalOverrides = { includeUnlaunched: true };
       if (typeof o["lat"] === "number" && typeof o["lon"] === "number") overrides.origin = { lat: o["lat"], lon: o["lon"] };
       if (o["backBy"]) overrides.backBy = new Date(String(o["backBy"]));
       if (o["maxTravel"]) overrides.maxTravelMinutes = o["maxTravel"] as number;

@@ -1,7 +1,7 @@
 import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
-import type { Category, LatLon } from "@outrn/core";
-import { findArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
-import { loadParkingBuffer, type Company, type Mood, type RequestContext } from "@outrn/engine";
+import { haversineMetres, type Category, type LatLon } from "@outrn/core";
+import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
+import { loadParkingBuffer, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
 import { invalid } from "../errors.js";
 
@@ -16,19 +16,31 @@ export interface InternalOverrides {
   backBy?: Date;
   maxTravelMinutes?: number;
   requireWheelchair?: boolean;
+  /** Evaluate an area that is not open yet (operators checking a new area before launch). */
+  includeUnlaunched?: boolean;
 }
 
 export interface ResolvedContext {
   area: ServiceAreaRow;
   ctx: RequestContext;
   resolved: ResolvedRequest;
-  /** The request as received (already schema-valid). */
+  /** The request as used: schema-valid, with its origin already rounded. The only form that is stored. */
   request: RecommendationRequest;
 }
+
+/** ~100 m: plenty for a travel estimate, and no more precise a location than we need to keep. */
+export function roundOrigin(p: LatLon): LatLon {
+  return { lat: Math.round(p.lat * 1000) / 1000, lon: Math.round(p.lon * 1000) / 1000 };
+}
+
+/** How far outside an area's catchment a device may be and still plan from where it is. */
+const ORIGIN_SLACK_M = 1500;
+const MAX_BACK_BY_HOURS = 24;
 
 export async function resolveRequest(q: Queryable, request: RecommendationRequest, now: Date, overrides: InternalOverrides = {}): Promise<ResolvedContext> {
   const area = await findArea(q, request.areaId);
   if (!area) throw invalid("areaId", `unknown area "${request.areaId}"`);
+  if (!isServedArea(area) && !overrides.includeUnlaunched) throw invalid("areaId", `"${request.areaId}" is not open yet`);
   if (request.mood !== undefined && !(request.mood in MOODS)) throw invalid("mood", `unknown mood "${request.mood}"`);
   if (request.company !== undefined && !(request.company in COMPANIES)) throw invalid("company", `unknown company "${request.company}"`);
   const categories = request.categories ?? [];
@@ -40,8 +52,18 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
 
   const at = request.at ? new Date(request.at) : now;
   const mode = request.travelMode ?? area.travel_mode;
+  const center = { lat: Number(area.lat), lon: Number(area.lon) };
+  const deviceOrigin = request.origin ? roundOrigin(request.origin) : undefined;
+  if (deviceOrigin && haversineMetres(deviceOrigin, center) > (area.radius_m ?? 1500) + ORIGIN_SLACK_M) {
+    throw invalid("origin", `outside ${area.name}; choose the area you are in`);
+  }
+  const backBy = request.backBy ? new Date(request.backBy) : undefined;
+  if (backBy && (backBy <= at || backBy.getTime() - at.getTime() > MAX_BACK_BY_HOURS * 3_600_000)) {
+    throw invalid("backBy", `must be after the plan's start and within ${MAX_BACK_BY_HOURS} hours of it`);
+  }
+  const origin = overrides.origin ?? deviceOrigin ?? center;
   const ctx: RequestContext = {
-    origin: overrides.origin ?? { lat: area.lat, lon: area.lon },
+    origin,
     now: at,
     windowMinutes: request.windowMinutes,
     mode,
@@ -53,7 +75,11 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.company) ctx.company = request.company as Company;
   if (request.youngestAge !== undefined) ctx.youngestAge = request.youngestAge;
   if (categories.length) ctx.categories = categories as Category[];
-  if (overrides.backBy) ctx.backBy = overrides.backBy;
+  if (backBy ?? overrides.backBy) ctx.backBy = (backBy ?? overrides.backBy)!;
+  if (request.seenIds?.length) ctx.seenIds = request.seenIds;
+  if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
+  // Enables the sunset window for viewpoints, waterfronts and parks.
+  ctx.sunset = sunsetOn(origin, at, area.timezone);
   if (overrides.maxTravelMinutes) ctx.maxTravelMinutes = overrides.maxTravelMinutes;
   if (overrides.requireWheelchair) ctx.requireWheelchair = true;
   if (mode === "drive") {
@@ -73,6 +99,9 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     categories,
     at: at.toISOString(),
     atIsExplicit: request.at !== undefined,
+    origin,
+    originIsDefault: origin === center,
+    backBy: backBy?.toISOString() ?? null,
   };
-  return { area, ctx, resolved, request };
+  return { area, ctx, resolved, request: deviceOrigin ? { ...request, origin: deviceOrigin } : request };
 }

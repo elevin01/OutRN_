@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-000000000004",
-  "name": "Delancey Books",
+  "name": "Clinton Bar",
   "category": {
-    "id": "bookshop",
-    "label": "Bookshop"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.715671,
-    "lon": -73.989625
+    "lat": 40.723404,
+    "lon": -73.980264
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T01:00:00.000Z",
+    "closesAt": "2026-10-04T06:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 9pm"
+    "summary": "Open now until 2am"
   },
   "price": {
     "kind": "unknown"
@@ -27,24 +27,24 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 10:00-21:00",
-      "detail": "Open now until 9pm",
+      "value": "Mo-Su 16:00-02:00",
+      "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
-            "id": "osm",
-            "label": "OpenStreetMap"
+            "id": "founder",
+            "label": "OutRN"
           }
         ],
         "evidence": "published",
-        "confidence": 0.53,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "confidence": 0.9,
+        "verifiedAt": "2026-09-29T16:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-29T16:00:00.000Z",
+        "retrievedAt": "2026-09-29T16:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · published"
+        "freshness": "confirmed Sep 29",
+        "summary": "OutRN · confirmed Sep 29 · published"
       }
     },
     {
@@ -62,12 +62,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
@@ -85,18 +85,18 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -108,24 +108,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://delanceybooks.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 8297"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

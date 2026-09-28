@@ -12,8 +12,13 @@
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
     "areaId": "mock-bars",
+    "backBy": null,
     "budget": {
       "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
     },
     "company": "date",
     "categories": [
@@ -23,6 +28,7 @@
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
+    "originIsDefault": true,
     "travelModeIsDefault": true
   },
   "items": [

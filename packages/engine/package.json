@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "clean": "rm -rf dist *.tsbuildinfo"
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "bench": "tsx --conditions=outrn-src scripts/bench.ts"
   },
   "dependencies": {
     "@outrn/core": "workspace:*",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@types/suncalc": "^1.9.2",
     "pg": "^8.13.0",
-    "@types/pg": "^8.11.10"
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.0"
   }
 }

@@ -23,13 +23,19 @@
       "bar"
     ],
     "at": "2026-10-03T22:30:00.000Z",
-    "atIsExplicit": false
+    "atIsExplicit": false,
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "originIsDefault": true,
+    "backBy": null
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000003",
+      "id": "00000000-0000-4000-8000-000000000004",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000003",
+      "placeId": "00000000-0000-4000-8000-000000000004",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
       "category": {
@@ -101,9 +107,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000000c",
+      "id": "00000000-0000-4000-8000-00000000000d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
       "category": {

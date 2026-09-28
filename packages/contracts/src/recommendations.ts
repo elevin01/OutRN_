@@ -22,6 +22,17 @@ export const RecommendationRequest = z.strictObject({
   categories: z.array(z.string().min(1)).max(5).optional(),
   /** Plan for this instant instead of now. */
   at: IsoDateTime.optional(),
+  /**
+   * Where the user is. Travel is planned from here instead of the area's center. The API rounds it
+   * to ~100 m before using or storing it; it must be inside the area.
+   */
+  origin: LatLon.optional(),
+  /** Be back where you started by this instant: the return trip counts against the plan. */
+  backBy: IsoDateTime.optional(),
+  /** Item ids (RecommendationItem.id, a UUID) this device showed recently. Ranked lower, never hidden. */
+  seenIds: z.array(z.uuid()).max(200).optional(),
+  /** Item ids (RecommendationItem.id, a UUID) the user dismissed. Never shown. */
+  dismissedIds: z.array(z.uuid()).max(200).optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
@@ -48,6 +59,12 @@ export const ResolvedRequest = z.object({
   at: IsoDateTime,
   /** True when the request gave `at` explicitly. */
   atIsExplicit: z.boolean(),
+  /** Where travel is planned from: the request's `origin` (rounded), or the area's center. */
+  origin: LatLon,
+  /** True when `origin` is the area's center because the request gave none. */
+  originIsDefault: z.boolean(),
+  /** The request's `backBy`, if any. */
+  backBy: IsoDateTime.nullable(),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;
 

@@ -21,13 +21,107 @@
     "youngestAge": null,
     "categories": [],
     "at": "2026-10-03T22:30:00.000Z",
-    "atIsExplicit": false
+    "atIsExplicit": false,
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "originIsDefault": true,
+    "backBy": null
   },
   "items": [
     {
       "id": "00000000-0000-4000-8000-000000000002",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000002",
+      "name": "Pitt Park",
+      "placeName": "Pitt Park",
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.722592,
+        "lon": -73.986782
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 8,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:43:00.000Z",
+        "usefulMinutes": 167,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z"
+      },
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 8
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 167
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T05:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        },
+        {
+          "code": "SUNSET_WINDOW",
+          "text": "sunset window",
+          "params": {},
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~8 min walk · until 1am, you'd have 2h47 · usually free",
+        "sentence": "A short walk, plenty of time, open late, free, sunset window.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking",
+        "websiteUrl": "https://pittpark.example/",
+        "phone": null
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000003",
       "name": "Forsyth Clinton Kitchen",
       "placeName": "Forsyth Clinton Kitchen",
       "category": {
@@ -100,9 +194,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000003",
+      "id": "00000000-0000-4000-8000-000000000004",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000003",
+      "placeId": "00000000-0000-4000-8000-000000000004",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
       "category": {
@@ -171,73 +265,6 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
         "websiteUrl": null,
         "phone": "+1 212 555 8297"
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000004",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000004",
-      "name": "Delancey Books",
-      "placeName": "Delancey Books",
-      "category": {
-        "id": "bookshop",
-        "label": "Bookshop"
-      },
-      "subtype": null,
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.715671,
-        "lon": -73.989625
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 6,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:41:00.000Z",
-        "usefulMinutes": 139,
-        "finishBy": "2026-10-04T01:00:00.000Z",
-        "closesAt": "2026-10-04T01:00:00.000Z"
-      },
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": null,
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 6
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 139
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~6 min walk · until 9pm, you'd have 2h19 · price unknown",
-        "sentence": "A short walk, plenty of time.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
-        "websiteUrl": "https://delanceybooks.example/",
-        "phone": null
       }
     }
   ],

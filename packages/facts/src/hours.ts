@@ -36,15 +36,60 @@ export function isHoursValue(v: unknown): v is HoursValue {
   return typeof o["osm"] === "string" || Array.isArray(o["weekly"]);
 }
 
-export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): { oh: opening_hours | null; error: string | null; approximate: boolean } {
-  try {
-    const oh = new opening_hours(rule, nominatim(lat, lon), { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
-    const warnings = oh.getWarnings();
-    return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|PH|SH/.test(rule) };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false };
+/**
+ * Parsing a rule costs ~0.5 ms and evaluating it over a window as much again, for every candidate on
+ * every request, while most venues share a handful of rule strings. Parsed rules are cached by rule
+ * (and, for sun-relative rules, a ~10 km location bucket), and each rule's open intervals by local
+ * day. Both caches are bounded LRUs; the results are identical to evaluating from scratch.
+ */
+const PARSED_MAX = 5_000;
+const INTERVALS_MAX = 20_000;
+
+interface ParsedRule {
+  oh: opening_hours | null;
+  error: string | null;
+  approximate: boolean;
+}
+
+const parsed = new Map<string, ParsedRule>();
+const intervals = new Map<string, [Date, Date, boolean, string | undefined][]>();
+
+function remember<V>(cache: Map<string, V>, key: string, max: number, make: () => V): V {
+  const hit = cache.get(key);
+  if (hit !== undefined) {
+    cache.delete(key);
+    cache.set(key, hit);
+    return hit;
   }
+  const value = make();
+  cache.set(key, value);
+  if (cache.size > max) cache.delete(cache.keys().next().value as string);
+  return value;
+}
+
+const SUN_RELATIVE = /sunrise|sunset|dawn|dusk/;
+
+/** Cache key for a rule: the rule alone, unless it depends on where the sun is. */
+function ruleKey(rule: string, lat: number, lon: number): string {
+  return SUN_RELATIVE.test(rule) ? `${rule}\u0000${lat.toFixed(1)},${lon.toFixed(1)}` : rule;
+}
+
+export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): { oh: opening_hours | null; error: string | null; approximate: boolean } {
+  return remember(parsed, ruleKey(rule, lat, lon), PARSED_MAX, () => {
+    try {
+      const oh = new opening_hours(rule, nominatim(lat, lon), { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
+      const warnings = oh.getWarnings();
+      return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|PH|SH/.test(rule) };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false };
+    }
+  });
+}
+
+export function clearHoursCaches(): void {
+  parsed.clear();
+  intervals.clear();
 }
 
 export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo?: { lat: number; lon: number }): HoursEvaluation {
@@ -54,17 +99,33 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
       return { openNow: true, interval: { open: new Date(at.getTime() - 86_400_000), close: new Date(at.getTime() + 86_400_000 * 365) }, always: true, parseError: null, approximate: false };
     }
     if (rule === "off" || rule === "closed") return { openNow: false, interval: null, always: false, parseError: null, approximate: false };
-    const { oh, error, approximate } = parseOsmHours(rule, geo?.lat, geo?.lon);
+    const lat = geo?.lat ?? 40.7185;
+    const lon = geo?.lon ?? -73.988;
+    const { oh, error, approximate } = parseOsmHours(rule, lat, lon);
     if (!oh) return { openNow: null, interval: null, always: false, parseError: error, approximate: false };
     // opening_hours works in the JS runtime's local timezone. We evaluate with a shifted "wall clock" Date
     // so that the library's local-time arithmetic matches the venue's timezone.
     const shifted = toWallClockDate(at, timeZone);
-    const openNow = oh.getState(shifted);
-    const horizon = new Date(shifted.getTime() + 36 * 3_600_000);
-    const its = oh.getOpenIntervals(new Date(shifted.getTime() - 24 * 3_600_000), horizon);
+    // The intervals over [at − 24h, at + 36h], cut from one wider window per local day so repeat
+    // evaluations (every candidate's arrival, every request that day) reuse it. Clipping reproduces
+    // exactly what getOpenIntervals returns for the narrow window.
+    const day = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
+    const wide = remember(intervals, `${ruleKey(rule, lat, lon)}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
+      oh.getOpenIntervals(new Date(day.getTime() - 24 * 3_600_000), new Date(day.getTime() + 61 * 3_600_000)),
+    );
+    const lo = shifted.getTime() - 24 * 3_600_000;
+    const hi = shifted.getTime() + 36 * 3_600_000;
+    const its: [Date, Date, boolean][] = [];
+    for (const [from, to, unknown] of wide) {
+      const f = Math.max(from.getTime(), lo);
+      const t = Math.min(to.getTime(), hi);
+      if (t > f) its.push([new Date(f), new Date(t), unknown]);
+    }
+    let openNow = false;
     let interval: OpenInterval | null = null;
-    for (const [from, to] of its) {
+    for (const [from, to, unknown] of its) {
       if (from <= shifted && shifted < to) {
+        openNow = !unknown;
         interval = { open: fromWallClockDate(from, timeZone), close: fromWallClockDate(to, timeZone) };
         break;
       }
@@ -93,8 +154,14 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
 }
 
 /** Represent instant `at` (in `timeZone`) as a Date whose LOCAL fields equal that wall clock. */
+const wallClockFormats = new Map<string, Intl.DateTimeFormat>();
+
 function toWallClockDate(at: Date, timeZone: string): Date {
-  const fmt = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  let fmt = wallClockFormats.get(timeZone);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    wallClockFormats.set(timeZone, fmt);
+  }
   const p = Object.fromEntries(fmt.formatToParts(at).map((x) => [x.type, x.value]));
   return new Date(+p["year"]!, +p["month"]! - 1, +p["day"]!, +p["hour"]!, +p["minute"]!, +p["second"]!);
 }
