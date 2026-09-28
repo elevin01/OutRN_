@@ -31,6 +31,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
   - `actions.links` on items and place details: the place's own Menu, Instagram and Facebook pages, as https links.
   - A request may ask for takeout (`visitStyle: "takeout"`): food visits become a quick stop to order and collect, and places that don't do takeout are left out. `ResolvedRequest.visitStyle` echoes it (`"dine_in"` by default).
   - The default card summary now says what the visit takes ("takes about 1h20 · until 10pm") instead of "you'd have 1h40".
+  - `timing.leaveAt` is when to leave. When a visit waits for an opening (the place's, or its kitchen's), that is the time that arrives as it opens, not the start of the free time.
 - **1.1.0** (additive). A request can say where the user is (`origin`, rounded by the API to
   ~100 m and required to be inside the area), when they must be back (`backBy`), and which items
   this device showed recently (`seenIds`, ranked lower) or the user dismissed (`dismissedIds`, never

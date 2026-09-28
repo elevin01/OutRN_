@@ -140,11 +140,15 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
   const at = (d: Date) => fmtTime(d, tz);
   const steps: PlanStep[] = [{ kind: "leave", at: t.departAt, isEstimate: false, text: `Leave at ${at(t.departAt)}` }];
   const opensThen = e.reasons.includes("WAIT_FOR_OPENING");
-  steps.push({ kind: "arrive", at: t.arrival, isEstimate: t.travel.isEstimate, text: opensThen ? `Arrive as it opens at ${at(t.arrival)}` : `Arrive around ${at(t.arrival)}` });
   const o = e.candidate.kind === "occurrence" ? e.candidate.occurrence : undefined;
-  if (o) steps.push({ kind: "event_starts", at: o.start, isEstimate: false, text: `Starts at ${at(o.start)}` });
-  if (t.latestArrival && t.latestArrivalKind) {
-    const la = t.latestArrival;
+  // A start or cutoff already behind the arrival is not an instruction: it becomes a note on arriving.
+  const startedBefore = o !== undefined && o.start < t.arrival;
+  const la = t.latestArrival && t.latestArrival >= t.arrival ? t.latestArrival : null;
+  const missed = t.latestArrival && !la ? t.latestArrivalKind : null;
+  const note = startedBefore ? ` (it started at ${at(o!.start)}; joining late)` : missed === "last_entry" ? " (last entry may have passed)" : missed === "event_entry" ? " (the entry cutoff may have passed)" : "";
+  steps.push({ kind: "arrive", at: t.arrival, isEstimate: t.travel.isEstimate, text: opensThen ? `Arrive as it opens at ${at(t.arrival)}` : `Arrive around ${at(t.arrival)}${note}` });
+  if (o && !startedBefore) steps.push({ kind: "event_starts", at: o.start, isEstimate: false, text: `Starts at ${at(o.start)}` });
+  if (la && t.latestArrivalKind) {
     if (t.latestArrivalKind === "last_order") steps.push({ kind: "order_by", at: la, isEstimate: t.latestArrivalIsEstimate, text: `Order by ${at(la)}` });
     else if (t.latestArrivalKind === "last_entry") steps.push({ kind: "last_entry", at: la, isEstimate: t.latestArrivalIsEstimate, text: t.latestArrivalIsEstimate ? `Last entry likely around ${at(la)}` : `Last entry ${at(la)}` });
     else steps.push({ kind: "entry_by", at: la, isEstimate: false, text: `Get in by ${at(la)}` });
@@ -159,6 +163,7 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
   const isEstimate = byClose ? false : forTripBack ? t.returnTravel!.isEstimate : !byDeadline;
   steps.push({ kind: "wrap_up", at: f, isEstimate, text: `Wrap up by ${at(f)}${why}` });
   if (ctx.backBy && t.returnTravel) steps.push({ kind: "back_by", at: ctx.backBy, isEstimate: t.returnTravel.isEstimate, text: `Back by ${at(ctx.backBy)}` });
-  return steps;
+  // In time order, always (a stable sort keeps the listed order for steps at the same minute).
+  return steps.sort((a, b) => a.at.getTime() - b.at.getTime());
 }
 

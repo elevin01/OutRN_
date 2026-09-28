@@ -138,6 +138,10 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (travel.minutes > maxTravel) return out("TOO_FAR");
   const departAt = ctx.now;
   let arrival = addMinutes(departAt, travel.minutes + policy.admissionBufferMinutes);
+  // Waiting outside for an opening (the venue's or its kitchen's) is not a plan: when the visit starts
+  // later than the trip would arrive, leave later so the trip arrives then. The time before is the user's.
+  const naturalArrival = arrival;
+  const leaveFor = (arrivalAt: Date): Date => (arrivalAt > naturalArrival ? addMinutes(arrivalAt, -(travel.minutes + policy.admissionBufferMinutes)) : departAt);
 
   // Deadline, with return travel when the user must be back.
   let deadline = deadlineOf(ctx);
@@ -219,7 +223,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: TimingBase = { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
+    const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
@@ -230,7 +234,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -277,7 +281,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
   if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
-  const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
+  const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }
 

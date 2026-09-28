@@ -45,9 +45,9 @@
       "name": "Pitt Street Nightcap",
       "plan": [
         {
-          "at": "2026-10-03T22:30:00.000Z",
+          "at": "2026-10-03T23:42:00.000Z",
           "kind": "leave",
-          "text": "Leave at 6:30pm",
+          "text": "Leave at 7:42pm",
           "isEstimate": false
         },
         {
@@ -82,7 +82,7 @@
           "isEstimate": true,
           "parkingMinutes": null
         },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "leaveAt": "2026-10-03T23:42:00.000Z",
         "arriveAt": "2026-10-04T00:00:00.000Z",
         "closesAt": "2026-10-04T08:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",

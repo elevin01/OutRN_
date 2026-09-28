@@ -707,3 +707,54 @@ describe("plan steps", () => {
   });
 });
 
+describe("plan steps are physically consistent", () => {
+  const isChronological = (steps: { at: Date }[]) => steps.every((s, i) => i === 0 || steps[i - 1]!.at.getTime() <= s.at.getTime());
+
+  it("waiting for an opening moves the departure, so the trip really arrives as it opens", () => {
+    const e = one(venue({ category: "bar", hours: "Mo-Su 17:00-02:00" }), ctx("2026-10-03 16:00", 180));
+    const steps = planSteps(e, { timezone: TZ });
+    const leave = steps.find((s) => s.kind === "leave")!;
+    const arrive = steps.find((s) => s.kind === "arrive")!;
+    expect(arrive).toMatchObject({ text: "Arrive as it opens at 5pm" });
+    // Travel plus the entry buffer, not an hour of standing outside.
+    expect((arrive.at.getTime() - leave.at.getTime()) / 60_000).toBe(e.timing!.travel.minutes + 5);
+    expect(leave.at.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 16 * 60, TZ).getTime());
+    expect(e.timing!.departAt.getTime()).toBe(leave.at.getTime());
+    // Same for a kitchen that opens later than the restaurant.
+    const k = one(venue({ category: "restaurant", hours: "24/7", kitchen: "Mo-Su 10:00-20:00" }), ctx("2026-10-03 09:00", 180));
+    expect((k.timing!.arrival.getTime() - k.timing!.departAt.getTime()) / 60_000).toBe(k.timing!.travel.minutes + 10);
+    expect(isChronological(planSteps(k, { timezone: TZ }))).toBe(true);
+  });
+
+  it("an event joined late: no stale entry cutoff, no start in the past, steps in order", () => {
+    const start = fromLocal("2026-10-03", 20 * 60, TZ);
+    const end = fromLocal("2026-10-03", 22 * 60, TZ);
+    for (const entryCutoff of [start, null]) {
+      const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: `late-${entryCutoff ? "cutoff" : "none"}`, title: "Set", start, end, entryCutoff, lateEntry: true, status: "scheduled" } });
+      const e = one(show, ctx("2026-10-03 20:30", 180));
+      expect(e.class).toBe("check_first");
+      const steps = planSteps(e, { timezone: TZ });
+      expect(steps.map((s) => s.kind)).toEqual(["leave", "arrive", "wrap_up"]);
+      expect(steps[1]!.text).toMatch(/started at 8pm; joining late\)$/);
+      expect(isChronological(steps)).toBe(true);
+    }
+  });
+
+  it("a cutoff still ahead stays, in order; a guessed last entry already passed is not an instruction", () => {
+    const start = fromLocal("2026-10-03", 20 * 60, TZ);
+    const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "cut", title: "Set", start, end: fromLocal("2026-10-03", 22 * 60, TZ), entryCutoff: fromLocal("2026-10-03", 20 * 60 + 15, TZ), lateEntry: null, status: "scheduled" } });
+    const steps = planSteps(one(show, ctx("2026-10-03 19:30", 180)), { timezone: TZ });
+    expect(steps.map((s) => s.kind)).toEqual(["leave", "arrive", "event_starts", "entry_by", "wrap_up"]);
+    expect(isChronological(steps)).toBe(true);
+    // Reached after a guessed last entry (check first): the step becomes a note on arrival. With the
+    // default policies the minimum visit already rules this out, so use one with a shorter minimum.
+    const shortVisits = new Map(POLICIES).set("museum", { ...POLICIES.get("museum")!, minUsefulMinutes: 30 });
+    const museum = evaluateAll([venue({ category: "museum", hours: "Mo-Su 10:00-18:00" })], ctx("2026-10-03 17:05", 240), shortVisits)[0]!;
+    expect(museum.unresolved).toContain("LATE_ENTRY_UNCERTAIN");
+    const m = planSteps(museum, { timezone: TZ });
+    expect(m.map((s) => s.kind)).not.toContain("last_entry");
+    expect(m.find((s) => s.kind === "arrive")!.text).toMatch(/last entry may have passed\)$/);
+    expect(isChronological(m)).toBe(true);
+  });
+});
+
