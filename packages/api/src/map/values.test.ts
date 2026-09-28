@@ -27,11 +27,15 @@ describe("fact values → contract values", () => {
     expect(ageLimitFrom({ value: { minAge: 21 }, evidenceClass: "estimate" })).toEqual({ minAge: 21, evidence: "estimate" });
   });
 
-  it("links: only https on a public host reach a user, even from rows written before the rule", () => {
-    expect(linksFrom({ menu: "https://bageldepot.example/menu", instagram: "https://www.instagram.com/bagels/" })).toEqual([
+  it("links: only https on a public host reach a user, and a menu only on the place's own site or a menu platform, even from rows written before the rules", () => {
+    expect(linksFrom({ menu: "https://bageldepot.example/menu", instagram: "https://www.instagram.com/bagels/" }, "https://www.bageldepot.example/")).toEqual([
       { kind: "menu", label: "Menu", url: "https://bageldepot.example/menu" },
       { kind: "instagram", label: "Instagram", url: "https://www.instagram.com/bagels/" },
     ]);
+    // A menu stored before the rule, on another site than the place's own, or with no site to compare: dropped.
+    expect(linksFrom({ menu: "https://evil.example/menu" }, "https://bageldepot.example/")).toEqual([]);
+    expect(linksFrom({ menu: "https://bageldepot.example/menu" })).toEqual([]);
+    expect(linksFrom({ menu: "https://www.toasttab.com/bagel-depot" })).toEqual([{ kind: "menu", label: "Menu", url: "https://www.toasttab.com/bagel-depot" }]);
     expect(linksFrom({ menu: "https://169.254.169.254/latest/meta-data/" })).toEqual([]);
     expect(linksFrom({ menu: "https://192.168.1.1/menu", facebook: "https://router.local/x" })).toEqual([]);
     expect(linksFrom({ menu: "https://router.lan/menu", instagram: "https://router.home/x", facebook: "https://nas.corp/x" })).toEqual([]);

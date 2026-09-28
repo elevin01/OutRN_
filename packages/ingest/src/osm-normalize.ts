@@ -1,4 +1,4 @@
-import { fromLocal, isPublicWebHost, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { fromLocal, isMenuHostFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.8";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.9";
 
 export interface OsmRecord {
   externalId: string;
@@ -160,10 +160,22 @@ const FACEBOOK_RESERVED = new Set(["profile.php", "pages", "groups", "events", "
 /** An account handle names something: it has a letter (".." or "__" is not an account). */
 const isHandle = (h: string) => /[A-Za-z]/.test(h);
 
+/** The host of the venue's own website tag, if it names one. */
+function websiteHost(t: Record<string, string>): string | null {
+  const site = (t["website"] ?? t["contact:website"] ?? t["url"])?.trim();
+  if (!site) return null;
+  try {
+    return new URL(/^https?:\/\//i.test(site) ? site : `https://${site}`).hostname;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The venue's own pages from OSM contact tags, as links we are willing to show: rebuilt from the
- * handle on the official host (never passed through raw), or an https menu on a public host (never
- * an IP literal or a network-local name). Anything else is dropped.
+ * handle on the official host (never passed through raw), or an https menu on the venue's own site
+ * or a known menu platform (never a stranger's page, an IP literal or a network-local name).
+ * Anything else is dropped.
  */
 export function venueLinks(t: Record<string, string>): { links: { instagram?: string; facebook?: string; menu?: string }; evidence: string[] } | null {
   const links: { instagram?: string; facebook?: string; menu?: string } = {};
@@ -182,7 +194,7 @@ export function venueLinks(t: Record<string, string>): { links: { instagram?: st
   if (menu && menu.length <= 500) {
     try {
       const u = new URL(menu);
-      if (u.protocol === "https:" && !u.username && !u.password && isPublicWebHost(u.hostname)) {
+      if (u.protocol === "https:" && !u.username && !u.password && isMenuHostFor(u.hostname, websiteHost(t))) {
         links.menu = u.toString();
         evidence.push(`website:menu=${menu}`);
       }

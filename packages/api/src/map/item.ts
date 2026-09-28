@@ -55,7 +55,7 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
       directionsUrl: directionsUrl(c.point, t.travel.mode),
       websiteUrl: websiteUrl(textFrom(c.facts.website?.value)),
       phone: textFrom(c.facts.phone?.value),
-      links: linksFrom(c.facts.links?.value),
+      links: linksFrom(c.facts.links?.value, textFrom(c.facts.website?.value)),
     },
   };
 }

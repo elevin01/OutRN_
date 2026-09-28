@@ -435,7 +435,10 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     now = SAT_EVENING;
     const first = (await search({ areaId: "les", windowMinutes: 180 })).items[0]!;
     const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [first.placeId])).rows[0]!.external_id;
-    await writeFacts(db, [{ subjectKind: "venue", subjectId: first.placeId, attribute: "links", value: { instagram: "https://www.instagram.com/pittpark/", menu: "https://pittpark.example/menu" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "contact:instagram=pittpark; website:menu=https://pittpark.example/menu", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.75 }]);
+    await writeFacts(db, [
+      { subjectKind: "venue", subjectId: first.placeId, attribute: "links", value: { instagram: "https://www.instagram.com/pittpark/", menu: "https://pittpark.example/menu" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "contact:instagram=pittpark; website:menu=https://pittpark.example/menu", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.75 },
+      { subjectKind: "venue", subjectId: first.placeId, attribute: "website", value: { value: "https://www.pittpark.example/" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "website=https://www.pittpark.example/", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.8 },
+    ]);
     await materializeSubjects(db, "venue", [first.placeId], now);
     const expected = [
       { kind: "menu", label: "Menu", url: "https://pittpark.example/menu" },

@@ -32,3 +32,32 @@ export function isPublicWebHost(hostname: string): boolean {
   const tld = host.slice(host.lastIndexOf(".") + 1);
   return TLD_SHAPE.test(tld) && !PRIVATE_TLDS.has(tld);
 }
+
+/**
+ * Menu and ordering platforms a venue's menu may live on besides its own site. Each hosts pages for
+ * the businesses that sign up, so a link there points at the venue's own listing.
+ */
+export const MENU_PLATFORMS: readonly string[] = [
+  "toasttab.com", "squareup.com", "square.site", "clover.com", "popmenu.com", "getbento.com", "singleplatform.com",
+  "menufy.com", "chownow.com", "slicelife.com", "beyondmenu.com", "grubhub.com", "seamless.com", "doordash.com",
+  "ubereats.com", "opentable.com", "resy.com", "exploretock.com", "menupages.com", "allmenus.com",
+];
+
+const bare = (host: string) => host.toLowerCase().replace(/\.$/, "").replace(/^www\./, "");
+/** `host` is `domain` or one of its subdomains. */
+const within = (host: string, domain: string) => host === domain || host.endsWith(`.${domain}`);
+
+/**
+ * Whether a menu link may be shown for a venue. Anyone can edit an OSM `website:menu`, so it must be
+ * on the venue's own site (the website's host or a subdomain of it, "www." aside) or on a known menu
+ * or ordering platform. A menu anywhere else, such as a vandal's lookalike page, is dropped. Takes
+ * `URL.hostname` values; `websiteHost` is null when the venue lists no website.
+ */
+export function isMenuHostFor(menuHost: string, websiteHost: string | null): boolean {
+  if (!isPublicWebHost(menuHost)) return false;
+  const menu = bare(menuHost);
+  if (MENU_PLATFORMS.some((d) => within(menu, d))) return true;
+  if (!websiteHost || !isPublicWebHost(websiteHost)) return false;
+  return within(menu, bare(websiteHost));
+}
+

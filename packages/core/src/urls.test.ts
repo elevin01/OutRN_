@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPublicWebHost } from "./urls.js";
+import { isMenuHostFor, isPublicWebHost } from "./urls.js";
 
 const hostOf = (url: string) => new URL(url).hostname;
 
@@ -51,6 +51,27 @@ describe("links shown to users point at public hosts only", () => {
     expect(isPublicWebHost("router.1")).toBe(false);
     // Real public suffixes that look close stay public; .example stays allowed for fixtures.
     for (const url of ["https://menu.homes/", "https://joes.cafe/", "https://a.corporate.com/", "https://fritz.box/", "https://bageldepot.example/"]) expect(isPublicWebHost(hostOf(url)), url).toBe(true);
+  });
+});
+
+describe("where a venue's menu may be", () => {
+  it("on its own site, a subdomain of it, or a menu platform", () => {
+    expect(isMenuHostFor("essexcoffee.com", "www.essexcoffee.com")).toBe(true);
+    expect(isMenuHostFor("www.essexcoffee.com", "essexcoffee.com")).toBe(true);
+    expect(isMenuHostFor("order.essexcoffee.com", "essexcoffee.com")).toBe(true);
+    expect(isMenuHostFor("www.toasttab.com", null)).toBe(true);
+    expect(isMenuHostFor("essex-coffee.square.site", "essexcoffee.com")).toBe(true);
+  });
+
+  it("nowhere else: another site, a lookalike, the site's parent, or with no website to compare", () => {
+    expect(isMenuHostFor("evil.example", "essexcoffee.com")).toBe(false);
+    expect(isMenuHostFor("essexcoffee.com.evil.example", "essexcoffee.com")).toBe(false);
+    expect(isMenuHostFor("evilessexcoffee.com", "essexcoffee.com")).toBe(false);
+    expect(isMenuHostFor("toasttab.com.evil.example", null)).toBe(false);
+    expect(isMenuHostFor("example.com", "shop.example.com")).toBe(false);
+    expect(isMenuHostFor("essexcoffee.com", null)).toBe(false);
+    expect(isMenuHostFor("192.168.1.1", "192.168.1.1")).toBe(false);
+    expect(isMenuHostFor("router.lan", "router.lan")).toBe(false);
   });
 });
 

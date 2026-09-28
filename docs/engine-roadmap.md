@@ -66,6 +66,9 @@ changelog.
   - Nothing is guessed: no search by name, no stock photo.
   - Live runs record every response (`--save`) and replay exactly (`--from-file`), like `ingest osm`.
   - Contract 1.5 (additive): `photos` on items and place details, each with its credit.
+  - **Menu links:** only on the venue's own site (its website's host or a subdomain of it) or on a
+    known menu or ordering platform. Anyone can edit `website:menu`, so a menu anywhere else is
+    dropped at ingest (a normalizer bump re-checks stored ones) and again when links are shown.
 
 ## Next, in order
 

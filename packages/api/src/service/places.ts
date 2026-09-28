@@ -121,7 +121,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
       websiteUrl: websiteUrl(textFrom(facts["website"]?.value) ?? tags["website"] ?? tags["contact:website"]),
       phone: textFrom(facts["phone"]?.value) ?? tags["phone"] ?? tags["contact:phone"] ?? null,
     },
-    actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string>, links: linksFrom(facts["links"]?.value) },
+    actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string>, links: linksFrom(facts["links"]?.value, textFrom(facts["website"]?.value) ?? tags["website"] ?? tags["contact:website"] ?? null) },
     asOf: now.toISOString(),
     attributions: await attributionsFor(q, [...allSources, ...(await photoSources(q, photos.length ? [row.id] : []))]),
   };

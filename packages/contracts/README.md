@@ -32,6 +32,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
   - `attributions` includes "Photos: Wikimedia Commons contributors (credited with each photo)" whenever photos are shown.
   - Items stored by a 1.4 API page with `photos: []`.
   - In the fixtures, the photos are synthetic: their URLs don't load, so handle an image that fails to load.
+  - `actions.links`: a Menu link now appears only when it's on the place's own site or a known menu or ordering platform (Toast, Square, ChowNow, Grubhub and the like). Menus that pointed elsewhere are dropped.
 - **1.4.0** (additive). Parking:
   - `parking` on every item: for a drive, the nearest public parking within about 400 m that is open from parking until the car is collected (a lot, a garage or street spaces, from OpenStreetMap). It has `name` (null when unnamed), `kind`, `fee` (`free`, `paid`, `unknown`), `openingHours` (as OSM lists them, or null), `location`, `distanceMetres`, `walkMinutes`, `directionsUrl` (driving directions to the parking itself), and default `text`. Null when not driving, or when none nearby is known to be open for the visit.
   - `parkingNearby` on place details: the nearest public parking with its hours, whatever the travel mode.
