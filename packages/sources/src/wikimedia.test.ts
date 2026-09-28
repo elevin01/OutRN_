@@ -14,6 +14,7 @@ describe("which Commons file a tag or link names", () => {
     expect(commonsTitleFrom("https://commons.wikimedia.org/wiki/File:Pitt_Park%2C_2019.jpg")).toBe("File:Pitt Park, 2019.jpg");
     expect(commonsTitleFrom("https://upload.wikimedia.org/wikipedia/commons/a/ab/Pitt_Park.jpg")).toBe("File:Pitt Park.jpg");
     expect(commonsTitleFrom("https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Pitt_Park.jpg/800px-Pitt_Park.jpg")).toBe("File:Pitt Park.jpg");
+    expect(commonsTitleFrom("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Pitt_Park.jpg/960px-Pitt_Park.jpg?utm_source=commons.wikimedia.org")).toBe("File:Pitt Park.jpg");
   });
 
   it("names nothing for other hosts, categories, bad escapes or titles MediaWiki would refuse", () => {
@@ -80,6 +81,51 @@ describe("Commons file metadata", () => {
     expect(older.get("File:B.jpg")?.deletionTags).toEqual([]);
   });
 
+  it("keeps a file or an item the API says is missing as just that, not an error", async () => {
+    const commons = fake(() => ({ batchcomplete: true, query: { pages: [{ title: "File:Gone.jpg", missing: true }, { title: "File:Bad|", invalid: true }] } }));
+    expect((await commonsFiles(commons, ["File:Gone.jpg"])).size).toBe(0);
+    const wikidata = fake(() => ({ entities: { Q999999999: { id: "Q999999999", missing: "" } }, success: 1 }));
+    expect((await wikidataImages(wikidata, ["Q999999999"])).size).toBe(0);
+  });
+});
+
+describe("an answer that isn't a successful one fails, never reads as no photos", () => {
+  const failures: [string, unknown][] = [
+    ["a rate limit", { error: { code: "ratelimited", info: "You've exceeded your rate limit. Please wait some time and try again." } }],
+    ["maxlag", { error: { code: "maxlag", info: "Waiting for a database server: 6 seconds lagged.", lag: 6 } }],
+    ["an error without a code", { error: "something" }],
+    ["no body", {}],
+    ["not an object", ["unexpected"]],
+    ["null", null],
+  ];
+
+  it.each(failures)("from Wikidata: %s", async (_, answer) => {
+    await expect(wikidataImages(fake(() => answer), ["Q2"])).rejects.toThrow(/Wikidata answered/);
+  });
+
+  it.each(failures)("from Commons: %s", async (_, answer) => {
+    await expect(commonsFiles(fake(() => answer), ["File:A.jpg"])).rejects.toThrow(/Commons answered/);
+  });
+
+  it("from Commons, a query without its pages", async () => {
+    await expect(commonsFiles(fake(() => ({ batchcomplete: true, query: {} })), ["File:A.jpg"])).rejects.toThrow(/without the expected body/);
+    await expect(wikidataImages(fake(() => ({ entities: [] })), ["Q2"])).rejects.toThrow(/without the expected body/);
+  });
+
+  it("in a later batch after an earlier one succeeded", async () => {
+    const ids = Array.from({ length: WIKIMEDIA_BATCH + 1 }, (_, i) => `Q${i + 1}`);
+    const wikidata = fake((url) => (url === wikidataClaimsUrl([...ids].sort().slice(0, WIKIMEDIA_BATCH)) ? { entities: {} } : { error: { code: "ratelimited" } }));
+    await expect(wikidataImages(wikidata, ids)).rejects.toThrow(/ratelimited/);
+    expect(wikidata.asked).toHaveLength(2);
+
+    const titles = Array.from({ length: WIKIMEDIA_BATCH + 1 }, (_, i) => `File:${i + 1}.jpg`);
+    const commons = fake((url) => (url === commonsImageInfoUrl([...titles].sort().slice(0, WIKIMEDIA_BATCH)) ? { query: { pages: [] } } : { error: { code: "maxlag" } }));
+    await expect(commonsFiles(commons, titles)).rejects.toThrow(/maxlag/);
+    expect(commons.asked).toHaveLength(2);
+  });
+});
+
+describe("replays", () => {
   it("a replay answers only what was recorded", async () => {
     const url = wikidataClaimsUrl(["Q1"]);
     const replay = replayWikimediaFetcher({ outrn_capture: "wikimedia", responses: { [url]: { entities: {} } } });

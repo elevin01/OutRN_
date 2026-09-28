@@ -65,6 +65,33 @@ describe("which Commons files may be shown", () => {
     expect(photoFrom(file(cc0, { deletionTags: ["Template:Copyvio"] }), "x", NOW)).toBeNull();
   });
 
+  it("from Wikimedia's image servers as Commons serves them now: thumb.wikimedia.org, without its analytics parameters", () => {
+    // The thumbnail address Commons returned for Katz's photo (Q2611788) in the live check on 2026-09-28.
+    const katz = file(
+      { Artist: "A photographer", LicenseShortName: "CC BY-SA 4.0" },
+      {
+        title: "File:Lozupone katz2.png",
+        mime: "image/png",
+        thumbUrl: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Lozupone_katz2.png/960px-Lozupone_katz2.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        thumbWidth: 960,
+        thumbHeight: 720,
+        descriptionUrl: "https://commons.wikimedia.org/wiki/File:Lozupone_katz2.png",
+        uploadedAt: "2016-12-25T17:38:51Z",
+      },
+    );
+    expect(photoFrom(katz, "wikidata:P18", NOW)).toMatchObject({ url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Lozupone_katz2.png/960px-Lozupone_katz2.png", width: 960, license: "CC BY-SA 4.0" });
+    // Other parameters are kept; only the analytics ones go.
+    expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbUrl: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg?UTM_Source=x&lang=en" }), "x", NOW)?.url).toBe("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg?lang=en");
+    // Still only Wikimedia's own image servers, and only Commons' files on them.
+    for (const thumbUrl of [
+      "https://thumb.wikimedia.org.evil.example/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg",
+      "https://evil.example/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg",
+      "https://thumbs.wikimedia.org/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg",
+      "https://thumb.wikimedia.org/wikipedia/en/thumb/a/ab/Local.jpg/960px-Local.jpg",
+      "https://user@thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/P.jpg/960px-P.jpg",
+    ]) expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbUrl }), "x", NOW), thumbUrl).toBeNull();
+  });
+
   it("keeps a license link only on the license's own hosts", () => {
     expect(photoFrom(file({ LicenseShortName: "CC0", LicenseUrl: "https://evil.example/license" }), "x", NOW)?.licenseUrl).toBeNull();
   });

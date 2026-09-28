@@ -47,6 +47,11 @@ export interface VenuePhoto {
 }
 
 const PHOTO_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+/**
+ * Wikimedia's image servers: Commons serves resized copies from thumb.wikimedia.org (and, for older
+ * answers and originals, upload.wikimedia.org). Only Commons' own files, under /wikipedia/commons/.
+ */
+const IMAGE_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
 
 /**
  * A numeric entity's character, when it names one: a Unicode scalar value (not NUL, not a surrogate,
@@ -110,6 +115,19 @@ function settled(uploadedAt: string | null, now: Date): boolean {
 }
 
 /**
+ * The resized copy's address as shown: on Wikimedia's image servers, a Commons file, and without the
+ * analytics parameters Commons appends (utm_source=commons.wikimedia.org…).
+ */
+function imageUrl(raw: string): string | null {
+  const s = httpsUrl(raw, IMAGE_HOSTS);
+  if (!s) return null;
+  const u = new URL(s);
+  if (!u.pathname.startsWith("/wikipedia/commons/")) return null;
+  for (const k of [...u.searchParams.keys()]) if (k.toLowerCase().startsWith("utm_")) u.searchParams.delete(k);
+  return u.toString();
+}
+
+/**
  * A Commons file as a photo we may show at `now`, or null: a photo (not a drawing, map or logo),
  * freely licensed, credited as its license requires, served from Wikimedia's own hosts, on Commons
  * for a month or more and not tagged for deletion.
@@ -120,7 +138,7 @@ export function photoFrom(f: CommonsFile, via: string, now: Date): VenuePhoto | 
   if (!license) return null;
   const author = plainText(f.meta["Artist"], 200);
   if (license.needsCredit && !author) return null;
-  const url = httpsUrl(f.thumbUrl, /^upload\.wikimedia\.org$/);
+  const url = imageUrl(f.thumbUrl);
   const sourceUrl = httpsUrl(f.descriptionUrl, /^commons\.wikimedia\.org$/);
   if (!url || !sourceUrl || f.thumbWidth < 1 || f.thumbHeight < 1) return null;
   const licenseUrl = httpsUrl(f.meta["LicenseUrl"], /^(creativecommons\.org|commons\.wikimedia\.org|en\.wikipedia\.org)$/);

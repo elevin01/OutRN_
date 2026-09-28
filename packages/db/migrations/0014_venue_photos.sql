@@ -1,6 +1,7 @@
 -- Free photos of venues from Wikimedia Commons: files a venue's OSM records name (wikimedia_commons,
 -- an image link to Commons) and its Wikidata item's image (P18). Only metadata is stored; the app
--- shows a resized copy from upload.wikimedia.org with the credit its license requires.
+-- shows a resized copy from Wikimedia's image servers (thumb.wikimedia.org, upload.wikimedia.org) with
+-- the credit its license requires.
 
 insert into source_policies (id, name, product, license, terms_url, reviewed_at, allowed_ops, retention_days, attribution, geography, rate_limit, enabled, open_conditions, notes) values
   ('wikimedia', 'Wikimedia Commons and Wikidata', 'Commons and Wikidata APIs (file metadata only)', 'Per file: public domain, CC0, CC BY, CC BY-SA; Wikidata CC0',
@@ -8,7 +9,7 @@ insert into source_policies (id, name, product, license, terms_url, reviewed_at,
    '{fetch,retain,derive,display}', null,
    'Photos: Wikimedia Commons contributors (credited with each photo)', 'global',
    '{"min_interval_ms": 1000, "max_concurrent": 1}', true,
-   '{"Show each photo''s credit (author, license, link to its Commons page) wherever the photo appears","Images are shown from upload.wikimedia.org; serving copies from our own CDN needs its own review"}',
+   '{"Show each photo''s credit (author, license, link to its Commons page) wherever the photo appears","Images are shown from Wikimedia''s image servers (thumb.wikimedia.org, upload.wikimedia.org); serving copies from our own CDN needs its own review"}',
    'Venue photos only where a mapper or Wikidata ties the file to the place. Non-free, uncredited and non-photo files are skipped.')
 on conflict (id) do nothing;
 

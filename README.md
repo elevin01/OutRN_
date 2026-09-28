@@ -224,7 +224,8 @@ ingest, even when nothing upstream changed.
 Run `ingest photos` after it, weekly is enough. It replaces the area's photos as a whole: a tag
 removed upstream, or a file deleted or relicensed on Commons, takes its photo along. Only freely
 licensed photos (public domain, CC0, CC BY, CC BY-SA) are kept, each with the credit its license
-requires, and the app shows them from upload.wikimedia.org.
+requires, and the app shows them from Wikimedia's image servers. A Wikidata or Commons answer that
+is an error (a rate limit, say) fails the run and changes nothing.
 
 ## What is deliberately not here yet
 

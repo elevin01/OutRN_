@@ -4,7 +4,7 @@ import { guardedFetch } from "./fetch.js";
 /**
  * Wikimedia connector, for free venue photos: Wikidata's image claim (P18) for an item, and Commons
  * file metadata (a resized copy, its author and license). Only metadata is fetched; the photo itself
- * is shown from upload.wikimedia.org with its credit.
+ * is shown from Wikimedia's image servers with its credit.
  *
  * Requests are built deterministically (sorted, batched) so a live run can be recorded and replayed
  * exactly: tests, fixtures and offline development use the same code path as production.
@@ -107,12 +107,34 @@ export function commonsImageInfoUrl(titles: readonly string[]): string {
   return `${COMMONS_API}?${p.toString()}`;
 }
 
+/**
+ * A Wikimedia API answer, only when it is a successful one. An error envelope (rate limited, maxlag,
+ * a bad request) or an answer without the expected body fails the run: read as "no photos", it would
+ * replace every stored photo in the area with none.
+ */
+function successful(resp: unknown, api: string, hasBody: (r: Record<string, unknown>) => boolean): Record<string, unknown> {
+  if (typeof resp !== "object" || resp === null || Array.isArray(resp)) throw new Error(`${api} answered with something other than a JSON object`);
+  const r = resp as Record<string, unknown>;
+  if (r["error"] !== undefined) {
+    const e = (typeof r["error"] === "object" && r["error"] !== null ? r["error"] : {}) as { code?: unknown; info?: unknown };
+    const info = typeof e.info === "string" ? `: ${e.info.slice(0, 200)}` : "";
+    throw new Error(`${api} answered with an error (${typeof e.code === "string" ? e.code.slice(0, 60) : "no code"})${info}`);
+  }
+  if (!hasBody(r)) throw new Error(`${api} answered without the expected body`);
+  return r;
+}
+
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
 /** A Wikidata item's image claims (P18), as Commons file titles ("File:…"), in claim order. Preferred rank first. */
 export async function wikidataImages(fetcher: JsonFetcher, ids: readonly string[]): Promise<Map<string, string[]>> {
   const out = new Map<string, string[]>();
   for (const batch of batches(ids.filter((id) => /^Q[1-9]\d{0,11}$/.test(id)))) {
-    const resp = (await fetcher.get(wikidataClaimsUrl(batch))) as { entities?: Record<string, { claims?: { P18?: { rank?: string; mainsnak?: { datavalue?: { value?: unknown } } }[] } }> };
-    for (const [id, entity] of Object.entries(resp.entities ?? {})) {
+    const resp = successful(await fetcher.get(wikidataClaimsUrl(batch)), "Wikidata", (r) => isRecord(r["entities"])) as {
+      entities: Record<string, { claims?: { P18?: { rank?: string; mainsnak?: { datavalue?: { value?: unknown } } }[] } }>;
+    };
+    // An id Wikidata doesn't have comes back as { missing: "" }: no claims, so no images.
+    for (const [id, entity] of Object.entries(resp.entities)) {
       const claims = (entity.claims?.P18 ?? []).filter((c) => c.rank !== "deprecated");
       claims.sort((a, b) => Number(b.rank === "preferred") - Number(a.rank === "preferred"));
       const files = claims.map((c) => c.mainsnak?.datavalue?.value).filter((v): v is string => typeof v === "string" && v.length > 0);
@@ -147,8 +169,8 @@ export interface CommonsFile {
 export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string[]): Promise<Map<string, CommonsFile>> {
   const out = new Map<string, CommonsFile>();
   for (const batch of batches(titles.filter((t) => /^File:./.test(t) && t.length <= 255))) {
-    const resp = (await fetcher.get(commonsImageInfoUrl(batch))) as {
-      query?: {
+    const resp = successful(await fetcher.get(commonsImageInfoUrl(batch)), "Commons", (r) => isRecord(r["query"]) && Array.isArray(r["query"]["pages"])) as {
+      query: {
         normalized?: { from: string; to: string }[];
         pages?: {
           title?: string;
@@ -161,7 +183,8 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
       continue?: { tlcontinue?: unknown };
     };
     const byTitle = new Map<string, CommonsFile>();
-    for (const page of resp.query?.pages ?? []) {
+    // A file Commons doesn't have comes back as { missing: true }: skipped, not an error.
+    for (const page of resp.query.pages ?? []) {
       const info = page.imageinfo?.[0];
       if (!page.title || page.missing || page.invalid || !info?.thumburl || !info.descriptionurl) continue;
       const meta: Record<string, string> = {};
@@ -182,7 +205,7 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
         meta,
       });
     }
-    const normalized = new Map((resp.query?.normalized ?? []).map((n) => [n.from, n.to]));
+    const normalized = new Map((resp.query.normalized ?? []).map((n) => [n.from, n.to]));
     for (const t of batch) {
       const f = byTitle.get(normalized.get(t) ?? t);
       if (f) out.set(t, f);
@@ -202,7 +225,8 @@ function fileTitle(name: string): string | null {
 
 /**
  * The Commons file a link or tag names, as a title: "File:X.jpg" (the wikimedia_commons tag), a
- * commons.wikimedia.org/wiki/File:X page, or an upload.wikimedia.org original or thumbnail. Null for
+ * commons.wikimedia.org/wiki/File:X page, or an upload.wikimedia.org original or an upload or
+ * thumb.wikimedia.org thumbnail. Null for
  * anything else: a photo elsewhere comes with no license we can check.
  */
 export function commonsTitleFrom(ref: string): string | null {
@@ -227,7 +251,7 @@ export function commonsTitleFrom(ref: string): string | null {
     const page = /^\/wiki\/(?:File|Image):(.+)$/i.exec(url.pathname);
     return page ? clean(page[1]!) : null;
   }
-  if (url.hostname === "upload.wikimedia.org") {
+  if (url.hostname === "upload.wikimedia.org" || url.hostname === "thumb.wikimedia.org") {
     // /wikipedia/commons/a/ab/Name.jpg or /wikipedia/commons/thumb/a/ab/Name.jpg/800px-Name.jpg
     const m = /^\/wikipedia\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+)/.exec(url.pathname);
     return m ? clean(m[1]!) : null;

@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { reset, testDatabaseAvailable } from "@outrn/db";
-import { commonsImageInfoUrl, replayWikimediaFetcher, type WikimediaCapture } from "@outrn/sources";
+import { commonsImageInfoUrl, replayWikimediaFetcher, type JsonFetcher, type WikimediaCapture } from "@outrn/sources";
 import { ingestPhotos } from "../src/photos.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -102,6 +102,28 @@ describe.skipIf(!available)("venue photos from Wikimedia Commons (replayed)", ()
     captureEditing(title, (page) => {
       for (const [k, v] of Object.entries(meta)) page.imageinfo[0]!.extmetadata[k] = { value: v };
     });
+
+  it("a Wikidata or Commons error, or an answer without its body, fails the run and changes nothing", async () => {
+    const replay = replayWikimediaFetcher(JSON.parse(readFileSync(CAPTURE, "utf8")) as WikimediaCapture);
+    /** The recorded answers, except `api`'s, which is `answer`: every earlier request succeeds. */
+    const failing = (api: "wikidata" | "commons", answer: unknown): JsonFetcher => ({
+      get: async (url) => (new URL(url).hostname === (api === "wikidata" ? "www.wikidata.org" : "commons.wikimedia.org") ? answer : replay.get(url)),
+    });
+    await ingestPhotos(db, { areaSlug: "les", fromFile: CAPTURE });
+    const before = await photos();
+    expect(before).toHaveLength(3);
+    for (const [api, answer, message] of [
+      ["wikidata", { error: { code: "maxlag", info: "Waiting for a database server: 6 seconds lagged." } }, /Wikidata answered with an error \(maxlag\)/],
+      ["commons", { error: { code: "ratelimited", info: "Rate limit exceeded" } }, /Commons answered with an error \(ratelimited\)/],
+      ["commons", { batchcomplete: true }, /Commons answered without the expected body/],
+    ] as const) {
+      // Commons is asked after Wikidata has answered well: a later failure still changes nothing.
+      await expect(ingestPhotos(db, { areaSlug: "les", fetcher: failing(api, answer) }), `${api} ${JSON.stringify(answer)}`).rejects.toThrow(message);
+      expect(await photos()).toEqual(before);
+      const run = await db.query<{ status: string; error: string }>(`select status, error from ingestion_runs where source_id = 'wikimedia' order by started_at desc limit 1`);
+      expect(run.rows[0]).toMatchObject({ status: "failed", error: expect.stringMatching(message) });
+    }
+  });
 
   it("a file freshly uploaded over, or tagged for deletion on Commons, loses its place until it settles", async () => {
     const now = new Date("2026-09-26T12:00:00Z");

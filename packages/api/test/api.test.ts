@@ -401,8 +401,8 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       ["CC BY-SA 4.0", "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons"],
       ["CC0", "CC0, via Wikimedia Commons"],
     ]);
-    expect(park.photos[0]).toMatchObject({ width: 800, height: 600, sourceUrl: "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0" });
-    expect(park.photos[0]!.url).toMatch(/^https:\/\/upload\.wikimedia\.org\//);
+    expect(park.photos[0]).toMatchObject({ width: 960, height: 720, sourceUrl: "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0" });
+    expect(park.photos[0]!.url).toBe("https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg");
     // No photo is ever borrowed: places without their own have none.
     expect(page.items.filter((i) => i.name !== "Pitt Park").every((i) => i.photos.length === 0)).toBe(true);
     expect(page.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
