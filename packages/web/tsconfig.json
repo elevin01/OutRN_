@@ -10,6 +10,8 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "composite": false,
+    "declaration": false,
+    "declarationMap": false,
     "plugins": [{ "name": "next" }]
   },
   "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],

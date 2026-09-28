@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "OutRN",
+    "slug": "outrn",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "scheme": "outrn",
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
+  }
+}

@@ -6,7 +6,7 @@ process.env["TZ"] = "UTC";
 export default defineConfig({
   resolve: { conditions: ["outrn-src"] },
   test: {
-    include: ["packages/*/src/**/*.test.ts", "packages/*/test/**/*.test.ts", "packages/web/lib/**/*.test.ts"],
+    include: ["apps/mobile/src/lib/**/*.test.ts", "packages/*/src/**/*.test.ts", "packages/*/test/**/*.test.ts", "packages/web/lib/**/*.test.ts"],
     testTimeout: 30_000,
     hookTimeout: 60_000,
     pool: "forks",

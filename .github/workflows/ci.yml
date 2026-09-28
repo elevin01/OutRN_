@@ -101,3 +101,23 @@ jobs:
       - run: pnpm web:build
       - name: Smoke test, mock API + web
         run: bash scripts/smoke.sh mock
+
+  mobile:
+    name: Expo mobile lint, types, and platform exports
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm mobile:typecheck
+      - run: pnpm --filter @outrn/mobile lint
+      - run: pnpm mobile:export
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.invalid
+          EXPO_PUBLIC_DEMO_MODE: 'false'
+      - name: Production export excludes demo photography
+        run: node apps/mobile/scripts/check-demo-assets.mjs

@@ -145,7 +145,7 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 
 | Command | What it does |
 | --- | --- |
-| `outrn migrate [--reset]` | Apply SQL migrations (reset drops everything; dev only) |
+| `outrn migrate [--reset] [--reapply <file>]` | Apply SQL migrations (reset drops everything; dev only). Refuses to run if an applied migration was edited since; `--reapply` re-runs one on a database that applied an earlier draft |
 | `outrn ingest osm --area <slug> [--from-file p] [--save p] [--radius m]` | Overpass → raw store → identity → facts → materialize; extent = catchment + max reach |
 | `outrn materialize [--area <slug>]` | Rebuild `current_facts`, publish states and verification tasks |
 | `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all] [--json]` | Run the engine through the same request resolution as the API; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason; `--json` prints the exact v1 response the UI receives (`--cursor c` for more pages) |
@@ -223,3 +223,10 @@ prompt endpoints, contributor reliability updates. Each has a table or a stub wh
 OpenStreetMap data is ODbL. Facts derived from it are stored with `source_id = 'osm'` and lineage
 `osm`, so the OSM-derived layer can be separated or the combined database published under ODbL —
 that decision is open in the plan and must be made before production.
+
+## Mobile app (Expo)
+
+`apps/mobile` implements the mobile discovery and outing flow against the same v1 HTTP contract.
+See [mobile setup and scope](apps/mobile/README.md). Start with `pnpm api:mock` and
+`pnpm mobile:dev`; use `pnpm mobile:web` for a browser preview. All changes require a new branch
+and a pull request.

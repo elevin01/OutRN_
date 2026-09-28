@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "server order and category fallback",
+    "full-height hero and single bottom navigation",
+    "photo controls keep the current activity",
+    "Maps rail and dismissible sheet",
+    "sources and no imposed stay duration",
+    "community posts, reviews and transport context",
+    "save persists and saved details use the approved view",
+    "optional outing can be started without a fixed stay",
+    "cursor pages preserve order and restart creates page zero",
+    "320px viewport has no horizontal overflow",
+    "production has no demo images or example posts",
+    "booking and required caveats remain visible on the main surface",
+    "expired results cannot show an active deck",
+    "no browser runtime errors"
+  ],
+  "limitations": [
+    "Browser checks of Expo web exports; native device gestures, system text scaling, accessibility and external maps handoff still require device QA."
+  ]
+}
