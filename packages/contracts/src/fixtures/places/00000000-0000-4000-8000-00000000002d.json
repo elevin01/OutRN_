@@ -136,6 +136,7 @@
       }
     }
   ],
+  "parkingNearby": null,
   "contact": {
     "websiteUrl": "https://stantonpark.example/",
     "phone": "+1 212 555 6468"

@@ -100,6 +100,11 @@ for a table (usually 15–30 min)", "Reported a short line at 6:22pm"). Render `
 "usually" wording. A `report` is a recent visitor report, and `reportedAt` says when. The summary
 shows an expected wait as "~15–30 min wait".
 
+Contract 1.4 adds parking. For a drive, `parking` on an item names where to leave the car ("Orchard
+Street Lot (paid), ~2 min walk"). Its `directionsUrl` drives to the parking itself, and the plan
+gains a `park` step. Place details carry `parkingNearby` whatever the mode. Both are null when no
+public parking is known within about 400 m.
+
 ## Rules
 
 - Import only `@outrn/contracts` from the workspace. Engine, db, api and ingestion packages are

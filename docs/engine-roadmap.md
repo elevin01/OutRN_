@@ -34,7 +34,7 @@ changelog.
   - **Public holidays:** `PH` rules resolve to New York holidays (tested). They are flagged
     approximate only on or just before one.
   - Contract 1.2 (additive): `visitStyle`, `timing.visit`, `plan`, `actions.links`.
-- **Batch 3b, part 1 (this PR): crowds and waits.**
+- **Batch 3b, part 1: crowds and waits.**
   - **How busy, at the arrival:** busy-hour patterns per kind of place, by day and hour, for NYC
     and Westchester. Public holidays follow Sunday, and after midnight counts as the night before.
     Always worded as "places like this are usually busy on Friday evenings", never as a claim about
@@ -47,11 +47,18 @@ changelog.
     the long end would eat the visit or run past last orders, the card is Check first
     (`WAIT_MAY_NOT_FIT`). Like every estimate, it never excludes a place.
   - Contract 1.3 (additive): `conditions` on every item. The summary shows "~15–30 min wait".
+- **Batch 3b, part 2 (this PR): parking near the venue.**
+  - Ingest brings in OSM `amenity=parking` (named or not) and derives the places anyone may park:
+    lots, garages and street spaces, with whether they charge. Private, customer-only, permit and
+    resident lots, carports and garage boxes are left out.
+  - A drive plan parks at the nearest one within about 400 m: "Park at Orchard Street Lot (paid),
+    then walk ~2 min". The time allowed for parking is at least the walk from it.
+  - Place details show the nearest public parking whatever the mode.
+  - Contract 1.4 (additive): `parking` on items, `parkingNearby` on place details, the `park` step.
 
 ## Next, in order
 
-### Batch 3b, the rest: parking, photos (no new vendors)
-- **Parking near the venue:** nearest OSM lot or garage, its fee, and the walk from it.
+### Batch 3b, the rest: photos (no new vendors)
 - **Free photos:**
   - Wikimedia Commons and Wikidata, for parks, museums and landmarks.
   - Mapillary street view, to show the entrance.

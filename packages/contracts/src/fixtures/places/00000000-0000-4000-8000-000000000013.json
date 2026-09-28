@@ -117,6 +117,19 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
+    "location": {
+      "lat": 40.9325,
+      "lon": -73.8458
+    },
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
+    "text": "Rivington Garage (paid), ~2 min walk"
+  },
   "contact": {
     "websiteUrl": "https://broomekitchen.example/",
     "phone": "+1 212 555 7228"

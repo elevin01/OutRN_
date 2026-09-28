@@ -10,7 +10,7 @@ function evaluation(reasons: ReasonCode[], unresolved: string[]): Evaluation {
     excludedBy: null,
     reasons,
     unresolved: unresolved as ReasonCode[],
-    timing: { travel: { minutes: 8, mode: "walk", isEstimate: true, basis: "~8 min walk" }, departAt: at, arrival: new Date(at.getTime() + 8 * 60_000), latestArrival: null, latestArrivalIsEstimate: false, latestArrivalKind: null, latestFinish: new Date(at.getTime() + 120 * 60_000), usefulMinutes: 112, minUsefulMinutes: 45, minUsefulIsEstimate: true, closesAt: null, deadline: new Date(at.getTime() + 120 * 60_000), returnTravel: null, visit: { style: "visit", minMinutes: 45, typicalMinutes: 60, isEstimate: true }, conditions: [] },
+    timing: { travel: { minutes: 8, mode: "walk", isEstimate: true, basis: "~8 min walk" }, departAt: at, arrival: new Date(at.getTime() + 8 * 60_000), latestArrival: null, latestArrivalIsEstimate: false, latestArrivalKind: null, latestFinish: new Date(at.getTime() + 120 * 60_000), usefulMinutes: 112, minUsefulMinutes: 45, minUsefulIsEstimate: true, closesAt: null, deadline: new Date(at.getTime() + 120 * 60_000), returnTravel: null, parkingMinutes: null, parking: null, visit: { style: "visit", minMinutes: 45, typicalMinutes: 60, isEstimate: true }, conditions: [] },
     scores: { evidence: 0.5, fit: 0.5, appeal: 0.5, novelty: 1 },
     cta: unresolved.length ? "check" : "go",
     price: { text: "price unknown", isEstimate: false, unknown: true },

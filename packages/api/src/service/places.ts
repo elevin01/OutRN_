@@ -1,11 +1,11 @@
 import type { PlaceDetails, PlaceFact, Provenance, TravelMode } from "@outrn/contracts";
 import { AS_OF_SQL, isFreshConfirmation, SURVEYED_AT_SQL, VERIFIED_AT_SQL } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
-import { describeFacts, hoursToday, sourceName, type FactRecord } from "@outrn/engine";
+import { describeFacts, hoursToday, loadNearbyParking, sourceName, type FactRecord } from "@outrn/engine";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { labelOf } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
-import { ageLimitFrom, directionsUrl, linksFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
+import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
 import { attributionsFor } from "./recommendations.js";
 
 interface PlaceRow {
@@ -96,6 +96,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
   }
 
   const status = (facts["business_status"]?.value as { status?: string } | undefined)?.status;
+  const parking = (await loadNearbyParking(q, [row.id])).get(row.id);
   const allSources = [...new Set(Object.values(facts).flatMap((f) => f.sources))];
   return {
     id: row.id,
@@ -110,6 +111,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
     price: priceOf(facts["price"]),
     ageLimit: ageLimitFrom(facts["age_limit"]),
     facts: rows,
+    parkingNearby: parkingFrom(parking),
     contact: {
       websiteUrl: websiteUrl(textFrom(facts["website"]?.value) ?? tags["website"] ?? tags["contact:website"]),
       phone: textFrom(facts["phone"]?.value) ?? tags["phone"] ?? tags["contact:phone"] ?? null,

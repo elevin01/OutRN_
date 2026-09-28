@@ -34,6 +34,18 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000024",
       "copy": {
         "action": "Go now",
@@ -128,6 +140,9 @@
         "lon": -73.988579
       },
       "placeName": "Ludlow Tavern",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -139,9 +154,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000025",
       "copy": {
         "action": "Go now",
@@ -236,6 +249,9 @@
         "lon": -73.986194
       },
       "placeName": "Stanton Bar",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -247,9 +263,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000026",
       "copy": {
         "action": "Go now",
@@ -344,17 +358,6 @@
         "lon": -73.975001
       },
       "placeName": "Essex Hester Bar",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
-          "basis": "typical",
-          "level": "moderate",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "go"
     }
   ],

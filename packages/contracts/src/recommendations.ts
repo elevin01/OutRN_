@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, Budget, IsoDateTime, LatLon, Note, Option, Price, TravelMode, VenueLink } from "./common.js";
+import { AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Price, TravelMode, VenueLink } from "./common.js";
 
 /** POST /v1/recommendations — a short, ordered list of things that fit the time the user has. */
 
@@ -80,7 +80,10 @@ export const Travel = z.object({
   minutes: z.int().min(0),
   /** Straight-line estimates today; routed times later. Show as "~12 min". */
   isEstimate: z.boolean(),
-  /** Minutes of `minutes` allowed for parking (drive only). */
+  /**
+   * Minutes of `minutes` allowed for parking (drive only): finding a space and, when `parking` is
+   * known, at least the walk from it.
+   */
   parkingMinutes: z.int().min(0).nullable(),
 });
 
@@ -115,9 +118,9 @@ export const Timing = z.object({
 export type Timing = z.infer<typeof Timing>;
 
 /**
- * One step of the plan, in order: leave, arrive, order by or last entry, wrap up, be back. `kind` is
- * open-ended ("leave", "arrive", "event_starts", "order_by", "last_entry", "entry_by", "wrap_up",
- * "back_by"); `text` is the default wording.
+ * One step of the plan, in order: leave, park, arrive, order by or last entry, wrap up, be back.
+ * `kind` is open-ended ("leave", "park", "arrive", "event_starts", "order_by", "last_entry",
+ * "entry_by", "wrap_up", "back_by"); `text` is the default wording.
  */
 export const PlanStep = z.object({
   kind: z.string().min(1),
@@ -200,6 +203,12 @@ export const RecommendationItem = z.object({
   plan: z.array(PlanStep),
   /** How busy it is and any wait, at the arrival: crowd first, then wait. Empty when nothing is known. */
   conditions: z.array(Condition),
+  /**
+   * Drive plans only: the nearest public parking within a short walk, where the plan leaves the
+   * car. Null when not driving, or when none is known nearby (the plan then allows the area's usual
+   * time to find a space).
+   */
+  parking: NearbyParking.nullable(),
   price: Price,
   /** Must be shown when present. */
   ageLimit: AgeLimit.nullable(),

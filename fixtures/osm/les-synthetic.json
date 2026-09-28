@@ -1617,6 +1617,40 @@
    "uid": 1,
    "lat": 40.715594,
    "lon": -73.996037
+  },
+  {
+   "type": "node",
+   "id": 100101,
+   "tags": {
+    "amenity": "parking",
+    "parking": "multi-storey",
+    "name": "Rivington Garage",
+    "fee": "yes",
+    "capacity": "240"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.72101,
+   "lon": -73.98795
+  },
+  {
+   "type": "node",
+   "id": 100102,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "access": "private"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.72352,
+   "lon": -73.9801
   }
  ]
 }

@@ -117,6 +117,7 @@
       }
     }
   ],
+  "parkingNearby": null,
   "contact": {
     "websiteUrl": "https://stantonkitchen.example/",
     "phone": "+1 212 555 7138"

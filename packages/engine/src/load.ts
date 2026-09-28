@@ -1,11 +1,12 @@
 import SunCalc from "suncalc";
 import { DEFAULT_MAX_TRAVEL_MINUTES, fromLocal, localClock, maxReachMetres, parkingBufferAt, PROGRAMME_CATEGORIES, VERIFIED_AT_SQL, type Attribute, type Category, type LatLon, type TravelMode } from "@outrn/core";
 import { loadCategoryPolicies, loadParkingRule, type Queryable } from "@outrn/db";
-import type { Candidate, CategoryPolicy, FactView, OccurrenceView, RequestContext, Shortlist } from "./types.js";
+import { loadNearbyParking } from "./parking.js";
+import type { Candidate, CategoryPolicy, FactView, NearbyParking, OccurrenceView, RequestContext, Shortlist } from "./types.js";
 
 /**
  * Loads candidates from the materialized tables. The request path reads current_facts, venues,
- * occurrences and overrides only — never raw source records and never an external API.
+ * occurrences, overrides and derived parking only — never raw source records and never an external API.
  */
 
 
@@ -82,6 +83,9 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
     brand: v.brand,
   }));
   if (!venues.length) return candidates;
+  // Where a driver would park, for every venue (occurrences share their venue's).
+  const parking = mode === "drive" ? await loadNearbyParking(q, venues.map((v) => v.id)) : new Map<string, NearbyParking>();
+  for (const c of candidates) c.parking = parking.get(c.venueId) ?? null;
   const occ = (
     await q.query<OccRow>(
       `select id, venue_id, title, start_at, end_at, entry_cutoff_at, late_entry, status from occurrences
@@ -131,6 +135,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       excluded: v.excluded,
       hasLandmarkId: v.has_landmark,
       brand: v.brand,
+      parking: parking.get(o.venue_id) ?? null,
     });
   }
   return kept;

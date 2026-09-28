@@ -1,6 +1,6 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.3.0";
+export const ENGINE_VERSION = "0.4.0";
 export const WEIGHTS_VERSION = "2026-09-28.1";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
@@ -67,6 +67,17 @@ export interface OccurrenceView {
   status: "scheduled" | "cancelled" | "sold_out" | "ended";
 }
 
+/** Public parking near a venue: where a drive plan leaves the car. */
+export interface NearbyParking {
+  name: string | null;
+  kind: "lot" | "garage" | "street";
+  fee: "free" | "paid" | "unknown";
+  point: LatLon;
+  /** Straight line to the venue. */
+  distanceM: number;
+  walkMinutes: number;
+}
+
 export interface Candidate {
   kind: "venue" | "occurrence";
   /** Venue id for venues; occurrence id for occurrences. */
@@ -86,6 +97,8 @@ export interface Candidate {
   brand?: string | null;
   /** The venue's own name. For an occurrence `name` is the event title; this is where it happens. */
   venueName?: string;
+  /** The nearest public parking within a short walk (loaded for drive requests), or null. */
+  parking?: NearbyParking | null;
 }
 
 export interface CategoryPolicy {
@@ -176,6 +189,9 @@ export interface TimingBase {
   closesAt: Date | null;
   deadline: Date;
   returnTravel: TravelEstimate | null;
+  /** Drive only: minutes of `travel` allowed for parking, and where (null: no public parking nearby is known). */
+  parkingMinutes: number | null;
+  parking: NearbyParking | null;
 }
 
 /**

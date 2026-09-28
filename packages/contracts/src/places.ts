@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, IsoDateTime, LatLon, Option, Price, VenueLink } from "./common.js";
+import { AgeLimit, IsoDateTime, LatLon, NearbyParking, Option, Price, VenueLink } from "./common.js";
 
 /** GET /v1/places/:id — what we know about one place, and how we know it. */
 
@@ -67,6 +67,8 @@ export const PlaceDetails = z.object({
     websiteUrl: z.url().nullable(),
     phone: z.string().nullable(),
   }),
+  /** The nearest public parking within a short walk, or null when none is known. */
+  parkingNearby: NearbyParking.nullable(),
   actions: z.object({
     directionsUrls: z.object({ walk: z.url(), transit: z.url(), drive: z.url() }),
     /** The place's own pages (Instagram, Facebook, menu), when OSM lists them. */

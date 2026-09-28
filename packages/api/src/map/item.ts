@@ -2,7 +2,7 @@ import type { RecommendationItem } from "@outrn/contracts";
 import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
 import { caveatNotes, explain, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
-import { ageLimitFrom, directionsUrl, linksFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
+import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
 
 const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
 
@@ -33,7 +33,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
         mode: t.travel.mode,
         minutes: t.travel.minutes,
         isEstimate: t.travel.isEstimate,
-        parkingMinutes: t.travel.mode === "drive" ? (ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null,
+        parkingMinutes: t.travel.mode === "drive" ? (t.parkingMinutes ?? ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null,
       },
       leaveAt: t.departAt.toISOString(),
       arriveAt: t.arrival.toISOString(),
@@ -43,6 +43,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
       visit: { style: t.visit.style, label: VISIT_LABEL[t.visit.style] ?? "Visit", minMinutes: t.visit.minMinutes, typicalMinutes: t.visit.typicalMinutes, isEstimate: t.visit.isEstimate },
     },
     plan: planSteps(e, ctx).map((s) => ({ kind: s.kind, at: s.at.toISOString(), isEstimate: s.isEstimate, text: s.text })),
+    parking: t.travel.mode === "drive" ? parkingFrom(t.parking) : null,
     conditions: t.conditions.map((x) => ({ kind: x.kind, level: x.level, basis: x.basis, isEstimate: x.isEstimate, minutes: x.minutes, reportedAt: x.reportedAt?.toISOString() ?? null, text: x.text })),
     price: priceOf(c.facts.price),
     ageLimit: ageLimitFrom(c.facts.age_limit),

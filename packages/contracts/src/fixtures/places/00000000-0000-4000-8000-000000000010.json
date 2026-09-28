@@ -117,6 +117,19 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": null,
+    "kind": "lot",
+    "fee": "free",
+    "location": {
+      "lat": 40.934,
+      "lon": -73.8304
+    },
+    "distanceMetres": 58,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934%2C-73.8304&travelmode=driving",
+    "text": "Lot 60 m away (free), ~1 min walk"
+  },
   "contact": {
     "websiteUrl": null,
     "phone": null

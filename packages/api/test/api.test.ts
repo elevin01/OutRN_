@@ -63,7 +63,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.3.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.4.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -295,7 +295,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
-    // Items a 1.2 API stored have no conditions: that search computed none, so they page with none.
+    // Items a 1.3 API stored name no parking, and a 1.2 API's have no conditions either: that search computed none.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'parking') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    expect((await search(next)).items.map((i) => i.parking)).toEqual(expected.map(() => null));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'conditions') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     const before13 = await search(next);
     expect(before13.items.map((i) => i.id)).toEqual(expected);
@@ -330,6 +332,33 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       expect(item.conditions[1]!.minutes).toEqual({ min: 15, max: 30 });
       expect(item.copy.summary).toContain("~15–30 min wait");
     }
+  });
+
+  it("a drive names the nearest public parking and parks there; walking and place details show it as it applies", async () => {
+    now = SAT_EVENING;
+    const kitchen = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Forsyth Clinton Kitchen'`)).rows[0]!.id;
+    // Every restaurant on the drive, across its pages.
+    const all = async (req: RecommendationRequest) => {
+      const out = [];
+      for (let page = await search(req); ; page = await search({ cursor: page.page.nextCursor } as unknown as RecommendationRequest)) {
+        out.push(...page.items);
+        if (!page.page.nextCursor) return out;
+      }
+    };
+    const drive = { items: await all({ areaId: "les", windowMinutes: 180, travelMode: "drive", categories: ["restaurant"] }) };
+    const card = drive.items.find((i) => i.placeId === kitchen);
+    expect(card).toBeDefined();
+    expect(card!.parking).toMatchObject({ name: "Rivington Garage", kind: "garage", fee: "paid", walkMinutes: 1, text: "Rivington Garage (paid), ~1 min walk" });
+    expect(card!.parking!.directionsUrl).toContain("travelmode=driving");
+    expect(card!.plan.map((s) => s.kind).slice(0, 3)).toEqual(["leave", "park", "arrive"]);
+    // Every other card on this drive has no public parking nearby: the private lot is never offered.
+    expect(drive.items.filter((i) => i.placeId !== kitchen).every((i) => i.parking === null && !i.plan.some((s) => s.kind === "park"))).toBe(true);
+
+    const walk = await search({ areaId: "les", windowMinutes: 180, categories: ["restaurant"] });
+    expect(walk.items.every((i) => i.parking === null)).toBe(true);
+
+    const details = PlaceDetails.parse((await call("GET", `/v1/places/${kitchen}`)).json);
+    expect(details.parkingNearby).toMatchObject({ name: "Rivington Garage", fee: "paid" });
   });
 
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {

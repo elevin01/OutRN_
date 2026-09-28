@@ -102,6 +102,7 @@
           "text": "Wrap up by 9:30pm, when it ends"
         }
       ],
+      "parking": null,
       "conditions": [],
       "price": {
         "kind": "paid",
