@@ -1,5 +1,7 @@
+import { addMinutes } from "@outrn/core";
 import { waitCeilingMinutes } from "./conditions.js";
 import { ageLimitOf } from "./feasibility.js";
+import { parkStepText } from "./parking.js";
 import { fmtDuration, fmtTime } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
 
@@ -115,7 +117,7 @@ export function explain(e: Evaluation, tz: string): CardCopy {
 
 /** One step of the plan, in order: when to leave, arrive, order or get in, wrap up, be back. */
 export interface PlanStep {
-  kind: "leave" | "arrive" | "event_starts" | "order_by" | "last_entry" | "entry_by" | "wrap_up" | "back_by";
+  kind: "leave" | "park" | "arrive" | "event_starts" | "order_by" | "last_entry" | "entry_by" | "wrap_up" | "back_by";
   at: Date;
   /** True when the time rests on an estimate (travel today; a guessed last entry). */
   isEstimate: boolean;
@@ -133,6 +135,8 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
   const tz = ctx.timezone;
   const at = (d: Date) => fmtTime(d, tz);
   const steps: PlanStep[] = [{ kind: "leave", at: t.departAt, isEstimate: false, text: `Leave at ${at(t.departAt)}` }];
+  // A drive with public parking nearby: the car is parked the walk before arriving.
+  if (t.parking && t.travel.mode === "drive") steps.push({ kind: "park", at: addMinutes(t.departAt, t.travel.minutes - t.parking.walkMinutes), isEstimate: true, text: parkStepText(t.parking) });
   const opensThen = e.reasons.includes("WAIT_FOR_OPENING");
   const o = e.candidate.kind === "occurrence" ? e.candidate.occurrence : undefined;
   // A start or cutoff already behind the arrival is not an instruction: it becomes a note on arriving.

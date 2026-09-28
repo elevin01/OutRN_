@@ -3,7 +3,8 @@ import { fromLocal } from "@outrn/core";
 import { waitFloorMinutes } from "./conditions.js";
 import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
-import type { Candidate, CategoryPolicy, RequestContext } from "./types.js";
+import { parkingText, parkStepText } from "./parking.js";
+import type { Candidate, CategoryPolicy, NearbyParking, RequestContext } from "./types.js";
 
 /**
  * Correctness suite from the build plan: every case here is a bug that would change a
@@ -911,6 +912,77 @@ describe("conditions: crowd and wait at the arrival", () => {
     const x = ctx("2026-10-03 19:00", 240);
     const show = venue({ category: "live_music", hours: null, kind: "occurrence", occurrence: { id: "o1", title: "Show", start: new Date(x.now.getTime() + 60 * 60_000), end: new Date(x.now.getTime() + 150 * 60_000), entryCutoff: null, lateEntry: null, status: "scheduled" } });
     expect(one(show, x).timing!.conditions).toEqual([]);
+  });
+});
+
+describe("parking on a drive", () => {
+  const lot = (walkMinutes: number, over: Partial<NearbyParking> = {}): NearbyParking => ({ name: "Orchard Street Lot", kind: "lot", fee: "paid", point: { lat: 40.7197, lon: -73.9868 }, distanceM: walkMinutes * 60, walkMinutes, openingHours: null, ...over });
+  const drive = (over: Partial<RequestContext> = {}) => ctx("2026-10-03 19:00", 180, { mode: "drive", parkingBufferMinutes: 5, ...over });
+
+  it("names where to park and when, between leaving and arriving", () => {
+    const c = venue({ category: "cafe", hours: "Mo-Su 07:00-23:00", point: FAR });
+    c.parkingOptions = [lot(2)];
+    const e = one(c, drive());
+    // The area allows 5 minutes to park; a 2-minute walk from the lot fits inside it.
+    expect(e.timing!.parkingMinutes).toBe(5);
+    const steps = planSteps(e, { timezone: TZ });
+    expect(steps.slice(0, 3).map((s) => s.kind)).toEqual(["leave", "park", "arrive"]);
+    expect(steps[1]).toMatchObject({ isEstimate: true, text: "Park at Orchard Street Lot (paid), then walk ~2 min" });
+    // Parked the walk before the trip ends.
+    expect(steps[1]!.at.getTime()).toBe(e.timing!.departAt.getTime() + (e.timing!.travel.minutes - 2) * 60_000);
+  });
+
+  it("a lot farther than the area's parking time allows adds the walk from it", () => {
+    const near = venue({ category: "cafe", hours: "Mo-Su 07:00-23:00", point: FAR });
+    const far = venue({ category: "cafe", hours: "Mo-Su 07:00-23:00", point: FAR });
+    far.parkingOptions = [lot(6)];
+    const a = one(near, drive());
+    const b = one(far, drive());
+    expect(a.timing!.parkingMinutes).toBe(5);
+    expect(b.timing!.parkingMinutes).toBe(8); // 2 to park + 6 to walk
+    expect(b.timing!.travel.minutes - a.timing!.travel.minutes).toBe(3);
+  });
+
+  it("walking ignores parking; a drive with no public parking nearby keeps the area's buffer and has no park step", () => {
+    const c = venue({ category: "cafe", hours: "Mo-Su 07:00-23:00" });
+    c.parkingOptions = [lot(2)];
+    const walking = one(c, ctx("2026-10-03 19:00", 180));
+    expect([walking.timing!.parkingMinutes, walking.timing!.parking]).toEqual([null, null]);
+    expect(planSteps(walking, { timezone: TZ }).map((s) => s.kind)).not.toContain("park");
+    const none = one(venue({ category: "cafe", hours: "Mo-Su 07:00-23:00", point: FAR }), drive());
+    expect([none.timing!.parkingMinutes, none.timing!.parking]).toEqual([5, null]);
+    expect(planSteps(none, { timezone: TZ }).map((s) => s.kind)).not.toContain("park");
+  });
+
+  it("parks only where the parking is open from parking until the car is collected; else the next one, else none", () => {
+    // Saturday 7pm, 3 hours: park around 7:30pm, the visit may run to 10pm, collect the car by 10:02pm.
+    const at = (hours: string | null, name: string) => lot(2, { name, openingHours: hours });
+    const withLots = (...lots: NearbyParking[]) => {
+      const c = venue({ category: "cafe", hours: "Mo-Su 07:00-22:00", point: FAR });
+      c.parkingOptions = lots;
+      return one(c, drive());
+    };
+    // A weekday garage is closed on a Saturday evening: the next lot, open all day, is where the plan parks.
+    const next = withLots(at("Mo-Fr 09:00-17:00", "Weekday Garage"), at("24/7", "All Day Lot"));
+    expect(next.timing!.parking?.name).toBe("All Day Lot");
+    expect(planSteps(next, { timezone: TZ })[1]!.text).toBe("Park at All Day Lot (paid), then walk ~2 min");
+    // One that closes before the car is collected, one whose hours can't be read, and a closed one: none.
+    const none = withLots(at("Mo-Su 06:00-21:00", "Early Garage"), at("whenever we feel like it", "Odd Lot"), at("Mo-Fr 09:00-17:00", "Weekday Garage"));
+    expect([none.class, none.timing!.parking, none.timing!.parkingMinutes]).toEqual(["ready", null, 5]);
+    expect(planSteps(none, { timezone: TZ }).map((s) => s.kind)).not.toContain("park");
+    // Open through the collection, or no hours listed: parks there.
+    expect(withLots(at("Mo-Su 06:00-23:00", "Late Garage")).timing!.parking?.name).toBe("Late Garage");
+    expect(withLots(at(null, "Street Lot")).timing!.parking?.name).toBe("Street Lot");
+  });
+
+  it("says what it is when it has no name", () => {
+    expect(parkingText(lot(3, { name: null, kind: "garage", fee: "unknown", distanceM: 150 }))).toBe("Garage 150 m away, ~3 min walk");
+    expect(parkStepText(lot(2, { name: null, kind: "street", fee: "free", distanceM: 120 }))).toBe("Park on the street 100 m away (free), then walk ~2 min");
+    // No more precise than a straight line is.
+    expect(parkingText(lot(1, { name: null, fee: "free", distanceM: 58 }))).toBe("Lot 60 m away (free), ~1 min walk");
+    expect(parkingText(lot(5, { name: null, kind: "street", fee: "unknown", distanceM: 301 }))).toBe("Street parking 300 m away, ~5 min walk");
+    expect(parkingText(lot(1, { name: null, distanceM: 3 }))).toBe("Lot 10 m away (paid), ~1 min walk");
+    expect(parkingText(lot(2))).toBe("Orchard Street Lot (paid), ~2 min walk");
   });
 });
 

@@ -5,6 +5,7 @@ import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writ
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
 import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
 import { normalizeOsm, OSM_NORMALIZE_VERSION } from "./osm-normalize.js";
+import { syncParking } from "./parking.js";
 
 /**
  * Supply pipeline for one service area:
@@ -37,6 +38,8 @@ export interface IngestSummary {
   venues: { created: number; linked: number; review: number; children: number; skipped: number };
   facts: { inserted: number; superseded: number; rejected: number };
   materialized: { subjects: number; conflicts: number; tasks: number };
+  /** Public parking derived from this snapshot, and rows dropped (gone, private, no longer parking). */
+  parking: { facilities: number; removed: number };
   osmBaseTimestamp: string | null;
 }
 
@@ -68,7 +71,8 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
     const { elements, baseTimestamp, dropped } = normalizeElements(result.response);
-    log(`fetched ${elements.length} named elements (${dropped} dropped: no name or no geometry)`);
+    // Watch the size on wide drive areas: the Overpass fetch refuses a response over 25 MB.
+    log(`fetched ${elements.length} elements, ${(result.bytes / 1_048_576).toFixed(1)} MB (${dropped} dropped: no name and not parking, or no geometry)`);
 
     const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);
@@ -77,16 +81,26 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     // or a date in their tags (a closing date, an opening date, a survey's expiry) has come due.
     const stale = (
       await db.query<{ id: string }>(
-        `select id from source_entities where source_id = 'osm' and deleted_at is null and last_seen_run_id = $1
+        `select id from source_entities where source_id = 'osm' and kind = 'venue' and deleted_at is null and last_seen_run_id = $1
             and (normalized_with is distinct from $2 or renormalize_at <= $4) and not (id = any($3::uuid[]))`,
         [runId, OSM_NORMALIZE_VERSION, rawOut.touchedIds, now],
       )
     ).rows.map((r) => r.id);
     if (stale.length) log(`re-normalizing ${stale.length} unchanged records (rules now ${OSM_NORMALIZE_VERSION}, or a date in their tags came due)`);
 
-    const proc = await withTx(db, (tx) => processSourceEntities(tx, [...rawOut.touchedIds, ...stale], { areaId: area.id, timezone: area.timezone, runId, fetchedAt: now, log }));
+    // Parking records are derived separately (syncParking); one that was a venue's record still passes, to retract its claims.
+    const venueRecords = (
+      await db.query<{ id: string }>(
+        `select s.id from source_entities s where s.id = any($1::uuid[])
+            and (s.kind <> 'parking' or exists (select 1 from entity_links l where l.source_entity_id = s.id and l.superseded_by is null))`,
+        [rawOut.touchedIds],
+      )
+    ).rows.map((r) => r.id);
+    const proc = await withTx(db, (tx) => processSourceEntities(tx, [...venueRecords, ...stale], { areaId: area.id, timezone: area.timezone, runId, fetchedAt: now, log }));
     const mat = await withTx(db, (tx) => materializeSubjects(tx, "venue", [...proc.venueIds], now));
     log(`materialized ${mat.subjects} venues, ${mat.conflicts} conflicting attributes, ${mat.tasksCreated} verification tasks`);
+    const parking = await withTx(db, (tx) => syncParking(tx, runId, extent));
+    log(`parking: ${parking.facilities} public places to park; ${parking.removed} removed`);
 
     await finishRun(db, runId, { status: "succeeded", counts: { ...rawOut.counts, dropped, venues_created: proc.created, facts_inserted: proc.factsInserted }, cursor: { osm_base: baseTimestamp?.toISOString() ?? null } });
     return {
@@ -99,6 +113,7 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
       venues: { created: proc.created, linked: proc.linked, review: proc.review, children: proc.children, skipped: proc.skipped },
       facts: { inserted: proc.factsInserted, superseded: proc.factsSuperseded, rejected: proc.factsRejected },
       materialized: { subjects: mat.subjects, conflicts: mat.conflicts, tasks: mat.tasksCreated },
+      parking,
       osmBaseTimestamp: baseTimestamp?.toISOString() ?? null,
     };
   } catch (e) {
@@ -131,6 +146,7 @@ interface RawRow {
   id: string;
   external_id: string;
   raw: { point: { lat: number; lon: number }; tags: Record<string, string>; timestamp: string | null };
+  kind: string;
   deleted_at: Date | null;
   source_updated_at: Date | null;
 }
@@ -141,14 +157,15 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
   // Process ways/relations (buildings, parks) before nodes so a node inside a mapped building matches the venue, not the reverse.
   const rows = (
     await q.query<RawRow>(
-      `select id, external_id, raw, deleted_at, source_updated_at from source_entities where id = any($1::uuid[])
+      `select id, external_id, raw, kind, deleted_at, source_updated_at from source_entities where id = any($1::uuid[])
         order by case when external_id like 'relation/%' then 0 when external_id like 'way/%' then 1 else 2 end, external_id`,
       [sourceEntityIds],
     )
   ).rows;
   const due = new Map<string, Date | null>();
   for (const row of rows) {
-    if (row.deleted_at) {
+    // Gone upstream, or retagged as parking (derived separately): its claims on a venue go with it.
+    if (row.deleted_at || row.kind === "parking") {
       const linked = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null`, [row.id]);
       for (const l of linked.rows) {
         s.factsSuperseded += await retractSourceFacts(q, "venue", l.venue_id, "osm", row.external_id);
@@ -196,7 +213,7 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
     s.factsSuperseded += await retractSourceFactsExcept(q, "venue", outcome.venueId, "osm", norm.facts.map((f) => f.attribute), row.external_id);
     if (norm.rejects.length) o.log(`  ${row.external_id} "${norm.name}": ${norm.rejects.join("; ")}`);
   }
-  const normalized = rows.filter((r) => !r.deleted_at).map((r) => r.id);
+  const normalized = rows.filter((r) => !r.deleted_at && r.kind !== "parking").map((r) => r.id);
   if (normalized.length) {
     await q.query(
       `update source_entities s set normalized_with = $3, renormalize_at = d.at

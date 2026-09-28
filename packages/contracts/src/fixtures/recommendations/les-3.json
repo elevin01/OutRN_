@@ -32,6 +32,30 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000008",
       "copy": {
         "action": "Go now",
@@ -124,32 +148,21 @@
         "lon": -73.993416
       },
       "placeName": "Allen Kitchen",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
+          "text": "Places like this are usually quiet on Saturday evenings",
           "basis": "typical",
-          "level": "busy",
+          "level": "quiet",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000009",
       "copy": {
         "action": "Go now",
@@ -233,20 +246,33 @@
         "lon": -73.987295
       },
       "placeName": "Delancey Coffee",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "quiet",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-00000000000a",
       "copy": {
         "action": "Go now",
@@ -330,29 +356,6 @@
         "lon": -73.984996
       },
       "placeName": "Ludlow Kitchen",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "go"
     }
   ],

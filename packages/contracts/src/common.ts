@@ -104,3 +104,27 @@ export const VenueLink = z.object({
 });
 export type VenueLink = z.infer<typeof VenueLink>;
 
+/** Public parking near a place (a lot, a garage, street spaces), from OpenStreetMap. */
+export const NearbyParking = z.object({
+  /** "Orchard Street Lot", or null when it has no name. */
+  name: z.string().nullable(),
+  /** "lot" | "garage" | "street". Open-ended. */
+  kind: z.string().min(1),
+  /** "unknown" when the source doesn't say, or it charges only at some times: check the signs. */
+  fee: z.enum(["free", "paid", "unknown"]),
+  /**
+   * The parking's hours as OpenStreetMap lists them ("Mo-Sa 07:00-23:00"), or null when it lists
+   * none. A drive plan only parks where these hold from arriving until the car is collected.
+   */
+  openingHours: z.string().nullable(),
+  location: LatLon,
+  /** Straight-line distance to the place. */
+  distanceMetres: z.int().min(0),
+  /** Estimated walk from the parking to the place. */
+  walkMinutes: z.int().min(0),
+  /** Driving directions to the parking itself. */
+  directionsUrl: z.url(),
+  /** Default wording: "Orchard Street Lot (paid), ~2 min walk". */
+  text: z.string(),
+});
+export type NearbyParking = z.infer<typeof NearbyParking>;

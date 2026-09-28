@@ -32,6 +32,30 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000015",
       "copy": {
         "action": "Go now",
@@ -132,6 +156,9 @@
         "lon": -73.82182
       },
       "placeName": "Stanton Kitchen",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -155,9 +182,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000016",
       "copy": {
         "action": "Go now",
@@ -250,6 +275,9 @@
         "lon": -73.842642
       },
       "placeName": "Essex Kitchen",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -273,9 +301,20 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": {
+        "fee": "unknown",
+        "kind": "lot",
+        "name": "Hester Lot",
+        "text": "Hester Lot, ~1 min walk",
+        "location": {
+          "lat": 40.9287,
+          "lon": -73.8491
+        },
+        "walkMinutes": 1,
+        "openingHours": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
+        "distanceMetres": 54
+      },
       "id": "00000000-0000-4000-8000-000000000017",
       "copy": {
         "action": "Go now",
@@ -291,6 +330,12 @@
           "kind": "leave",
           "text": "Leave at 7:30pm",
           "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:41:00.000Z",
+          "kind": "park",
+          "text": "Park at Hester Lot, then walk ~1 min",
+          "isEstimate": true
         },
         {
           "at": "2026-10-03T23:52:00.000Z",
@@ -376,29 +421,6 @@
         "lon": -73.849641
       },
       "placeName": "Attorney Kitchen",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "go"
     }
   ],

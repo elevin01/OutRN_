@@ -141,6 +141,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
+    "openingHours": null,
+    "location": {
+      "lat": 40.72101,
+      "lon": -73.98795
+    },
+    "distanceMetres": 201,
+    "walkMinutes": 4,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
+    "text": "Rivington Garage (paid), ~4 min walk"
+  },
   "contact": {
     "websiteUrl": "https://pittpark.example/",
     "phone": null

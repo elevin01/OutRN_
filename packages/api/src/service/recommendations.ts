@@ -140,10 +140,14 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
  * expire with a restart, as designed.)
  */
 
-/** Items a 1.2 API stored have no conditions: that search computed none, which is what an empty list says. */
+/**
+ * Fields later versions added to items, with what an older search computed for them: none. A 1.2
+ * item has no conditions; a 1.3 item names no parking.
+ */
+const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null };
 function upgradeItems(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
-  return items.map((i: unknown) => (i && typeof i === "object" && !("conditions" in i) ? { ...i, conditions: [] } : i));
+  return items.map((i: unknown) => (i && typeof i === "object" ? { ...ITEM_DEFAULTS, ...i } : i));
 }
 
 async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> {

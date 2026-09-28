@@ -143,6 +143,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": null,
+    "kind": "street",
+    "fee": "unknown",
+    "openingHours": null,
+    "location": {
+      "lat": 40.9333,
+      "lon": -73.8254
+    },
+    "distanceMetres": 301,
+    "walkMinutes": 5,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9333%2C-73.8254&travelmode=driving",
+    "text": "Street parking 300 m away, ~5 min walk"
+  },
   "contact": {
     "websiteUrl": null,
     "phone": null

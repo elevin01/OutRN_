@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.3.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.4.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,13 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.4.0** (additive). Parking:
+  - `parking` on every item: for a drive, the nearest public parking within about 400 m that is open from parking until the car is collected (a lot, a garage or street spaces, from OpenStreetMap). It has `name` (null when unnamed), `kind`, `fee` (`free`, `paid`, `unknown`), `openingHours` (as OSM lists them, or null), `location`, `distanceMetres`, `walkMinutes`, `directionsUrl` (driving directions to the parking itself), and default `text`. Null when not driving, or when none nearby is known to be open for the visit.
+  - `parkingNearby` on place details: the nearest public parking with its hours, whatever the travel mode.
+  - Whenever parking is shown, `attributions` credits OpenStreetMap.
+  - A new plan step, `park` ("Park at Orchard Street Lot (paid), then walk ~2 min"), between `leave` and `arrive`.
+  - `timing.travel.parkingMinutes` now counts at least the walk from that parking, when it's farther than the area's usual time to park.
+  - Items stored by a 1.3 API page with `parking: null`.
 - **1.3.0** (additive). What to expect there:
   - `conditions` on every item: how busy it is and any wait, at the arrival. Crowd comes first, then wait. Each has a `kind` (`crowd`, `wait`; open-ended), a `level` (crowd: `quiet`, `moderate`, `busy`; wait: `none`, `short`, `long`), a `basis`, `isEstimate`, `minutes` (a wait's usual range, e.g. 15–30), `reportedAt`, and default `text`.
   - Basis `typical` is what's usual for this kind of place at that day and hour. It's an estimate, never a claim about the place, and its text says "usually". Basis `report` is a recent visitor report of the place itself. It replaces the typical pattern only while it's still valid at the arrival.
@@ -71,7 +78,8 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 | `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `takeout`, `dine_in`, `stay_later` |
 | `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |
 | `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event` |
-| `plan[].kind` | `leave`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` |
+| `plan[].kind` | `leave`, `park`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` |
+| `parking.kind` / `parkingNearby.kind` | `lot`, `garage`, `street` |
 | `category.id` | see `GET /v1/areas` → `filters.categories` |
 | `error.code` | `VALIDATION_FAILED` (400, with `fields`), `CURSOR_INVALID` (400), `UNAUTHORIZED` (401), `NOT_FOUND` (404), `CURSOR_EXPIRED` (410, with `restart`), `UNAVAILABLE` (503, retryable), `INTERNAL` (500) |
 

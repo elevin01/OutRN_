@@ -32,6 +32,43 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": {
+        "fee": "paid",
+        "kind": "lot",
+        "name": "Orchard Street Lot",
+        "text": "Orchard Street Lot (paid), ~2 min walk",
+        "location": {
+          "lat": 40.9296,
+          "lon": -73.8434
+        },
+        "walkMinutes": 2,
+        "openingHours": "Mo-Su 06:00-24:00",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+        "distanceMetres": 102
+      },
       "id": "00000000-0000-4000-8000-000000000018",
       "copy": {
         "action": "Go now",
@@ -47,6 +84,12 @@
           "kind": "leave",
           "text": "Leave at 7:30pm",
           "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:39:00.000Z",
+          "kind": "park",
+          "text": "Park at Orchard Street Lot (paid), then walk ~2 min",
+          "isEstimate": true
         },
         {
           "at": "2026-10-03T23:51:00.000Z",
@@ -132,6 +175,9 @@
         "lon": -73.844511
       },
       "placeName": "Delancey Kitchen",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -155,9 +201,20 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": {
+        "fee": "paid",
+        "kind": "lot",
+        "name": "Orchard Street Lot",
+        "text": "Orchard Street Lot (paid), ~3 min walk",
+        "location": {
+          "lat": 40.9296,
+          "lon": -73.8434
+        },
+        "walkMinutes": 3,
+        "openingHours": "Mo-Su 06:00-24:00",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+        "distanceMetres": 160
+      },
       "id": "00000000-0000-4000-8000-000000000019",
       "copy": {
         "action": "Go now",
@@ -173,6 +230,12 @@
           "kind": "leave",
           "text": "Leave at 7:30pm",
           "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:37:00.000Z",
+          "kind": "park",
+          "text": "Park at Orchard Street Lot (paid), then walk ~3 min",
+          "isEstimate": true
         },
         {
           "at": "2026-10-03T23:50:00.000Z",
@@ -250,32 +313,34 @@
         "lon": -73.841533
       },
       "placeName": "Grand Kitchen",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
+          "text": "Places like this are usually quiet on Saturday evenings",
           "basis": "typical",
-          "level": "busy",
+          "level": "quiet",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": {
+        "fee": "paid",
+        "kind": "lot",
+        "name": "Orchard Street Lot",
+        "text": "Orchard Street Lot (paid), ~2 min walk",
+        "location": {
+          "lat": 40.9296,
+          "lon": -73.8434
+        },
+        "walkMinutes": 2,
+        "openingHours": "Mo-Su 06:00-24:00",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+        "distanceMetres": 74
+      },
       "id": "00000000-0000-4000-8000-00000000001a",
       "copy": {
         "action": "Check first",
@@ -291,6 +356,12 @@
           "kind": "leave",
           "text": "Leave at 7:30pm",
           "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:38:00.000Z",
+          "kind": "park",
+          "text": "Park at Orchard Street Lot (paid), then walk ~2 min",
+          "isEstimate": true
         },
         {
           "at": "2026-10-03T23:45:00.000Z",
@@ -375,17 +446,6 @@
         "lon": -73.8441
       },
       "placeName": "Forsyth Library",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
-          "basis": "typical",
-          "level": "quiet",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "check"
     }
   ],

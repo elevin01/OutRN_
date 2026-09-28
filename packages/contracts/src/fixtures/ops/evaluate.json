@@ -4,7 +4,7 @@
   "createdAt": "2026-10-03T22:30:00.000Z",
   "candidateCount": 80,
   "durationMs": 42,
-  "engineVersion": "0.3.0",
+  "engineVersion": "0.4.0",
   "weightsVersion": "2026-09-28.1",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
@@ -1365,7 +1365,7 @@
       "travelMinutes": 15,
       "usefulMinutes": 155,
       "scores": {
-        "evidence": 0.565,
+        "evidence": 0.564,
         "fit": 0.61,
         "appeal": 0.567,
         "novelty": 1

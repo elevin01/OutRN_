@@ -414,6 +414,139 @@
    "uid": 1,
    "lat": 40.929885,
    "lon": -73.833771
+  },
+  {
+   "type": "node",
+   "id": 200101,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "name": "Orchard Street Lot",
+    "fee": "yes",
+    "capacity": "120",
+    "opening_hours": "Mo-Su 06:00-24:00"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9296,
+   "lon": -73.8434
+  },
+  {
+   "type": "node",
+   "id": 200102,
+   "tags": {
+    "amenity": "parking",
+    "parking": "multi-storey",
+    "name": "Rivington Garage",
+    "fee": "yes"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9325,
+   "lon": -73.8458
+  },
+  {
+   "type": "node",
+   "id": 200103,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "fee": "no"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.934,
+   "lon": -73.8304
+  },
+  {
+   "type": "node",
+   "id": 200104,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "access": "private"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9384,
+   "lon": -73.8221
+  },
+  {
+   "type": "node",
+   "id": 200105,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "access": "customers",
+    "name": "Essex Kitchen customer parking"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9485,
+   "lon": -73.8429
+  },
+  {
+   "type": "node",
+   "id": 200106,
+   "tags": {
+    "amenity": "parking",
+    "parking": "street_side"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9333,
+   "lon": -73.8254
+  },
+  {
+   "type": "node",
+   "id": 200107,
+   "tags": {
+    "amenity": "parking",
+    "parking": "surface",
+    "name": "Hester Lot",
+    "fee": "yes",
+    "fee:conditional": "no @ (Mo-Sa 18:00-24:00; Su)"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9287,
+   "lon": -73.8491
+  },
+  {
+   "type": "node",
+   "id": 200108,
+   "tags": {
+    "amenity": "parking",
+    "parking": "carports"
+   },
+   "timestamp": "2026-03-14T00:00:00.000Z",
+   "version": 2,
+   "changeset": 1,
+   "user": "synthetic",
+   "uid": 1,
+   "lat": 40.9499,
+   "lon": -73.8442
   }
  ]
 }

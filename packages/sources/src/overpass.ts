@@ -19,6 +19,8 @@ export function buildAreaQuery(center: LatLon, radiusM: number, opts: { timeoutS
   const clauses = [
     ...OSM_CATEGORY_KEYS.map((k) => `  nwr["name"]["${k}"~"^(${Object.keys(OSM_TAG_CATEGORIES[k]).join("|")})$"]${around};`),
     ...OSM_QUALIFIED_TAGS.map((q) => `  nwr["name"]["${q.key}"="${q.value}"]["${q.qualifierKey}"~"${q.qualifierPattern}"]${around};`),
+    // Parking, named or not: where a driver leaves the car for the venues around it.
+    `  nwr["amenity"="parking"]${around};`,
   ].join("\n");
   return `[out:json][timeout:${opts.timeoutSec ?? 180}];\n(\n${clauses}\n);\nout center tags meta;`;
 }
@@ -57,12 +59,17 @@ export interface OsmElement {
   version: number | null;
 }
 
+/** A parking lot, garage or street bay (amenity=parking): kept without a name, and never a venue. */
+export function isOsmParking(tags: Record<string, string>): boolean {
+  return tags["amenity"] === "parking";
+}
+
 export function normalizeElements(resp: OverpassResponse): { elements: OsmElement[]; baseTimestamp: Date | null; dropped: number } {
   const out: OsmElement[] = [];
   let dropped = 0;
   for (const e of resp.elements) {
     const p = e.type === "node" ? (e.lat !== undefined && e.lon !== undefined ? { lat: e.lat, lon: e.lon } : null) : e.center ?? null;
-    if (!p || !e.tags || !e.tags["name"]) {
+    if (!p || !e.tags || (!e.tags["name"] && !isOsmParking(e.tags))) {
       dropped++;
       continue;
     }

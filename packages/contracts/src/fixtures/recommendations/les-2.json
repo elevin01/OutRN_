@@ -32,6 +32,18 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday evenings",
+          "basis": "typical",
+          "level": "quiet",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000005",
       "copy": {
         "action": "Go now",
@@ -124,20 +136,21 @@
         "lon": -73.989625
       },
       "placeName": "Delancey Books",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
           "basis": "typical",
-          "level": "quiet",
+          "level": "moderate",
           "minutes": null,
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000006",
       "copy": {
         "action": "Go now",
@@ -251,6 +264,9 @@
         "lon": -73.985733
       },
       "placeName": "Norfolk Park",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -262,9 +278,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000007",
       "copy": {
         "action": "Go now",
@@ -369,17 +383,6 @@
         "lon": -73.988294
       },
       "placeName": "Rivington Norfolk Park",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
-          "basis": "typical",
-          "level": "moderate",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "go"
     }
   ],

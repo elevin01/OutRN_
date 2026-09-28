@@ -1,7 +1,7 @@
 import { contentHash } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 import { assertSourceAllowed, getSourcePolicy } from "@outrn/db";
-import type { OsmElement, SnapshotExtent } from "./overpass.js";
+import { isOsmParking, type OsmElement, type SnapshotExtent } from "./overpass.js";
 
 /**
  * Source-owned storage. Raw records are versioned by content hash and kept per policy.
@@ -46,29 +46,30 @@ export async function upsertOsmElements(q: Queryable, runId: string, extent: Sna
   const seen: string[] = [];
   for (const el of elements) {
     const raw = { type: el.type, id: el.id, point: el.point, tags: el.tags, version: el.version, timestamp: el.sourceUpdatedAt?.toISOString() ?? null };
+    const kind = isOsmParking(el.tags) ? "parking" : "venue";
     const hash = contentHash({ tags: el.tags, point: el.point });
     seen.push(el.externalId);
-    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null }>(
-      `select id, content_hash, deleted_at from source_entities where source_id = 'osm' and external_id = $1`,
+    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string }>(
+      `select id, content_hash, deleted_at, kind from source_entities where source_id = 'osm' and external_id = $1`,
       [el.externalId],
     );
     const prev = existing.rows[0];
     if (!prev) {
       const ins = await q.query<{ id: string }>(
         `insert into source_entities (source_id, external_id, kind, raw, content_hash, geom, first_seen_run_id, last_seen_run_id, source_updated_at, fetched_at, retention_until)
-         values ('osm', $1, 'venue', $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6, $6, $7, $8, $9) returning id`,
-        [el.externalId, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil],
+         values ('osm', $1, $10, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6, $6, $7, $8, $9) returning id`,
+        [el.externalId, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind],
       );
       counts.new++;
       touched.push(ins.rows[0]!.id);
       continue;
     }
-    const changed = prev.content_hash !== hash || prev.deleted_at !== null;
+    const changed = prev.content_hash !== hash || prev.deleted_at !== null || prev.kind !== kind;
     await q.query(
       `update source_entities set raw = $2, content_hash = $3, geom = ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography,
-              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null
+              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, kind = $10
         where id = $1`,
-      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil],
+      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind],
     );
     if (changed) {
       counts.changed++;
@@ -80,7 +81,7 @@ export async function upsertOsmElements(q: Queryable, runId: string, extent: Sna
   // Tombstone records in this snapshot's extent that it no longer contains.
   const tomb = await q.query<{ id: string }>(
     `update source_entities s set deleted_at = now()
-      where s.source_id = 'osm' and s.kind = 'venue' and s.deleted_at is null
+      where s.source_id = 'osm' and s.kind in ('venue', 'parking') and s.deleted_at is null
         and ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4)
         and not (s.external_id = any($1::text[]))
       returning s.id`,

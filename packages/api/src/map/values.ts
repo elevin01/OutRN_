@@ -1,5 +1,6 @@
-import type { AgeLimit, Evidence, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
+import type { AgeLimit, Evidence, NearbyParking, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
 import { isPublicWebHost } from "@outrn/core";
+import { parkingText, type NearbyParking as EngineParking } from "@outrn/engine";
 import { labelOf } from "../config.js";
 
 /** Fact values (the shapes in @outrn/core fact-values) → contract values. Shared by items and place details. */
@@ -58,6 +59,12 @@ const MAPS_MODE: Record<TravelMode, string> = { walk: "walking", drive: "driving
 
 export function directionsUrl(point: { lat: number; lon: number }, mode: TravelMode): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${point.lat},${point.lon}`)}&travelmode=${MAPS_MODE[mode]}`;
+}
+
+/** Public parking near a place, as the contract shows it, with driving directions to the parking itself. */
+export function parkingFrom(p: EngineParking | null | undefined): NearbyParking | null {
+  if (!p) return null;
+  return { name: p.name, kind: p.kind, fee: p.fee, openingHours: p.openingHours, location: { lat: p.point.lat, lon: p.point.lon }, distanceMetres: p.distanceM, walkMinutes: p.walkMinutes, directionsUrl: directionsUrl(p.point, "drive"), text: parkingText(p) };
 }
 
 const LINK_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook", menu: "Menu" };

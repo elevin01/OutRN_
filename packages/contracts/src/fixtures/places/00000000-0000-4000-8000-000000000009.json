@@ -140,6 +140,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
+    "openingHours": null,
+    "location": {
+      "lat": 40.72101,
+      "lon": -73.98795
+    },
+    "distanceMetres": 358,
+    "walkMinutes": 6,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
+    "text": "Rivington Garage (paid), ~6 min walk"
+  },
   "contact": {
     "websiteUrl": "https://delanceycoffee.example/",
     "phone": "+1 212 555 6384"

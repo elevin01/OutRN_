@@ -44,10 +44,15 @@ afterAll(async () => {
 describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () => {
   it("ingests, resolves identities, writes facts, materializes, and is idempotent on replay", async () => {
     const first = await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
-    expect(first.fetched).toBe(87);
-    expect(first.raw.new).toBe(87);
-    // 87 elements → 86 venues: the node+way café merged into one.
+    // 87 named places and 2 parking lots (unnamed ones are kept too).
+    expect(first.fetched).toBe(89);
+    expect(first.raw.new).toBe(89);
+    // 87 places → 86 venues: the node+way café merged into one. Parking never becomes a venue.
     expect(first.venues.created).toBe(86);
+    // The garage is public; the private lot is left out.
+    expect(first.parking).toEqual({ facilities: 1, removed: 0 });
+    const lots = await db.query(`select name, kind, fee, capacity from parking_facilities`);
+    expect(lots.rows).toEqual([{ name: "Rivington Garage", kind: "garage", fee: "paid", capacity: 240 }]);
     expect(first.venues.linked).toBe(1);
     expect(first.venues.children).toBe(1);
     expect(first.facts.rejected).toBe(0);
@@ -74,8 +79,9 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const second = await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
     expect(second.raw.new).toBe(0);
     expect(second.raw.changed).toBe(0);
-    expect(second.raw.unchanged).toBe(87);
+    expect(second.raw.unchanged).toBe(89);
     expect(second.raw.renormalized).toBe(0);
+    expect(second.parking).toEqual({ facilities: 1, removed: 0 });
     expect(second.venues.created).toBe(0);
     expect(second.facts.inserted).toBe(0);
     const factCount = await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`);
@@ -88,12 +94,13 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     await db.query(`update source_entities set normalized_with = '2026-01-01.0' where source_id = 'osm'`);
     const before = Number((await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`)).rows[0]!.n);
     const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
-    expect(s.raw.unchanged).toBe(87);
+    expect(s.raw.unchanged).toBe(89);
+    // Parking is derived separately, not by the venue normalizer.
     expect(s.raw.renormalized).toBe(87);
     // The same rules on the same tags: every claim already exists, nothing is added or taken away.
     expect(s.facts.inserted).toBe(0);
     expect(Number((await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`)).rows[0]!.n)).toBe(before);
-    const stale = await db.query(`select 1 from source_entities where source_id = 'osm' and deleted_at is null and normalized_with is distinct from $1`, [OSM_NORMALIZE_VERSION]);
+    const stale = await db.query(`select 1 from source_entities where source_id = 'osm' and kind = 'venue' and deleted_at is null and normalized_with is distinct from $1`, [OSM_NORMALIZE_VERSION]);
     expect(stale.rowCount).toBe(0);
     expect((await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE })).raw.renormalized).toBe(0);
   });
@@ -315,6 +322,62 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(s.raw.tombstoned).toBe(1);
     // Only the node's claims go: the building's name and website remain, and the hours (the node's alone) are gone.
     expect(await active()).toEqual(["name@way/100085", "website@way/100085"]);
+  });
+
+  it("parking follows the source: public only, dropped when made private or removed, and a venue retagged as parking loses its claims", async () => {
+    type El = { type: string; id: number; lat: number; lon: number; tags: Record<string, string> };
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: El[] };
+    const replay = (name: string, elements: El[]) => {
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), name);
+      writeFileSync(path, JSON.stringify({ ...fixture, elements }));
+      return ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    };
+    const lots = async () => (await db.query<{ name: string | null; fee: string }>(`select p.name, p.fee from parking_facilities p join source_entities s on s.id = p.source_entity_id order by s.external_id`)).rows;
+    // Each venue's nearest public parking within about 400 m, worked out at ingest.
+    const nearest = async () =>
+      (await db.query<{ name: string | null }>(`select p.name from venue_parking vp join venues v on v.id = vp.venue_id join parking_facilities p on p.source_entity_id = vp.source_entity_id where v.canonical_name = 'Forsyth Clinton Kitchen' order by vp.rank`)).rows.map((r) => r.name);
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+    expect(await lots()).toEqual([{ name: "Rivington Garage", fee: "paid" }]);
+    expect(await nearest()).toEqual(["Rivington Garage"]);
+
+    // The private lot opens to everyone, free; the garage turns private. The newly public lot is too far from the kitchen.
+    const retagged = fixture.elements.map((e) => (e.id === 100102 ? { ...e, tags: { ...e.tags, access: "yes", fee: "no" } } : e.id === 100101 ? { ...e, tags: { ...e.tags, access: "private" } } : e));
+    expect((await replay("les-parking.json", retagged)).parking).toEqual({ facilities: 1, removed: 1 });
+    expect(await lots()).toEqual([{ name: null, fee: "free" }]);
+    expect(await nearest()).toEqual([]);
+
+    // Removed upstream: tombstoned, and gone from parking.
+    const removed = await replay("les-no-lot.json", retagged.filter((e) => e.id !== 100102));
+    expect(removed.raw.tombstoned).toBe(1);
+    expect(await lots()).toEqual([]);
+
+    // A bookshop's record retagged as a parking lot: its claims on the venue go, and it becomes parking.
+    const books = async () => Number((await db.query<{ n: string }>(`select count(*) as n from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'Delancey Books'`)).rows[0]!.n);
+    expect(await books()).toBeGreaterThan(0);
+    const paved = fixture.elements.map((e) => (e.id === 100083 ? { ...e, tags: { name: "Delancey Books Lot", amenity: "parking", fee: "yes" } } : e));
+    const s = await replay("les-paved.json", paved);
+    // The bookshop, and the garage and the lot as they were in the fixture.
+    expect(s.raw.changed).toBe(3);
+    expect(await books()).toBe(0);
+    expect(await lots()).toEqual([{ name: "Delancey Books Lot", fee: "paid" }, { name: "Rivington Garage", fee: "paid" }]);
+
+    // And back: the bookshop's claims return, and the lot is gone.
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+    expect(await books()).toBeGreaterThan(0);
+    expect(await lots()).toEqual([{ name: "Rivington Garage", fee: "paid" }]);
+    expect(await nearest()).toEqual(["Rivington Garage"]);
+  });
+
+  it("one vandal parking tag can't fail the area's ingest: parking=constructor is skipped, everything else lands", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: unknown[] };
+    const vandal = { type: "node", id: 100199, lat: 40.7205, lon: -73.988, tags: { amenity: "parking", parking: "constructor", name: "Vandal Lot" } };
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "les-vandal.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [...fixture.elements, vandal] }));
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.parking).toEqual({ facilities: 1, removed: 0 });
+    const lots = await db.query<{ name: string | null }>(`select name from parking_facilities`);
+    expect(lots.rows.map((r) => r.name)).toEqual(["Rivington Garage"]);
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
   });
 });
 

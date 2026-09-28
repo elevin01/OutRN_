@@ -141,6 +141,7 @@
       }
     }
   ],
+  "parkingNearby": null,
   "contact": {
     "websiteUrl": "https://rivingtonnorfolkpark.example/",
     "phone": "+1 212 555 2718"

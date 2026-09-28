@@ -1,7 +1,8 @@
-import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
-import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
+import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
+import { parkingMinutesFor, parkingOpenFor } from "./parking.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
 /**
@@ -79,17 +80,30 @@ export function kitchenAt(c: Candidate, at: Date): { opensAt: Date | null; lastO
 const TIME_EXCLUSIONS: ReadonlySet<ExclusionCode> = new Set(["NOT_ENOUGH_TIME", "CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED", "EVENT_ENDS_AFTER_DEADLINE"]);
 
 export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
-  const r = evaluateVisit(c, ctx, policy);
+  const r = evaluateWithParking(c, ctx, policy);
   // When a scheduled closure is what leaves no worthwhile visit, the place is closing for good, not
   // short of time: more time would not admit it. Decided exactly, by the same visit without it.
   if (r.excludedBy && TIME_EXCLUSIONS.has(r.excludedBy) && c.facts.scheduled_closure) {
     const { scheduled_closure: _closure, ...facts } = c.facts;
-    if (evaluateVisit({ ...c, facts }, ctx, policy).class !== "ineligible") return { ...r, excludedBy: "CLOSED_PERMANENTLY" };
+    if (evaluateWithParking({ ...c, facts }, ctx, policy).class !== "ineligible") return { ...r, excludedBy: "CLOSED_PERMANENTLY" };
   }
   return r;
 }
 
-function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
+/**
+ * A drive parks at the nearest public parking that works for the visit and is open from parking
+ * until the car is collected. With none, the plan names no lot and allows the area's usual time to
+ * find a space.
+ */
+function evaluateWithParking(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
+  for (const lot of ctx.mode === "drive" ? (c.parkingOptions ?? []) : []) {
+    const r = evaluateVisit(c, ctx, policy, lot);
+    if (r.class !== "ineligible" && r.timing && parkingOpenFor(lot, r.timing, c.timezone)) return r;
+  }
+  return evaluateVisit(c, ctx, policy, null);
+}
+
+function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy, lot: NearbyParking | null): FeasibilityOutcome {
   const reasons: ReasonCode[] = [];
   const unresolved: ReasonCode[] = [];
   const out = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing: null, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
@@ -133,7 +147,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
-  const parking = ctx.parkingBufferMinutes === undefined ? {} : { parkingBufferMinutes: ctx.parkingBufferMinutes };
+  // A drive that parks in a known lot counts the walk from it.
+  const parkingMinutes = ctx.mode === "drive" ? parkingMinutesFor(lot, ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null;
+  const parking = parkingMinutes === null ? {} : { parkingBufferMinutes: parkingMinutes };
   const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });
   const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   if (travel.minutes > maxTravel) return out("TOO_FAR");
@@ -198,7 +214,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (minutesBetween(ctx.now, o.start) <= 90 && o.start > ctx.now) reasons.push("EVENT_STARTS_SOON");
     hoursConfidence = 0.8; // dated occurrence from a source, status current
     closesAt = end;
-    const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: o.entryCutoff ? "event_entry" : null, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel };
+    const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: o.entryCutoff ? "event_entry" : null, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
 
@@ -224,7 +240,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
+    const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
@@ -235,7 +251,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -282,7 +298,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
   if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
-  const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
+  const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }
 

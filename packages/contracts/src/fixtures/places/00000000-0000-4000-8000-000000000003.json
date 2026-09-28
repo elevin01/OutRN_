@@ -163,6 +163,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
+    "openingHours": null,
+    "location": {
+      "lat": 40.72101,
+      "lon": -73.98795
+    },
+    "distanceMetres": 41,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
+    "text": "Rivington Garage (paid), ~1 min walk"
+  },
   "contact": {
     "websiteUrl": null,
     "phone": "+1 212 555 9967"

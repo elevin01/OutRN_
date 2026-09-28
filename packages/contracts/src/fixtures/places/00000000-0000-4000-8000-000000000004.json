@@ -143,6 +143,7 @@
       }
     }
   ],
+  "parkingNearby": null,
   "contact": {
     "websiteUrl": null,
     "phone": "+1 212 555 8297"

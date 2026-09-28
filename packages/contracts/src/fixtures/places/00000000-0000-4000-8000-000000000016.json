@@ -117,6 +117,7 @@
       }
     }
   ],
+  "parkingNearby": null,
   "contact": {
     "websiteUrl": "https://essexkitchen.example/",
     "phone": null

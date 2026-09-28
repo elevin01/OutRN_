@@ -89,6 +89,7 @@
           "text": "Wrap up by 3:30am"
         }
       ],
+      "parking": null,
       "conditions": [
         {
           "kind": "crowd",
@@ -201,6 +202,7 @@
           "text": "Wrap up by 3:30am"
         }
       ],
+      "parking": null,
       "conditions": [
         {
           "kind": "crowd",

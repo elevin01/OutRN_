@@ -140,6 +140,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Hester Lot",
+    "kind": "lot",
+    "fee": "unknown",
+    "openingHours": null,
+    "location": {
+      "lat": 40.9287,
+      "lon": -73.8491
+    },
+    "distanceMetres": 54,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
+    "text": "Hester Lot, ~1 min walk"
+  },
   "contact": {
     "websiteUrl": "https://attorneykitchen.example/",
     "phone": null

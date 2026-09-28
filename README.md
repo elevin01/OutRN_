@@ -58,6 +58,12 @@ farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
 
+The same query brings in parking (`amenity=parking`, named or not). Parking never becomes a venue.
+Ingest derives the places anyone may park into `parking_facilities`. It leaves out private,
+customer-only and permit lots, deciding by the most specific access tag for a car. It also keeps
+each venue's nearest three within about 400 m. A drive plan parks at the nearest one that is open
+from parking until the car is collected.
+
 ## Areas
 
 | Area | Default mode | State |

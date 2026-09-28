@@ -34,6 +34,18 @@
   },
   "items": [
     {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
       "id": "00000000-0000-4000-8000-00000000001e",
       "copy": {
         "action": "Go now",
@@ -136,6 +148,9 @@
         "lon": -73.996037
       },
       "placeName": "Pitt Street Nightcap",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -147,9 +162,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-00000000001f",
       "copy": {
         "action": "Go now",
@@ -244,6 +257,9 @@
         "lon": -74.00022
       },
       "placeName": "Ridge Bar",
+      "callToAction": "go"
+    },
+    {
       "conditions": [
         {
           "kind": "crowd",
@@ -255,9 +271,7 @@
           "reportedAt": null
         }
       ],
-      "callToAction": "go"
-    },
-    {
+      "parking": null,
       "id": "00000000-0000-4000-8000-000000000020",
       "copy": {
         "action": "Go now",
@@ -352,17 +366,6 @@
         "lon": -73.986761
       },
       "placeName": "Hester Bar",
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
-          "basis": "typical",
-          "level": "moderate",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
       "callToAction": "go"
     }
   ],

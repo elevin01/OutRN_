@@ -140,6 +140,20 @@
       }
     }
   ],
+  "parkingNearby": {
+    "name": "Orchard Street Lot",
+    "kind": "lot",
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
+    "location": {
+      "lat": 40.9296,
+      "lon": -73.8434
+    },
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
+  },
   "contact": {
     "websiteUrl": null,
     "phone": "+1 212 555 6566"
