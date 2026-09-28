@@ -1,0 +1,260 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "asOf": "2026-10-03T23:30:00.000Z",
+  "generatedAt": "2026-10-03T23:30:00.000Z",
+  "expiresAt": "2026-10-03T23:50:00.000Z",
+  "area": {
+    "id": "bronxville",
+    "name": "Bronxville (test point)",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T23:30:00.000Z",
+    "mood": null,
+    "areaId": "bronxville",
+    "backBy": null,
+    "budget": {
+      "kind": "any"
+    },
+    "origin": {
+      "lat": 40.941,
+      "lon": -73.835
+    },
+    "company": null,
+    "categories": [],
+    "travelMode": "drive",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 120,
+    "originIsDefault": true,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000018",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~11 min drive incl. parking · until 11pm, you'd have 1h39 · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Delancey Kitchen",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 11,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:51:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 99
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000018",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 11
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 99
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.929225,
+        "lon": -73.844511
+      },
+      "placeName": "Delancey Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000019",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~10 min drive incl. parking · until 10pm, you'd have 1h30 · price unknown",
+        "sentence": "A short drive, plenty of time."
+      },
+      "kind": "venue",
+      "name": "Grand Kitchen",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:50:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
+        "finishBy": "2026-10-04T01:20:00.000Z",
+        "usefulMinutes": 90
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000019",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 90
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.929329,
+        "lon": -73.841533
+      },
+      "placeName": "Grand Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000001a",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: hours not listed",
+        "summary": "~10 min drive incl. parking · you'd have 1h45 · price unknown",
+        "sentence": "A short drive, plenty of time."
+      },
+      "kind": "venue",
+      "name": "Forsyth Library",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:45:00.000Z",
+        "closesAt": null,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 105
+      },
+      "actions": {
+        "phone": "+1 212 555 5589",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=driving"
+      },
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-00000000001a",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 105
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "library",
+        "label": "Library"
+      },
+      "location": {
+        "lat": 40.93001,
+        "lon": -73.8441
+      },
+      "placeName": "Forsyth Library",
+      "callToAction": "check"
+    }
+  ],
+  "page": {
+    "offset": 9,
+    "size": 3,
+    "nextCursor": null,
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

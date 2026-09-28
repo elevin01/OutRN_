@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000021",
+  "requestId": "00000000-0000-4000-8000-00000000002c",
   "asOf": "2026-10-04T06:30:00.000Z",
   "generatedAt": "2026-10-04T06:30:00.000Z",
   "expiresAt": "2026-10-04T06:50:00.000Z",
@@ -31,9 +31,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000022",
+      "id": "00000000-0000-4000-8000-00000000002d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000022",
+      "placeId": "00000000-0000-4000-8000-00000000002d",
       "name": "Stanton Park",
       "placeName": "Stanton Park",
       "category": {
@@ -104,9 +104,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000023",
+      "id": "00000000-0000-4000-8000-00000000002e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000023",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "name": "East River Overlook",
       "placeName": "East River Overlook",
       "category": {
@@ -186,12 +186,12 @@
       {
         "code": "more_time",
         "text": "give it more time",
-        "admits": 8
+        "admits": 10
       },
       {
         "code": "different_time",
         "text": "try a different time",
-        "admits": 61
+        "admits": 59
       }
     ]
   },

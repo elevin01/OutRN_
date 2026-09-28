@@ -9,9 +9,13 @@ import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, 
  *
  *   arrival        = depart + travel + admission buffer
  *   latest_arrival = published admission cutoff (hard) | category default (estimate → check first)
+ *                    | a restaurant's published last orders (kitchen close − time to order, hard)
  *   latest_finish  = min(effective close, deadline)
  *   useful         = latest_finish − arrival     must clear min useful duration
  */
+
+/** Minutes a table needs to get its order in before the kitchen closes. */
+export const ORDER_MINUTES = 15;
 
 /**
  * Youngest person in the party: a number when known, "minor" when company is family and no age was
@@ -51,7 +55,39 @@ export interface FeasibilityOutcome {
   evidenceConfidence: number;
 }
 
+/**
+ * A restaurant's published kitchen hours at `at`: when food is served and the last moment to order.
+ * "closed" when the kitchen is shut then and does not reopen; null when no published, parseable
+ * kitchen schedule applies (the category's kitchen offset stands in).
+ */
+export function kitchenAt(c: Candidate, at: Date): { opensAt: Date | null; lastOrder: Date } | "closed" | null {
+  if (c.category !== "restaurant") return null;
+  const k = fact(c, "kitchen_hours");
+  if (!k || k.isEstimate || !isHoursValue(k.value)) return null;
+  const ev = evaluateHours(k.value, at, c.timezone, c.point);
+  if (ev.parseError || ev.always) return null;
+  if (!ev.interval || (!ev.openNow && ev.interval.open <= at)) return "closed";
+  const lastOrder = addMinutes(ev.interval.close, -ORDER_MINUTES);
+  const opensAt = ev.openNow ? null : ev.interval.open;
+  if (lastOrder <= (opensAt ?? at)) return "closed";
+  return { opensAt, lastOrder };
+}
+
+/** Exclusions a visit at another time or of another length could avoid. */
+const TIME_EXCLUSIONS: ReadonlySet<ExclusionCode> = new Set(["NOT_ENOUGH_TIME", "CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED", "EVENT_ENDS_AFTER_DEADLINE"]);
+
 export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
+  const r = evaluateVisit(c, ctx, policy);
+  // When a scheduled closure is what leaves no worthwhile visit, the place is closing for good, not
+  // short of time: more time would not admit it. Decided exactly, by the same visit without it.
+  if (r.excludedBy && TIME_EXCLUSIONS.has(r.excludedBy) && c.facts.scheduled_closure) {
+    const { scheduled_closure: _closure, ...facts } = c.facts;
+    if (evaluateVisit({ ...c, facts }, ctx, policy).class !== "ineligible") return { ...r, excludedBy: "CLOSED_PERMANENTLY" };
+  }
+  return r;
+}
+
+function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
   const reasons: ReasonCode[] = [];
   const unresolved: ReasonCode[] = [];
   const out = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing: null, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
@@ -61,7 +97,13 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   if (ctx.categories?.length && !ctx.categories.includes(c.category)) return out("NOT_REQUESTED");
 
   const status = fact<{ status: string }>(c, "business_status");
-  if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out("CLOSED_PERMANENTLY");
+  if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out(status.value.status === "closed_temporarily" ? "CLOSED_TEMPORARILY" : "CLOSED_PERMANENTLY");
+  // A closing date published ahead is in force from its instant, even before an ingest records the
+  // closed status, and it is a hard end to any visit before it (see the deadline below). A status
+  // that merely lapsed is uncertainty, not a closure: it excludes nothing.
+  const closureFact = fact<{ at: string }>(c, "scheduled_closure");
+  const closureAt = closureFact && !closureFact.isEstimate ? new Date(closureFact.value.at) : null;
+  if (closureAt && closureAt.getTime() <= ctx.now.getTime()) return out("CLOSED_PERMANENTLY");
 
   // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
   // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
@@ -99,6 +141,11 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     const mustLeaveBy = addMinutes(ctx.backBy, -(returnTravel.minutes + 5));
     if (mustLeaveBy < deadline) deadline = mustLeaveBy;
   }
+  // Nothing counts after a scheduled closure: it bounds every visit like the user's own deadline
+  // (arrivals, waits, useful time, events). Timing still reports the user's deadline.
+  const userDeadline = deadline;
+  if (closureAt && closureAt < deadline) deadline = closureAt;
+  const closureBinds = closureAt !== null && deadline === closureAt;
 
   // Minimum useful duration: published for the venue, else category estimate.
   const minPub = fact<{ minutes: number }>(c, "min_useful_minutes");
@@ -125,7 +172,8 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");
-    if (end > addMinutes(deadline, 15)) return out("EVENT_ENDS_AFTER_DEADLINE");
+    // A small overrun of the user's own deadline is tolerated; none past a permanent closure.
+    if (end > addMinutes(userDeadline, 15) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
     // Arriving early is waiting, not useful time: useful time starts at the event.
     const effectiveStart = arrival < o.start ? o.start : arrival;
     latestFinish = end < deadline ? end : deadline;
@@ -135,27 +183,44 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     if (minutesBetween(ctx.now, o.start) <= 90 && o.start > ctx.now) reasons.push("EVENT_STARTS_SOON");
     hoursConfidence = 0.8; // dated occurrence from a source, status current
     closesAt = end;
-    const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline, returnTravel };
+    const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
 
   // Flexible visit: hours
+  // Published kitchen hours decide when a meal can start: wait for the kitchen, order before it closes.
+  const kitchenGate = (): { latestArrival: Date | null } | ExclusionCode => {
+    const k = kitchenAt(c, arrival);
+    if (k === null) return { latestArrival: null };
+    if (k === "closed") return "KITCHEN_CLOSED";
+    if (k.opensAt && k.opensAt > arrival) {
+      if (minutesBetween(k.opensAt, deadline) < minUsefulMinutes) return "KITCHEN_CLOSED";
+      arrival = k.opensAt;
+      reasons.push("WAIT_FOR_OPENING");
+    }
+    return arrival > k.lastOrder ? "KITCHEN_CLOSED" : { latestArrival: k.lastOrder };
+  };
+
   const hoursFact = fact(c, "opening_hours");
   if (!hoursFact || !isHoursValue(hoursFact.value)) {
     unresolved.push("HOURS_UNKNOWN");
+    const kitchen = kitchenGate();
+    if (typeof kitchen === "string") return out(kitchen);
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: Timing = { travel, departAt, arrival, latestArrival: null, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel };
+    const timing: Timing = { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
   const ev = evaluateHours(hoursFact.value, arrival, c.timezone, c.point);
   if (ev.parseError) {
     unresolved.push("HOURS_UNKNOWN");
+    const kitchen = kitchenGate();
+    if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: null, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -169,14 +234,22 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
       } else return out("CLOSED_ON_ARRIVAL");
     }
     closesAt = ev.interval.close;
+  }
+  // Published kitchen hours decide when a meal can start, whether or not the venue ever closes.
+  const kitchen = kitchenGate();
+  if (typeof kitchen === "string") return out(kitchen);
+  latestArrival = kitchen.latestArrival;
+  if (closesAt) {
     let effectiveClose = closesAt;
-    if (policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
+    // Without them, the category's guess at when the kitchen stops stands in.
+    if (!kitchen.latestArrival && policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
     // Last entry limits ARRIVAL, not the end of the visit.
     const lastEntryPub = fact<{ minutes: number }>(c, "last_entry_offset");
     if (lastEntryPub && !lastEntryPub.isEstimate) {
-      latestArrival = addMinutes(closesAt, -lastEntryPub.value.minutes);
-      if (arrival > latestArrival) return out("LAST_ENTRY_PASSED");
-    } else if (policy.lastEntryDefaultMinutes) {
+      const lastEntry = addMinutes(closesAt, -lastEntryPub.value.minutes);
+      if (!latestArrival || lastEntry < latestArrival) latestArrival = lastEntry;
+      if (arrival > lastEntry) return out("LAST_ENTRY_PASSED");
+    } else if (policy.lastEntryDefaultMinutes && !latestArrival) {
       latestArrival = addMinutes(closesAt, -policy.lastEntryDefaultMinutes);
       latestArrivalIsEstimate = true;
       if (arrival > latestArrival) unresolved.push("LATE_ENTRY_UNCERTAIN");
@@ -185,9 +258,11 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   }
   const useful = minutesBetween(arrival, latestFinish);
   if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-  if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < deadline) reasons.push("CLOSES_SOON");
-  if (closesAt && closesAt >= addMinutes(deadline, 60)) reasons.push("OPEN_LATE");
-  const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline, returnTravel };
+  // A binding closure is this visit's closing time, shown and reasoned about like one.
+  if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
+  if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
+  if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
+  const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }
 
@@ -199,7 +274,8 @@ function priceOf(c: Candidate, ctx: RequestContext): { price: Evaluation["price"
   if (v.unknown || (v.min === undefined && v.max === undefined)) return { price: { text: "paid, amount unknown", isEstimate: p.isEstimate, unknown: true }, ok: ctx.budget === undefined ? "yes" : "unknown", free: false };
   const min = v.min ?? v.max!;
   const max = v.max ?? v.min!;
-  const text = min === max ? `$${min}` : `$${min}–${max}`;
+  const usd = (n: number) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
+  const text = min === max ? usd(min) : `${usd(min)}–${usd(max)}`;
   if (ctx.budget === "free") return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: "no", free: false };
   if (typeof ctx.budget === "number") return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: min <= ctx.budget ? "yes" : "no", free: false };
   return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: "yes", free: false };

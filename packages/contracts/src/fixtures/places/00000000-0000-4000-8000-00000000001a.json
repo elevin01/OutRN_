@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-00000000001a",
-  "name": "Ludlow Tavern",
+  "name": "Forsyth Library",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "library",
+    "label": "Library"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.73031,
-    "lon": -73.988579
+    "lat": 40.93001,
+    "lon": -73.8441
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": null
   },
   "price": {
     "kind": "unknown"
@@ -27,24 +27,19 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.564,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -62,12 +57,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -85,35 +80,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Limited access",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -131,24 +103,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://ludlowtavern.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 5589"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

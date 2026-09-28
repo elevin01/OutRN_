@@ -205,6 +205,12 @@ Workers (ingest, materialize, firstparty run, expiry) are ordinary CLI invocatio
 small Node process on Railway/Fly with pg-boss, or from pg_cron calling an HTTP endpoint. Never run
 them inside a serverless request.
 
+Run `ingest osm` for each served area at least daily. Dates in OSM tags take effect at local
+midnight in the area's timezone. A closing date is enforced at request time from that moment, and
+no visit is planned past it. The first ingest afterwards records the closed status and unpublishes
+the venue. Opening dates and survey expiries lapse on their own and are re-normalized on the next
+ingest, even when nothing upstream changed.
+
 ## What is deliberately not here yet
 
 Foursquare OS Places connector (needs the export token; registered as disabled), Google Places/Routes

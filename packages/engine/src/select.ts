@@ -97,13 +97,13 @@ export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[
     counts.set(e.excludedBy, (counts.get(e.excludedBy) ?? 0) + 1);
   }
   const out: Relaxation[] = [];
-  const add = (exclusion: string, code: string, text: string) => {
-    const admits = counts.get(exclusion) ?? 0;
+  const add = (exclusion: string | string[], code: string, text: string) => {
+    const admits = [exclusion].flat().reduce((n, x) => n + (counts.get(x) ?? 0), 0);
     if (admits > 0) out.push({ code, text, admits });
   };
   add("TOO_FAR", "longer_travel", ctx.mode === "walk" ? "allow a longer walk" : ctx.mode === "drive" ? "allow a longer drive" : "allow a longer trip");
   add("NOT_ENOUGH_TIME", "more_time", "give it more time");
-  add("CLOSED_ON_ARRIVAL", "different_time", "try a different time");
+  add(["CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED"], "different_time", "try a different time");
   add("OVER_BUDGET", "higher_budget", "raise the budget");
   add("NOT_FREE", "include_paid", "include paid options");
   add("NOT_REQUESTED", "more_categories", "widen the categories");

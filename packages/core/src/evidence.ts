@@ -10,12 +10,15 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  * documented here and validated in @outrn/facts.
  *
  *  - opening_hours      : { osm: string } | { weekly: WeeklyIntervals }  (see time.ts)
+ *  - kitchen_hours      : same shape as opening_hours; when food is served (last orders at the close)
  *  - last_entry_offset  : { minutes: number }  minutes before close that admission stops
  *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"unknown" }
  *  - admission_status   : { status: "confirmed"|"unconfirmed"|"sold_out"|"cancelled" }
  *  - price              : { min?: number, max?: number, currency: string, free?: boolean, basis: "per_person"|"per_group" }
  *  - min_useful_minutes : { minutes: number }
  *  - business_status    : { status: "operating"|"closed_permanently"|"closed_temporarily" }
+ *  - scheduled_closure  : { at: ISO instant }  a permanent closure a source announces ahead (OSM end_date);
+ *                         in force from `at` at request time, before any ingest records the closed status
  *  - website, phone     : { value: string }
  *  - name               : { value: string }
  *  - category           : { value: Category }
@@ -32,12 +35,14 @@ export const ATTRIBUTES = [
   "name",
   "category",
   "opening_hours",
+  "kitchen_hours",
   "last_entry_offset",
   "admission",
   "admission_status",
   "price",
   "min_useful_minutes",
   "business_status",
+  "scheduled_closure",
   "website",
   "phone",
   "indoor_outdoor",
@@ -70,7 +75,10 @@ export interface FactInput {
   sourceUpdatedAt?: Date | null;
   /** When we fetched it. */
   fetchedAt: Date;
-  /** When a human observed it. Observations only. */
+  /**
+   * When a human observed it: an observation's time, or the survey date a published source gives
+   * (OSM check_date). Only an observation's observed_at counts as our verification.
+   */
   observedAt?: Date | null;
   validFrom?: Date | null;
   validUntil?: Date | null;
@@ -78,6 +86,11 @@ export interface FactInput {
   confidence: number;
   /** Sources sharing an upstream share a lineage group and count as one. */
   lineageGroup?: string | null;
+  /**
+   * The source's own record the claim came from (OSM "node/123"). Claims are superseded and
+   * retracted per record, so two records of one venue keep their own. Null: the source as a whole.
+   */
+  sourceRecord?: string | null;
   ingestionRunId?: string | null;
 }
 
@@ -90,6 +103,16 @@ export const CONFIRMATION_MAX_AGE_DAYS = 90;
 
 /** SQL for a current_facts row's verification time: latest founder check or observation among its agreeing inputs (never fetched_at). */
 export const VERIFIED_AT_SQL = `(select max(case when f.source_id = 'founder' then f.source_updated_at when f.evidence_class = 'observation' then f.observed_at end) from facts f where f.id = any(cf.input_fact_ids))`;
+
+/** SQL for when a current_facts row's sources last changed it: an observation's time, else the source's own update time (an OSM edit). */
+export const AS_OF_SQL = `(select max(case when f.evidence_class = 'observation' then f.observed_at else f.source_updated_at end) from facts f where f.id = any(cf.input_fact_ids))`;
+
+/**
+ * SQL for the latest survey date a published source gives for a current_facts row (OSM check_date).
+ * A mapper's survey is evidence the value was right on that day, but it is not our verification:
+ * it never reads as "confirmed" (VERIFIED_AT_SQL ignores it).
+ */
+export const SURVEYED_AT_SQL = `(select max(f.observed_at) from facts f where f.id = any(cf.input_fact_ids) and f.evidence_class <> 'observation')`;
 
 export function isFreshConfirmation(verifiedAt: Date | null | undefined, conflict: boolean | undefined, now: Date): boolean {
   if (!verifiedAt || conflict) return false;

@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { AS_OF_SQL } from "@outrn/core";
 import { getDb } from "@outrn/db";
 import { isAttribute, parseFounderValue } from "@outrn/facts";
 import { resolveVenueRef, setFounderFact } from "@outrn/ingest";
@@ -52,7 +53,7 @@ export function registerFacts(program: Command): void {
       const venue = await resolveVenueRef(db, venueRef, o.area ? { areaSlug: o.area } : {});
       const rows = await db.query<{ attribute: string; value: unknown; evidence_class: string; confidence: string; source_ids: string[]; conflict: boolean; as_of: Date | null; fetched_at: Date | null }>(
         `select cf.attribute, cf.value, cf.evidence_class, cf.confidence, cf.source_ids, cf.conflict,
-                (select max(coalesce(f.observed_at, f.source_updated_at)) from facts f where f.id = any(cf.input_fact_ids)) as as_of,
+                ${AS_OF_SQL} as as_of,
                 (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids)) as fetched_at
            from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = $1 order by cf.attribute`,
         [venue.id],

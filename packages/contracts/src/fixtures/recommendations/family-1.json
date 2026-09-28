@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000001c",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-04T05:15:00.000Z",
   "generatedAt": "2026-10-04T05:15:00.000Z",
   "expiresAt": "2026-10-04T05:35:00.000Z",
@@ -33,9 +33,79 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000012",
+      "id": "00000000-0000-4000-8000-00000000001e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000012",
+      "placeId": "00000000-0000-4000-8000-00000000001e",
+      "name": "Pitt Street Nightcap",
+      "placeName": "Pitt Street Nightcap",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "check_first",
+      "callToAction": "check",
+      "location": {
+        "lat": 40.715594,
+        "lon": -73.996037
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T05:15:00.000Z",
+        "arriveAt": "2026-10-04T05:33:00.000Z",
+        "usefulMinutes": 102,
+        "finishBy": "2026-10-04T07:15:00.000Z",
+        "closesAt": "2026-10-04T08:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 102
+          },
+          "required": false
+        }
+      ],
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
+      "copy": {
+        "summary": "~13 min walk · until 4am, you'd have 1h42 · price unknown · usually 21+",
+        "sentence": "Plenty of time.",
+        "caveat": "Check first: probably 21+ only",
+        "action": "Check first"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
+        "websiteUrl": null,
+        "phone": null
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000001c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001c",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
       "category": {
@@ -43,8 +113,8 @@
         "label": "Bar"
       },
       "subtype": null,
-      "status": "ready",
-      "callToAction": "go",
+      "status": "check_first",
+      "callToAction": "check",
       "location": {
         "lat": 40.727149,
         "lon": -73.992962
@@ -66,7 +136,10 @@
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -77,12 +150,21 @@
           "required": false
         }
       ],
-      "caveats": [],
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
       "copy": {
-        "summary": "~18 min walk · until 3am, you'd have 1h22 · price unknown",
+        "summary": "~18 min walk · until 3am, you'd have 1h22 · price unknown · usually 21+",
         "sentence": "Plenty of time.",
-        "caveat": null,
-        "action": "Go now"
+        "caveat": "Check first: probably 21+ only",
+        "action": "Check first"
       },
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
@@ -91,9 +173,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000015",
+      "id": "00000000-0000-4000-8000-00000000001f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000015",
+      "placeId": "00000000-0000-4000-8000-00000000001f",
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
       "category": {
@@ -101,8 +183,8 @@
         "label": "Bar"
       },
       "subtype": null,
-      "status": "ready",
-      "callToAction": "go",
+      "status": "check_first",
+      "callToAction": "check",
       "location": {
         "lat": 40.713276,
         "lon": -74.00022
@@ -124,7 +206,10 @@
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -135,82 +220,33 @@
           "required": false
         }
       ],
-      "caveats": [],
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
       "copy": {
-        "summary": "~20 min walk · until 3am, you'd have 1h20 · price unknown",
+        "summary": "~20 min walk · until 3am, you'd have 1h20 · price unknown · usually 21+",
         "sentence": "Plenty of time.",
-        "caveat": null,
-        "action": "Go now"
+        "caveat": "Check first: probably 21+ only",
+        "action": "Check first"
       },
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
         "websiteUrl": "https://ridgebar.example/",
         "phone": "+1 212 555 6471"
       }
-    },
-    {
-      "id": "00000000-0000-4000-8000-00000000001b",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001b",
-      "name": "Stanton Bar",
-      "placeName": "Stanton Bar",
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.730851,
-        "lon": -73.986194
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 23,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-04T05:15:00.000Z",
-        "arriveAt": "2026-10-04T05:43:00.000Z",
-        "usefulMinutes": 77,
-        "finishBy": "2026-10-04T07:00:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z"
-      },
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": null,
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 77
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown",
-        "sentence": "Plenty of time.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking",
-        "websiteUrl": "https://stantonbar.example/",
-        "phone": null
-      }
     }
   ],
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFjIiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

@@ -108,36 +108,35 @@
       "id": "00000000-0000-4000-8000-000000000010",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000010",
-      "name": "Pitt Park",
-      "placeName": "Pitt Park",
+      "name": "Broome Scoops",
+      "placeName": "Broome Scoops",
       "category": {
-        "id": "park",
-        "label": "Park"
+        "id": "dessert",
+        "label": "Dessert"
       },
       "subtype": null,
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.934679,
-        "lon": -73.840902
+        "lat": 40.933632,
+        "lon": -73.829916
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "drive",
-          "minutes": 8,
+          "minutes": 9,
           "isEstimate": true,
           "parkingMinutes": 5
         },
         "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:43:00.000Z",
-        "usefulMinutes": 107,
+        "arriveAt": "2026-10-03T23:44:00.000Z",
+        "usefulMinutes": 106,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z"
+        "closesAt": "2026-10-04T03:00:00.000Z"
       },
       "price": {
-        "kind": "free",
-        "evidence": "estimate"
+        "kind": "unknown"
       },
       "ageLimit": null,
       "reasons": [
@@ -146,7 +145,7 @@
           "text": "a short drive",
           "params": {
             "mode": "drive",
-            "minutes": 8
+            "minutes": 9
           },
           "required": false
         },
@@ -154,7 +153,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 107
+            "usefulMinutes": 106
           },
           "required": false
         },
@@ -162,26 +161,98 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
-          "required": false
-        },
-        {
-          "code": "FREE",
-          "text": "free",
-          "params": {},
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~8 min drive incl. parking · until 1am, you'd have 1h47 · usually free",
-        "sentence": "A short drive, plenty of time, open late, free.",
+        "summary": "~9 min drive incl. parking · until 11pm, you'd have 1h46 · price unknown",
+        "sentence": "A short drive, plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934679%2C-73.840902&travelmode=driving",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=driving",
+        "websiteUrl": null,
+        "phone": null
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000011",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000011",
+      "name": "Ridge Bar",
+      "placeName": "Ridge Bar",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.930593,
+        "lon": -73.825424
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:45:00.000Z",
+        "usefulMinutes": 105,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 105
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~10 min drive incl. parking · until 2am, you'd have 1h45 · price unknown · usually 21+",
+        "sentence": "A short drive, plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=driving",
         "websiteUrl": null,
         "phone": null
       }
@@ -190,14 +261,10 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": null,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6M30",
     "prevCursor": null
   },
-  "insufficient": {
-    "found": 2,
-    "wanted": 3,
-    "relaxations": []
-  },
+  "insufficient": null,
   "attributions": [
     "© OpenStreetMap contributors"
   ]

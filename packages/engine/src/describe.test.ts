@@ -11,6 +11,7 @@ describe("detail page facts", () => {
   it("formats status and admission as words, never JSON", () => {
     expect(formatFactValue("business_status", { status: "operating" })).toBe("Operating");
     expect(formatFactValue("business_status", { status: "closed_permanently" })).toBe("Closed permanently");
+    expect(formatFactValue("scheduled_closure", { at: "2026-11-10T05:00:00.000Z" }, false, TZ)).toBe("Closes permanently Nov 10, 2026"); // local midnight
     expect(formatFactValue("admission", { requirement: "reservation_available" })).toBe("Walk in; reservations taken");
     expect(formatFactValue("price", { min: 10, max: 20, currency: "USD", basis: "per_person" }, true)).toBe("~$10–20 per person");
     expect(formatFactValue("price", { currency: "USD", free: true }, true)).toBe("Usually free");
@@ -66,4 +67,23 @@ describe("detail page facts", () => {
     const rows = describeFacts({ age_limit: rec({ value: { minAge: 21 }, evidenceClass: "estimate" }), subtype: rec({ value: { value: "casino" } }), opening_hours: rec({ value: { osm: "24/7" } }) }, { tz: TZ, point: P, now: NOW });
     expect(rows.map((r) => r.label)).toEqual(["Hours", "Kind", "Age limit"]);
   });
+
+  it("a mapper's survey reads as one, is never 'confirmed', and a later edit is named", () => {
+    const [hours] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, asOf: new Date("2026-03-12T12:00:00Z"), surveyedAt: new Date("2026-03-10T00:00:00Z") }) }, { tz: TZ, point: P, now: NOW });
+    expect(hours!.age).toBe("checked by an OSM mapper Mar 2026");
+    expect(hours!.age).not.toMatch(/confirmed/);
+    // A name fix in September, hours surveyed in March: both dates, because the edit may have touched the hours.
+    const [later] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, asOf: new Date("2026-09-01T12:00:00Z"), surveyedAt: new Date("2026-03-10T00:00:00Z") }) }, { tz: TZ, point: P, now: NOW });
+    expect(later!.age).toBe("checked by an OSM mapper Mar 2026 · last edited Sep 2026");
+    // Our own check still outranks it.
+    const [ours] = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 16:00-04:00" }, surveyedAt: new Date("2026-03-10T00:00:00Z"), verifiedAt: new Date("2026-09-20T12:00:00Z") }) }, { tz: TZ, point: P, now: NOW });
+    expect(ours!.age).toBe("confirmed Sep 20");
+  });
+
+  it("kitchen hours sit under the hours, with today's state", () => {
+    const rows = describeFacts({ opening_hours: rec({ value: { osm: "Mo-Su 12:00-23:00" } }), kitchen_hours: rec({ value: { osm: "Mo-Su 12:00-22:00" } }) }, { tz: TZ, point: P, now: NOW });
+    expect(rows.map((r) => r.attribute)).toEqual(["opening_hours", "kitchen_hours"]);
+    expect(rows[1]).toMatchObject({ label: "Kitchen", value: "Mo-Su 12:00-22:00", detail: "Open now until 10pm" });
+  });
 });
+

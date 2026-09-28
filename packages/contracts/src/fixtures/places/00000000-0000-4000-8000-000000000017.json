@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-000000000017",
-  "name": "Norfolk Bar",
+  "name": "Attorney Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.726726,
-    "lon": -73.99412
+    "lat": 40.92844,
+    "lon": -73.849641
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
@@ -27,8 +27,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Tu-Su 12:00-23:00; Mo off",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -37,9 +37,9 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.609,
+        "confidence": 0.606,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-24T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -62,7 +62,7 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-24T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -73,7 +73,7 @@
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -83,9 +83,9 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-24T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -94,9 +94,32 @@
       }
     },
     {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Limited access",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+      }
+    },
+    {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -108,7 +131,7 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-24T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -118,14 +141,14 @@
     }
   ],
   "contact": {
-    "websiteUrl": "https://norfolkbar.example/",
+    "websiteUrl": "https://attorneykitchen.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

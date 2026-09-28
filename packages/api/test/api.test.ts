@@ -1,4 +1,6 @@
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
@@ -341,6 +343,18 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     }
   });
 
+  it("names an OSM mapper's survey on place details, never as our confirmation", async () => {
+    const id = (await db.query<{ id: string }>("select id from venues where canonical_name = 'Grand Kitchen'")).rows[0]!.id;
+    const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [id])).rows[0]!.external_id;
+    // The fixture's own hours, re-asserted by its record with the survey a mapper recorded before the element's last edit.
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: id, attribute: "opening_hours", value: { osm: "Mo-Su 11:00-23:00" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "opening_hours=Mo-Su 11:00-23:00; check_date:opening_hours=2026-04-01", sourceUpdatedAt: new Date("2026-04-19T00:00:00Z"), observedAt: new Date("2026-04-01T12:00:00Z"), fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.69 }]);
+    await materializeSubjects(db, "venue", [id], now);
+    const r = await call("GET", `/v1/places/${id}`);
+    const hours = PlaceDetails.parse(r.json).facts.find((f) => f.attribute === "opening_hours")!;
+    expect(hours.provenance).toMatchObject({ freshness: "checked by an OSM mapper Apr 2026", verifiedAt: null, dueForRecheck: false, sourceUpdatedAt: "2026-04-19T00:00:00.000Z" });
+    expect(hours.provenance.summary).not.toMatch(/confirmed/);
+  });
+
   it("serves only eligible places: excluded and suspended venues are 404", async () => {
     // The fixture's permanently closed bar is excluded by the pipeline.
     const closed = (await db.query<{ id: string }>("select id from venues where canonical_name = 'Old Norfolk Lounge' and publish_state = 'excluded'")).rows[0]!.id;
@@ -370,6 +384,27 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const stored = OpsRunDetail.parse((await call("GET", `/ops/v1/runs/${ev.id}`, undefined, auth)).json);
     expect(stored.results.map((r) => [r.itemId, r.class, r.shortlisted])).toEqual(ev.results.map((r) => [r.itemId, r.class, r.shortlisted]));
     expect((await call("GET", "/ops/v1/runs/not-a-uuid", undefined, auth)).status).toBe(404);
+  });
+
+  it("enforces a published closing date from its day, before any ingest records the closure", async () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Delancey Coffee")!;
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "closing.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags: { ...el.tags, opening_hours: "24/7", end_date: "2026-11-10" } }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    // Normalized on Nov 1; no ingest or materialization runs after that.
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-01T15:00:00Z") });
+    const decision = async (at: string) => {
+      const run = await runEngine(db, { areaId: "les", windowMinutes: 120, categories: ["cafe"] }, { clock: () => new Date(at), persist: false });
+      return run.shortlist.all.find((e) => e.candidate.name === "Delancey Coffee")!;
+    };
+    expect((await decision("2026-11-09T17:00:00Z")).excludedBy).toBeNull(); // noon the day before
+    for (const at of ["2026-11-10T05:01:00Z", "2026-11-10T17:00:00Z"]) {
+      // 00:01 and noon on the closing day, New York
+      const closed = await decision(at);
+      expect([closed.class, closed.excludedBy], at).toEqual(["ineligible", "CLOSED_PERMANENTLY"]);
+    }
+    // 23:59 the night before: the visit would run past the closure.
+    expect((await decision("2026-11-10T04:59:00Z")).excludedBy).toBe("CLOSED_PERMANENTLY");
   });
 
   it("reports an unreachable database as a retryable outage", async () => {

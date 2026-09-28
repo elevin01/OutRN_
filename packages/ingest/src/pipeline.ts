@@ -1,15 +1,16 @@
 import { writeFile } from "node:fs/promises";
 import { DEFAULT_MAX_TRAVEL_MINUTES, maxReachMetres, parkingBufferAt, type Category, type ParkingRule } from "@outrn/core";
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
-import { materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
+import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
 import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
-import { normalizeOsm } from "./osm-normalize.js";
+import { normalizeOsm, OSM_NORMALIZE_VERSION } from "./osm-normalize.js";
 
 /**
  * Supply pipeline for one service area:
  *   fetch/replay → raw store → identity → facts → materialize
- * Each stage reports counts. Nothing downstream runs on records the raw store says are unchanged.
+ * Each stage reports counts. Nothing downstream runs on records the raw store says are unchanged,
+ * unless the normalizer's rules have changed since, or a date in their tags has come due.
  */
 
 export interface IngestOptions {
@@ -20,6 +21,8 @@ export interface IngestOptions {
   saveTo?: string;
   /** Override the derived ingest radius (live fetch), or declare what a replayed capture covers. */
   radiusM?: number;
+  /** The instant a replay is ingested at (tests, backfills). A live fetch always uses its own fetch time. */
+  clock?: () => Date;
   log?: (line: string) => void;
 }
 
@@ -30,7 +33,7 @@ export interface IngestSummary {
   extentM: number;
   fetched: number;
   dropped: number;
-  raw: { new: number; changed: number; unchanged: number; tombstoned: number };
+  raw: { new: number; changed: number; unchanged: number; tombstoned: number; renormalized: number };
   venues: { created: number; linked: number; review: number; children: number; skipped: number };
   facts: { inserted: number; superseded: number; rejected: number };
   materialized: { subjects: number; conflicts: number; tasks: number };
@@ -58,7 +61,9 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
   try {
     const center = { lat: area.lat, lon: area.lon };
     if (!opts.fromFile) log(`fetching ${radiusM} m around ${area.slug}${opts.radiusM ? " (override)" : ` (catchment ${derived.catchmentM} m + ${area.travel_mode} reach ${derived.reachM} m)`}`);
-    const result = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea(center, radiusM);
+    const fetched = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea(center, radiusM);
+    const result = opts.fromFile && opts.clock ? { ...fetched, fetchedAt: opts.clock() } : fetched;
+    const now = result.fetchedAt;
     // A replay without a saved extent is treated as covering the catchment only (the old capture size).
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
@@ -68,8 +73,19 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);
 
-    const proc = await withTx(db, (tx) => processSourceEntities(tx, rawOut.touchedIds, { areaId: area.id, timezone: area.timezone, runId, fetchedAt: result.fetchedAt, log }));
-    const mat = await withTx(db, (tx) => materializeSubjects(tx, "venue", [...proc.venueIds]));
+    // Unchanged records still need processing when the rules that turn tags into facts changed since,
+    // or a date in their tags (a closing date, an opening date, a survey's expiry) has come due.
+    const stale = (
+      await db.query<{ id: string }>(
+        `select id from source_entities where source_id = 'osm' and deleted_at is null and last_seen_run_id = $1
+            and (normalized_with is distinct from $2 or renormalize_at <= $4) and not (id = any($3::uuid[]))`,
+        [runId, OSM_NORMALIZE_VERSION, rawOut.touchedIds, now],
+      )
+    ).rows.map((r) => r.id);
+    if (stale.length) log(`re-normalizing ${stale.length} unchanged records (rules now ${OSM_NORMALIZE_VERSION}, or a date in their tags came due)`);
+
+    const proc = await withTx(db, (tx) => processSourceEntities(tx, [...rawOut.touchedIds, ...stale], { areaId: area.id, timezone: area.timezone, runId, fetchedAt: now, log }));
+    const mat = await withTx(db, (tx) => materializeSubjects(tx, "venue", [...proc.venueIds], now));
     log(`materialized ${mat.subjects} venues, ${mat.conflicts} conflicting attributes, ${mat.tasksCreated} verification tasks`);
 
     await finishRun(db, runId, { status: "succeeded", counts: { ...rawOut.counts, dropped, venues_created: proc.created, facts_inserted: proc.factsInserted }, cursor: { osm_base: baseTimestamp?.toISOString() ?? null } });
@@ -79,7 +95,7 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
       extentM: extent.radiusM,
       fetched: elements.length,
       dropped,
-      raw: rawOut.counts,
+      raw: { ...rawOut.counts, renormalized: stale.length },
       venues: { created: proc.created, linked: proc.linked, review: proc.review, children: proc.children, skipped: proc.skipped },
       facts: { inserted: proc.factsInserted, superseded: proc.factsSuperseded, rejected: proc.factsRejected },
       materialized: { subjects: mat.subjects, conflicts: mat.conflicts, tasks: mat.tasksCreated },
@@ -130,16 +146,18 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
       [sourceEntityIds],
     )
   ).rows;
+  const due = new Map<string, Date | null>();
   for (const row of rows) {
     if (row.deleted_at) {
       const linked = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null`, [row.id]);
       for (const l of linked.rows) {
-        s.factsSuperseded += await retractSourceFacts(q, "venue", l.venue_id, "osm");
+        s.factsSuperseded += await retractSourceFacts(q, "venue", l.venue_id, "osm", row.external_id);
         s.venueIds.add(l.venue_id);
       }
       continue;
     }
-    const norm = normalizeOsm({ externalId: row.external_id, point: row.raw.point, tags: row.raw.tags, sourceUpdatedAt: row.source_updated_at }, o.fetchedAt);
+    const norm = normalizeOsm({ externalId: row.external_id, point: row.raw.point, timezone: o.timezone, tags: row.raw.tags, sourceUpdatedAt: row.source_updated_at }, o.fetchedAt);
+    due.set(row.id, norm.changesAt);
     if (norm.rejects.some((r) => r === "no name" || r === "no mapped category")) {
       s.skipped++;
       continue;
@@ -168,12 +186,23 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
     s.venueIds.add(outcome.venueId);
     const w = await writeFacts(
       q,
-      norm.facts.map((f) => ({ ...f, subjectKind: "venue" as const, subjectId: outcome.venueId, fetchedAt: o.fetchedAt, ingestionRunId: o.runId })),
+      norm.facts.map((f) => ({ ...f, subjectKind: "venue" as const, subjectId: outcome.venueId, fetchedAt: o.fetchedAt, ingestionRunId: o.runId, sourceRecord: row.external_id })),
     );
     s.factsInserted += w.inserted;
     s.factsSuperseded += w.superseded;
     s.factsRejected += w.rejected.length;
+    // A tag removed upstream takes its fact along; claims are per record, so a venue's other OSM
+    // record (a node inside its building) keeps its own.
+    s.factsSuperseded += await retractSourceFactsExcept(q, "venue", outcome.venueId, "osm", norm.facts.map((f) => f.attribute), row.external_id);
     if (norm.rejects.length) o.log(`  ${row.external_id} "${norm.name}": ${norm.rejects.join("; ")}`);
+  }
+  const normalized = rows.filter((r) => !r.deleted_at).map((r) => r.id);
+  if (normalized.length) {
+    await q.query(
+      `update source_entities s set normalized_with = $3, renormalize_at = d.at
+         from unnest($1::uuid[], $2::timestamptz[]) as d(id, at) where s.id = d.id`,
+      [normalized, normalized.map((id) => due.get(id) ?? null), OSM_NORMALIZE_VERSION],
+    );
   }
   return s;
 }

@@ -76,15 +76,13 @@ async function seed(db: pg.Pool): Promise<void> {
   const confirmed = await id("Clinton Bar");
   // A check 130 days old, and a newer OSM edit that disagrees: due for recheck, sources disagree.
   const disputed = await id("Hester Bar");
-  // Usually 21+: an estimate, so a family sees Check first rather than an exclusion.
-  const pitt = await id("Pitt Street Nightcap");
   await writeFacts(db, [
     { subjectKind: "venue", subjectId: confirmed, attribute: "opening_hours", value: { osm: "Mo-Su 16:00-02:00" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: called 9/29", sourceUpdatedAt: new Date("2026-09-29T16:00:00Z"), fetchedAt: new Date("2026-09-29T16:00:00Z"), confidence: 0.9, lineageGroup: "founder" },
     { subjectKind: "venue", subjectId: disputed, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-01:00" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: called 5/26", sourceUpdatedAt: new Date("2026-05-26T16:00:00Z"), fetchedAt: new Date("2026-05-26T16:00:00Z"), confidence: 0.9, lineageGroup: "founder" },
     { subjectKind: "venue", subjectId: disputed, attribute: "opening_hours", value: { osm: "Mo-Su 18:00-02:00" }, evidenceClass: "published", sourceId: "osm", evidence: "osm: opening_hours tag", sourceUpdatedAt: new Date("2026-08-30T10:00:00Z"), fetchedAt: FETCHED, confidence: 0.7, lineageGroup: "osm" },
-    { subjectKind: "venue", subjectId: pitt, attribute: "age_limit", value: { minAge: 21 }, evidenceClass: "estimate", sourceId: "category_policy", evidence: "bars in New York are usually 21+", fetchedAt: FETCHED, confidence: 0.5, lineageGroup: "category_policy" },
   ]);
-  await materializeSubjects(db, "venue", [confirmed, disputed, pitt], SAT_EVENING);
+  await materializeSubjects(db, "venue", [confirmed, disputed], SAT_EVENING);
+  // Bars that serve no food come out of the pipeline as "usually 21+" (an estimate): the family scenario shows it.
 
   // One performance tonight at the Delancey Playhouse.
   const playhouse = await id("Delancey Playhouse");

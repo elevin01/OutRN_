@@ -1,0 +1,276 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "asOf": "2026-10-03T23:30:00.000Z",
+  "generatedAt": "2026-10-03T23:30:00.000Z",
+  "expiresAt": "2026-10-03T23:50:00.000Z",
+  "area": {
+    "id": "bronxville",
+    "name": "Bronxville (test point)",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T23:30:00.000Z",
+    "mood": null,
+    "areaId": "bronxville",
+    "backBy": null,
+    "budget": {
+      "kind": "any"
+    },
+    "origin": {
+      "lat": 40.941,
+      "lon": -73.835
+    },
+    "company": null,
+    "categories": [],
+    "travelMode": "drive",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 120,
+    "originIsDefault": true,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000012",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~8 min drive incl. parking · until 1am, you'd have 1h47 · usually free",
+        "sentence": "A short drive, plenty of time, open late, free."
+      },
+      "kind": "venue",
+      "name": "Pitt Park",
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 8,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:43:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 107
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934679%2C-73.840902&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000012",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 8
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 107
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T05:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "location": {
+        "lat": 40.934679,
+        "lon": -73.840902
+      },
+      "placeName": "Pitt Park",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000013",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~10 min drive incl. parking · until 11pm, you'd have 1h40 · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Broome Kitchen",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:50:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 100
+      },
+      "actions": {
+        "phone": "+1 212 555 7228",
+        "websiteUrl": "https://broomekitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000013",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 100
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.932019,
+        "lon": -73.846175
+      },
+      "placeName": "Broome Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~10 min drive incl. parking · until 11:30pm, you'd have 1h40 · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Clinton Norfolk Kitchen",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:50:00.000Z",
+        "closesAt": "2026-10-04T03:30:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 100
+      },
+      "actions": {
+        "phone": "+1 212 555 6566",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000014",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 100
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:30:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.929098,
+        "lon": -73.843087
+      },
+      "placeName": "Clinton Norfolk Kitchen",
+      "callToAction": "go"
+    }
+  ],
+  "page": {
+    "offset": 3,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6MH0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

@@ -102,64 +102,6 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~23 min walk · until 10pm, you'd have 2h32 · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Forsyth Library",
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 23,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:58:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 152
-      },
-      "actions": {
-        "phone": "+1 212 555 5589",
-        "websiteUrl": "https://forsythkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000006",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 152
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "library",
-        "label": "Library"
-      },
-      "location": {
-        "lat": 40.70705,
-        "lon": -73.993872
-      },
-      "placeName": "Forsyth Library",
-      "callToAction": "go"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000007",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
         "summary": "~9 min walk · until 1am, you'd have 2h46 · usually free",
         "sentence": "A short walk, plenty of time, open late, free, sunset window."
       },
@@ -190,7 +132,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000007",
+      "placeId": "00000000-0000-4000-8000-000000000006",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -241,6 +183,85 @@
         "lon": -73.985733
       },
       "placeName": "Norfolk Park",
+      "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~14 min walk · until 1am, you'd have 2h41 · usually free",
+        "sentence": "Plenty of time, open late, free, sunset window."
+      },
+      "kind": "venue",
+      "name": "Rivington Norfolk Park",
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 14,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:49:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 161
+      },
+      "actions": {
+        "phone": "+1 212 555 2718",
+        "websiteUrl": "https://rivingtonnorfolkpark.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726204%2C-73.988294&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000007",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 161
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T05:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "free",
+          "params": {},
+          "required": false
+        },
+        {
+          "code": "SUNSET_WINDOW",
+          "text": "sunset window",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "location": {
+        "lat": 40.726204,
+        "lon": -73.988294
+      },
+      "placeName": "Rivington Norfolk Park",
       "callToAction": "go"
     }
   ],

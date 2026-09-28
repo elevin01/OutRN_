@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000011",
+  "requestId": "00000000-0000-4000-8000-00000000001b",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -33,77 +33,11 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000016",
+      "id": "00000000-0000-4000-8000-000000000021",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~17 min walk · until 1am, you'd have 2h38 · price unknown",
-        "sentence": "Plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Hester Bar",
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 17,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:52:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 158
-      },
-      "actions": {
-        "phone": null,
-        "websiteUrl": "https://hesterbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000016",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 158
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "location": {
-        "lat": 40.727329,
-        "lon": -73.986761
-      },
-      "placeName": "Hester Bar",
-      "callToAction": "go"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000017",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~18 min walk · until 2am, you'd have 2h37 · price unknown",
+        "summary": "~18 min walk · until 2am, you'd have 2h37 · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
@@ -132,7 +66,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000017",
+      "placeId": "00000000-0000-4000-8000-000000000021",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -152,7 +86,10 @@
         }
       ],
       "subtype": null,
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -165,11 +102,11 @@
       "callToAction": "go"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000018",
+      "id": "00000000-0000-4000-8000-000000000022",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~15 min walk · until 2am, you'd have 2h40 · price unknown",
+        "summary": "~15 min walk · until 2am, you'd have 2h40 · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
@@ -198,7 +135,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000018",
+      "placeId": "00000000-0000-4000-8000-000000000022",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -218,7 +155,10 @@
         }
       ],
       "subtype": null,
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -229,13 +169,82 @@
       },
       "placeName": "Ridge Tavern",
       "callToAction": "go"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000023",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~22 min walk · until 2am, you'd have 2h33 · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Eldridge Norfolk Bar",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 22,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:57:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 153
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": "https://eldridgenorfolkbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000023",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 153
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.724763,
+        "lon": -74.001489
+      },
+      "placeName": "Eldridge Norfolk Bar",
+      "callToAction": "go"
     }
   ],
   "page": {
     "offset": 6,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6M30"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [
