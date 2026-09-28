@@ -42,4 +42,12 @@ describe("fact value schemas", () => {
     expect(validateFactValue("age_limit", { minAge: -1 })).not.toBeNull();
     expect(validateFactValue("age_limit", {})).not.toBeNull();
   });
+
+  it("links: https on a public host only, at the write boundary too", () => {
+    expect(validateFactValue("links", { menu: "https://bageldepot.example/menu" })).toBeNull();
+    for (const menu of ["https://169.254.169.254/", "https://[::1]/", "https://router.local/menu", "http://bageldepot.example/menu"]) {
+      expect(validateFactValue("links", { menu }), menu).not.toBeNull();
+    }
+  });
 });
+

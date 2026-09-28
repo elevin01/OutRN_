@@ -1,4 +1,5 @@
 import type { AgeLimit, Evidence, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
+import { isPublicWebHost } from "@outrn/core";
 import { labelOf } from "../config.js";
 
 /** Fact values (the shapes in @outrn/core fact-values) → contract values. Shared by items and place details. */
@@ -60,7 +61,7 @@ export function directionsUrl(point: { lat: number; lon: number }, mode: TravelM
 
 const LINK_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook", menu: "Menu" };
 
-/** The place's own pages from its links fact, in a fixed order; only https URLs ever reach a user. */
+/** The place's own pages from its links fact, in a fixed order; only https on a public host ever reaches a user. */
 export function linksFrom(value: unknown): VenueLink[] {
   const v = (value ?? {}) as Record<string, unknown>;
   const out: VenueLink[] = [];
@@ -68,7 +69,8 @@ export function linksFrom(value: unknown): VenueLink[] {
     const url = v[kind];
     if (typeof url !== "string") continue;
     try {
-      if (new URL(url).protocol === "https:") out.push({ kind, label: LINK_LABEL[kind]!, url });
+      const u = new URL(url);
+      if (u.protocol === "https:" && isPublicWebHost(u.hostname)) out.push({ kind, label: LINK_LABEL[kind]!, url });
     } catch {
       // stored values are validated on write; anything else is dropped here too
     }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { CATEGORIES } from "./categories.js";
 import type { Attribute } from "./evidence.js";
+import { isPublicWebHost } from "./urls.js";
 
 /**
  * Runtime shapes for fact values, one per attribute (documented in evidence.ts). TypeScript types
@@ -12,14 +13,14 @@ import type { Attribute } from "./evidence.js";
 const text = z.object({ value: z.string().trim().min(1).max(500) }).strict();
 const oneOf = <T extends [string, ...string[]]>(values: T) => z.object({ value: z.enum(values) }).strict();
 const minutes = z.object({ minutes: z.number().int().min(0).max(1440) }).strict();
-/** A link we may put in front of a user: https only, no credentials, a sane length. */
+/** A link we may put in front of a user: https on a public host, no credentials, a sane length. */
 const httpsUrl = z
   .string()
   .max(500)
   .refine((s) => {
     try {
       const u = new URL(s);
-      return u.protocol === "https:" && !u.username && !u.password;
+      return u.protocol === "https:" && !u.username && !u.password && isPublicWebHost(u.hostname);
     } catch {
       return false;
     }

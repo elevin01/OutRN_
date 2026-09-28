@@ -284,5 +284,20 @@ describe("OSM normalization", () => {
       });
     });
   });
+
+  describe("menu links from OSM point at public hosts only", () => {
+    it("drops a website:menu on an IP literal or a network-local name", () => {
+      for (const menu of ["https://169.254.169.254/latest/meta-data/", "https://192.168.1.1/menu", "https://[::1]/", "https://0x7f.1/", "https://router.local/menu", "https://intranet/menu"]) {
+        expect(venueLinks({ "website:menu": menu }), menu).toBeNull();
+      }
+      expect(venueLinks({ "website:menu": "https://bageldepot.example/menu.pdf" })?.links.menu).toBe("https://bageldepot.example/menu.pdf");
+    });
+
+    it("drops handles that are not accounts: a redirect path, or no letters at all", () => {
+      for (const tags of [{ "contact:facebook": "https://facebook.com/l.php?u=https://evil.example" }, { "contact:facebook": ".." }, { "contact:instagram": ".." }, { "contact:instagram": "__" }]) {
+        expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
+      }
+    });
+  });
 });
 

@@ -1,4 +1,4 @@
-import { fromLocal, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { fromLocal, isPublicWebHost, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.6";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.7";
 
 export interface OsmRecord {
   externalId: string;
@@ -156,22 +156,25 @@ export function parseCharge(value: string | undefined): { min: number; max: numb
 }
 
 const INSTAGRAM_RESERVED = new Set(["p", "reel", "reels", "explore", "stories", "accounts", "tv"]);
-const FACEBOOK_RESERVED = new Set(["profile.php", "pages", "groups", "events", "sharer", "share.php", "login"]);
+const FACEBOOK_RESERVED = new Set(["profile.php", "pages", "groups", "events", "sharer", "share.php", "login", "l.php"]);
+/** An account handle names something: it has a letter (".." or "__" is not an account). */
+const isHandle = (h: string) => /[A-Za-z]/.test(h);
 
 /**
  * The venue's own pages from OSM contact tags, as links we are willing to show: rebuilt from the
- * handle on the official host (never passed through raw), https only. Anything else is dropped.
+ * handle on the official host (never passed through raw), or an https menu on a public host (never
+ * an IP literal or a network-local name). Anything else is dropped.
  */
 export function venueLinks(t: Record<string, string>): { links: { instagram?: string; facebook?: string; menu?: string }; evidence: string[] } | null {
   const links: { instagram?: string; facebook?: string; menu?: string } = {};
   const evidence: string[] = [];
   const ig = t["contact:instagram"]?.trim().match(/^(?:https?:\/\/(?:www\.)?instagram\.com\/)?@?([A-Za-z0-9._]{1,30})\/?(?:\?[^\s]*)?$/);
-  if (ig && !INSTAGRAM_RESERVED.has(ig[1]!.toLowerCase())) {
+  if (ig && isHandle(ig[1]!) && !INSTAGRAM_RESERVED.has(ig[1]!.toLowerCase())) {
     links.instagram = `https://www.instagram.com/${ig[1]}/`;
     evidence.push(`contact:instagram=${t["contact:instagram"]!.trim()}`);
   }
   const fb = t["contact:facebook"]?.trim().match(/^(?:https?:\/\/(?:www\.|m\.)?facebook\.com\/)?([A-Za-z0-9.\-]{2,80})\/?(?:\?[^\s]*)?$/);
-  if (fb && !FACEBOOK_RESERVED.has(fb[1]!.toLowerCase())) {
+  if (fb && isHandle(fb[1]!) && !FACEBOOK_RESERVED.has(fb[1]!.toLowerCase())) {
     links.facebook = `https://www.facebook.com/${fb[1]}`;
     evidence.push(`contact:facebook=${t["contact:facebook"]!.trim()}`);
   }
@@ -179,7 +182,7 @@ export function venueLinks(t: Record<string, string>): { links: { instagram?: st
   if (menu && menu.length <= 500) {
     try {
       const u = new URL(menu);
-      if (u.protocol === "https:" && !u.username && !u.password) {
+      if (u.protocol === "https:" && !u.username && !u.password && isPublicWebHost(u.hostname)) {
         links.menu = u.toString();
         evidence.push(`website:menu=${menu}`);
       }
