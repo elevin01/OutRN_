@@ -25,6 +25,12 @@ import { ingestExtentFor } from "./pipeline.js";
 
 /** Photos kept per venue, the lead first. */
 export const MAX_PHOTOS_PER_VENUE = 3;
+/**
+ * How long a file must have been on Commons, as it is now, before it can be a venue's photo. Anyone
+ * can upload a free image (a "scan to order" code, say) and tag it in OSM; a month gives Commons'
+ * patrollers time to delete it, and a re-upload over an old file starts the clock again.
+ */
+export const MIN_FILE_AGE_DAYS = 30;
 
 export interface VenuePhoto {
   title: string;
@@ -51,12 +57,19 @@ function codePoint(cp: number, entity: string): string {
   return Number.isInteger(cp) && cp > 0 && cp <= 0x10ffff && (cp < 0xd800 || cp > 0xdfff) ? String.fromCodePoint(cp) : entity;
 }
 
-/** Plain text from Commons' HTML metadata: tags dropped, entities decoded, whitespace collapsed. */
+/** Input read for text of at most a few hundred characters; the rest can only cost time. */
+const MAX_HTML = 20_000;
+
+/**
+ * Plain text from Commons' HTML metadata: tags dropped, entities decoded, whitespace collapsed. A
+ * tag ends at the next ">" or "<", so text full of unclosed "<" is read once, not once per "<".
+ */
 export function plainText(html: string | undefined, max: number): string | null {
   if (!html) return null;
   const text = html
-    .replace(/<\s*(br|\/?(p|div|li|tr|td|dd|dt))\b[^>]*>/gi, " ")
-    .replace(/<[^>]*>/g, "")
+    .slice(0, MAX_HTML)
+    .replace(/<\s*(br|\/?(p|div|li|tr|td|dd|dt))\b[^<>]*>/gi, " ")
+    .replace(/<[^<>]*>/g, "")
     .replace(/&(#\d+|#x[0-9a-f]+|amp|lt|gt|quot|apos|nbsp);/gi, (m, e: string) => {
       const k = e.toLowerCase();
       if (k.startsWith("#x")) return codePoint(parseInt(k.slice(2), 16), m);
@@ -90,12 +103,19 @@ function httpsUrl(raw: string | undefined, hosts: RegExp): string | null {
   }
 }
 
+/** Whether a file has been on Commons, as it is now, long enough to show; a missing or unreadable upload time doesn't count. */
+function settled(uploadedAt: string | null, now: Date): boolean {
+  const at = uploadedAt ? Date.parse(uploadedAt) : NaN;
+  return Number.isFinite(at) && now.getTime() - at >= MIN_FILE_AGE_DAYS * 86_400_000;
+}
+
 /**
- * A Commons file as a photo we may show, or null: a photo (not a drawing, map or logo), freely
- * licensed, credited as its license requires, served from Wikimedia's own hosts.
+ * A Commons file as a photo we may show at `now`, or null: a photo (not a drawing, map or logo),
+ * freely licensed, credited as its license requires, served from Wikimedia's own hosts, on Commons
+ * for a month or more and not tagged for deletion.
  */
-export function photoFrom(f: CommonsFile, via: string): VenuePhoto | null {
-  if (!PHOTO_MIME.has(f.mime)) return null;
+export function photoFrom(f: CommonsFile, via: string, now: Date): VenuePhoto | null {
+  if (!PHOTO_MIME.has(f.mime) || f.deletionTags.length > 0 || !settled(f.uploadedAt, now)) return null;
   const license = licenseOf(f.meta);
   if (!license) return null;
   const author = plainText(f.meta["Artist"], 200);
@@ -143,7 +163,7 @@ export interface PhotoIngestSummary {
   venues: number;
   withPhotos: number;
   photos: number;
-  /** Files found but not usable: not free, uncredited, not a photo, or missing. */
+  /** Files found but not usable: not free, uncredited, not a photo, new on Commons, tagged for deletion, or missing. */
   skipped: number;
 }
 
@@ -214,7 +234,7 @@ export async function ingestPhotos(db: Db, opts: PhotoIngestOptions): Promise<Ph
         // One bad file never fails the area: whatever it throws, it is skipped like any unusable one.
         let p: VenuePhoto | null;
         try {
-          p = photoFrom(f, ref.via);
+          p = photoFrom(f, ref.via, now);
         } catch {
           p = null;
         }

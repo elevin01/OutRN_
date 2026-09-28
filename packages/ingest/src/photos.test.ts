@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { CommonsFile } from "@outrn/sources";
-import { photoFrom, plainText, taggedFiles } from "./photos.js";
+import { MIN_FILE_AGE_DAYS, photoFrom, plainText, taggedFiles } from "./photos.js";
+
+const NOW = new Date("2026-09-26T12:00:00Z");
+const daysBefore = (days: number) => new Date(NOW.getTime() - days * 86_400_000).toISOString();
 
 const file = (meta: Record<string, string>, over: Partial<CommonsFile> = {}): CommonsFile => ({
   title: "File:Pitt Park.jpg",
@@ -9,13 +12,15 @@ const file = (meta: Record<string, string>, over: Partial<CommonsFile> = {}): Co
   thumbWidth: 800,
   thumbHeight: 600,
   descriptionUrl: "https://commons.wikimedia.org/wiki/File:Pitt_Park.jpg",
+  uploadedAt: "2019-05-04T12:00:00Z",
+  deletionTags: [],
   meta,
   ...over,
 });
 
 describe("which Commons files may be shown", () => {
   it("a freely licensed photo, credited as its license asks", () => {
-    expect(photoFrom(file({ Artist: '<a href="//commons.wikimedia.org/wiki/User:Jane">Jane Doe</a>', LicenseShortName: "CC BY-SA 4.0", LicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0", ImageDescription: "The lawn &amp; trees" }), "osm:wikimedia_commons")).toEqual({
+    expect(photoFrom(file({ Artist: '<a href="//commons.wikimedia.org/wiki/User:Jane">Jane Doe</a>', LicenseShortName: "CC BY-SA 4.0", LicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0", ImageDescription: "The lawn &amp; trees" }), "osm:wikimedia_commons", NOW)).toEqual({
       title: "File:Pitt Park.jpg",
       url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Pitt_Park.jpg/800px-Pitt_Park.jpg",
       width: 800,
@@ -28,27 +33,40 @@ describe("which Commons files may be shown", () => {
       via: "osm:wikimedia_commons",
     });
     // Public domain and CC0 need no credit; an http license link is upgraded.
-    expect(photoFrom(file({ LicenseShortName: "Public domain" }), "x")).toMatchObject({ license: "Public domain", author: null });
-    expect(photoFrom(file({ LicenseShortName: "CC0", LicenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/" }), "x")).toMatchObject({ license: "CC0", licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/" });
-    expect(photoFrom(file({ Artist: "A", LicenseShortName: "cc by 2.0 de" }), "x")?.license).toBe("CC BY 2.0 de");
+    expect(photoFrom(file({ LicenseShortName: "Public domain" }), "x", NOW)).toMatchObject({ license: "Public domain", author: null });
+    expect(photoFrom(file({ LicenseShortName: "CC0", LicenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/" }), "x", NOW)).toMatchObject({ license: "CC0", licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/" });
+    expect(photoFrom(file({ Artist: "A", LicenseShortName: "cc by 2.0 de" }), "x", NOW)?.license).toBe("CC BY 2.0 de");
   });
 
   it("never a non-free, unlicensed or uncredited file, a drawing, or one served from elsewhere", () => {
-    expect(photoFrom(file({ Artist: "A", LicenseShortName: "CC BY-SA 4.0", NonFree: "true" }), "x")).toBeNull();
-    expect(photoFrom(file({ Artist: "A", LicenseShortName: "Fair use" }), "x")).toBeNull();
-    expect(photoFrom(file({ Artist: "A", LicenseShortName: "GFDL" }), "x")).toBeNull();
-    expect(photoFrom(file({ Artist: "A", LicenseShortName: "CC BY-NC 2.0" }), "x")).toBeNull();
-    expect(photoFrom(file({ Artist: "A" }), "x")).toBeNull();
-    expect(photoFrom(file({ LicenseShortName: "CC BY 2.0" }), "x")).toBeNull(); // needs a credit, has none
-    expect(photoFrom(file({ Artist: "<span> </span>", LicenseShortName: "CC BY 2.0" }), "x")).toBeNull();
-    expect(photoFrom(file({ LicenseShortName: "CC0" }, { mime: "image/svg+xml" }), "x")).toBeNull();
-    expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbUrl: "https://evil.example/t.jpg" }), "x")).toBeNull();
-    expect(photoFrom(file({ LicenseShortName: "CC0" }, { descriptionUrl: "https://evil.example/page" }), "x")).toBeNull();
-    expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbWidth: 0 }), "x")).toBeNull();
+    expect(photoFrom(file({ Artist: "A", LicenseShortName: "CC BY-SA 4.0", NonFree: "true" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ Artist: "A", LicenseShortName: "Fair use" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ Artist: "A", LicenseShortName: "GFDL" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ Artist: "A", LicenseShortName: "CC BY-NC 2.0" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ Artist: "A" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC BY 2.0" }), "x", NOW)).toBeNull(); // needs a credit, has none
+    expect(photoFrom(file({ Artist: "<span> </span>", LicenseShortName: "CC BY 2.0" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC0" }, { mime: "image/svg+xml" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbUrl: "https://evil.example/t.jpg" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC0" }, { descriptionUrl: "https://evil.example/page" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC0" }, { thumbWidth: 0 }), "x", NOW)).toBeNull();
+  });
+
+  it(`only once a file has been on Commons, as it is now, for ${MIN_FILE_AGE_DAYS} days, and not while it is tagged for deletion`, () => {
+    const cc0 = { LicenseShortName: "CC0" };
+    expect(photoFrom(file(cc0, { uploadedAt: daysBefore(MIN_FILE_AGE_DAYS) }), "x", NOW)).not.toBeNull();
+    // A fresh upload (a "scan to order" code, say) or a fresh version over an old file waits.
+    expect(photoFrom(file(cc0, { uploadedAt: daysBefore(MIN_FILE_AGE_DAYS - 1) }), "x", NOW)).toBeNull();
+    expect(photoFrom(file(cc0, { uploadedAt: daysBefore(-1) }), "x", NOW)).toBeNull();
+    // No upload time, or one that doesn't read: not shown.
+    expect(photoFrom(file(cc0, { uploadedAt: null }), "x", NOW)).toBeNull();
+    expect(photoFrom(file(cc0, { uploadedAt: "last week" }), "x", NOW)).toBeNull();
+    expect(photoFrom(file(cc0, { deletionTags: ["Template:Delete"] }), "x", NOW)).toBeNull();
+    expect(photoFrom(file(cc0, { deletionTags: ["Template:Copyvio"] }), "x", NOW)).toBeNull();
   });
 
   it("keeps a license link only on the license's own hosts", () => {
-    expect(photoFrom(file({ LicenseShortName: "CC0", LicenseUrl: "https://evil.example/license" }), "x")?.licenseUrl).toBeNull();
+    expect(photoFrom(file({ LicenseShortName: "CC0", LicenseUrl: "https://evil.example/license" }), "x", NOW)?.licenseUrl).toBeNull();
   });
 });
 
@@ -60,7 +78,15 @@ describe("text from Commons' HTML metadata", () => {
     }
     expect(plainText("Ren&#233;e &#x1F4F7;", 100)).toBe("Renée 📷");
     // Through photoFrom too: a malformed credit is shown as written, never a crash.
-    expect(photoFrom(file({ Artist: "&#1114112;", LicenseShortName: "CC BY 4.0", ImageDescription: "&#xD800; lawn" }), "osm:image")).toMatchObject({ author: "&#1114112;", alt: "&#xD800; lawn" });
+    expect(photoFrom(file({ Artist: "&#1114112;", LicenseShortName: "CC BY 4.0", ImageDescription: "&#xD800; lawn" }), "osm:image", NOW)).toMatchObject({ author: "&#1114112;", alt: "&#xD800; lawn" });
+  });
+
+  it("reads text full of unclosed tags once, and only as far as it could be shown", () => {
+    const started = performance.now();
+    expect(plainText("<".repeat(200_000), 100)).toBe("<".repeat(99) + "…");
+    expect(plainText("<p".repeat(100_000), 100)).toBe("<p".repeat(49) + "<…");
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(plainText(`Jane${" ".repeat(30_000)}Doe`, 100)).toBe("Jane");
   });
 
   it("drops tags, decodes entities, collapses space, and truncates", () => {

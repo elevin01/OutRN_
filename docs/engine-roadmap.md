@@ -62,13 +62,19 @@ changelog.
   - `outrn ingest photos` takes the Commons files a venue's OSM records name (`wikimedia_commons`,
     or an `image` link to Commons), then its Wikidata item's image (P18). It keeps only photos
     (not maps, drawings or logos) that are freely licensed (public domain, CC0, CC BY, CC BY-SA)
-    and credited as their license requires, up to 3 per venue.
+    and credited as their license requires, up to 3 per venue. A file must have been on Commons, as
+    it is now, for 30 days, and not be tagged for deletion: a vandal's fresh upload waits for
+    Commons' patrollers.
   - Nothing is guessed: no search by name, no stock photo.
   - Live runs record every response (`--save`) and replay exactly (`--from-file`), like `ingest osm`.
   - Contract 1.5 (additive): `photos` on items and place details, each with its credit.
-  - **Menu links:** only on the venue's own site (its website's host or a subdomain of it) or on a
-    known menu or ordering platform. Anyone can edit `website:menu`, so a menu anywhere else is
-    dropped at ingest (a normalizer bump re-checks stored ones) and again when links are shown.
+  - **Menu links:** only on the venue's own site or on a known menu or ordering platform. Anyone
+    can edit `website:menu`, so a menu anywhere else is dropped at ingest (a normalizer bump
+    re-checks stored ones) and again when links are shown.
+    - The own site is the website's host or a subdomain of it. When the website is a page on a host
+      shared by path (a Facebook page, a Google Site, a Linktree), only pages under that path count.
+    - Platforms are ones where a page exists only for a signed-up merchant. Free site builders
+      (Square Online) are not platforms: a menu there counts only when it is the venue's website.
 
 ## Next, in order
 

@@ -88,15 +88,34 @@ describe.skipIf(!available)("venue photos from Wikimedia Commons (replayed)", ()
     expect(await photos()).toHaveLength(3);
   });
 
+  type CapturedPage = { title: string; templates?: { ns: number; title: string }[]; imageinfo: { timestamp: string; extmetadata: Record<string, { value: string }> }[] };
   /** The synthetic capture, with a change to what Commons says about one file. */
-  const captureWith = (title: string, meta: Record<string, string>): WikimediaCapture => {
+  const captureEditing = (title: string, edit: (page: CapturedPage) => void): WikimediaCapture => {
     const capture = JSON.parse(readFileSync(CAPTURE, "utf8")) as WikimediaCapture;
-    for (const response of Object.values(capture.responses) as { query?: { pages?: { title: string; imageinfo: { extmetadata: Record<string, { value: string }> }[] }[] } }[]) {
+    for (const response of Object.values(capture.responses) as { query?: { pages?: CapturedPage[] } }[]) {
       const page = response.query?.pages?.find((p) => p.title === title);
-      if (page) for (const [k, v] of Object.entries(meta)) page.imageinfo[0]!.extmetadata[k] = { value: v };
+      if (page) edit(page);
     }
     return capture;
   };
+  const captureWith = (title: string, meta: Record<string, string>) =>
+    captureEditing(title, (page) => {
+      for (const [k, v] of Object.entries(meta)) page.imageinfo[0]!.extmetadata[k] = { value: v };
+    });
+
+  it("a file freshly uploaded over, or tagged for deletion on Commons, loses its place until it settles", async () => {
+    const now = new Date("2026-09-26T12:00:00Z");
+    const reuploaded = captureEditing("File:OutRN synthetic Norfolk Park.jpg", (page) => (page.imageinfo[0]!.timestamp = "2026-09-20T08:00:00Z"));
+    expect(await ingestPhotos(db, { areaSlug: "les", fromFile: tmp("reuploaded.json", reuploaded), clock: () => now })).toMatchObject({ photos: 2, skipped: 4 });
+    expect((await photos()).map((p) => p.venue)).toEqual(["Pitt Park", "Pitt Park"]);
+    // A month on, the same answer shows it again.
+    expect(await ingestPhotos(db, { areaSlug: "les", fromFile: tmp("reuploaded.json", reuploaded), clock: () => new Date("2026-10-21T12:00:00Z") })).toMatchObject({ photos: 3 });
+
+    const nominated = captureEditing("File:OutRN synthetic Pitt Park lawn.jpg", (page) => (page.templates = [{ ns: 10, title: "Template:Delete" }]));
+    expect(await ingestPhotos(db, { areaSlug: "les", fromFile: tmp("nominated.json", nominated), clock: () => now })).toMatchObject({ photos: 2, skipped: 4 });
+    expect((await db.query(`select 1 from venue_photos where file_title = 'File:OutRN synthetic Pitt Park lawn.jpg'`)).rowCount).toBe(0);
+    await ingestPhotos(db, { areaSlug: "les", fromFile: CAPTURE });
+  });
 
   it("malformed metadata from Commons can't fail the run: an entity that names no character is kept as written", async () => {
     const capture = captureWith("File:OutRN synthetic Pitt Park lawn.jpg", { Artist: "Synthetic &#1114112; Photographer", ImageDescription: "&#xD800; lawn" });

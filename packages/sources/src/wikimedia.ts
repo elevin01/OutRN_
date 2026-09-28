@@ -16,6 +16,14 @@ export const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 export const WIKIMEDIA_BATCH = 50;
 /** Width of the copy shown in the app. */
 export const PHOTO_WIDTH = 800;
+/**
+ * Commons' tags for a file that may be deleted: nominated for deletion, a speedy-deletion candidate,
+ * a copyright violation, or missing a license, a source or permission. Asked for by template rather
+ * than category, since the template is what files it and its category may be hidden.
+ */
+export const DELETION_TEMPLATES: readonly string[] = [
+  "Template:Delete", "Template:Speedydelete", "Template:Copyvio", "Template:No license since", "Template:No source since", "Template:No permission since",
+];
 
 export interface JsonFetcher {
   get(url: string): Promise<unknown>;
@@ -86,10 +94,13 @@ export function commonsImageInfoUrl(titles: readonly string[]): string {
   const p = new URLSearchParams({
     action: "query",
     titles: titles.join("|"),
-    prop: "imageinfo",
-    iiprop: "url|size|mime|extmetadata",
+    prop: "imageinfo|templates",
+    iiprop: "timestamp|url|size|mime|extmetadata",
     iiurlwidth: String(PHOTO_WIDTH),
     iiextmetadatafilter: "Artist|LicenseShortName|LicenseUrl|AttributionRequired|NonFree|ImageDescription|ObjectName",
+    // Only the deletion tags: at most 50 files × 6 tags, well inside one response.
+    tltemplates: DELETION_TEMPLATES.join("|"),
+    tllimit: "max",
     format: "json",
     formatversion: "2",
   });
@@ -105,7 +116,8 @@ export async function wikidataImages(fetcher: JsonFetcher, ids: readonly string[
       const claims = (entity.claims?.P18 ?? []).filter((c) => c.rank !== "deprecated");
       claims.sort((a, b) => Number(b.rank === "preferred") - Number(a.rank === "preferred"));
       const files = claims.map((c) => c.mainsnak?.datavalue?.value).filter((v): v is string => typeof v === "string" && v.length > 0);
-      if (files.length) out.set(id, files.map((f) => `File:${f}`));
+      const titles = files.map(fileTitle).filter((t): t is string => t !== null);
+      if (titles.length) out.set(id, titles);
     }
   }
   return out;
@@ -120,6 +132,10 @@ export interface CommonsFile {
   thumbHeight: number;
   /** The file's page on Commons: where the credit links. */
   descriptionUrl: string;
+  /** When the current version was uploaded, as Commons gives it (ISO 8601); null when it doesn't. */
+  uploadedAt: string | null;
+  /** The deletion tags on its page (DELETION_TEMPLATES): a file tagged for deletion isn't shown. */
+  deletionTags: string[];
   /** extmetadata, as Commons gives it: HTML in Artist and ImageDescription. */
   meta: Record<string, string>;
 }
@@ -134,8 +150,15 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
     const resp = (await fetcher.get(commonsImageInfoUrl(batch))) as {
       query?: {
         normalized?: { from: string; to: string }[];
-        pages?: { title?: string; missing?: boolean; invalid?: boolean; imageinfo?: { mime?: string; thumburl?: string; thumbwidth?: number; thumbheight?: number; descriptionurl?: string; extmetadata?: Record<string, { value?: unknown }> }[] }[];
+        pages?: {
+          title?: string;
+          missing?: boolean;
+          invalid?: boolean;
+          templates?: { title?: unknown }[];
+          imageinfo?: { timestamp?: unknown; mime?: string; thumburl?: string; thumbwidth?: number; thumbheight?: number; descriptionurl?: string; extmetadata?: Record<string, { value?: unknown }> }[];
+        }[];
       };
+      continue?: { tlcontinue?: unknown };
     };
     const byTitle = new Map<string, CommonsFile>();
     for (const page of resp.query?.pages ?? []) {
@@ -143,7 +166,21 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
       if (!page.title || page.missing || page.invalid || !info?.thumburl || !info.descriptionurl) continue;
       const meta: Record<string, string> = {};
       for (const [k, v] of Object.entries(info.extmetadata ?? {})) if (typeof v?.value === "string") meta[k] = v.value;
-      byTitle.set(page.title, { title: page.title, mime: info.mime ?? "", thumbUrl: info.thumburl, thumbWidth: info.thumbwidth ?? 0, thumbHeight: info.thumbheight ?? 0, descriptionUrl: info.descriptionurl, meta });
+      const tags = (Array.isArray(page.templates) ? page.templates : []).map((t) => t?.title).filter((t): t is string => typeof t === "string");
+      // An answer cut off in the tags could leave out a file's, so every file in it counts as tagged.
+      // (A lone file with older versions also gets a `continue`, for imageinfo: that one is fine.)
+      if (resp.continue?.tlcontinue !== undefined) tags.push("(tags incomplete)");
+      byTitle.set(page.title, {
+        title: page.title,
+        mime: info.mime ?? "",
+        thumbUrl: info.thumburl,
+        thumbWidth: info.thumbwidth ?? 0,
+        thumbHeight: info.thumbheight ?? 0,
+        descriptionUrl: info.descriptionurl,
+        uploadedAt: typeof info.timestamp === "string" ? info.timestamp : null,
+        deletionTags: tags,
+        meta,
+      });
     }
     const normalized = new Map((resp.query?.normalized ?? []).map((n) => [n.from, n.to]));
     for (const t of batch) {
@@ -155,6 +192,15 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
 }
 
 /**
+ * A file name as a Commons title ("File:…"), or null when it holds a character no title can: one
+ * rule for every source, since a "|" would split a batched request into extra titles.
+ */
+function fileTitle(name: string): string | null {
+  const t = name.replace(/_/g, " ").trim();
+  return t && !/[|#<>[\]{}\u0000-\u001f\u007f]/.test(t) ? `File:${t}` : null;
+}
+
+/**
  * The Commons file a link or tag names, as a title: "File:X.jpg" (the wikimedia_commons tag), a
  * commons.wikimedia.org/wiki/File:X page, or an upload.wikimedia.org original or thumbnail. Null for
  * anything else: a photo elsewhere comes with no license we can check.
@@ -162,14 +208,11 @@ export async function commonsFiles(fetcher: JsonFetcher, titles: readonly string
 export function commonsTitleFrom(ref: string): string | null {
   const s = ref.trim();
   const clean = (name: string) => {
-    let decoded: string;
     try {
-      decoded = decodeURIComponent(name);
+      return fileTitle(decodeURIComponent(name));
     } catch {
       return null;
     }
-    const t = decoded.replace(/_/g, " ").trim();
-    return t && !/[|#<>[\]{}\n]/.test(t) ? `File:${t}` : null;
   };
   const tag = /^(?:File|Image):(.+)$/i.exec(s);
   if (tag) return clean(tag[1]!);

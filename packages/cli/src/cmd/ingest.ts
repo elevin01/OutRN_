@@ -40,7 +40,7 @@ export function registerIngest(program: Command): void {
       const s = await ingestPhotos(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.radius ? { radiusM: o.radius } : {}), log: (l) => console.log(l) });
       console.log("");
       console.log(`run ${s.runId} · area ${s.area} · ${Date.now() - t0} ms`);
-      console.log(`  photos     ${s.photos} for ${s.withPhotos} of ${s.venues} venues that name a Commons file or a Wikidata item · ${s.skipped} files skipped (not free, uncredited, not a photo, or missing)`);
+      console.log(`  photos     ${s.photos} for ${s.withPhotos} of ${s.venues} venues that name a Commons file or a Wikidata item · ${s.skipped} files skipped (not free, uncredited, not a photo, new on Commons, tagged for deletion, or missing)`);
     });
 
   program

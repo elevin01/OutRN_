@@ -2,7 +2,7 @@
  "outrn_capture": "wikimedia",
  "note": "Synthetic capture: invented responses in the shape of the Wikidata and Commons APIs, for the synthetic LES fixture. The files do not exist on Commons, so the image URLs do not load; Q4115189 is Wikidata's sandbox item. Replay with `outrn ingest photos --area les --from-file fixtures/wikimedia/les-synthetic.json`.",
  "responses": {
-  "https://commons.wikimedia.org/w/api.php?action=query&titles=File%3AOutRN+synthetic+Delancey+Books+window.jpg%7CFile%3AOutRN+synthetic+East+River+Overlook.jpg%7CFile%3AOutRN+synthetic+Norfolk+Park.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+fountain.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+lawn.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+map.svg&prop=imageinfo&iiprop=url%7Csize%7Cmime%7Cextmetadata&iiurlwidth=800&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl%7CAttributionRequired%7CNonFree%7CImageDescription%7CObjectName&format=json&formatversion=2": {
+  "https://commons.wikimedia.org/w/api.php?action=query&titles=File%3AOutRN+synthetic+Delancey+Books+window.jpg%7CFile%3AOutRN+synthetic+East+River+Overlook.jpg%7CFile%3AOutRN+synthetic+Norfolk+Park.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+fountain.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+lawn.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+map.svg&prop=imageinfo%7Ctemplates&iiprop=timestamp%7Curl%7Csize%7Cmime%7Cextmetadata&iiurlwidth=800&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl%7CAttributionRequired%7CNonFree%7CImageDescription%7CObjectName&tltemplates=Template%3ADelete%7CTemplate%3ASpeedydelete%7CTemplate%3ACopyvio%7CTemplate%3ANo+license+since%7CTemplate%3ANo+source+since%7CTemplate%3ANo+permission+since&tllimit=max&format=json&formatversion=2": {
    "batchcomplete": true,
    "query": {
     "pages": [
@@ -12,6 +12,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2019-05-04T16:21:07Z",
         "size": 2400000,
         "width": 3200,
         "height": 2400,
@@ -57,6 +58,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2018-03-11T09:02:44Z",
         "size": 2400000,
         "width": 3200,
         "height": 2400,
@@ -98,6 +100,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2021-07-19T20:15:31Z",
         "size": 2400000,
         "width": 3200,
         "height": 4268,
@@ -135,6 +138,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2012-10-02T13:48:55Z",
         "size": 2400000,
         "width": 3200,
         "height": 2400,
@@ -172,6 +176,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2023-01-28T11:30:00Z",
         "size": 2400000,
         "width": 3200,
         "height": 2400,
@@ -209,6 +214,7 @@
       "imagerepository": "local",
       "imageinfo": [
        {
+        "timestamp": "2020-06-14T18:07:12Z",
         "size": 2400000,
         "width": 3200,
         "height": 2400,
