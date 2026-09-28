@@ -622,6 +622,15 @@ describe("feasibility: scheduled closure", () => {
     expect(one(closing(show), ctx("2026-11-09 21:00", 240)).excludedBy).toBe("CLOSED_PERMANENTLY");
   });
 
+  it("gives an event no grace past a permanent closure, while a small overrun of the user's own deadline stays fine", () => {
+    const show = (endMinutesAfterClosure: number) =>
+      venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: `e${endMinutesAfterClosure}`, title: "Last set", start: fromLocal("2026-11-09", 22 * 60, TZ), end: new Date(CLOSES.getTime() + endMinutesAfterClosure * 60_000), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    expect(one(closing(show(0)), ctx("2026-11-09 21:00", 300)).excludedBy).toBeNull(); // ends exactly at the closure
+    for (const over of [1, 15]) expect(one(closing(show(over)), ctx("2026-11-09 21:00", 300)).excludedBy, `+${over} min`).toBe("CLOSED_PERMANENTLY");
+    // Without a closure, ending 10 minutes after the user's deadline (00:00) is still within the usual tolerance.
+    expect(one(show(10), ctx("2026-11-09 21:00", 180)).excludedBy).toBeNull();
+  });
+
   it("a visit short of time for its own reasons keeps that reason", () => {
     // Closes at 23:00 anyway: arriving 22:48 is too late whatever happens at midnight.
     expect(one(closing(venue({ category: "cafe", hours: "Mo-Su 08:00-23:00" })), ctx("2026-11-09 22:40", 120)).excludedBy).toBe("NOT_ENOUGH_TIME");

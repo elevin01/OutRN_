@@ -172,7 +172,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");
-    if (end > addMinutes(deadline, 15)) return out("EVENT_ENDS_AFTER_DEADLINE");
+    // A small overrun of the user's own deadline is tolerated; none past a permanent closure.
+    if (end > addMinutes(userDeadline, 15) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
     // Arriving early is waiting, not useful time: useful time starts at the event.
     const effectiveStart = arrival < o.start ? o.start : arrival;
     latestFinish = end < deadline ? end : deadline;
