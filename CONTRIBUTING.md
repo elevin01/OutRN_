@@ -67,6 +67,14 @@ on the **engine and the services behind it**. They meet at a single, versioned H
 `OUTRN_API_URL` (default `http://127.0.0.1:4000`); the mock listens on the same port, so the UI
 cannot tell them apart.
 
+## Migrations
+
+Never edit a migration once any database has applied it, including a draft on a branch that ran
+against your dev database: add a new one. The runner compares every applied file with the checksum
+it recorded and refuses to run on a mismatch, because an edited migration would otherwise never
+reach a database that already ran it. A database that ran an earlier draft is repaired with
+`pnpm db:migrate --reapply <file>`, which only works for files that are safe to run twice.
+
 ## What CI checks on every PR
 
 - **checks**: typecheck, import boundaries, contract schema up to date, contract backward
