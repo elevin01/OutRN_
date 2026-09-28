@@ -43,6 +43,11 @@ export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<Writ
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        on conflict (subject_kind, subject_id, attribute, source_id, content_hash) do update
          set fetched_at = excluded.fetched_at,
+             -- The same value can come back on new evidence: an OSM estimate a mapper has since
+             -- surveyed becomes published, with the survey date as observed_at.
+             evidence_class = excluded.evidence_class,
+             evidence = excluded.evidence,
+             observed_at = coalesce(excluded.observed_at, facts.observed_at),
              source_updated_at = coalesce(excluded.source_updated_at, facts.source_updated_at),
              confidence = excluded.confidence,
              valid_until = excluded.valid_until,
@@ -69,6 +74,21 @@ export async function writeFacts(q: Queryable, facts: FactInput[]): Promise<Writ
 }
 
 /** Supersede every active non-observation fact a source holds for a subject (used when a source tombstones a record). */
+/**
+ * Retract a source's active claims on a subject for attributes it no longer asserts. For a subject
+ * whose whole input from the source is one record: a tag removed upstream (a bar that now lists a
+ * cuisine, kitchen hours deleted) must take the fact derived from it along. Observations stand.
+ */
+export async function retractSourceFactsExcept(q: Queryable, subjectKind: string, subjectId: string, sourceId: string, keep: readonly string[]): Promise<number> {
+  const r = await q.query(
+    `update facts set superseded_at = now()
+      where subject_kind = $1 and subject_id = $2 and source_id = $3 and superseded_at is null
+        and evidence_class <> 'observation' and not (attribute = any($4::text[]))`,
+    [subjectKind, subjectId, sourceId, [...keep]],
+  );
+  return r.rowCount ?? 0;
+}
+
 export async function retractSourceFacts(q: Queryable, subjectKind: string, subjectId: string, sourceId: string): Promise<number> {
   const r = await q.query(
     `update facts set superseded_at = now() where subject_kind = $1 and subject_id = $2 and source_id = $3 and superseded_at is null`,

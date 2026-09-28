@@ -6,13 +6,22 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * OSM tags → controlled category + facts. Pure function so it is trivially testable.
  *
  * Evidence classes:
- *  - published: the tag states it (name, opening_hours, website, phone, wheelchair, fee, reservation, disused)
- *  - estimate : inferred from category (walk-in for cafés, outdoor for parks)
+ *  - published: the tag states it (name, opening_hours, website, phone, wheelchair, fee, charge,
+ *    reservation, disused, end_date, opening_date, a mapper's check_date)
+ *  - estimate : inferred from category (walk-in for cafés, outdoor for parks, 21+ for bars)
  *
- * Confidence on opening_hours decays with the age of the OSM edit. The edit timestamp covers
- * ANY tag on the element, so it is an upper bound on how recently hours were touched, never a
- * verification date.
+ * Dates. The element's edit timestamp covers ANY tag, so a name fix makes six-year-old hours look
+ * fresh: it is an upper bound on when hours were touched, never a verification. A mapper's survey
+ * (check_date:opening_hours for hours; check_date or survey:date for the place as a whole) is a
+ * real "seen on this day" and is carried as the fact's observed_at. It raises confidence, but it is
+ * the mapper's check, not ours: it never makes hours "confirmed".
  */
+
+/**
+ * Version of the rules below. Bump it whenever a change would turn the same tags into different
+ * facts: the next ingest then re-normalizes every record in its capture, not only the edited ones.
+ */
+export const OSM_NORMALIZE_VERSION = "2026-09-28.1";
 
 export interface OsmRecord {
   externalId: string;
@@ -37,11 +46,85 @@ export function categoryFromTags(tags: Record<string, string>): Category | null 
   return categoryFromOsmTags(tags);
 }
 
+const YEAR_MS = 365.25 * 86_400_000;
+const yearsSince = (d: Date, now: Date) => Math.max(0, (now.getTime() - d.getTime()) / YEAR_MS);
+
 /** 0.62 for a fresh edit, decaying ~0.06 per year of age, floor 0.3. */
 export function hoursConfidence(sourceUpdatedAt: Date | null, now: Date): number {
   if (!sourceUpdatedAt) return 0.45;
-  const years = Math.max(0, (now.getTime() - sourceUpdatedAt.getTime()) / (365.25 * 86_400_000));
-  return Math.max(0.3, +(0.62 - 0.06 * years).toFixed(3));
+  return Math.max(0.3, +(0.62 - 0.06 * yearsSince(sourceUpdatedAt, now)).toFixed(3));
+}
+
+/** A mapper's survey of the hours: 0.72 fresh, decaying ~0.06 per year, floor 0.3. Still below a venue's own site. */
+export function surveyedHoursConfidence(checkedAt: Date, now: Date): number {
+  return Math.max(0.3, +(0.72 - 0.06 * yearsSince(checkedAt, now)).toFixed(3));
+}
+
+/** A survey that saw the place operating counts for this long; after that, presence in OSM is all we have. */
+const SURVEY_STATUS_YEARS = 3;
+
+/**
+ * An OSM date (YYYY, YYYY-MM or YYYY-MM-DD) as the first and last instant of the period it names,
+ * in UTC. Anything else (ranges, "~1990", "before 2010", impossible dates) is null: never guess.
+ */
+export function osmDate(value: string | undefined): { start: Date; end: Date } | null {
+  const m = value?.trim().match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = m[2] === undefined ? null : Number(m[2]) - 1;
+  const d = m[3] === undefined ? null : Number(m[3]);
+  if (mo !== null && (mo < 0 || mo > 11)) return null;
+  const start = new Date(Date.UTC(y, mo ?? 0, d ?? 1));
+  if (d !== null && (d < 1 || start.getUTCDate() !== d)) return null; // 2025-02-30
+  const next = d !== null ? Date.UTC(y, mo!, d + 1) : mo !== null ? Date.UTC(y, mo + 1, 1) : Date.UTC(y + 1, 0, 1);
+  return { start, end: new Date(next - 1) };
+}
+
+/** A calendar day as an instant: midday UTC falls on the same date in every US timezone, so it never reads as the day before. */
+const midday = (d: Date) => new Date(d.getTime() + 12 * 3_600_000);
+
+/**
+ * A mapper's survey date from a check-date tag, as that day's midday. Ignored when it is in the future, before OSM
+ * existed, or later than the edit that carries it (a check_date cannot postdate its own edit).
+ */
+function surveyDate(value: string | undefined, sourceUpdatedAt: Date | null, now: Date): Date | null {
+  const d = osmDate(value);
+  if (!d || d.start.getUTCFullYear() < 2004 || d.start.getTime() > now.getTime() + 86_400_000) return null;
+  if (sourceUpdatedAt && d.start.getTime() > sourceUpdatedAt.getTime() + 86_400_000) return null;
+  return midday(d.start);
+}
+
+/**
+ * OSM charge=* as a per-visit price in dollars: "12 USD", "USD 12", "$12", "12.50 USD",
+ * "10-15 USD", "12 USD/person", "20 USD;10 USD" (several prices become a range). A charge per
+ * hour, day, vehicle or night is not the price of a visit, and a currency other than dollars is
+ * not ours to convert: both are null, like anything that does not parse.
+ */
+export function parseCharge(value: string | undefined): { min: number; max: number; basis: "per_person" | "per_group" } | null {
+  if (!value?.trim()) return null;
+  const AMOUNT = String.raw`(\d{1,4}(?:\.\d{1,2})?)`;
+  const one = new RegExp(String.raw`^(?:(USD)\s*|\$\s*)?${AMOUNT}(?:\s*[-–]\s*\$?\s*${AMOUNT})?\s*(USD)?(?:\s*/\s*([a-z]+))?$`, "i");
+  const amounts: number[] = [];
+  const bases = new Set<"per_person" | "per_group">();
+  for (const part of value.split(";")) {
+    const m = part.trim().match(one);
+    if (!m) return null;
+    const hasDollar = /^\s*\$/.test(part) || m[1] !== undefined || m[4] !== undefined;
+    if (!hasDollar) return null; // a bare number names no currency
+    const unit = m[5]?.toLowerCase();
+    if (unit && !["person", "ticket", "entry", "adult", "visit", "group"].includes(unit)) return null;
+    bases.add(unit === "group" ? "per_group" : "per_person");
+    amounts.push(Number(m[2]));
+    if (m[3] !== undefined) amounts.push(Number(m[3]));
+  }
+  const min = Math.min(...amounts);
+  const max = Math.max(...amounts);
+  return { min, max, basis: bases.size === 1 && bases.has("per_group") ? "per_group" : "per_person" };
+}
+
+/** A bar says it serves food: food=yes, a cuisine, or kitchen hours. Without one, NY bars are usually 21+. */
+function servesFood(t: Record<string, string>): boolean {
+  return t["food"] === "yes" || Boolean(t["cuisine"]?.trim()) || Boolean(t["opening_hours:kitchen"]?.trim());
 }
 
 const OUTDOOR: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint"]);
@@ -85,12 +168,32 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const minAge = t["min_age"] && /^\d{1,2}$/.test(t["min_age"].trim()) ? Number(t["min_age"].trim()) : null;
   if (minAge !== null && minAge <= 25) pub("age_limit", { minAge }, `min_age=${t["min_age"]}`, 0.75);
   else if (subtype && DEFAULT_AGE_LIMIT[subtype]) est("age_limit", { minAge: DEFAULT_AGE_LIMIT[subtype] }, 0.7);
+  // A bar that serves no food is usually 21+ in practice. Low confidence: a family sees Check first, never an exclusion.
+  else if (category === "bar" && !servesFood(t)) est("age_limit", { minAge: 21 }, 0.5);
+
+  // Surveys: when a mapper last checked the hours, and when anyone last checked the place at all.
+  const hoursCheckedAt = surveyDate(t["check_date:opening_hours"], rec.sourceUpdatedAt, now);
+  const placeSurvey = (["check_date", "survey:date", "check_date:opening_hours"] as const)
+    .map((tag) => ({ tag, at: surveyDate(t[tag], rec.sourceUpdatedAt, now) }))
+    .filter((x): x is { tag: (typeof x)["tag"]; at: Date } => x.at !== null)
+    .reduce<{ tag: string; at: Date } | null>((a, b) => (!a || b.at > a.at ? b : a), null);
 
   // Closure signals are conservative: any disused:/abandoned: key, or hours "off", marks closed.
   const disused = Object.keys(t).some((k) => k.startsWith("disused:") || k.startsWith("abandoned:") || k.startsWith("was:"));
   const hours = t["opening_hours"]?.trim();
+  const ended = osmDate(t["end_date"]);
+  const opens = osmDate(t["opening_date"]);
   if (disused || hours === "off" || hours === "closed") {
     pub("business_status", { status: "closed_permanently" }, disused ? Object.keys(t).find((k) => /^(disused|abandoned|was):/.test(k))! : `opening_hours=${hours}`, 0.75);
+  } else if (ended && ended.start <= now) {
+    // Ended: certain once the whole period has passed; "end_date=2026" in September still means likely gone.
+    pub("business_status", { status: "closed_permanently" }, `end_date=${t["end_date"]}`, ended.end <= now ? 0.75 : 0.6);
+  } else if (opens && opens.start > now) {
+    // Not open yet: closed until the opening date, then the fact lapses and presence counts again.
+    facts.push({ ...base, attribute: "business_status", value: { status: "closed_temporarily" }, evidence: `opening_date=${t["opening_date"]}`, confidence: 0.7, evidenceClass: "published", validUntil: midday(opens.start) });
+  } else if (placeSurvey && yearsSince(placeSurvey.at, now) <= SURVEY_STATUS_YEARS) {
+    // A mapper saw it operating on that day.
+    facts.push({ ...base, attribute: "business_status", value: { status: "operating" }, evidence: `${placeSurvey.tag}=${t[placeSurvey.tag]}`, confidence: Math.max(0.45, +(0.65 - 0.06 * yearsSince(placeSurvey.at, now)).toFixed(3)), evidenceClass: "published", observedAt: placeSurvey.at });
   } else {
     // Presence in OSM is weak evidence of operating; the source_updated_at age matters here too.
     est("business_status", { status: "operating" }, rec.sourceUpdatedAt && now.getTime() - rec.sourceUpdatedAt.getTime() < 2 * 365 * 86_400_000 ? 0.5 : 0.35);
@@ -98,8 +201,19 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
 
   if (hours && hours !== "off" && hours !== "closed") {
     const { oh, error } = parseOsmHours(hours, rec.point.lat, rec.point.lon);
-    if (oh) pub("opening_hours", { osm: hours }, `opening_hours=${hours}`, hoursConfidence(rec.sourceUpdatedAt, now));
-    else rejects.push(`unparseable opening_hours (${error})`); // record kept; hours fact omitted
+    if (oh) {
+      const edited = hoursConfidence(rec.sourceUpdatedAt, now);
+      if (hoursCheckedAt) {
+        facts.push({ ...base, attribute: "opening_hours", value: { osm: hours }, evidence: `opening_hours=${hours}; check_date:opening_hours=${t["check_date:opening_hours"]}`, confidence: Math.max(edited, surveyedHoursConfidence(hoursCheckedAt, now)), evidenceClass: "published", observedAt: hoursCheckedAt });
+      } else pub("opening_hours", { osm: hours }, `opening_hours=${hours}`, edited);
+    } else rejects.push(`unparseable opening_hours (${error})`); // record kept; hours fact omitted
+  }
+
+  // Kitchen hours: when food is served, last orders at the close. Only a parseable rule counts.
+  const kitchen = t["opening_hours:kitchen"]?.trim();
+  if (kitchen) {
+    const { oh } = parseOsmHours(kitchen, rec.point.lat, rec.point.lon);
+    if (oh) pub("kitchen_hours", { osm: kitchen }, `opening_hours:kitchen=${kitchen}`, hoursConfidence(rec.sourceUpdatedAt, now));
   }
 
   const website = t["website"] ?? t["contact:website"] ?? t["url"];
@@ -108,9 +222,11 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (phone) pub("phone", { value: phone }, `phone=${phone}`, 0.8);
   if (t["wheelchair"] && ["yes", "limited", "no"].includes(t["wheelchair"])) pub("wheelchair", { value: t["wheelchair"] }, `wheelchair=${t["wheelchair"]}`, 0.7);
 
+  const charge = t["fee"] === "no" ? null : parseCharge(t["charge"]);
+
   // Admission
   if (t["reservation"] === "required") pub("admission", { requirement: "reservation" }, "reservation=required", 0.7);
-  else if (t["fee"] === "yes" && category && ["museum", "attraction", "gallery", "garden"].includes(category)) pub("admission", { requirement: "ticket" }, "fee=yes", 0.6);
+  else if ((t["fee"] === "yes" || (charge && charge.max > 0)) && category && ["museum", "attraction", "gallery", "garden"].includes(category)) pub("admission", { requirement: "ticket" }, t["fee"] === "yes" ? "fee=yes" : `charge=${t["charge"]}`, 0.6);
   else if (t["leisure"] === "escape_game") est("admission", { requirement: "reservation" }, 0.6); // escape rooms are booked by the slot
   else if (t["amenity"] === "karaoke_box") est("admission", { requirement: "reservation_available" }, 0.45);
   else if (category && ["cafe", "bar", "dessert", "bookshop", "library", "park", "viewpoint", "waterfront", "market", "community"].includes(category)) est("admission", { requirement: "walk_in" }, 0.55);
@@ -121,6 +237,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
 
   // Price: only what the tags actually say. Beaches are not assumed free (many are resident-permit or paid).
   if (t["fee"] === "no") pub("price", { currency: "USD", free: true, basis: "per_person" }, "fee=no", 0.7);
+  else if (charge && charge.max === 0) pub("price", { currency: "USD", free: true, basis: charge.basis }, `charge=${t["charge"]}`, 0.65);
+  else if (charge) pub("price", { currency: "USD", paid: true, basis: charge.basis, min: charge.min, max: charge.max }, `charge=${t["charge"]}`, 0.65);
   else if (t["fee"] === "yes") pub("price", { currency: "USD", basis: "per_person", unknown: true, paid: true }, "fee=yes", 0.6);
   else if (category && OUTDOOR.has(category) && t["natural"] !== "beach") est("price", { currency: "USD", free: true, basis: "per_person" }, 0.6);
 

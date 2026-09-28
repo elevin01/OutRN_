@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
+import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /**
@@ -72,12 +73,27 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(second.raw.new).toBe(0);
     expect(second.raw.changed).toBe(0);
     expect(second.raw.unchanged).toBe(87);
+    expect(second.raw.renormalized).toBe(0);
     expect(second.venues.created).toBe(0);
     expect(second.facts.inserted).toBe(0);
     const factCount = await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`);
     const runs = await db.query<{ n: string }>(`select count(*) as n from ingestion_runs where status = 'succeeded'`);
     expect(Number(runs.rows[0]!.n)).toBe(2);
     expect(Number(factCount.rows[0]!.n)).toBeGreaterThan(500);
+  });
+
+  it("re-normalizes unchanged records when the normalizer's rules have changed since, and only then", async () => {
+    await db.query(`update source_entities set normalized_with = '2026-01-01.0' where source_id = 'osm'`);
+    const before = Number((await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`)).rows[0]!.n);
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+    expect(s.raw.unchanged).toBe(87);
+    expect(s.raw.renormalized).toBe(87);
+    // The same rules on the same tags: every claim already exists, nothing is added or taken away.
+    expect(s.facts.inserted).toBe(0);
+    expect(Number((await db.query<{ n: string }>(`select count(*) as n from facts where superseded_at is null`)).rows[0]!.n)).toBe(before);
+    const stale = await db.query(`select 1 from source_entities where source_id = 'osm' and deleted_at is null and normalized_with is distinct from $1`, [OSM_NORMALIZE_VERSION]);
+    expect(stale.rowCount).toBe(0);
+    expect((await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE })).raw.renormalized).toBe(0);
   });
 
   it("a record that disappears from the source is tombstoned and its facts retracted; a changed record supersedes old facts", async () => {
@@ -124,4 +140,72 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const gone = await db.query<{ deleted: boolean }>(`select deleted_at is not null as deleted from source_entities where raw->'tags'->>'name' = $1`, [dropped.tags["name"]]);
     expect(gone.rows[0]!.deleted).toBe(true);
   });
+
+  it("a mapper's survey upgrades the same stored facts in place: status becomes published, hours carry the survey date", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; timestamp: string; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Grand Kitchen")!;
+    const facts = async () =>
+      (await db.query<{ attribute: string; evidence_class: string; observed_at: Date | null; evidence: string | null }>(
+        `select f.attribute, f.evidence_class, f.observed_at, f.evidence from facts f join venues v on v.id = f.subject_id
+          where v.canonical_name = 'Grand Kitchen' and f.source_id = 'osm' and f.superseded_at is null and f.attribute in ('business_status', 'opening_hours', 'kitchen_hours') order by f.attribute`,
+      )).rows;
+    const before = await facts();
+    expect(before.find((f) => f.attribute === "business_status")).toMatchObject({ evidence_class: "estimate", observed_at: null });
+
+    // Same values, new evidence: surveyed before the element's last edit (2026-04-19), plus kitchen hours.
+    const surveyed = { ...el, tags: { ...el.tags, "check_date:opening_hours": "2026-04-01", "opening_hours:kitchen": "Mo-Su 11:00-22:00" } };
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-surveyed.json");
+    // A capture of just this element, scoped to it, so nothing else is tombstoned.
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [surveyed], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.raw.tombstoned).toBe(0);
+
+    const after = await facts();
+    // One active row per attribute: the survey changed the evidence on the same claim, it did not add a second one.
+    expect(after.map((f) => f.attribute)).toEqual(["business_status", "kitchen_hours", "opening_hours"]);
+    expect(after[0]).toMatchObject({ evidence_class: "published", evidence: "check_date:opening_hours=2026-04-01", observed_at: new Date("2026-04-01T12:00:00Z") });
+    expect(after[2]).toMatchObject({ evidence_class: "published", evidence: "opening_hours=Mo-Su 11:00-23:00; check_date:opening_hours=2026-04-01", observed_at: new Date("2026-04-01T12:00:00Z") });
+
+    const current = await db.query<{ attribute: string; evidence_class: string }>(
+      `select cf.attribute, cf.evidence_class from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'Grand Kitchen' and cf.attribute in ('business_status', 'kitchen_hours') order by cf.attribute`,
+    );
+    expect(current.rows).toEqual([
+      { attribute: "business_status", evidence_class: "published" },
+      { attribute: "kitchen_hours", evidence_class: "published" },
+    ]);
+  });
+
+  it("a tag removed upstream takes its derived fact along: a bar that starts serving food loses 'usually 21+'", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Broome Bar")!;
+    const ageLimit = async () =>
+      (await db.query<{ value: { minAge: number } }>(`select cf.value from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'Broome Bar' and cf.attribute = 'age_limit'`)).rows[0]?.value;
+    expect(await ageLimit()).toEqual({ minAge: 21 });
+
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-broome-food.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags: { ...el.tags, cuisine: "burger" } }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.raw.changed).toBe(1);
+    expect(await ageLimit()).toBeUndefined();
+    const history = await db.query<{ superseded: boolean }>(`select f.superseded_at is not null as superseded from facts f join venues v on v.id = f.subject_id where v.canonical_name = 'Broome Bar' and f.attribute = 'age_limit'`);
+    expect(history.rows).toEqual([{ superseded: true }]); // kept as history, no longer asserted
+  });
+
+  it("a place that opens later stays published but closed until its opening day, then lapses on its own", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Ludlow Kitchen")!;
+    const opening = new Date(Date.now() + 20 * 86_400_000).toISOString().slice(0, 10);
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-opening.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags: { ...el.tags, opening_date: opening } }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    const row = await db.query<{ publish_state: string; value: { status: string }; valid_until: Date }>(
+      `select v.publish_state, cf.value, cf.valid_until from venues v join current_facts cf on cf.subject_id = v.id and cf.attribute = 'business_status' where v.canonical_name = 'Ludlow Kitchen'`,
+    );
+    // Excluding it here would outlive the opening day: nothing re-materializes an unchanged record.
+    expect(row.rows[0]).toMatchObject({ publish_state: "eligible", value: { status: "closed_temporarily" }, valid_until: new Date(`${opening}T12:00:00Z`) });
+  });
 });
+

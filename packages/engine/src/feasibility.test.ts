@@ -29,7 +29,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
 ]);
 
 let n = 0;
-function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number }): Candidate {
+function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number; kitchen?: string }): Candidate {
   const id = over.id ?? `v${++n}`;
   const facts: Candidate["facts"] = {
     name: { value: { value: over.name ?? id }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 },
@@ -39,6 +39,7 @@ function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: n
   if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1, sources: over.hoursSources ?? ["osm"], verifiedAt: over.hoursVerifiedAt ?? null, conflict: over.hoursConflict ?? false };
   if (over.price !== undefined) facts.price = { value: over.price, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.wheelchair) facts.wheelchair = { value: { value: over.wheelchair }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
+  if (over.kitchen) facts.kitchen_hours = { value: { osm: over.kitchen }, confidence: 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.lastEntry) facts.last_entry_offset = { value: { minutes: over.lastEntry }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
   return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: 0, excluded: false, hasLandmarkId: false, parentVenueId: null, brand: over.brand ?? null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
 }
@@ -503,3 +504,63 @@ describe("age limits", () => {
     expect(cd!.scores.fit).toBe(gd!.scores.fit);
   });
 });
+
+describe("feasibility: kitchen hours", () => {
+  // Sat 3 Oct 2026. Walking ~3 min plus the restaurant's 10-min buffer: arrival is now + ~13 min.
+  const R = (kitchen?: string) => venue({ category: "restaurant", hours: "Mo-Su 12:00-23:00", ...(kitchen ? { kitchen } : {}) });
+
+  it("arriving after last orders is excluded, even though the restaurant is still open", () => {
+    const e = one(R("Mo-Su 12:00-22:00"), ctx("2026-10-03 21:37", 180));
+    expect(e.excludedBy).toBe("KITCHEN_CLOSED");
+  });
+
+  it("published kitchen hours replace the category's 40-minute guess: order by last orders, stay until close", () => {
+    const e = one(R("Mo-Su 12:00-22:00"), ctx("2026-10-03 21:00", 180));
+    expect(e.class).not.toBe("ineligible");
+    expect(e.timing!.latestArrival!.getTime()).toBe(fromLocal("2026-10-03", 21 * 60 + 45, TZ).getTime());
+    expect(e.timing!.latestFinish.getTime()).toBe(fromLocal("2026-10-03", 23 * 60, TZ).getTime());
+    // Without kitchen hours the guess stands: the meal must end 40 min before close.
+    expect(one(R(), ctx("2026-10-03 21:00", 180)).timing!.latestFinish.getTime()).toBe(fromLocal("2026-10-03", 22 * 60 + 20, TZ).getTime());
+  });
+
+  it("a kitchen that opens later is a short wait, like a venue opening", () => {
+    const e = one(R("Mo-Su 17:00-22:00"), ctx("2026-10-03 16:30", 180));
+    expect(e.class).not.toBe("ineligible");
+    expect(e.reasons).toContain("WAIT_FOR_OPENING");
+    expect(e.timing!.arrival.getTime()).toBe(fromLocal("2026-10-03", 17 * 60, TZ).getTime());
+  });
+
+  it("no service today (weekday lunch only) is excluded, and offered as 'try a different time'", () => {
+    const c = R("Mo-Fr 12:00-15:00");
+    expect(one(c, ctx("2026-10-03 13:00", 180)).excludedBy).toBe("KITCHEN_CLOSED");
+    const s = recommend([c], ctx("2026-10-03 13:00", 180), POLICIES, { size: 3 });
+    expect(s.relaxations).toContainEqual({ code: "different_time", text: "try a different time", admits: 1 });
+  });
+
+  it("applies to restaurants only: a bar's kitchen closing does not end the night", () => {
+    const e = one(venue({ category: "bar", hours: "Mo-Su 17:00-02:00", kitchen: "Mo-Su 17:00-22:00" }), ctx("2026-10-03 23:30", 120));
+    expect(e.class).toBe("ready");
+  });
+
+  it("kitchen hours bound a restaurant whose opening hours are unknown", () => {
+    const c = venue({ category: "restaurant", hours: null, kitchen: "Mo-Su 12:00-22:00" });
+    expect(one(c, ctx("2026-10-03 21:40", 180)).excludedBy).toBe("KITCHEN_CLOSED");
+    expect(one(c, ctx("2026-10-03 20:00", 180)).timing!.latestArrival!.getTime()).toBe(fromLocal("2026-10-03", 21 * 60 + 45, TZ).getTime());
+  });
+
+  it("formats cents in price text", () => {
+    const e = one(venue({ category: "museum", hours: "Mo-Su 10:00-18:00", price: { currency: "USD", paid: true, min: 12.5, max: 12.5 } }), ctx("2026-10-03 11:00", 180));
+    expect(e.price.text).toBe("$12.50");
+  });
+});
+
+describe("feasibility: business status", () => {
+  it("a temporary closure (not open yet) is its own exclusion, not a permanent one", () => {
+    const c = venue({ category: "restaurant" });
+    c.facts.business_status = { value: { status: "closed_temporarily" }, confidence: 0.7, evidenceClass: "published", validUntil: new Date("2026-10-15T12:00:00Z"), independentSources: 1 };
+    expect(one(c, ctx("2026-10-03 19:00", 180)).excludedBy).toBe("CLOSED_TEMPORARILY");
+    c.facts.business_status = { value: { status: "closed_permanently" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    expect(one(c, ctx("2026-10-03 19:00", 180)).excludedBy).toBe("CLOSED_PERMANENTLY");
+  });
+});
+

@@ -13,12 +13,15 @@ import type { Queryable } from "@outrn/db";
  *     unless the disagreeing claim is both less trusted and older than the winner: a founder's
  *     call on 26 Sep corrects a 2020 OSM tag, it does not contest it. An OSM edit made after the
  *     call, or a claim from an equally trusted source, is still a conflict for review.
- *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim.
+ *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim. Only a
+ *     permanent closure excludes the venue here; a temporary one (not open yet, closed for works)
+ *     lapses on its own date, so the engine applies it per request instead of a state that only
+ *     the next ingest could undo.
  *  6. The venue row's canonical name and category follow the winning name/category facts, so
  *     filtering and recommendations never disagree with current_facts (no source writes them directly).
  */
 
-export const MATERIALIZE_POLICY_VERSION = "2026-09-27.1";
+export const MATERIALIZE_POLICY_VERSION = "2026-09-28.1";
 
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
@@ -53,8 +56,10 @@ export interface MaterializeResult {
   tasksCreated: number;
 }
 
+/** An observation dates from when it was seen; a published claim from its source's last change (an OSM edit postdates its survey). */
 function recency(f: FactRow): number {
-  return (f.observed_at ?? f.source_updated_at ?? f.fetched_at).getTime();
+  const d = f.evidence_class === "observation" ? f.observed_at : (f.source_updated_at ?? f.observed_at);
+  return (d ?? f.fetched_at).getTime();
 }
 
 function isClosure(f: FactRow): boolean {
@@ -149,7 +154,7 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   let next = v.publish_state;
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";
-    else if (status && status.startsWith("closed")) next = "excluded";
+    else if (status === "closed_permanently") next = "excluded";
     else if (v.canonical_name && v.category) next = "eligible";
     else next = "candidate";
   }

@@ -1,5 +1,5 @@
 import type { PlaceDetails, PlaceFact, Provenance, TravelMode } from "@outrn/contracts";
-import { isFreshConfirmation, VERIFIED_AT_SQL } from "@outrn/core";
+import { AS_OF_SQL, isFreshConfirmation, SURVEYED_AT_SQL, VERIFIED_AT_SQL } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 import { describeFacts, hoursToday, sourceName, type FactRecord } from "@outrn/engine";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
@@ -15,7 +15,7 @@ interface PlaceRow {
   lat: number;
   lon: number;
   timezone: string;
-  facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; sources: string[] | null; conflict: boolean; asOf: string | null; fetchedAt: string | null; verifiedAt: string | null }>;
+  facts: Record<string, { value: unknown; confidence: string; evidenceClass: FactRecord["evidenceClass"]; sources: string[] | null; conflict: boolean; asOf: string | null; fetchedAt: string | null; verifiedAt: string | null; surveyedAt: string | null }>;
   tags: Record<string, string> | null;
 }
 
@@ -42,9 +42,10 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
                 'value', cf.value, 'confidence', cf.confidence,
                 'evidenceClass', cf.evidence_class,
                 'sources', cf.source_ids, 'conflict', cf.conflict,
-                'asOf', (select max(coalesce(f.observed_at, f.source_updated_at)) from facts f where f.id = any(cf.input_fact_ids)),
+                'asOf', ${AS_OF_SQL},
                 'fetchedAt', (select max(f.fetched_at) from facts f where f.id = any(cf.input_fact_ids)),
-                'verifiedAt', ${VERIFIED_AT_SQL}))
+                'verifiedAt', ${VERIFIED_AT_SQL},
+                'surveyedAt', ${SURVEYED_AT_SQL}))
                 from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id
                   and (cf.valid_until is null or cf.valid_until > $2)), '{}'::jsonb) facts,
               (select se.raw->'tags' from entity_links el join source_entities se on se.id = el.source_entity_id
@@ -61,7 +62,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
   const facts: Record<string, FactRecord> = Object.fromEntries(
     Object.entries(row.facts).map(([k, f]) => [
       k,
-      { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidenceClass, sources: f.sources ?? [], conflict: f.conflict, asOf: f.asOf ? new Date(f.asOf) : null, fetchedAt: f.fetchedAt ? new Date(f.fetchedAt) : null, verifiedAt: f.verifiedAt ? new Date(f.verifiedAt) : null },
+      { value: f.value, confidence: Number(f.confidence), evidenceClass: f.evidenceClass, sources: f.sources ?? [], conflict: f.conflict, asOf: f.asOf ? new Date(f.asOf) : null, fetchedAt: f.fetchedAt ? new Date(f.fetchedAt) : null, verifiedAt: f.verifiedAt ? new Date(f.verifiedAt) : null, surveyedAt: f.surveyedAt ? new Date(f.surveyedAt) : null },
     ]),
   );
 

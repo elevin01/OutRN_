@@ -341,6 +341,17 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     }
   });
 
+  it("names an OSM mapper's survey on place details, never as our confirmation", async () => {
+    const id = (await db.query<{ id: string }>("select id from venues where canonical_name = 'Grand Kitchen'")).rows[0]!.id;
+    // The fixture's own hours, re-asserted with the survey a mapper recorded before the element's last edit.
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: id, attribute: "opening_hours", value: { osm: "Mo-Su 11:00-23:00" }, evidenceClass: "published", sourceId: "osm", lineageGroup: "osm", evidence: "opening_hours=Mo-Su 11:00-23:00; check_date:opening_hours=2026-04-01", sourceUpdatedAt: new Date("2026-04-19T00:00:00Z"), observedAt: new Date("2026-04-01T12:00:00Z"), fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.69 }]);
+    await materializeSubjects(db, "venue", [id], now);
+    const r = await call("GET", `/v1/places/${id}`);
+    const hours = PlaceDetails.parse(r.json).facts.find((f) => f.attribute === "opening_hours")!;
+    expect(hours.provenance).toMatchObject({ freshness: "checked by an OSM mapper Apr 2026", verifiedAt: null, dueForRecheck: false, sourceUpdatedAt: "2026-04-19T00:00:00.000Z" });
+    expect(hours.provenance.summary).not.toMatch(/confirmed/);
+  });
+
   it("serves only eligible places: excluded and suspended venues are 404", async () => {
     // The fixture's permanently closed bar is excluded by the pipeline.
     const closed = (await db.query<{ id: string }>("select id from venues where canonical_name = 'Old Norfolk Lounge' and publish_state = 'excluded'")).rows[0]!.id;

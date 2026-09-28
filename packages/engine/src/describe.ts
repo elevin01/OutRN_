@@ -5,7 +5,8 @@ import { fmtTime } from "./explain.js";
 /**
  * Detail-page copy for a venue's current facts. Same rules as the cards: an estimate is labelled
  * as one, a fetch date is never called a verification, and "confirmed" is reserved for a check
- * (the founder, or the venue's own statement). Hours come first and are always present.
+ * (the founder, or a visitor's report). An OSM mapper's survey is named as one, never as
+ * "confirmed". Hours come first and are always present.
  */
 
 export interface FactRecord {
@@ -21,13 +22,15 @@ export interface FactRecord {
   fetchedAt: Date | null;
   /** Latest verification (founder check or observation). The only date that may read as "confirmed". */
   verifiedAt?: Date | null;
+  /** Latest survey date a published source gives (OSM check_date). Reads as "checked by an OSM mapper". */
+  surveyedAt?: Date | null;
 }
 
 export interface FactRow {
   attribute: string;
   label: string;
   value: string;
-  /** Hours only: the state today, e.g. "Open now until 4am". */
+  /** Hours and kitchen hours only: the state today, e.g. "Open now until 4am". */
   detail: string | null;
   source: string;
   age: string | null;
@@ -37,6 +40,7 @@ export interface FactRow {
 
 const LABEL: Record<string, string> = {
   opening_hours: "Hours",
+  kitchen_hours: "Kitchen",
   business_status: "Status",
   admission: "Admission",
   admission_status: "Admission status",
@@ -52,7 +56,7 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "business_status", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone"]);
 
@@ -85,7 +89,8 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
   const v = (value ?? {}) as Record<string, unknown>;
   const tilde = isEstimate ? "~" : "";
   switch (attribute) {
-    case "opening_hours": {
+    case "opening_hours":
+    case "kitchen_hours": {
       if (typeof v["osm"] === "string") return v["osm"];
       if (Array.isArray(v["weekly"])) {
         const byDay = new Map<number, string[]>();
@@ -176,6 +181,11 @@ export function ageLabel(f: FactRecord, tz: string, now: Date): string | null {
     const mins = Math.round((now.getTime() - f.asOf.getTime()) / 60_000);
     return mins < 90 ? `reported ${Math.max(1, mins)} min ago` : `reported ${fmtDate(f.asOf, tz, now)}`;
   }
+  if (primary === "osm" && f.surveyedAt) {
+    // An edit well after the survey may have changed the value since it was checked.
+    const edited = f.asOf && f.asOf.getTime() - f.surveyedAt.getTime() > 31 * 86_400_000 ? ` · last edited ${fmtMonth(f.asOf, tz)}` : "";
+    return `checked by an OSM mapper ${fmtMonth(f.surveyedAt, tz)}${edited}`;
+  }
   if (primary === "osm" && f.asOf) return `last edited in OSM ${fmtMonth(f.asOf, tz)}`;
   if (f.asOf) return `source updated ${fmtDate(f.asOf, tz, now)}`;
   if (f.fetchedAt) return `retrieved ${fmtDate(f.fetchedAt, tz, now)}`;
@@ -213,7 +223,7 @@ export function describeFacts(facts: Record<string, FactRecord>, ctx: { tz: stri
       attribute,
       label: LABEL[attribute] ?? sentenceCase(attribute),
       value: formatFactValue(attribute, f.value, isEstimate),
-      detail: attribute === "opening_hours" ? hoursToday(f.value, ctx.now, ctx.tz, ctx.point) : null,
+      detail: attribute === "opening_hours" || attribute === "kitchen_hours" ? hoursToday(f.value, ctx.now, ctx.tz, ctx.point) : null,
       source: sourceLabel(f.sources),
       age: ageLabel(f, ctx.tz, ctx.now),
       evidence: f.evidenceClass === "observation" ? "reported" : f.evidenceClass,

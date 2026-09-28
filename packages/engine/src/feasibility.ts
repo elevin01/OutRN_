@@ -9,9 +9,13 @@ import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, 
  *
  *   arrival        = depart + travel + admission buffer
  *   latest_arrival = published admission cutoff (hard) | category default (estimate → check first)
+ *                    | a restaurant's published last orders (kitchen close − time to order, hard)
  *   latest_finish  = min(effective close, deadline)
  *   useful         = latest_finish − arrival     must clear min useful duration
  */
+
+/** Minutes a table needs to get its order in before the kitchen closes. */
+export const ORDER_MINUTES = 15;
 
 /**
  * Youngest person in the party: a number when known, "minor" when company is family and no age was
@@ -51,6 +55,24 @@ export interface FeasibilityOutcome {
   evidenceConfidence: number;
 }
 
+/**
+ * A restaurant's published kitchen hours at `at`: when food is served and the last moment to order.
+ * "closed" when the kitchen is shut then and does not reopen; null when no published, parseable
+ * kitchen schedule applies (the category's kitchen offset stands in).
+ */
+export function kitchenAt(c: Candidate, at: Date): { opensAt: Date | null; lastOrder: Date } | "closed" | null {
+  if (c.category !== "restaurant") return null;
+  const k = fact(c, "kitchen_hours");
+  if (!k || k.isEstimate || !isHoursValue(k.value)) return null;
+  const ev = evaluateHours(k.value, at, c.timezone, c.point);
+  if (ev.parseError || ev.always) return null;
+  if (!ev.interval || (!ev.openNow && ev.interval.open <= at)) return "closed";
+  const lastOrder = addMinutes(ev.interval.close, -ORDER_MINUTES);
+  const opensAt = ev.openNow ? null : ev.interval.open;
+  if (lastOrder <= (opensAt ?? at)) return "closed";
+  return { opensAt, lastOrder };
+}
+
 export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: CategoryPolicy): FeasibilityOutcome {
   const reasons: ReasonCode[] = [];
   const unresolved: ReasonCode[] = [];
@@ -61,7 +83,7 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   if (ctx.categories?.length && !ctx.categories.includes(c.category)) return out("NOT_REQUESTED");
 
   const status = fact<{ status: string }>(c, "business_status");
-  if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out("CLOSED_PERMANENTLY");
+  if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out(status.value.status === "closed_temporarily" ? "CLOSED_TEMPORARILY" : "CLOSED_PERMANENTLY");
 
   // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
   // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
@@ -140,22 +162,39 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
   }
 
   // Flexible visit: hours
+  // Published kitchen hours decide when a meal can start: wait for the kitchen, order before it closes.
+  const kitchenGate = (): { latestArrival: Date | null } | ExclusionCode => {
+    const k = kitchenAt(c, arrival);
+    if (k === null) return { latestArrival: null };
+    if (k === "closed") return "KITCHEN_CLOSED";
+    if (k.opensAt && k.opensAt > arrival) {
+      if (minutesBetween(k.opensAt, deadline) < minUsefulMinutes) return "KITCHEN_CLOSED";
+      arrival = k.opensAt;
+      reasons.push("WAIT_FOR_OPENING");
+    }
+    return arrival > k.lastOrder ? "KITCHEN_CLOSED" : { latestArrival: k.lastOrder };
+  };
+
   const hoursFact = fact(c, "opening_hours");
   if (!hoursFact || !isHoursValue(hoursFact.value)) {
     unresolved.push("HOURS_UNKNOWN");
+    const kitchen = kitchenGate();
+    if (typeof kitchen === "string") return out(kitchen);
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: Timing = { travel, departAt, arrival, latestArrival: null, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel };
+    const timing: Timing = { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
   const ev = evaluateHours(hoursFact.value, arrival, c.timezone, c.point);
   if (ev.parseError) {
     unresolved.push("HOURS_UNKNOWN");
+    const kitchen = kitchenGate();
+    if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: null, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline, returnTravel }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -170,13 +209,19 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
     }
     closesAt = ev.interval.close;
     let effectiveClose = closesAt;
-    if (policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
+    // Published kitchen hours replace the category's guess at when the kitchen stops.
+    const kitchen = kitchenGate();
+    if (typeof kitchen === "string") return out(kitchen);
+    if (kitchen.latestArrival) {
+      latestArrival = kitchen.latestArrival;
+    } else if (policy.kitchenCloseOffsetMinutes && c.category === "restaurant") effectiveClose = addMinutes(closesAt, -policy.kitchenCloseOffsetMinutes);
     // Last entry limits ARRIVAL, not the end of the visit.
     const lastEntryPub = fact<{ minutes: number }>(c, "last_entry_offset");
     if (lastEntryPub && !lastEntryPub.isEstimate) {
-      latestArrival = addMinutes(closesAt, -lastEntryPub.value.minutes);
-      if (arrival > latestArrival) return out("LAST_ENTRY_PASSED");
-    } else if (policy.lastEntryDefaultMinutes) {
+      const lastEntry = addMinutes(closesAt, -lastEntryPub.value.minutes);
+      if (!latestArrival || lastEntry < latestArrival) latestArrival = lastEntry;
+      if (arrival > lastEntry) return out("LAST_ENTRY_PASSED");
+    } else if (policy.lastEntryDefaultMinutes && !latestArrival) {
       latestArrival = addMinutes(closesAt, -policy.lastEntryDefaultMinutes);
       latestArrivalIsEstimate = true;
       if (arrival > latestArrival) unresolved.push("LATE_ENTRY_UNCERTAIN");
@@ -199,7 +244,8 @@ function priceOf(c: Candidate, ctx: RequestContext): { price: Evaluation["price"
   if (v.unknown || (v.min === undefined && v.max === undefined)) return { price: { text: "paid, amount unknown", isEstimate: p.isEstimate, unknown: true }, ok: ctx.budget === undefined ? "yes" : "unknown", free: false };
   const min = v.min ?? v.max!;
   const max = v.max ?? v.min!;
-  const text = min === max ? `$${min}` : `$${min}–${max}`;
+  const usd = (n: number) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
+  const text = min === max ? usd(min) : `${usd(min)}–${usd(max)}`;
   if (ctx.budget === "free") return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: "no", free: false };
   if (typeof ctx.budget === "number") return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: min <= ctx.budget ? "yes" : "no", free: false };
   return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: "yes", free: false };
