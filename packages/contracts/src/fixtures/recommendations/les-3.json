@@ -23,6 +23,7 @@
     "company": null,
     "categories": [],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -35,17 +36,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~8 min walk · until 10pm, you'd have 2h32 · price unknown",
+        "summary": "~8 min walk · takes about 1h20 · until 10pm · price unknown",
         "sentence": "A short walk, plenty of time."
       },
       "kind": "venue",
       "name": "Allen Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:48:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:48pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:20:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:20pm",
+          "isEstimate": true
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "walk",
           "minutes": 8,
@@ -59,6 +87,7 @@
         "usefulMinutes": 152
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://allenkitchen.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=walking"
@@ -102,17 +131,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~11 min walk · until 8pm, you'd have 1h14 · price unknown",
+        "summary": "~11 min walk · takes about 35 min · until 8pm · price unknown",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
       "name": "Delancey Coffee",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:46:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:46pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8pm, when it closes",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Counter service",
+          "style": "counter",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 35
+        },
         "travel": {
           "mode": "walk",
           "minutes": 11,
@@ -126,6 +182,7 @@
         "usefulMinutes": 74
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 6384",
         "websiteUrl": "https://delanceycoffee.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=walking"
@@ -160,17 +217,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~12 min walk · until 10pm, you'd have 2h28 · price unknown",
+        "summary": "~12 min walk · takes about 1h20 · until 10pm · price unknown",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
       "name": "Ludlow Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:52:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:52pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:20:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:20pm",
+          "isEstimate": true
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "walk",
           "minutes": 12,
@@ -184,6 +268,7 @@
         "usefulMinutes": 148
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 6594",
         "websiteUrl": "https://ludlowkitchen.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=walking"

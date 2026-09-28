@@ -107,6 +107,8 @@ export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[
   add("OVER_BUDGET", "higher_budget", "raise the budget");
   add("NOT_FREE", "include_paid", "include paid options");
   add("NOT_REQUESTED", "more_categories", "widen the categories");
+  add("TAKEOUT_ONLY", "takeout", "get food to go");
+  add("NO_TAKEOUT", "dine_in", "sit down to eat");
   add("EVENT_ENDS_AFTER_DEADLINE", "stay_later", "stay out later");
   // Accessibility and dismissals are never offered as relaxations.
   return out.slice(0, 3);

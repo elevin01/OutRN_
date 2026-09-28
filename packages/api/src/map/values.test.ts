@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageLimitFrom, priceOf, websiteUrl } from "./values.js";
+import { ageLimitFrom, linksFrom, priceOf, websiteUrl } from "./values.js";
 
 describe("fact values → contract values", () => {
   it("normalizes websites to absolute http(s) URLs or drops them", () => {
@@ -22,4 +22,15 @@ describe("fact values → contract values", () => {
     expect(ageLimitFrom({ value: { minAge: 0 }, evidenceClass: "published" })).toBeNull();
     expect(ageLimitFrom({ value: { minAge: 21 }, evidenceClass: "estimate" })).toEqual({ minAge: 21, evidence: "estimate" });
   });
+
+  it("links: only https on a public host reach a user, even from rows written before the rule", () => {
+    expect(linksFrom({ menu: "https://bageldepot.example/menu", instagram: "https://www.instagram.com/bagels/" })).toEqual([
+      { kind: "menu", label: "Menu", url: "https://bageldepot.example/menu" },
+      { kind: "instagram", label: "Instagram", url: "https://www.instagram.com/bagels/" },
+    ]);
+    expect(linksFrom({ menu: "https://169.254.169.254/latest/meta-data/" })).toEqual([]);
+    expect(linksFrom({ menu: "https://192.168.1.1/menu", facebook: "https://router.local/x" })).toEqual([]);
+    expect(linksFrom({ menu: "https://router.lan/menu", instagram: "https://router.home/x", facebook: "https://nas.corp/x" })).toEqual([]);
+  });
 });
+

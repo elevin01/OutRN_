@@ -26,7 +26,11 @@ export interface HoursEvaluation {
   /** True when the venue is open 24/7 (no closing constraint). */
   always: boolean;
   parseError: string | null;
-  /** Rule uses seasonal/holiday/sunset syntax that the library approximates. */
+  /**
+   * The answer may not match the venue: the rule uses sunset or school-holiday syntax the library
+   * approximates, or it has public-holiday rules and `at` falls on (or the day before) one, when
+   * venues read "PH" differently. A PH rule on an ordinary day is exact.
+   */
   approximate: boolean;
 }
 
@@ -49,6 +53,8 @@ interface ParsedRule {
   oh: opening_hours | null;
   error: string | null;
   approximate: boolean;
+  /** The rule has public-holiday (PH) selectors: exact on ordinary days, approximate on holidays. */
+  publicHolidays: boolean;
 }
 
 const parsed = new Map<string, ParsedRule>();
@@ -74,22 +80,29 @@ function ruleKey(rule: string, lat: number, lon: number): string {
   return SUN_RELATIVE.test(rule) ? `${rule}\u0000${lat.toFixed(1)},${lon.toFixed(1)}` : rule;
 }
 
-export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): { oh: opening_hours | null; error: string | null; approximate: boolean } {
+export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): ParsedRule {
   return remember(parsed, ruleKey(rule, lat, lon), PARSED_MAX, () => {
     try {
       const oh = new opening_hours(rule, nominatim(lat, lon), { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
       const warnings = oh.getWarnings();
-      return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|PH|SH/.test(rule) };
+      return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|SH/.test(rule), publicHolidays: /\bPH\b/.test(rule) };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false };
+      return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false, publicHolidays: false };
     }
   });
+}
+
+/** New York public holidays (federal and state, with observed days), by wall-clock local day. */
+const holidays = new Map<string, boolean>();
+function isPublicHoliday(wallClockDay: Date): boolean {
+  return remember(holidays, String(wallClockDay.getTime()), 2_000, () => parseOsmHours("PH").oh?.getState(new Date(wallClockDay.getTime() + 12 * 3_600_000)) ?? false);
 }
 
 export function clearHoursCaches(): void {
   parsed.clear();
   intervals.clear();
+  holidays.clear();
 }
 
 export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo?: { lat: number; lon: number }): HoursEvaluation {
@@ -101,7 +114,7 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
     if (rule === "off" || rule === "closed") return { openNow: false, interval: null, always: false, parseError: null, approximate: false };
     const lat = geo?.lat ?? 40.7185;
     const lon = geo?.lon ?? -73.988;
-    const { oh, error, approximate } = parseOsmHours(rule, lat, lon);
+    const { oh, error, approximate: ruleApproximate, publicHolidays } = parseOsmHours(rule, lat, lon);
     if (!oh) return { openNow: null, interval: null, always: false, parseError: error, approximate: false };
     // opening_hours works in the JS runtime's local timezone. We evaluate with a shifted "wall clock" Date
     // so that the library's local-time arithmetic matches the venue's timezone.
@@ -110,6 +123,8 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
     // evaluations (every candidate's arrival, every request that day) reuse it. Clipping reproduces
     // exactly what getOpenIntervals returns for the narrow window.
     const day = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
+    const nextDay = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate() + 1);
+    const approximate = ruleApproximate || (publicHolidays && (isPublicHoliday(day) || isPublicHoliday(nextDay)));
     const wide = remember(intervals, `${ruleKey(rule, lat, lon)}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
       oh.getOpenIntervals(new Date(day.getTime() - 24 * 3_600_000), new Date(day.getTime() + 61 * 3_600_000)),
     );

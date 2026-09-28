@@ -23,6 +23,7 @@
     "company": null,
     "categories": [],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -35,17 +36,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~6 min walk · until 9pm, you'd have 2h19 · price unknown",
+        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
         "sentence": "A short walk, plenty of time."
       },
       "kind": "venue",
       "name": "Delancey Books",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:41:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:41pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9pm, when it closes",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 30
+        },
         "travel": {
           "mode": "walk",
           "minutes": 6,
@@ -59,6 +87,7 @@
         "usefulMinutes": 139
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://delanceybooks.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking"
@@ -102,11 +131,31 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~9 min walk · until 1am, you'd have 2h46 · usually free",
+        "summary": "~9 min walk · takes about 1h · until 1am · usually free",
         "sentence": "A short walk, plenty of time, open late, free, sunset window."
       },
       "kind": "venue",
       "name": "Norfolk Park",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:44:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:44pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "free",
@@ -114,6 +163,13 @@
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 9,
@@ -127,6 +183,7 @@
         "usefulMinutes": 166
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 1075",
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking"
@@ -190,11 +247,31 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~14 min walk · until 1am, you'd have 2h41 · usually free",
+        "summary": "~14 min walk · takes about 1h · until 1am · usually free",
         "sentence": "Plenty of time, open late, free, sunset window."
       },
       "kind": "venue",
       "name": "Rivington Norfolk Park",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:49:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:49pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "free",
@@ -202,6 +279,13 @@
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 14,
@@ -215,6 +299,7 @@
         "usefulMinutes": 161
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 2718",
         "websiteUrl": "https://rivingtonnorfolkpark.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726204%2C-73.988294&travelmode=walking"

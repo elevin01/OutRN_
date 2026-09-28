@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, Budget, IsoDateTime, LatLon, Note, Option, Price, TravelMode } from "./common.js";
+import { AgeLimit, Budget, IsoDateTime, LatLon, Note, Option, Price, TravelMode, VenueLink } from "./common.js";
 
 /** POST /v1/recommendations — a short, ordered list of things that fit the time the user has. */
 
@@ -33,6 +33,11 @@ export const RecommendationRequest = z.strictObject({
   seenIds: z.array(z.uuid()).max(200).optional(),
   /** Item ids (RecommendationItem.id, a UUID) the user dismissed. Never shown. */
   dismissedIds: z.array(z.uuid()).max(200).optional(),
+  /**
+   * For food places: "takeout" plans a quick stop to order and collect (about 15 minutes), and
+   * leaves out places that do not do takeout. Omit to sit down; takeout-only counters are then left out.
+   */
+  visitStyle: z.enum(["dine_in", "takeout"]).optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
@@ -65,6 +70,8 @@ export const ResolvedRequest = z.object({
   originIsDefault: z.boolean(),
   /** The request's `backBy`, if any. */
   backBy: IsoDateTime.nullable(),
+  /** The request's `visitStyle`, or "dine_in". */
+  visitStyle: z.enum(["dine_in", "takeout"]),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;
 
@@ -77,6 +84,22 @@ export const Travel = z.object({
   parkingMinutes: z.int().min(0).nullable(),
 });
 
+/**
+ * What the visit takes. Show `typicalMinutes` as "takes about 1h20": how long it usually takes, not
+ * a limit on the user's time. The engine already checked that at least `minMinutes` fit.
+ */
+export const Visit = z.object({
+  /** "dine_in" | "counter" | "takeout" | "visit" | "event". Open-ended: fall back to `label`. */
+  style: z.string().min(1),
+  /** "Sit-down meal", "Counter service", "Takeout", "Visit", "Event". */
+  label: z.string(),
+  minMinutes: z.int().min(0),
+  typicalMinutes: z.int().min(0),
+  /** False only for an event with a published end. */
+  isEstimate: z.boolean(),
+});
+export type Visit = z.infer<typeof Visit>;
+
 export const Timing = z.object({
   travel: Travel,
   leaveAt: IsoDateTime,
@@ -87,8 +110,23 @@ export const Timing = z.object({
   finishBy: IsoDateTime,
   /** Closing time, when known. */
   closesAt: IsoDateTime.nullable(),
+  visit: Visit,
 });
 export type Timing = z.infer<typeof Timing>;
+
+/**
+ * One step of the plan, in order: leave, arrive, order by or last entry, wrap up, be back. `kind` is
+ * open-ended ("leave", "arrive", "event_starts", "order_by", "last_entry", "entry_by", "wrap_up",
+ * "back_by"); `text` is the default wording.
+ */
+export const PlanStep = z.object({
+  kind: z.string().min(1),
+  at: IsoDateTime,
+  /** True when the time rests on an estimate (travel; a guessed last entry). Show "~7:42pm". */
+  isEstimate: z.boolean(),
+  text: z.string(),
+});
+export type PlanStep = z.infer<typeof PlanStep>;
 
 export const EventTimes = z.object({
   startsAt: IsoDateTime,
@@ -135,6 +173,8 @@ export const RecommendationItem = z.object({
   /** Present for kind "event". */
   event: EventTimes.nullable(),
   timing: Timing,
+  /** The plan behind the card as timed steps; always starts with "leave" and "arrive". */
+  plan: z.array(PlanStep),
   price: Price,
   /** Must be shown when present. */
   ageLimit: AgeLimit.nullable(),
@@ -148,6 +188,8 @@ export const RecommendationItem = z.object({
     directionsUrl: z.url(),
     websiteUrl: z.url().nullable(),
     phone: z.string().nullable(),
+    /** The place's own pages (Instagram, Facebook, menu), when OSM lists them. */
+    links: z.array(VenueLink),
   }),
 });
 export type RecommendationItem = z.infer<typeof RecommendationItem>;

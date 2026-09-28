@@ -25,6 +25,7 @@
       "bar"
     ],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -37,17 +38,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~22 min walk · until 2am, you'd have 2h33 · price unknown · usually 21+",
+        "summary": "~22 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Ludlow Tavern",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:57:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:57pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 22,
@@ -61,6 +89,7 @@
         "usefulMinutes": 153
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://ludlowtavern.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=walking"
@@ -106,17 +135,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~23 min walk · until 3am, you'd have 2h32 · price unknown · usually 21+",
+        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Stanton Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:58:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:58pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 23,
@@ -130,6 +186,7 @@
         "usefulMinutes": 152
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://stantonbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
@@ -175,17 +232,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~25 min walk · until 2am, you'd have 2h30 · price unknown · usually 21+",
+        "summary": "~25 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Essex Hester Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:00:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 25,
@@ -199,6 +283,7 @@
         "usefulMinutes": 150
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://essexhesterbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking"

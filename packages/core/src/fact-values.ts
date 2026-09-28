@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { CATEGORIES } from "./categories.js";
 import type { Attribute } from "./evidence.js";
+import { isPublicWebHost } from "./urls.js";
 
 /**
  * Runtime shapes for fact values, one per attribute (documented in evidence.ts). TypeScript types
@@ -12,6 +13,18 @@ import type { Attribute } from "./evidence.js";
 const text = z.object({ value: z.string().trim().min(1).max(500) }).strict();
 const oneOf = <T extends [string, ...string[]]>(values: T) => z.object({ value: z.enum(values) }).strict();
 const minutes = z.object({ minutes: z.number().int().min(0).max(1440) }).strict();
+/** A link we may put in front of a user: https on a public host, no credentials, a sane length. */
+const httpsUrl = z
+  .string()
+  .max(500)
+  .refine((s) => {
+    try {
+      const u = new URL(s);
+      return u.protocol === "https:" && !u.username && !u.password && isPublicWebHost(u.hostname);
+    } catch {
+      return false;
+    }
+  }, "must be an https URL");
 
 const weeklyInterval = z
   .object({ weekday: z.number().int().min(0).max(6), startMin: z.number().int().min(0).max(1440), endMin: z.number().int().max(2880) })
@@ -51,6 +64,11 @@ export const FACT_VALUE_SCHEMAS = {
   min_useful_minutes: minutes,
   business_status: z.object({ status: z.enum(["operating", "closed_permanently", "closed_temporarily"]) }).strict(),
   scheduled_closure: z.object({ at: z.string().datetime() }).strict(),
+  takeout: oneOf(["yes", "no", "only"]),
+  links: z
+    .object({ instagram: httpsUrl.optional(), facebook: httpsUrl.optional(), menu: httpsUrl.optional() })
+    .strict()
+    .refine((l) => Object.keys(l).length > 0, "links needs at least one link"),
   website: text,
   phone: text,
   indoor_outdoor: oneOf(["indoor", "covered", "outdoor", "mixed"]),

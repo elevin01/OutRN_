@@ -5,7 +5,7 @@ import { describeFacts, hoursToday, sourceName, type FactRecord } from "@outrn/e
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { labelOf } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
-import { ageLimitFrom, directionsUrl, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
+import { ageLimitFrom, directionsUrl, linksFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
 import { attributionsFor } from "./recommendations.js";
 
 interface PlaceRow {
@@ -114,7 +114,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
       websiteUrl: websiteUrl(textFrom(facts["website"]?.value) ?? tags["website"] ?? tags["contact:website"]),
       phone: textFrom(facts["phone"]?.value) ?? tags["phone"] ?? tags["contact:phone"] ?? null,
     },
-    actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string> },
+    actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string>, links: linksFrom(facts["links"]?.value) },
     asOf: now.toISOString(),
     attributions: await attributionsFor(q, allSources),
   };

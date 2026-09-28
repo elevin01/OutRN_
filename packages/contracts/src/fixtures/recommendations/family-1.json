@@ -29,7 +29,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [
     {
@@ -61,8 +62,35 @@
         "arriveAt": "2026-10-04T05:33:00.000Z",
         "usefulMinutes": 102,
         "finishBy": "2026-10-04T07:15:00.000Z",
-        "closesAt": "2026-10-04T08:00:00.000Z"
+        "closesAt": "2026-10-04T08:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T05:15:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 1:15am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T05:33:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 1:33am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:15:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3:15am"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -91,7 +119,7 @@
         }
       ],
       "copy": {
-        "summary": "~13 min walk · until 4am, you'd have 1h42 · price unknown · usually 21+",
+        "summary": "~13 min walk · takes about 1h · until 4am · price unknown · usually 21+",
         "sentence": "Plenty of time.",
         "caveat": "Check first: probably 21+ only",
         "action": "Check first"
@@ -99,7 +127,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
         "websiteUrl": null,
-        "phone": null
+        "phone": null,
+        "links": []
       }
     },
     {
@@ -131,8 +160,35 @@
         "arriveAt": "2026-10-04T05:38:00.000Z",
         "usefulMinutes": 82,
         "finishBy": "2026-10-04T07:00:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z"
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T05:15:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 1:15am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T05:38:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 1:38am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:00:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3am, when it closes"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -161,7 +217,7 @@
         }
       ],
       "copy": {
-        "summary": "~18 min walk · until 3am, you'd have 1h22 · price unknown · usually 21+",
+        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time.",
         "caveat": "Check first: probably 21+ only",
         "action": "Check first"
@@ -169,7 +225,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
         "websiteUrl": "https://broomebar.example/",
-        "phone": "+1 212 555 3125"
+        "phone": "+1 212 555 3125",
+        "links": []
       }
     },
     {
@@ -201,8 +258,35 @@
         "arriveAt": "2026-10-04T05:40:00.000Z",
         "usefulMinutes": 80,
         "finishBy": "2026-10-04T07:00:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z"
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T05:15:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 1:15am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T05:40:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 1:40am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:00:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3am, when it closes"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -231,7 +315,7 @@
         }
       ],
       "copy": {
-        "summary": "~20 min walk · until 3am, you'd have 1h20 · price unknown · usually 21+",
+        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time.",
         "caveat": "Check first: probably 21+ only",
         "action": "Check first"
@@ -239,7 +323,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
         "websiteUrl": "https://ridgebar.example/",
-        "phone": "+1 212 555 6471"
+        "phone": "+1 212 555 6471",
+        "links": []
       }
     }
   ],

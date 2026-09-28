@@ -49,6 +49,7 @@ const LABEL: Record<string, string> = {
   last_entry_offset: "Last entry",
   min_useful_minutes: "Time to allow",
   wheelchair: "Wheelchair",
+  takeout: "Takeout",
   subtype: "Kind",
   age_limit: "Age limit",
   parking: "Parking",
@@ -57,9 +58,9 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "age_limit", "admission", "admission_status", "takeout", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
-const HIDDEN = new Set(["name", "category", "website", "phone"]);
+const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
 
 const SOURCE_LABEL: Record<string, string> = {
   founder: "OutRN",
@@ -99,6 +100,13 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
         for (const iv of v["weekly"] as { weekday: number; startMin: number; endMin: number }[]) byDay.set(iv.weekday, [...(byDay.get(iv.weekday) ?? []), `${hm(iv.startMin)}–${hm(iv.endMin)}`]);
         return [1, 2, 3, 4, 5, 6, 0].filter((d) => byDay.has(d)).map((d) => `${WEEKDAY[d]} ${byDay.get(d)!.join(", ")}`).join("; ");
       }
+      break;
+    }
+    case "takeout": {
+      const t = v["value"];
+      if (t === "yes") return "Available";
+      if (t === "no") return "Not offered";
+      if (t === "only") return "Takeout only (no seating)";
       break;
     }
     case "scheduled_closure": {
