@@ -1,4 +1,6 @@
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
@@ -381,6 +383,22 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const stored = OpsRunDetail.parse((await call("GET", `/ops/v1/runs/${ev.id}`, undefined, auth)).json);
     expect(stored.results.map((r) => [r.itemId, r.class, r.shortlisted])).toEqual(ev.results.map((r) => [r.itemId, r.class, r.shortlisted]));
     expect((await call("GET", "/ops/v1/runs/not-a-uuid", undefined, auth)).status).toBe(404);
+  });
+
+  it("enforces a published closing date from its day, before any ingest records the closure", async () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: { lat: number; lon: number; tags: Record<string, string> }[] };
+    const el = fixture.elements.find((e) => e.tags["name"] === "Delancey Coffee")!;
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "closing.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [{ ...el, tags: { ...el.tags, opening_hours: "24/7", end_date: "2026-11-10" } }], outrn_extent: { lat: el.lat, lon: el.lon, radius_m: 5 } }));
+    // Normalized on Nov 1; no ingest or materialization runs after that.
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-01T15:00:00Z") });
+    const decision = async (at: string) => {
+      const run = await runEngine(db, { areaId: "les", windowMinutes: 120, categories: ["cafe"] }, { clock: () => new Date(at), persist: false });
+      return run.shortlist.all.find((e) => e.candidate.name === "Delancey Coffee")!;
+    };
+    expect((await decision("2026-11-09T17:00:00Z")).excludedBy).toBeNull(); // noon the day before
+    const closed = await decision("2026-11-10T17:00:00Z"); // noon on the closing day, New York
+    expect([closed.class, closed.excludedBy]).toEqual(["ineligible", "CLOSED_PERMANENTLY"]);
   });
 
   it("reports an unreachable database as a retryable outage", async () => {

@@ -21,7 +21,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * Version of the rules below. Bump it whenever a change would turn the same tags into different
  * facts: the next ingest then re-normalizes every record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.1";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.2";
 
 export interface OsmRecord {
   externalId: string;
@@ -200,9 +200,13 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const opensOn = opens ? midday(opens.start) : null;
   // Scheduled changes to what these tags say: the record is due for re-normalization at the first.
   const due: Date[] = [];
-  // An "operating" claim never outlives a closing date still ahead.
+  // A closing date still ahead: announced as a fact the engine enforces from that day, before any
+  // ingest records the closed status; and no "operating" claim outlives it.
   const operatingUntil = closesOn && closesOn > now ? closesOn : null;
-  if (operatingUntil) due.push(operatingUntil);
+  if (operatingUntil) {
+    due.push(operatingUntil);
+    pub("scheduled_closure", { at: operatingUntil.toISOString() }, `end_date=${t["end_date"]}`, 0.75);
+  }
   if (disused || hours === "off" || hours === "closed") {
     pub("business_status", { status: "closed_permanently" }, disused ? Object.keys(t).find((k) => /^(disused|abandoned|was):/.test(k))! : `opening_hours=${hours}`, 0.75);
   } else if (ended && closesOn! <= now) {

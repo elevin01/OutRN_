@@ -42,6 +42,7 @@ const LABEL: Record<string, string> = {
   opening_hours: "Hours",
   kitchen_hours: "Kitchen",
   business_status: "Status",
+  scheduled_closure: "Closing",
   admission: "Admission",
   admission_status: "Admission status",
   price: "Price",
@@ -56,7 +57,7 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "age_limit", "admission", "admission_status", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone"]);
 
@@ -97,6 +98,12 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
         for (const iv of v["weekly"] as { weekday: number; startMin: number; endMin: number }[]) byDay.set(iv.weekday, [...(byDay.get(iv.weekday) ?? []), `${hm(iv.startMin)}–${hm(iv.endMin)}`]);
         return [1, 2, 3, 4, 5, 6, 0].filter((d) => byDay.has(d)).map((d) => `${WEEKDAY[d]} ${byDay.get(d)!.join(", ")}`).join("; ");
       }
+      break;
+    }
+    case "scheduled_closure": {
+      // A calendar day stored as its midday UTC: the UTC date is the day.
+      const at = typeof v["at"] === "string" ? new Date(v["at"]) : null;
+      if (at && !Number.isNaN(at.getTime())) return `Closes permanently ${new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" }).format(at)}`;
       break;
     }
     case "business_status": {

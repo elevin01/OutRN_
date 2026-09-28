@@ -574,3 +574,19 @@ describe("feasibility: business status", () => {
   });
 });
 
+describe("feasibility: scheduled closure", () => {
+  it("a published closing date excludes from its day, even when no status fact remains", () => {
+    const c = venue({ category: "cafe", hours: "24/7" });
+    delete c.facts.business_status; // the "operating" claim lapsed at the closing date
+    c.facts.scheduled_closure = { value: { at: "2026-11-10T12:00:00.000Z" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    expect(one(c, ctx("2026-11-09 12:00", 120)).excludedBy).toBeNull();
+    expect(one(c, ctx("2026-11-10 12:00", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
+  });
+
+  it("a lapsed status alone is uncertainty, not a closure", () => {
+    const c = venue({ category: "cafe", hours: "24/7" });
+    delete c.facts.business_status;
+    expect(one(c, ctx("2026-11-10 12:00", 120)).excludedBy).toBeNull();
+  });
+});
+

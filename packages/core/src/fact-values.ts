@@ -50,6 +50,7 @@ export const FACT_VALUE_SCHEMAS = {
   price,
   min_useful_minutes: minutes,
   business_status: z.object({ status: z.enum(["operating", "closed_permanently", "closed_temporarily"]) }).strict(),
+  scheduled_closure: z.object({ at: z.string().datetime() }).strict(),
   website: text,
   phone: text,
   indoor_outdoor: oneOf(["indoor", "covered", "outdoor", "mixed"]),

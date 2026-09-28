@@ -166,6 +166,8 @@ describe("OSM normalization", () => {
       const later = rec({ name: "Later", amenity: "restaurant", end_date: "2027-06-01" });
       expect(fact(later, "business_status")).toMatchObject({ value: { status: "operating" }, validUntil: new Date("2027-06-01T12:00:00Z") });
       expect(later.changesAt).toEqual(new Date("2027-06-01T12:00:00Z"));
+      expect(fact(later, "scheduled_closure")).toMatchObject({ evidenceClass: "published", value: { at: "2027-06-01T12:00:00.000Z" }, evidence: "end_date=2027-06-01" });
+      expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "scheduled_closure")).toBeUndefined();
       expect(rec({ name: "Plain", amenity: "restaurant" }).changesAt).toBeNull();
     });
 

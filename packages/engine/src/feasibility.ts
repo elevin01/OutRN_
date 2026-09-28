@@ -84,6 +84,10 @@ export function evaluateFeasibility(c: Candidate, ctx: RequestContext, policy: C
 
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out(status.value.status === "closed_temporarily" ? "CLOSED_TEMPORARILY" : "CLOSED_PERMANENTLY");
+  // A closing date published ahead is in force from its day, even before an ingest records the closed
+  // status. (A status that merely lapsed is uncertainty, not a closure: it excludes nothing.)
+  const closure = fact<{ at: string }>(c, "scheduled_closure");
+  if (closure && !closure.isEstimate && Date.parse(closure.value.at) <= ctx.now.getTime()) return out("CLOSED_PERMANENTLY");
 
   // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
   // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.

@@ -17,6 +17,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - price              : { min?: number, max?: number, currency: string, free?: boolean, basis: "per_person"|"per_group" }
  *  - min_useful_minutes : { minutes: number }
  *  - business_status    : { status: "operating"|"closed_permanently"|"closed_temporarily" }
+ *  - scheduled_closure  : { at: ISO instant }  a permanent closure a source announces ahead (OSM end_date);
+ *                         in force from `at` at request time, before any ingest records the closed status
  *  - website, phone     : { value: string }
  *  - name               : { value: string }
  *  - category           : { value: Category }
@@ -40,6 +42,7 @@ export const ATTRIBUTES = [
   "price",
   "min_useful_minutes",
   "business_status",
+  "scheduled_closure",
   "website",
   "phone",
   "indoor_outdoor",
