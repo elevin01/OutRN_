@@ -128,3 +128,26 @@ export const NearbyParking = z.object({
   text: z.string(),
 });
 export type NearbyParking = z.infer<typeof NearbyParking>;
+
+/**
+ * A freely licensed photo of the place itself, from a source that ties it to the place (never a stock
+ * or "places like this" photo). Always show `credit` with it, linked to `sourceUrl`.
+ */
+export const Photo = z.object({
+  /** A resized copy, about 800 px wide. */
+  url: z.url(),
+  width: z.int().min(1),
+  height: z.int().min(1),
+  /** What it shows, when the source describes it. Otherwise describe it by the place's name. */
+  alt: z.string().nullable(),
+  /** "Jane Doe, CC BY-SA 4.0, via Wikimedia Commons". Required wherever the photo appears. */
+  credit: z.string(),
+  author: z.string().nullable(),
+  /** "CC BY-SA 4.0", "CC BY 2.0", "CC0", "Public domain". */
+  license: z.string(),
+  licenseUrl: z.url().nullable(),
+  /** The photo's own page at its source. */
+  sourceUrl: z.url(),
+});
+export type Photo = z.infer<typeof Photo>;
+

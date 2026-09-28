@@ -6,6 +6,7 @@ import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { labelOf } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
 import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
+import { loadPhotos, photoSources } from "./photos.js";
 import { attributionsFor } from "./recommendations.js";
 
 interface PlaceRow {
@@ -98,6 +99,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
   const status = (facts["business_status"]?.value as { status?: string } | undefined)?.status;
   // The nearest public parking, with its hours: there is no visit here to check them against.
   const parking = (await loadNearbyParking(q, [row.id])).get(row.id)?.[0];
+  const photos = (await loadPhotos(q, [row.id], 10)).get(row.id) ?? [];
   // Credit every source shown: the facts', and OSM's for the parking even when no fact came from OSM.
   const allSources = [...new Set([...Object.values(facts).flatMap((f) => f.sources), ...(parking ? [PARKING_SOURCE] : [])])];
   return {
@@ -108,6 +110,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
     timezone: tz,
     location: point,
     address: address(tags),
+    photos,
     status: status === "operating" || status === "closed_temporarily" || status === "closed_permanently" ? status : "unknown",
     hoursNow,
     price: priceOf(facts["price"]),
@@ -120,6 +123,6 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
     },
     actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string>, links: linksFrom(facts["links"]?.value) },
     asOf: now.toISOString(),
-    attributions: await attributionsFor(q, allSources),
+    attributions: await attributionsFor(q, [...allSources, ...(await photoSources(q, photos.length ? [row.id] : []))]),
   };
 }

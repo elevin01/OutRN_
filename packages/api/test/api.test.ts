@@ -6,7 +6,7 @@ import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
-import { ingestExtentFor, ingestOsmArea } from "@outrn/ingest";
+import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -19,6 +19,7 @@ import { runEngine } from "../src/service/recommendations.js";
 const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/outrn";
 const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 const FIXTURE = resolve(__dirname, "../../../fixtures/osm/les-synthetic.json");
+const PHOTOS = resolve(__dirname, "../../../fixtures/wikimedia/les-synthetic.json");
 const SAT_EVENING = new Date("2026-10-03T22:30:00Z");
 const TOKEN = "test-ops-token";
 
@@ -38,6 +39,7 @@ beforeAll(async () => {
   await db.query("create extension if not exists postgis; create extension if not exists pgcrypto;");
   await reset(db);
   await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+  await ingestPhotos(db, { areaSlug: "les", fromFile: PHOTOS });
 });
 
 afterAll(async () => {
@@ -63,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.4.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.5.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -295,7 +297,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
-    // Items a 1.3 API stored name no parking, and a 1.2 API's have no conditions either: that search computed none.
+    // Items a 1.4 API stored have no photos; a 1.3 API's name no parking; a 1.2 API's have no conditions either: that search computed none.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'photos') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    expect((await search(next)).items.map((i) => i.photos)).toEqual(expected.map(() => []));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'parking') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     expect((await search(next)).items.map((i) => i.parking)).toEqual(expected.map(() => null));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'conditions') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
@@ -387,6 +391,28 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     } finally {
       await materializeSubjects(db, "venue", [kitchen], now);
     }
+  });
+
+  it("shows a place's own free photos with their credits, and credits the source", async () => {
+    now = SAT_EVENING;
+    const page = await search({ areaId: "les", windowMinutes: 180 });
+    const park = page.items.find((i) => i.name === "Pitt Park")!;
+    expect(park.photos.map((p) => [p.license, p.credit])).toEqual([
+      ["CC BY-SA 4.0", "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons"],
+      ["CC0", "CC0, via Wikimedia Commons"],
+    ]);
+    expect(park.photos[0]).toMatchObject({ width: 800, height: 600, sourceUrl: "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0" });
+    expect(park.photos[0]!.url).toMatch(/^https:\/\/upload\.wikimedia\.org\//);
+    // No photo is ever borrowed: places without their own have none.
+    expect(page.items.filter((i) => i.name !== "Pitt Park").every((i) => i.photos.length === 0)).toBe(true);
+    expect(page.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+
+    const details = PlaceDetails.parse((await call("GET", `/v1/places/${park.placeId}`)).json);
+    expect(details.photos.map((p) => p.credit)).toEqual(park.photos.map((p) => p.credit));
+    expect(details.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+    const kitchen = PlaceDetails.parse((await call("GET", `/v1/places/${page.items.find((i) => i.name === "Forsyth Clinton Kitchen")!.placeId}`)).json);
+    expect(kitchen.photos).toEqual([]);
+    expect(kitchen.attributions).not.toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
   });
 
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {

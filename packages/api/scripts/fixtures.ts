@@ -18,7 +18,7 @@ import pg from "pg";
 import type { ApiError, Area, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationRequest, RecommendationResponse } from "@outrn/contracts";
 import { reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { decodeCursor, encodeCursor } from "../src/service/recommendations.js";
 
@@ -65,6 +65,8 @@ async function seed(db: pg.Pool): Promise<void> {
   for (const area of ["les", "bronxville"]) {
     await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(ROOT, `fixtures/osm/${area}-synthetic.json`) });
   }
+  // Photos the synthetic places' tags name, from a synthetic Commons capture (the image URLs don't load).
+  await ingestPhotos(db, { areaSlug: "les", fromFile: resolve(ROOT, "fixtures/wikimedia/les-synthetic.json") });
   await db.query(`update facts set fetched_at = $1`, [FETCHED]);
   const id = async (name: string) => {
     const r = await db.query<{ id: string }>(`select id from venues where canonical_name = $1 and publish_state = 'eligible'`, [name]);

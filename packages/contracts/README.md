@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.4.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.5.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,13 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.5.0** (additive). Photos:
+  - `photos` on every item (up to 3) and on place details: freely licensed photos of the place itself, lead first. Each has `url` (about 800 px wide, from upload.wikimedia.org), `width`, `height`, `alt` (null when the source doesn't describe it), `credit`, `author`, `license`, `licenseUrl` and `sourceUrl`.
+  - **Always show `credit` with the photo, linked to `sourceUrl`.** The license requires it.
+  - A photo is always of the place, tied to it by its OSM record or its Wikidata item; never a stock or "places like this" photo. Empty means none is known, so keep the category artwork.
+  - `attributions` includes "Photos: Wikimedia Commons contributors (credited with each photo)" whenever photos are shown.
+  - Items stored by a 1.4 API page with `photos: []`.
+  - In the fixtures, the photos are synthetic: their URLs don't load, so handle an image that fails to load.
 - **1.4.0** (additive). Parking:
   - `parking` on every item: for a drive, the nearest public parking within about 400 m that is open from parking until the car is collected (a lot, a garage or street spaces, from OpenStreetMap). It has `name` (null when unnamed), `kind`, `fee` (`free`, `paid`, `unknown`), `openingHours` (as OSM lists them, or null), `location`, `distanceMetres`, `walkMinutes`, `directionsUrl` (driving directions to the parking itself), and default `text`. Null when not driving, or when none nearby is known to be open for the visit.
   - `parkingNearby` on place details: the nearest public parking with its hours, whatever the travel mode.

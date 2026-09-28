@@ -37,6 +37,7 @@
       "placeId": "00000000-0000-4000-8000-00000000002d",
       "name": "Stanton Park",
       "placeName": "Stanton Park",
+      "photos": [],
       "category": {
         "id": "park",
         "label": "Park"
@@ -150,6 +151,7 @@
       "placeId": "00000000-0000-4000-8000-00000000002e",
       "name": "East River Overlook",
       "placeName": "East River Overlook",
+      "photos": [],
       "category": {
         "id": "viewpoint",
         "label": "Viewpoint"

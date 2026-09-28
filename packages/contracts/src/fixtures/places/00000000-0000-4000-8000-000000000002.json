@@ -12,6 +12,30 @@
     "lon": -73.986782
   },
   "address": null,
+  "photos": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/800px-OutRN_synthetic_Pitt_Park_lawn.jpg",
+      "width": 800,
+      "height": 600,
+      "alt": "The lawn at Pitt Park on a summer evening (synthetic fixture: this file does not exist)",
+      "credit": "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons",
+      "author": "Synthetic Photographer",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg"
+    },
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg/800px-OutRN_synthetic_Pitt_Park_fountain.jpg",
+      "width": 800,
+      "height": 1067,
+      "alt": "Fountain in Pitt Park & its benches (synthetic fixture)",
+      "credit": "CC0, via Wikimedia Commons",
+      "author": null,
+      "license": "CC0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg"
+    }
+  ],
   "status": "operating",
   "hoursNow": {
     "state": "open",
@@ -169,6 +193,7 @@
   },
   "asOf": "2026-10-03T22:30:00.000Z",
   "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

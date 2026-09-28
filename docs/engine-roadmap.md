@@ -47,7 +47,7 @@ changelog.
     the long end would eat the visit or run past last orders, the card is Check first
     (`WAIT_MAY_NOT_FIT`). Like every estimate, it never excludes a place.
   - Contract 1.3 (additive): `conditions` on every item. The summary shows "~15–30 min wait".
-- **Batch 3b, part 2 (this PR): parking near the venue.**
+- **Batch 3b, part 2: parking near the venue.**
   - Ingest brings in OSM `amenity=parking` (named or not) and derives the places anyone may park:
     lots, garages and street spaces, with whether they charge and their hours. Private,
     customer-only, permit and resident lots are left out, as are carports and garage boxes. The
@@ -58,17 +58,22 @@ changelog.
     parking is at least the walk from it.
   - Place details show the nearest public parking whatever the mode.
   - Contract 1.4 (additive): `parking` on items, `parkingNearby` on place details, the `park` step.
+- **Batch 3b, part 3 (this PR): free photos of the place itself.**
+  - `outrn ingest photos` takes the Commons files a venue's OSM records name (`wikimedia_commons`,
+    or an `image` link to Commons), then its Wikidata item's image (P18). It keeps only photos
+    (not maps, drawings or logos) that are freely licensed (public domain, CC0, CC BY, CC BY-SA)
+    and credited as their license requires, up to 3 per venue.
+  - Nothing is guessed: no search by name, no stock photo.
+  - Live runs record every response (`--save`) and replay exactly (`--from-file`), like `ingest osm`.
+  - Contract 1.5 (additive): `photos` on items and place details, each with its credit.
 
 ## Next, in order
 
-### Batch 3b, the rest: photos (no new vendors)
-- **Free photos:**
-  - Wikimedia Commons and Wikidata, for parks, museums and landmarks.
-  - Mapillary street view, to show the entrance.
-  - The preview image from the venue's own site.
-- **Whose host is a link on? (next PR, part 3, with the photos.)** A menu link from OSM may be on
-  any public https host today, so a vandal can make a venue's "Menu" a phishing page. Accept a menu
-  only on the venue's own site's domain or a short list of menu platforms, and drop the rest.
+### Batch 3b, the rest (no new vendors)
+- **More free photos:**
+  - Commons categories a venue names (`wikimedia_commons=Category:…`), for more than one photo.
+  - Mapillary street view, to show the entrance (needs a free token).
+  - The preview image from the venue's own site (`og:image`, with the site's permission).
 - **Counter-service supply (needs your call).** `amenity=fast_food` isn't ingested today, so
   slices, dumplings and bagel counters never appear. Adding it brings chains too; the plan would be
   to include it with chains ranked below independents.

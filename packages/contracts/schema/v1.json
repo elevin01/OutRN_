@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.4.0",
+  "contract": "1.5.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -762,6 +762,82 @@
                 },
                 "placeName": {
                   "type": "string"
+                },
+                "photos": {
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "alt": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "credit": {
+                        "type": "string"
+                      },
+                      "author": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "license": {
+                        "type": "string"
+                      },
+                      "licenseUrl": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sourceUrl": {
+                        "type": "string",
+                        "format": "uri"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "width",
+                      "height",
+                      "alt",
+                      "credit",
+                      "author",
+                      "license",
+                      "licenseUrl",
+                      "sourceUrl"
+                    ],
+                    "additionalProperties": false
+                  }
                 },
                 "category": {
                   "type": "object",
@@ -1559,6 +1635,7 @@
                 "placeId",
                 "name",
                 "placeName",
+                "photos",
                 "category",
                 "subtype",
                 "status",
@@ -1783,6 +1860,82 @@
                 "type": "null"
               }
             ]
+          },
+          "photos": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "width": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "alt": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "credit": {
+                  "type": "string"
+                },
+                "author": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "license": {
+                  "type": "string"
+                },
+                "licenseUrl": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "sourceUrl": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "url",
+                "width",
+                "height",
+                "alt",
+                "credit",
+                "author",
+                "license",
+                "licenseUrl",
+                "sourceUrl"
+              ],
+              "additionalProperties": false
+            }
           },
           "status": {
             "type": "string",
@@ -2343,6 +2496,7 @@
           "timezone",
           "location",
           "address",
+          "photos",
           "status",
           "hoursNow",
           "price",

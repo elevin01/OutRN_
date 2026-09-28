@@ -1260,7 +1260,9 @@
     "name": "Pitt Park",
     "leisure": "park",
     "opening_hours": "Mo-Su 06:00-01:00",
-    "website": "https://pittpark.example"
+    "website": "https://pittpark.example",
+    "wikimedia_commons": "File:OutRN synthetic Pitt Park lawn.jpg;File:OutRN synthetic Pitt Park map.svg",
+    "wikidata": "Q4115189"
    },
    "timestamp": "2025-09-04T00:00:00.000Z",
    "version": 3,
@@ -1277,7 +1279,8 @@
     "name": "Norfolk Park",
     "leisure": "park",
     "opening_hours": "Mo-Su 06:00-01:00",
-    "phone": "+1 212 555 1075"
+    "phone": "+1 212 555 1075",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg"
    },
    "timestamp": "2026-05-31T00:00:00.000Z",
    "version": 1,
@@ -1425,7 +1428,9 @@
     "name": "Delancey Books",
     "shop": "books",
     "opening_hours": "Mo-Su 10:00-21:00",
-    "website": "https://delanceybooks.example"
+    "website": "https://delanceybooks.example",
+    "wikimedia_commons": "File:OutRN synthetic Delancey Books window.jpg",
+    "image": "https://delanceybooks.example/storefront.jpg"
    },
    "timestamp": "2025-03-31T00:00:00.000Z",
    "version": 7,
@@ -1592,7 +1597,8 @@
    "tags": {
     "name": "East River Overlook",
     "tourism": "viewpoint",
-    "natural": "coastline"
+    "natural": "coastline",
+    "image": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_East_River_Overlook.jpg"
    },
    "timestamp": "2026-06-21T00:00:00.000Z",
    "version": 3,

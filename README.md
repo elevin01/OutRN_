@@ -44,12 +44,15 @@ pnpm db:migrate                 # schema + policy seeds + two test areas (les, b
 
 # Offline: run the whole slice on the synthetic fixture
 pnpm outrn ingest osm --area les --from-file fixtures/osm/les-synthetic.json
+pnpm outrn ingest photos --area les --from-file fixtures/wikimedia/les-synthetic.json
 pnpm outrn recommend --area les --at 2026-10-03T22:30:00Z --minutes 180 --all
 pnpm outrn backtest --area les
 
 # Online (a machine that can reach overpass-api.de): ingest the real area and save the response
 pnpm outrn ingest osm --area les --save fixtures/live/les.json
 pnpm outrn ingest osm --area bronxville --save fixtures/live/bronxville.json
+# (reaches www.wikidata.org and commons.wikimedia.org) the venues' own free photos, after ingest osm
+pnpm outrn ingest photos --area les --save fixtures/live/les-photos.json
 ```
 
 The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
@@ -153,6 +156,7 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | --- | --- |
 | `outrn migrate [--reset] [--reapply <file>]` | Apply SQL migrations (reset drops everything; dev only). Refuses to run if an applied migration was edited since; `--reapply` re-runs one on a database that applied an earlier draft |
 | `outrn ingest osm --area <slug> [--from-file p] [--save p] [--radius m]` | Overpass → raw store → identity → facts → materialize; extent = catchment + max reach |
+| `outrn ingest photos --area <slug> [--from-file p] [--save p] [--radius m]` | Free photos the venues' OSM records name (a Commons file, or their Wikidata item's image), with credits; same extent |
 | `outrn materialize [--area <slug>]` | Rebuild `current_facts`, publish states and verification tasks |
 | `outrn recommend --area <slug> [--at iso] [--minutes n] [--back-by iso] [--budget n\|free] [--mood m] [--company c] [--categories a,b] [--wheelchair] [--offset n] [--all] [--json]` | Run the engine through the same request resolution as the API; `--offset` pages "More options"; `--all` prints every candidate with its class and exclusion reason; `--json` prints the exact v1 response the UI receives (`--cursor c` for more pages) |
 | `outrn backtest --area <slug> [--grid n] [--hours ..] [--windows ..] [--budgets ..] [--days ..] [--out p]` | Coverage matrix: % of sample points × contexts with three options |
@@ -216,6 +220,11 @@ midnight in the area's timezone. A closing date is enforced at request time from
 no visit is planned past it. The first ingest afterwards records the closed status and unpublishes
 the venue. Opening dates and survey expiries lapse on their own and are re-normalized on the next
 ingest, even when nothing upstream changed.
+
+Run `ingest photos` after it, weekly is enough. It replaces the area's photos as a whole: a tag
+removed upstream, or a file deleted or relicensed on Commons, takes its photo along. Only freely
+licensed photos (public domain, CC0, CC BY, CC BY-SA) are kept, each with the credit its license
+requires, and the app shows them from upload.wikimedia.org.
 
 ## What is deliberately not here yet
 

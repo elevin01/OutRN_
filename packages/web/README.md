@@ -105,6 +105,11 @@ Street Lot (paid), ~2 min walk"). Its `directionsUrl` drives to the parking itse
 gains a `park` step. Place details carry `parkingNearby` whatever the mode. Both are null when no
 public parking is known within about 400 m.
 
+Contract 1.5 adds `photos` on items and place details. These are freely licensed photos of the
+place itself, lead first; the list is empty when none is known. Show each photo's `credit` with it,
+linked to `sourceUrl`, since the license requires it. Keep the category artwork when there are no
+photos, or when one fails to load. The fixture photos are synthetic and their URLs don't load.
+
 ## Rules
 
 - Import only `@outrn/contracts` from the workspace. Engine, db, api and ingestion packages are
