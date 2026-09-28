@@ -36,6 +36,12 @@ describe("parking from OSM tags", () => {
     expect(parkingFromTags({ amenity: "parking", access: "yes", "motorcar:conditional": "customers @ (Sa,Su)" })).toBeNull();
   });
 
+  it("inherited parking=* values are not a parking kind: one vandal tag can't fail the area's ingest", () => {
+    for (const v of ["__proto__", "constructor", "toString", "hasOwnProperty", "valueOf"]) {
+      expect(parkingFromTags({ amenity: "parking", parking: v }), v).toBeNull();
+    }
+  });
+
   it("a capacity that isn't a count is dropped", () => {
     expect(parkingFromTags({ amenity: "parking", capacity: "about 50" })?.capacity).toBeNull();
     expect(parkingFromTags({ amenity: "parking", capacity: "0" })?.capacity).toBeNull();

@@ -367,5 +367,17 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(await lots()).toEqual([{ name: "Rivington Garage", fee: "paid" }]);
     expect(await nearest()).toEqual(["Rivington Garage"]);
   });
+
+  it("one vandal parking tag can't fail the area's ingest: parking=constructor is skipped, everything else lands", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: unknown[] };
+    const vandal = { type: "node", id: 100199, lat: 40.7205, lon: -73.988, tags: { amenity: "parking", parking: "constructor", name: "Vandal Lot" } };
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "les-vandal.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [...fixture.elements, vandal] }));
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.parking).toEqual({ facilities: 1, removed: 0 });
+    const lots = await db.query<{ name: string | null }>(`select name from parking_facilities`);
+    expect(lots.rows.map((r) => r.name)).toEqual(["Rivington Garage"]);
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+  });
 });
 

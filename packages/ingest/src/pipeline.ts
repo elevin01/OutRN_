@@ -71,7 +71,8 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
     const { elements, baseTimestamp, dropped } = normalizeElements(result.response);
-    log(`fetched ${elements.length} named elements (${dropped} dropped: no name or no geometry)`);
+    // Watch the size on wide drive areas: the Overpass fetch refuses a response over 25 MB.
+    log(`fetched ${elements.length} elements, ${(result.bytes / 1_048_576).toFixed(1)} MB (${dropped} dropped: no name and not parking, or no geometry)`);
 
     const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);

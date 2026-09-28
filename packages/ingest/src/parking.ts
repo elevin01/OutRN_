@@ -1,3 +1,4 @@
+import { ownValue } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 import type { SnapshotExtent } from "@outrn/sources";
 
@@ -56,7 +57,8 @@ export function parkingFromTags(tags: Record<string, string>): ParkingFacility |
   if (tags["amenity"] !== "parking") return null;
   if (!publicForCars(tags)) return null;
   const type = tags["parking"];
-  const kind = type === undefined ? "lot" : KIND[type];
+  // The table's own entries only: "constructor" or "__proto__" as a tag value must not find what every object inherits.
+  const kind = type === undefined ? "lot" : ownValue(KIND, type);
   if (kind === null || kind === undefined) return null;
   // A charge only at some times (fee:conditional) is not a plain yes or no: check the signs.
   const fee = tags["fee:conditional"] !== undefined ? "unknown" : tags["fee"] === "no" ? "free" : tags["fee"] === "yes" ? "paid" : "unknown";

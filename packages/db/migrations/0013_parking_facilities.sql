@@ -26,8 +26,10 @@ alter table parking_facilities enable row level security;
 -- Each venue's nearest public parking within a short walk, nearest first (rank 0), worked out at
 -- ingest: a nearest-neighbour search per venue is too slow for the request path at area scale. A few
 -- are kept so a plan can pass over one that is closed for the visit. Recomputed for every venue near
--- a snapshot's extent on each ingest.
-create table if not exists venue_parking (
+-- a snapshot's extent on each ingest, so it holds nothing that can't be rebuilt: dropped first, which
+-- also lets a database that ran an earlier draft of this migration re-apply it.
+drop table if exists venue_parking;
+create table venue_parking (
   venue_id          uuid not null references venues(id) on delete cascade,
   rank              smallint not null check (rank >= 0),
   source_entity_id  uuid not null references parking_facilities(source_entity_id) on delete cascade,
