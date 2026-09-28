@@ -61,3 +61,23 @@ describe("first-party JSON-LD extraction", () => {
     expect(openingHoursFromSpec([{ dayOfWeek: "Monday" }])).toBeNull();
   });
 });
+
+describe("JSON-LD block scan on hostile pages", () => {
+  it("stays linear on crafted input at the 3 MB fetch cap", () => {
+    const cap = 3 * 1024 * 1024;
+    for (const unit of ["<script", '<script type="application/ld+json">', "<script type=", "<SCRIPT >x"]) {
+      const page = unit.repeat(Math.floor(cap / unit.length));
+      const t0 = Date.now();
+      expect(extractJsonLdBlocks(page)).toEqual([]);
+      expect(Date.now() - t0, unit).toBeLessThan(1500);
+    }
+  });
+
+  it("reads blocks with mixed-case tags and other attributes, and not text inside another script", () => {
+    const page = `<SCRIPT id="a" TYPE='application/ld+json' nonce="n">{"@type":"Bar","name":"A"}</SCRIPT>
+      <script>var s = '<script type="application/ld+json">{"name":"inside a string"}</script>';</script>
+      <script type="text/javascript">{"name":"not json-ld"}</script>
+      <script type="application/ld+json">{"@type":"Bar","name":"B"}</script>`;
+    expect(extractJsonLdBlocks(page)).toEqual([{ "@type": "Bar", name: "A" }, { "@type": "Bar", name: "B" }]);
+  });
+});

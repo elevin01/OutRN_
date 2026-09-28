@@ -35,5 +35,8 @@ describe("ops access in the web layer", () => {
     expect(sameSecret("abc", "abc")).toBe(true);
     expect(sameSecret("abc", "abd")).toBe(false);
     expect(sameSecret("abc", "abcd")).toBe(false);
+    expect(sameSecret("abcd", "abc")).toBe(false);
+    expect(sameSecret("", "abc")).toBe(false);
+    expect(sameSecret("abc\u0000", "abc")).toBe(false);
   });
 });

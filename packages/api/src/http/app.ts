@@ -1,5 +1,6 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { Hono, type Context } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { CONTRACT_VERSION, PageRequest, RecommendationRequest, ROUTES } from "@outrn/contracts";
@@ -16,17 +17,31 @@ export interface AppOptions {
   clock?: () => Date;
   /** Bearer token for /ops/v1/*. */
   opsToken?: string | undefined;
-  /** Without a token, serve ops routes anyway (local development only). */
+  /** Without a token, serve ops routes anyway (local development only; see `openOpsAllowed`). */
   allowOpenOps?: boolean;
   /** Browser origins allowed to call /v1/* directly. */
   corsOrigins?: string[];
   log?: (line: string) => void;
 }
 
+/**
+ * Largest request body accepted; anything bigger is refused before it is read. A search is a few
+ * hundred bytes; the headroom is for id lists (hundreds of UUIDs of seen or dismissed items).
+ */
+export const MAX_BODY_BYTES = 64 * 1024;
+
+/**
+ * Whether ops routes may run without a token: only when NODE_ENV says development. An unset or
+ * unfamiliar NODE_ENV is not development, so a deployment that forgets to set it fails closed.
+ */
+export function openOpsAllowed(nodeEnv: string | undefined): boolean {
+  return nodeEnv === "development";
+}
+
+/** Compare fixed-length digests, so timing reveals neither how much of a guess matched nor the secret's length. */
 function sameSecret(a: string, b: string): boolean {
-  const x = Buffer.from(a);
-  const y = Buffer.from(b);
-  return x.length === y.length && timingSafeEqual(x, y);
+  const digest = (s: string) => createHash("sha256").update(s).digest();
+  return timingSafeEqual(digest(a), digest(b));
 }
 
 async function readJson(c: Context): Promise<unknown> {
@@ -56,8 +71,18 @@ export function createApp(opts: AppOptions): Hono {
     const t0 = Date.now();
     await next();
     c.header("x-outrn-contract", CONTRACT_VERSION);
+    c.header("x-content-type-options", "nosniff");
     opts.log?.(`${c.req.method} ${c.req.path} ${c.res.status} ${Date.now() - t0}ms`);
   });
+  app.use(
+    "*",
+    bodyLimit({
+      maxSize: MAX_BODY_BYTES,
+      onError: () => {
+        throw new ApiProblem("VALIDATION_FAILED", `The body must be at most ${MAX_BODY_BYTES} bytes.`, { fields: [{ path: "(body)", message: "too large" }] });
+      },
+    }),
+  );
   app.use("/v1/*", cors({ origin: opts.corsOrigins ?? ["http://localhost:3000", "http://127.0.0.1:3000"], allowMethods: ["GET", "POST"] }));
 
   const send = <T extends z.ZodType>(c: Context, schema: T, body: z.infer<T>) => {

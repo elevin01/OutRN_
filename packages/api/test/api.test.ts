@@ -182,6 +182,22 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     }
   });
 
+  it("serves only eligible places: excluded and suspended venues are 404", async () => {
+    // The fixture's permanently closed bar is excluded by the pipeline.
+    const closed = (await db.query<{ id: string }>("select id from venues where canonical_name = 'Old Norfolk Lounge' and publish_state = 'excluded'")).rows[0]!.id;
+    const open = (await search({ areaId: "les", windowMinutes: 180 })).items[0]!.placeId;
+    await db.query("update venues set publish_state = 'suspended' where id = $1", [open]);
+    try {
+      for (const id of [closed, open]) {
+        const r = await call("GET", `/v1/places/${id}`);
+        expect([r.status, ApiError.parse(r.json).error.code], id).toEqual([404, "NOT_FOUND"]);
+      }
+    } finally {
+      await db.query("update venues set publish_state = 'eligible' where id = $1", [open]);
+    }
+    expect((await call("GET", `/v1/places/${open}`)).status).toBe(200);
+  });
+
   it("keeps ops diagnostics behind the token", async () => {
     expect((await call("GET", "/ops/v1/runs")).status).toBe(401);
     expect((await call("GET", "/ops/v1/runs", undefined, { authorization: "Bearer wrong" })).status).toBe(401);

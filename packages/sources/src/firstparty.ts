@@ -66,12 +66,28 @@ function hhmmToMinutes(s: unknown): number | null {
   return h * 60 + mi;
 }
 
+const LD_JSON_TYPE = /\btype\s*=\s*["']application\/ld\+json["']/i;
+
+/**
+ * JSON-LD blocks in a page. The page is untrusted and up to the fetch cap (3 MB), so this is one
+ * forward scan: each `<script` is visited once and the next search starts after its `</script>`.
+ * (The single regex this replaces backtracked quadratically: minutes on a crafted 3 MB page.)
+ */
 export function extractJsonLdBlocks(html: string): unknown[] {
   const out: unknown[] = [];
-  const re = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) {
-    const body = m[1]!.trim();
+  const open = /<script\b/gi;
+  const close = /<\/script>/gi;
+  let tag: RegExpExecArray | null;
+  while ((tag = open.exec(html))) {
+    const attrsStart = tag.index + tag[0].length;
+    const tagEnd = html.indexOf(">", attrsStart);
+    if (tagEnd === -1) break;
+    close.lastIndex = tagEnd + 1;
+    const end = close.exec(html);
+    if (!end) break;
+    open.lastIndex = close.lastIndex;
+    if (!LD_JSON_TYPE.test(html.slice(attrsStart, tagEnd))) continue;
+    const body = html.slice(tagEnd + 1, end.index).trim();
     if (!body || body.length > 200_000) continue;
     try {
       out.push(JSON.parse(body));

@@ -1,4 +1,4 @@
-import { isIP } from "node:net";
+import { BlockList, isIP } from "node:net";
 import { lookup } from "node:dns/promises";
 
 /**
@@ -49,40 +49,60 @@ function userAgent(): string {
   return process.env["OUTRN_USER_AGENT"] ?? "outrn-dev (set OUTRN_USER_AGENT)";
 }
 
-function isPrivateAddress(ip: string): boolean {
-  if (isIP(ip) === 4) {
-    const [a, b] = ip.split(".").map(Number) as [number, number];
-    return (
-      a === 10 ||
-      a === 127 ||
-      a === 0 ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 100 && b >= 64 && b <= 127)
-    );
+/**
+ * Addresses a connector must never reach: this host, private networks, link-local (cloud metadata
+ * at 169.254.169.254), CGNAT, benchmarking, multicast and reserved space. BlockList also matches
+ * IPv4-mapped IPv6 (::ffff:169.254.169.254, ::ffff:a9fe:a9fe) against the IPv4 ranges.
+ */
+const BLOCKED = new BlockList();
+for (const [net, prefix] of [
+  ["0.0.0.0", 8], ["10.0.0.0", 8], ["100.64.0.0", 10], ["127.0.0.0", 8], ["169.254.0.0", 16], ["172.16.0.0", 12],
+  ["192.0.0.0", 24], ["192.168.0.0", 16], ["198.18.0.0", 15], ["224.0.0.0", 4], ["240.0.0.0", 4],
+] as const) BLOCKED.addSubnet(net, prefix, "ipv4");
+// ::/96 covers ::, ::1 and IPv4-compatible addresses; then unique-local, link-local, site-local, multicast.
+for (const [net, prefix] of [["::", 96], ["fc00::", 7], ["fe80::", 10], ["fec0::", 10], ["ff00::", 8]] as const) BLOCKED.addSubnet(net, prefix, "ipv6");
+
+/** True for any address a connector must not reach, and for anything that is not an address. */
+export function isPrivateAddress(ip: string): boolean {
+  const family = isIP(ip);
+  if (family === 0) return true;
+  try {
+    return BLOCKED.check(ip, family === 4 ? "ipv4" : "ipv6");
+  } catch {
+    return true;
   }
-  const v6 = ip.toLowerCase();
-  return v6 === "::1" || v6.startsWith("fc") || v6.startsWith("fd") || v6.startsWith("fe80") || v6.startsWith("::ffff:127.");
 }
 
-async function assertPublicHost(url: URL): Promise<void> {
+/** The host as a resolver sees it: lower case, no trailing dot, IPv6 literals without brackets. */
+function hostOf(url: URL): string {
+  const host = url.hostname.toLowerCase().replace(/\.$/, "");
+  return host.startsWith("[") && host.endsWith("]") ? host.slice(1, -1) : host;
+}
+
+const viaProxy = () => Boolean(process.env["HTTPS_PROXY"] || process.env["https_proxy"]);
+
+/**
+ * Refuse a destination that is, or resolves to, a non-public address. Fails closed: a name that
+ * cannot be resolved is not fetched, except behind a proxy, which resolves names itself and is then
+ * the egress control. Residual gap: fetch() resolves the name again, so a rebinding DNS server can
+ * still answer differently between this check and the connection.
+ */
+export async function assertPublicHost(url: URL): Promise<void> {
   if (url.protocol !== "https:" && url.protocol !== "http:") throw new FetchBlocked(`blocked scheme ${url.protocol}`);
-  const host = url.hostname;
-  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) throw new FetchBlocked(`blocked host ${host}`);
+  const host = hostOf(url);
+  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) throw new FetchBlocked(`blocked host ${host}`);
   if (isIP(host)) {
     if (isPrivateAddress(host)) throw new FetchBlocked(`blocked private address ${host}`);
     return;
   }
-  // Skip DNS resolution when routed through a proxy (the proxy resolves); otherwise refuse private answers.
-  if (process.env["HTTPS_PROXY"] || process.env["https_proxy"]) return;
+  let answers: { address: string }[];
   try {
-    const answers = await lookup(host, { all: true });
-    for (const a of answers) if (isPrivateAddress(a.address)) throw new FetchBlocked(`host ${host} resolves to private address`);
+    answers = await lookup(host, { all: true, verbatim: true });
   } catch (e) {
-    if (e instanceof FetchBlocked) throw e;
-    // DNS failure surfaces as a normal fetch failure below.
+    if (viaProxy()) return;
+    throw new FetchFailed(`could not resolve ${host}: ${(e as Error).message}`);
   }
+  for (const a of answers) if (isPrivateAddress(a.address)) throw new FetchBlocked(`host ${host} resolves to private address ${a.address}`);
 }
 
 async function throttle(sourceId: string, minIntervalMs: number): Promise<void> {
@@ -94,7 +114,6 @@ async function throttle(sourceId: string, minIntervalMs: number): Promise<void> 
 
 export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions): Promise<GuardedResponse> {
   const url = new URL(rawUrl);
-  await assertPublicHost(url);
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const maxBytes = opts.maxBytes ?? 25 * 1024 * 1024;
   const retries = opts.retries ?? 3;
@@ -106,6 +125,8 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions): P
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
+      // Checked on every attempt, inside the try: a resolver failure is retried like a network error.
+      await assertPublicHost(url);
       const res = await fetch(url, {
         method: opts.method ?? "GET",
         headers: {

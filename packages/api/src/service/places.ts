@@ -27,6 +27,10 @@ function address(tags: Record<string, string>): string | null {
   return [street, tags["addr:city"]].filter(Boolean).join(", ") || null;
 }
 
+/**
+ * Only eligible places are public, the same rule as the engine's candidate set and the anon RLS
+ * policy. An excluded, suspended or not-yet-eligible venue answers 404, as an unknown id does.
+ */
 export async function placeDetails(q: Queryable, id: string, opts: { clock?: () => Date } = {}): Promise<PlaceDetails> {
   if (!isUuid(id)) throw new ApiProblem("NOT_FOUND", "No place with this id.");
   const now = (opts.clock ?? (() => new Date()))();
@@ -45,7 +49,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
                   and (cf.valid_until is null or cf.valid_until > $2)), '{}'::jsonb) facts,
               (select se.raw->'tags' from entity_links el join source_entities se on se.id = el.source_entity_id
                 where el.venue_id = v.id and el.superseded_by is null order by el.decided_at desc limit 1) tags
-         from venues v where v.id = $1 and v.publish_state <> 'merged'`,
+         from venues v where v.id = $1 and v.publish_state = 'eligible'`,
       [id, now],
     )
   ).rows[0];
