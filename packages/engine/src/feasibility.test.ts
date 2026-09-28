@@ -575,11 +575,18 @@ describe("feasibility: business status", () => {
 });
 
 describe("feasibility: scheduled closure", () => {
+  // A published permanent closure at local midnight starting Tue 10 Nov 2026 (what an OSM end_date=2026-11-10 becomes).
+  const CLOSES = fromLocal("2026-11-10", 0, TZ);
+  const closing = (c: Candidate, at: Date = CLOSES) => {
+    c.facts.scheduled_closure = { value: { at: at.toISOString() }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    return c;
+  };
+
   it("a published closing date excludes from its day, even when no status fact remains", () => {
-    const c = venue({ category: "cafe", hours: "24/7" });
+    const c = closing(venue({ category: "cafe", hours: "24/7" }));
     delete c.facts.business_status; // the "operating" claim lapsed at the closing date
-    c.facts.scheduled_closure = { value: { at: "2026-11-10T12:00:00.000Z" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 };
     expect(one(c, ctx("2026-11-09 12:00", 120)).excludedBy).toBeNull();
+    expect(one(c, ctx("2026-11-10 00:01", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
     expect(one(c, ctx("2026-11-10 12:00", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
   });
 
@@ -588,5 +595,35 @@ describe("feasibility: scheduled closure", () => {
     delete c.facts.business_status;
     expect(one(c, ctx("2026-11-10 12:00", 120)).excludedBy).toBeNull();
   });
-});
 
+  it("is a hard end to the visit: no arriving after it, no useful time counted past it", () => {
+    // ~3 min walk + 5 min buffer: a request at 23:59 arrives after the closure.
+    expect(one(closing(venue({ category: "cafe", hours: "24/7" })), ctx("2026-11-09 23:59", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
+    // Arriving 23:48 leaves 12 minutes, under a café's 30.
+    expect(one(closing(venue({ category: "cafe", hours: "24/7" })), ctx("2026-11-09 23:40", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
+    // An hour before, the visit fits and ends at the closure.
+    const e = one(closing(venue({ category: "cafe", hours: "24/7" })), ctx("2026-11-09 23:00", 120));
+    expect(e.class).not.toBe("ineligible");
+    expect(e.timing!.latestFinish.getTime()).toBe(CLOSES.getTime());
+    expect(e.timing!.closesAt!.getTime()).toBe(CLOSES.getTime());
+    expect(e.timing!.usefulMinutes).toBeLessThan(60);
+    expect(e.timing!.deadline.getTime()).toBe(fromLocal("2026-11-10", 60, TZ).getTime()); // the user's own deadline is kept
+  });
+
+  it("bounds every kind of visit: unknown hours, waits for the kitchen, scheduled events", () => {
+    expect(one(closing(venue({ category: "cafe", hours: null })), ctx("2026-11-09 23:40", 120)).excludedBy).toBe("CLOSED_PERMANENTLY");
+    // Waiting for a 10:00 kitchen leaves 20 minutes before a 10:20 closure: not a meal.
+    const kitchen = venue({ category: "restaurant", hours: "24/7", kitchen: "Mo-Su 10:00-20:00" });
+    expect(one(kitchen, ctx("2026-11-12 09:00", 180)).excludedBy).toBeNull();
+    expect(one(closing(kitchen, fromLocal("2026-11-12", 10 * 60 + 20, TZ)), ctx("2026-11-12 09:00", 180)).excludedBy).toBe("CLOSED_PERMANENTLY");
+    // A show running past the closure does not happen there.
+    const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "o9", title: "Last night", start: fromLocal("2026-11-09", 22 * 60, TZ), end: fromLocal("2026-11-10", 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    expect(one(show, ctx("2026-11-09 21:00", 240)).excludedBy).toBeNull();
+    expect(one(closing(show), ctx("2026-11-09 21:00", 240)).excludedBy).toBe("CLOSED_PERMANENTLY");
+  });
+
+  it("a visit short of time for its own reasons keeps that reason", () => {
+    // Closes at 23:00 anyway: arriving 22:48 is too late whatever happens at midnight.
+    expect(one(closing(venue({ category: "cafe", hours: "Mo-Su 08:00-23:00" })), ctx("2026-11-09 22:40", 120)).excludedBy).toBe("NOT_ENOUGH_TIME");
+  });
+});

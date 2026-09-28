@@ -11,7 +11,7 @@ describe("detail page facts", () => {
   it("formats status and admission as words, never JSON", () => {
     expect(formatFactValue("business_status", { status: "operating" })).toBe("Operating");
     expect(formatFactValue("business_status", { status: "closed_permanently" })).toBe("Closed permanently");
-    expect(formatFactValue("scheduled_closure", { at: "2026-11-10T12:00:00.000Z" })).toBe("Closes permanently Nov 10, 2026");
+    expect(formatFactValue("scheduled_closure", { at: "2026-11-10T05:00:00.000Z" }, false, TZ)).toBe("Closes permanently Nov 10, 2026"); // local midnight
     expect(formatFactValue("admission", { requirement: "reservation_available" })).toBe("Walk in; reservations taken");
     expect(formatFactValue("price", { min: 10, max: 20, currency: "USD", basis: "per_person" }, true)).toBe("~$10–20 per person");
     expect(formatFactValue("price", { currency: "USD", free: true }, true)).toBe("Usually free");

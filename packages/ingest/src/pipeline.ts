@@ -156,7 +156,7 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
       }
       continue;
     }
-    const norm = normalizeOsm({ externalId: row.external_id, point: row.raw.point, tags: row.raw.tags, sourceUpdatedAt: row.source_updated_at }, o.fetchedAt);
+    const norm = normalizeOsm({ externalId: row.external_id, point: row.raw.point, timezone: o.timezone, tags: row.raw.tags, sourceUpdatedAt: row.source_updated_at }, o.fetchedAt);
     due.set(row.id, norm.changesAt);
     if (norm.rejects.some((r) => r === "no name" || r === "no mapped category")) {
       s.skipped++;

@@ -86,7 +86,8 @@ function hm(min: number): string {
   return `${h12}${mm ? ":" + String(mm).padStart(2, "0") : ""}${h < 12 ? "am" : "pm"}`;
 }
 
-export function formatFactValue(attribute: string, value: unknown, isEstimate = false): string {
+/** `tz` places dated values (a closing date) on the venue's calendar. */
+export function formatFactValue(attribute: string, value: unknown, isEstimate = false, tz = "UTC"): string {
   const v = (value ?? {}) as Record<string, unknown>;
   const tilde = isEstimate ? "~" : "";
   switch (attribute) {
@@ -101,9 +102,9 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
       break;
     }
     case "scheduled_closure": {
-      // A calendar day stored as its midday UTC: the UTC date is the day.
+      // The instant the closure takes effect, as the venue's calendar day (its local midnight).
       const at = typeof v["at"] === "string" ? new Date(v["at"]) : null;
-      if (at && !Number.isNaN(at.getTime())) return `Closes permanently ${new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" }).format(at)}`;
+      if (at && !Number.isNaN(at.getTime())) return `Closes permanently ${new Intl.DateTimeFormat("en-US", { timeZone: tz, month: "short", day: "numeric", year: "numeric" }).format(at)}`;
       break;
     }
     case "business_status": {
@@ -229,7 +230,7 @@ export function describeFacts(facts: Record<string, FactRecord>, ctx: { tz: stri
     rows.push({
       attribute,
       label: LABEL[attribute] ?? sentenceCase(attribute),
-      value: formatFactValue(attribute, f.value, isEstimate),
+      value: formatFactValue(attribute, f.value, isEstimate, ctx.tz),
       detail: attribute === "opening_hours" || attribute === "kitchen_hours" ? hoursToday(f.value, ctx.now, ctx.tz, ctx.point) : null,
       source: sourceLabel(f.sources),
       age: ageLabel(f, ctx.tz, ctx.now),

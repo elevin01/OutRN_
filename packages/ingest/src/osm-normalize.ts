@@ -1,4 +1,4 @@
-import { type Category, type FactInput, type LatLon } from "@outrn/core";
+import { fromLocal, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -21,11 +21,13 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * Version of the rules below. Bump it whenever a change would turn the same tags into different
  * facts: the next ingest then re-normalizes every record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.2";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.3";
 
 export interface OsmRecord {
   externalId: string;
   point: LatLon;
+  /** IANA timezone of the place (its area's): lifecycle dates take effect at its local midnight. */
+  timezone: string;
   tags: Record<string, string>;
   sourceUpdatedAt: Date | null;
 }
@@ -92,8 +94,17 @@ export function osmDate(value: string | undefined): { start: Date; end: Date } |
   return { start, end: new Date(next - 1) };
 }
 
-/** A calendar day as an instant: midday UTC falls on the same date in every US timezone, so it never reads as the day before. */
+/**
+ * A survey's calendar day, kept as an instant for display: midday UTC falls on the same date in every
+ * US timezone, so it never reads as the day before. Display only; lifecycle dates use localPeriod.
+ */
 const midday = (d: Date) => new Date(d.getTime() + 12 * 3_600_000);
+
+/** When an OSM date's period begins and ends in the place's timezone: local midnight, DST-aware. */
+function localPeriod(d: { start: Date; end: Date }, tz: string): { from: Date; until: Date } {
+  const day = (x: Date) => x.toISOString().slice(0, 10);
+  return { from: fromLocal(day(d.start), 0, tz), until: fromLocal(day(new Date(d.end.getTime() + 1)), 0, tz) };
+}
 
 /**
  * A mapper's survey date from a check-date tag, as that day's midday. Ignored when it is in the future, before OSM
@@ -191,13 +202,14 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     .reduce<{ tag: string; at: Date } | null>((a, b) => (!a || b.at > a.at ? b : a), null);
 
   // Closure signals are conservative: any disused:/abandoned: key, or hours "off", marks closed.
-  // A lifecycle date takes effect on its day (as that day's midday, like survey dates).
+  // A lifecycle date takes effect as its day begins: local midnight where the place is.
   const disused = Object.keys(t).some((k) => k.startsWith("disused:") || k.startsWith("abandoned:") || k.startsWith("was:"));
   const hours = t["opening_hours"]?.trim();
   const ended = osmDate(t["end_date"]);
   const opens = osmDate(t["opening_date"]);
-  const closesOn = ended ? midday(ended.start) : null;
-  const opensOn = opens ? midday(opens.start) : null;
+  const endedPeriod = ended ? localPeriod(ended, rec.timezone) : null;
+  const closesOn = endedPeriod?.from ?? null;
+  const opensOn = opens ? localPeriod(opens, rec.timezone).from : null;
   // Scheduled changes to what these tags say: the record is due for re-normalization at the first.
   const due: Date[] = [];
   // A closing date still ahead: announced as a fact the engine enforces from that day, before any
@@ -211,8 +223,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     pub("business_status", { status: "closed_permanently" }, disused ? Object.keys(t).find((k) => /^(disused|abandoned|was):/.test(k))! : `opening_hours=${hours}`, 0.75);
   } else if (ended && closesOn! <= now) {
     // Ended: certain once the whole period has passed; "end_date=2026" in September still means likely gone.
-    pub("business_status", { status: "closed_permanently" }, `end_date=${t["end_date"]}`, ended.end <= now ? 0.75 : 0.6);
-    if (ended.end > now) due.push(new Date(ended.end.getTime() + 1));
+    pub("business_status", { status: "closed_permanently" }, `end_date=${t["end_date"]}`, endedPeriod!.until <= now ? 0.75 : 0.6);
+    if (endedPeriod!.until > now) due.push(endedPeriod!.until);
   } else if (opens && opensOn! > now) {
     // Not open yet: closed until the opening date, then the fact lapses and presence counts again.
     facts.push({ ...base, attribute: "business_status", value: { status: "closed_temporarily" }, evidence: `opening_date=${t["opening_date"]}`, confidence: 0.7, evidenceClass: "published", validUntil: opensOn });

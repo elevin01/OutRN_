@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
+import { fromLocal } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -205,7 +206,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       `select v.publish_state, cf.value, cf.valid_until from venues v join current_facts cf on cf.subject_id = v.id and cf.attribute = 'business_status' where v.canonical_name = 'Ludlow Kitchen'`,
     );
     // Excluding it here would outlive the opening day: nothing re-materializes an unchanged record.
-    expect(row.rows[0]).toMatchObject({ publish_state: "eligible", value: { status: "closed_temporarily" }, valid_until: new Date(`${opening}T12:00:00Z`) });
+    expect(row.rows[0]).toMatchObject({ publish_state: "eligible", value: { status: "closed_temporarily" }, valid_until: fromLocal(opening, 0, "America/New_York") });
   });
 
   it("a withdrawn or corrected survey date is cleared when the same hours come back without it", async () => {
@@ -250,10 +251,10 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-01T15:00:00Z") });
     expect(before.raw.changed).toBe(1);
     // Still operating, but only until the closing date: the claim does not outlive what the tag says.
-    expect(await state()).toMatchObject({ publish_state: "eligible", value: { status: "operating" }, valid_until: new Date("2026-11-10T12:00:00Z") });
+    expect(await state()).toMatchObject({ publish_state: "eligible", value: { status: "operating" }, valid_until: new Date("2026-11-10T05:00:00Z") }); // midnight in New York
 
     // Nothing upstream changes, the rules stay the same; only time passes.
-    const after = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-11T15:00:00Z") });
+    const after = await ingestOsmArea(db, { areaSlug: "les", fromFile: path, clock: () => new Date("2026-11-10T06:00:00Z") }); // 1am on the day
     expect([after.raw.changed, after.raw.renormalized]).toEqual([0, 1]);
     expect(await state()).toMatchObject({ publish_state: "excluded", value: { status: "closed_permanently" } });
   });

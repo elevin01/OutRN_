@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parseCharge, surveyedHoursConfidence } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
-const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z") => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, tags, sourceUpdatedAt: updated ? new Date(updated) : null }, NOW);
+const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
 const fact = (n: ReturnType<typeof normalizeOsm>, attribute: string) => n.facts.find((f) => f.attribute === attribute);
 
 describe("OSM normalization", () => {
@@ -164,9 +164,9 @@ describe("OSM normalization", () => {
       expect(fact(rec({ name: "Ending", amenity: "restaurant", end_date: "2026" }), "business_status")).toMatchObject({ value: { status: "closed_permanently" }, confidence: 0.6 });
       // A closing date still ahead: operating until then, and the record is due for another look that day.
       const later = rec({ name: "Later", amenity: "restaurant", end_date: "2027-06-01" });
-      expect(fact(later, "business_status")).toMatchObject({ value: { status: "operating" }, validUntil: new Date("2027-06-01T12:00:00Z") });
-      expect(later.changesAt).toEqual(new Date("2027-06-01T12:00:00Z"));
-      expect(fact(later, "scheduled_closure")).toMatchObject({ evidenceClass: "published", value: { at: "2027-06-01T12:00:00.000Z" }, evidence: "end_date=2027-06-01" });
+      expect(fact(later, "business_status")).toMatchObject({ value: { status: "operating" }, validUntil: new Date("2027-06-01T04:00:00Z") });
+      expect(later.changesAt).toEqual(new Date("2027-06-01T04:00:00Z"));
+      expect(fact(later, "scheduled_closure")).toMatchObject({ evidenceClass: "published", value: { at: "2027-06-01T04:00:00.000Z" }, evidence: "end_date=2027-06-01" });
       expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "scheduled_closure")).toBeUndefined();
       expect(rec({ name: "Plain", amenity: "restaurant" }).changesAt).toBeNull();
     });
@@ -174,7 +174,7 @@ describe("OSM normalization", () => {
     it("opening_date in the future is closed until that day, then lapses", () => {
       const s = fact(rec({ name: "Soon", amenity: "restaurant", opening_date: "2026-10-15" }), "business_status")!;
       expect(s).toMatchObject({ evidenceClass: "published", value: { status: "closed_temporarily" }, evidence: "opening_date=2026-10-15" });
-      expect(s.validUntil).toEqual(new Date("2026-10-15T12:00:00Z"));
+      expect(s.validUntil).toEqual(new Date("2026-10-15T04:00:00Z")); // midnight in New York (EDT), the day it opens
       expect(fact(rec({ name: "Opened", amenity: "restaurant", opening_date: "2026-01-15" }), "business_status")).toMatchObject({ value: { status: "operating" } });
     });
   });
@@ -218,4 +218,20 @@ describe("OSM normalization", () => {
     // A published limit always wins.
     expect(fact(rec({ name: "All ages", amenity: "bar", min_age: "0" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 0 } });
   });
+
+  it("lifecycle dates take effect at local midnight in the place's timezone, DST days included", () => {
+    const closure = (end: string) => (fact(rec({ name: "R", amenity: "restaurant", end_date: end }), "scheduled_closure")!.value as { at: string }).at;
+    expect(closure("2026-11-10")).toBe("2026-11-10T05:00:00.000Z"); // EST
+    expect(closure("2026-11-01")).toBe("2026-11-01T04:00:00.000Z"); // fall-back day: midnight is still EDT
+    expect(closure("2027-03-14")).toBe("2027-03-14T05:00:00.000Z"); // spring-forward day: midnight is still EST
+    // Early on the closing day it is already closed; late the evening before it is not.
+    const tags = { name: "R", amenity: "restaurant", end_date: "2026-11-10" };
+    expect(fact(rec(tags, null, new Date("2026-11-10T05:01:00Z")), "business_status")).toMatchObject({ value: { status: "closed_permanently" } });
+    expect(fact(rec(tags, null, new Date("2026-11-10T04:59:00Z")), "business_status")).toMatchObject({ value: { status: "operating" } });
+    // An opening day: temporarily closed until its midnight, then not.
+    const opening = { name: "S", amenity: "restaurant", opening_date: "2027-03-14" };
+    expect(fact(rec(opening, null, new Date("2027-03-14T04:59:00Z")), "business_status")).toMatchObject({ value: { status: "closed_temporarily" }, validUntil: new Date("2027-03-14T05:00:00Z") });
+    expect(fact(rec(opening, null, new Date("2027-03-14T05:01:00Z")), "business_status")).toMatchObject({ value: { status: "operating" } });
+  });
 });
+

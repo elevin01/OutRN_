@@ -397,8 +397,13 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       return run.shortlist.all.find((e) => e.candidate.name === "Delancey Coffee")!;
     };
     expect((await decision("2026-11-09T17:00:00Z")).excludedBy).toBeNull(); // noon the day before
-    const closed = await decision("2026-11-10T17:00:00Z"); // noon on the closing day, New York
-    expect([closed.class, closed.excludedBy]).toEqual(["ineligible", "CLOSED_PERMANENTLY"]);
+    for (const at of ["2026-11-10T05:01:00Z", "2026-11-10T17:00:00Z"]) {
+      // 00:01 and noon on the closing day, New York
+      const closed = await decision(at);
+      expect([closed.class, closed.excludedBy], at).toEqual(["ineligible", "CLOSED_PERMANENTLY"]);
+    }
+    // 23:59 the night before: the visit would run past the closure.
+    expect((await decision("2026-11-10T04:59:00Z")).excludedBy).toBe("CLOSED_PERMANENTLY");
   });
 
   it("reports an unreachable database as a retryable outage", async () => {
