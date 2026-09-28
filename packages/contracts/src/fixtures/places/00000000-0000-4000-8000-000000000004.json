@@ -22,7 +22,10 @@
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": null,
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
   "facts": [
     {
       "attribute": "opening_hours",
@@ -51,6 +54,29 @@
       "attribute": "business_status",
       "label": "Status",
       "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
       "detail": null,
       "provenance": {
         "sources": [

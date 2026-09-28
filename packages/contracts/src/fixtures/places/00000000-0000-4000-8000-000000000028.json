@@ -1,6 +1,6 @@
 {
-  "id": "00000000-0000-4000-8000-000000000020",
-  "name": "Hester Bar",
+  "id": "00000000-0000-4000-8000-000000000028",
+  "name": "Delancey Bar",
   "category": {
     "id": "bar",
     "label": "Bar"
@@ -8,16 +8,16 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.727329,
-    "lon": -73.986761
+    "lat": 40.727594,
+    "lon": -73.999704
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T05:00:00.000Z",
+    "closesAt": "2026-10-04T07:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 1am"
+    "summary": "Open now until 3am"
   },
   "price": {
     "kind": "unknown"
@@ -30,24 +30,24 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 17:00-01:00",
-      "detail": "Open now until 1am",
+      "value": "Tu-Sa 18:00-03:00",
+      "detail": "Open now until 3am",
       "provenance": {
         "sources": [
           {
-            "id": "founder",
-            "label": "OutRN"
+            "id": "osm",
+            "label": "OpenStreetMap"
           }
         ],
         "evidence": "published",
-        "confidence": 0.63,
-        "verifiedAt": "2026-05-26T16:00:00.000Z",
-        "sourceUpdatedAt": "2026-05-26T16:00:00.000Z",
-        "retrievedAt": "2026-05-26T16:00:00.000Z",
-        "dueForRecheck": true,
-        "conflict": true,
-        "freshness": "confirmed May 26 · due for recheck",
-        "summary": "OutRN · confirmed May 26 · due for recheck · published"
+        "confidence": 0.557,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
       }
     },
     {
@@ -65,12 +65,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
@@ -88,12 +88,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
@@ -111,18 +111,41 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -134,24 +157,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://hesterbar.example/",
+    "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

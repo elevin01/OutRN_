@@ -18,9 +18,9 @@ state a screen has to handle is one **Neighborhood** choice away:
 | Neighborhood | What you get |
 | --- | --- |
 | Lower East Side | Walking, 3 hours: three Ready cards, four pages via "More options" |
-| Bronxville | Driving (the area default); travel includes parking; only two qualify |
+| Bronxville | Driving (the area default); travel includes parking; four pages |
 | Mock · bars, date night | Bars; Clinton Bar has **hours confirmed**; open Hester Bar's details for a stale check (**due for recheck**) and **sources disagree** |
-| Mock · family, age limits | Page 2: Pitt Street Nightcap is **Check first**, "usually 21+" |
+| Mock · family, age limits | Bars at 1am with a child: each is **Check first**, "usually 21+" (an estimate, never an exclusion) |
 | Mock · a scheduled event | A theatre performance: `kind: "event"` with start/end times |
 | Mock · fewer than three | Two options and `insufficient` with relaxations |
 | Mock · nothing fits | Zero items |
@@ -56,6 +56,9 @@ cards; the structured fields let you design your own:
 - Codes (`reasons[].code`, `caveats[].code`, `category.id`…) are open-ended: style the ones you
   know; for any other, fall back to the `text` / `label` the API sends.
 - Times are ISO instants; format them in the area's `timezone` (`response.area.timezone`).
+- Place facts (`/v1/places/:id`) are open-ended rows with their own `label`, like `kitchen_hours`
+  ("Kitchen") for restaurants that publish it. `provenance.freshness` may read "checked by an OSM
+  mapper Mar 2026". That is a volunteer's survey, not a confirmation; only `verifiedAt` is one.
 
 Paging: "More options" and "Previous" just send `{ cursor }`. Every page of a search is a slice of
 one frozen list (`requestId`), so nothing reshuffles. Pages expire after 20 minutes

@@ -1,46 +1,53 @@
 {
   "id": "00000000-0000-4000-8000-000000000023",
-  "name": "East River Overlook",
+  "name": "Eldridge Norfolk Bar",
   "category": {
-    "id": "viewpoint",
-    "label": "Viewpoint"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.7145,
-    "lon": -73.976
+    "lat": 40.724763,
+    "lon": -74.001489
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
-    "closesAt": null,
+    "state": "open",
+    "closesAt": "2026-10-04T06:00:00.000Z",
     "opensAt": null,
-    "summary": null
+    "summary": "Open now until 2am"
   },
   "price": {
-    "kind": "free",
+    "kind": "unknown"
+  },
+  "ageLimit": {
+    "minAge": 21,
     "evidence": "estimate"
   },
-  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Mo-Su 16:00-02:00",
+      "detail": "Open now until 2am",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.603,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
       }
     },
     {
@@ -58,7 +65,30 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -81,30 +111,7 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.6,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -115,7 +122,7 @@
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -127,7 +134,7 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -137,14 +144,14 @@
     }
   ],
   "contact": {
-    "websiteUrl": null,
+    "websiteUrl": "https://eldridgenorfolkbar.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

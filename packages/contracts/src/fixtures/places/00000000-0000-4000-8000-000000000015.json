@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-000000000015",
-  "name": "Ridge Bar",
+  "name": "Stanton Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.713276,
-    "lon": -74.00022
+    "lat": 40.93814,
+    "lon": -73.82182
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T07:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 3am"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
@@ -27,8 +27,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Sa 18:00-03:00",
-      "detail": "Open now until 3am",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -37,14 +37,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.59,
+        "confidence": 0.548,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2026",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · published"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
       }
     },
     {
@@ -62,18 +62,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2026",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -83,14 +83,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2026",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     },
     {
@@ -108,24 +108,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2026",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": "https://ridgebar.example/",
-    "phone": "+1 212 555 6471"
+    "websiteUrl": null,
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

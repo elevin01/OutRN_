@@ -227,7 +227,10 @@
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -256,7 +259,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown",
+        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown · usually 21+",
         "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"

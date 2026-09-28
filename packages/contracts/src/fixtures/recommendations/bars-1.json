@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000011",
+  "requestId": "00000000-0000-4000-8000-00000000001b",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -66,7 +66,10 @@
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -95,7 +98,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown",
+        "summary": "~14 min walk · until 2am, you'd have 2h41 · price unknown · usually 21+",
         "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
@@ -107,75 +110,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000000d",
+      "id": "00000000-0000-4000-8000-00000000001c",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "name": "Ridge Bar",
-      "placeName": "Ridge Bar",
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.725116,
-        "lon": -73.989173
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:48:00.000Z",
-        "usefulMinutes": 162,
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z"
-      },
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": null,
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 162
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~13 min walk · until 2am, you'd have 2h42 · price unknown",
-        "sentence": "Plenty of time, open late.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking",
-        "websiteUrl": "https://stantonallenkitchen.example/",
-        "phone": "+1 212 555 7512"
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000012",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000012",
+      "placeId": "00000000-0000-4000-8000-00000000001c",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
       "category": {
@@ -206,7 +143,10 @@
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -227,7 +167,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~18 min walk · until 3am, you'd have 2h37 · price unknown",
+        "summary": "~18 min walk · until 3am, you'd have 2h37 · price unknown · usually 21+",
         "sentence": "Plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
@@ -237,12 +177,81 @@
         "websiteUrl": "https://broomebar.example/",
         "phone": "+1 212 555 3125"
       }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000001d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001d",
+      "name": "Delancey Tavern",
+      "placeName": "Delancey Tavern",
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.716973,
+        "lon": -73.998882
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 16,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:51:00.000Z",
+        "usefulMinutes": 159,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z"
+      },
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 159
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~16 min walk · until 2am, you'd have 2h39 · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking",
+        "websiteUrl": "https://delanceytavern.example/",
+        "phone": null
+      }
     }
   ],
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDExIiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

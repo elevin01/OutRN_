@@ -1,23 +1,23 @@
 {
   "id": "00000000-0000-4000-8000-000000000018",
-  "name": "Ridge Tavern",
+  "name": "Delancey Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.720409,
-    "lon": -73.998263
+    "lat": 40.929225,
+    "lon": -73.844511
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
@@ -27,8 +27,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -37,14 +37,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.554,
+        "confidence": 0.493,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
@@ -60,14 +60,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -83,43 +83,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Accessible",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -131,12 +108,12 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
@@ -146,9 +123,9 @@
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

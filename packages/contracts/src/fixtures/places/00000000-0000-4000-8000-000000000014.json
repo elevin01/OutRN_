@@ -1,37 +1,34 @@
 {
   "id": "00000000-0000-4000-8000-000000000014",
-  "name": "Pitt Street Nightcap",
+  "name": "Clinton Norfolk Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.715594,
-    "lon": -73.996037
+    "lat": 40.929098,
+    "lon": -73.843087
   },
   "address": null,
   "status": "operating",
   "hoursNow": {
-    "state": "closed",
-    "closesAt": null,
-    "opensAt": "2026-10-04T00:00:00.000Z",
-    "summary": "Closed now · opens 8pm today"
+    "state": "open",
+    "closesAt": "2026-10-04T03:30:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 11:30pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 20:00-04:00",
-      "detail": "Closed now · opens 8pm today",
+      "value": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+      "detail": "Open now until 11:30pm",
       "provenance": {
         "sources": [
           {
@@ -40,14 +37,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.507,
+        "confidence": 0.565,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · published"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -65,35 +62,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
-      }
-    },
-    {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "category_policy",
-            "label": "category default"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.5,
-        "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "retrieved Sep 20",
-        "summary": "category default · retrieved Sep 20 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     },
     {
@@ -109,20 +83,43 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -134,24 +131,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     }
   ],
   "contact": {
     "websiteUrl": null,
-    "phone": null
+    "phone": "+1 212 555 6566"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",

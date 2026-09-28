@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000001c",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-04T05:15:00.000Z",
   "generatedAt": "2026-10-04T05:15:00.000Z",
   "expiresAt": "2026-10-04T05:35:00.000Z",
@@ -33,11 +33,81 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-00000000001d",
+      "id": "00000000-0000-4000-8000-000000000025",
       "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown",
+        "action": "Check first",
+        "caveat": "Check first: probably 21+ only",
+        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown · usually 21+",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Stanton Bar",
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 23,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T05:15:00.000Z",
+        "arriveAt": "2026-10-04T05:43:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "finishBy": "2026-10-04T07:00:00.000Z",
+        "usefulMinutes": 77
+      },
+      "actions": {
+        "phone": null,
+        "websiteUrl": "https://stantonbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000025",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 77
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.730851,
+        "lon": -73.986194
+      },
+      "placeName": "Stanton Bar",
+      "callToAction": "check"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000028",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: probably 21+ only",
+        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown · usually 21+",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
@@ -46,7 +116,7 @@
       "price": {
         "kind": "unknown"
       },
-      "status": "ready",
+      "status": "check_first",
       "timing": {
         "travel": {
           "mode": "walk",
@@ -65,64 +135,6 @@
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking"
       },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000001d",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 77
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "location": {
-        "lat": 40.727594,
-        "lon": -73.999704
-      },
-      "placeName": "Delancey Bar",
-      "callToAction": "go"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000014",
-      "copy": {
-        "action": "Check first",
-        "caveat": "Check first: probably 21+ only",
-        "summary": "~13 min walk · until 4am, you'd have 1h42 · price unknown · usually 21+",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Pitt Street Nightcap",
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "check_first",
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-04T05:15:00.000Z",
-        "arriveAt": "2026-10-04T05:33:00.000Z",
-        "closesAt": "2026-10-04T08:00:00.000Z",
-        "finishBy": "2026-10-04T07:15:00.000Z",
-        "usefulMinutes": 102
-      },
-      "actions": {
-        "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking"
-      },
       "caveats": [
         {
           "code": "AGE_LIMIT_LIKELY",
@@ -133,13 +145,13 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000014",
+      "placeId": "00000000-0000-4000-8000-000000000028",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 102
+            "usefulMinutes": 77
           },
           "required": false
         }
@@ -154,10 +166,10 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.715594,
-        "lon": -73.996037
+        "lat": 40.727594,
+        "lon": -73.999704
       },
-      "placeName": "Pitt Street Nightcap",
+      "placeName": "Delancey Bar",
       "callToAction": "check"
     }
   ],
@@ -165,7 +177,7 @@
     "offset": 3,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFjIiwibyI6MH0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

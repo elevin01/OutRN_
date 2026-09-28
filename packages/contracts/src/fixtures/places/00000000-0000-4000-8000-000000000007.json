@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000007",
-  "name": "Norfolk Park",
+  "name": "Rivington Norfolk Park",
   "category": {
     "id": "park",
     "label": "Park"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.722865,
-    "lon": -73.985733
+    "lat": 40.726204,
+    "lon": -73.988294
   },
   "address": null,
   "status": "operating",
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.6,
+        "confidence": 0.493,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
@@ -61,14 +61,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -86,12 +86,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -109,12 +109,12 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -132,24 +132,24 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 1075"
+    "websiteUrl": "https://rivingtonnorfolkpark.example/",
+    "phone": "+1 212 555 2718"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726204%2C-73.988294&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726204%2C-73.988294&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726204%2C-73.988294&travelmode=driving"
     }
   },
   "asOf": "2026-10-03T22:30:00.000Z",
