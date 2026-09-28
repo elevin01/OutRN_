@@ -45,7 +45,7 @@ describe("fact value schemas", () => {
 
   it("links: https on a public host only, at the write boundary too", () => {
     expect(validateFactValue("links", { menu: "https://bageldepot.example/menu" })).toBeNull();
-    for (const menu of ["https://169.254.169.254/", "https://[::1]/", "https://router.local/menu", "http://bageldepot.example/menu"]) {
+    for (const menu of ["https://169.254.169.254/", "https://[::1]/", "https://router.local/menu", "https://router.lan/menu", "https://router.home/menu", "https://nas.corp/menu", "http://bageldepot.example/menu"]) {
       expect(validateFactValue("links", { menu }), menu).not.toBeNull();
     }
   });

@@ -287,7 +287,7 @@ describe("OSM normalization", () => {
 
   describe("menu links from OSM point at public hosts only", () => {
     it("drops a website:menu on an IP literal or a network-local name", () => {
-      for (const menu of ["https://169.254.169.254/latest/meta-data/", "https://192.168.1.1/menu", "https://[::1]/", "https://0x7f.1/", "https://router.local/menu", "https://intranet/menu"]) {
+      for (const menu of ["https://169.254.169.254/latest/meta-data/", "https://192.168.1.1/menu", "https://[::1]/", "https://0x7f.1/", "https://router.local/menu", "https://intranet/menu", "https://router.lan/menu", "https://router.home/menu", "https://nas.corp/menu"]) {
         expect(venueLinks({ "website:menu": menu }), menu).toBeNull();
       }
       expect(venueLinks({ "website:menu": "https://bageldepot.example/menu.pdf" })?.links.menu).toBe("https://bageldepot.example/menu.pdf");

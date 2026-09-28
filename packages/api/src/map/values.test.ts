@@ -30,6 +30,7 @@ describe("fact values → contract values", () => {
     ]);
     expect(linksFrom({ menu: "https://169.254.169.254/latest/meta-data/" })).toEqual([]);
     expect(linksFrom({ menu: "https://192.168.1.1/menu", facebook: "https://router.local/x" })).toEqual([]);
+    expect(linksFrom({ menu: "https://router.lan/menu", instagram: "https://router.home/x", facebook: "https://nas.corp/x" })).toEqual([]);
   });
 });
 
