@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
+import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parkingKind, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
 const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
@@ -298,6 +298,34 @@ describe("OSM normalization", () => {
         expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
       }
     });
+  });
+});
+
+describe("tag values that name what every object inherits", () => {
+  const INHERITED = ["__proto__", "constructor", "toString", "hasOwnProperty", "valueOf"];
+  const rec = (tags: Record<string, string>) => ({ externalId: "node/1", point: { lat: 40.72, lon: -73.99 }, timezone: "America/New_York", tags, sourceUpdatedAt: null });
+
+  it("are not categories: a museum stays a museum, and otherwise they count as unrecognized values", () => {
+    for (const v of INHERITED) {
+      // Overpass returns this element for tourism=museum; the other tag must not win.
+      expect(categoryFromTags({ name: "X", amenity: v, tourism: "museum" }), v).toBe("museum");
+      const n = normalizeOsm(rec({ name: "X", amenity: v, tourism: "museum" }), new Date("2026-09-28T12:00:00Z"));
+      expect(n.category, v).toBe("museum");
+      expect(n.facts.every((f) => typeof JSON.stringify(f.value) === "string" && !JSON.stringify(f.value).includes("{}")), v).toBe(true);
+      // With nothing else to go on, it is an unrecognized value like any other.
+      const bare = normalizeOsm(rec({ name: "X", amenity: v }), new Date("2026-09-28T12:00:00Z"));
+      const unknown = normalizeOsm(rec({ name: "X", amenity: "not_a_known_value" }), new Date("2026-09-28T12:00:00Z"));
+      expect(bare.category, v).toBe(unknown.category);
+      expect(typeof bare.category === "string" || bare.category === null, v).toBe(true);
+    }
+  });
+
+  it("are not parking kinds: they read as unknown, like any unmapped parking=* value", () => {
+    for (const v of INHERITED) {
+      expect(parkingKind(v), v).toBe("unknown");
+      const n = normalizeOsm(rec({ name: "X", amenity: "cafe", parking: v }), new Date("2026-09-28T12:00:00Z"));
+      expect(n.facts.find((f) => f.attribute === "parking")?.value, v).toEqual({ kind: "unknown", cost: "unknown" });
+    }
   });
 });
 

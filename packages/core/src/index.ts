@@ -5,3 +5,4 @@ export * from "./time.js";
 export * from "./ids.js";
 export * from "./fact-values.js";
 export * from "./urls.js";
+export * from "./lookup.js";
