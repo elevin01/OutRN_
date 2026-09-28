@@ -69,10 +69,11 @@ cannot tell them apart.
 
 ## Migrations
 
-Never edit a migration once any database has applied it, including a draft on a branch that ran
-against your dev database: add a new one. The runner compares every applied file with the checksum
-it recorded and refuses to run on a mismatch, because an edited migration would otherwise never
-reach a database that already ran it. A database that ran an earlier draft is repaired with
+Never edit, delete or rename a migration once any database has applied it, including a draft on a
+branch that ran against your dev database: add a new one. The runner compares every applied file
+with the checksum it recorded, and checks it still exists under its name, and refuses to run
+otherwise: an edited migration would never reach a database that already ran it, and a missing one
+leaves that database's history impossible to reproduce. A database that ran an earlier draft is repaired with
 `pnpm db:migrate --reapply <file>`, which only works for files that are safe to run twice.
 
 ## What CI checks on every PR

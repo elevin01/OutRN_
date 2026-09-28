@@ -60,6 +60,29 @@ describe.skipIf(!available)("migration runner", () => {
     expect(await columns()).toEqual(["a", "b"]); // 0003 did not run either
   });
 
+  it("refuses to run when an applied migration was deleted or renamed, before running anything", async () => {
+    await put("0001_t.sql", "create table t (a int);");
+    await put("0002_b.sql", "alter table t add column b int;");
+    await migrate(db, dir);
+    // Deleted, with a new file pending: nothing may run.
+    await rm(join(dir, "0001_t.sql"));
+    await put("0003_c.sql", "alter table t add column c int;");
+    await expect(migrate(db, dir)).rejects.toThrow(/0001_t\.sql was applied to this database but is missing .*Restore the file/);
+    await expect(migrate(db, dir, { reapply: ["0001_t.sql"] })).rejects.toThrow(/missing/);
+    expect(await columns()).toEqual(["a", "b"]);
+    // Renamed: the applied name is missing, even though its SQL is still there under another name.
+    await put("0001_t.sql", "create table t (a int);");
+    await rm(join(dir, "0002_b.sql"));
+    await put("0002_b_renamed.sql", "alter table t add column b int;");
+    await expect(migrate(db, dir)).rejects.toThrow(/0002_b\.sql was applied to this database but is missing/);
+    expect(await columns()).toEqual(["a", "b"]);
+    // Restored under its own name: the pending migration runs.
+    await rm(join(dir, "0002_b_renamed.sql"));
+    await put("0002_b.sql", "alter table t add column b int;");
+    expect(await migrate(db, dir)).toEqual({ applied: ["0003_c.sql"], skipped: ["0001_t.sql", "0002_b.sql"] });
+    expect(await columns()).toEqual(["a", "b", "c"]);
+  });
+
   it("re-applies a named migration on request, records its new checksum, and carries on", async () => {
     await put("0001_t.sql", "create table t (a int);");
     await put("0002_b.sql", "alter table t add column if not exists b int;");
