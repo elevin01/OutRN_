@@ -1,4 +1,5 @@
 import type { AgeLimit, Evidence, Option, Price, TravelMode } from "@outrn/contracts";
+import { isPublicWebHost } from "@outrn/core";
 import { labelOf } from "../config.js";
 
 /** Fact values (the shapes in @outrn/core fact-values) → contract values. Shared by items and place details. */
@@ -46,7 +47,8 @@ export function websiteUrl(raw: string | null | undefined): string | null {
   if (!withScheme) return null;
   try {
     const u = new URL(withScheme);
-    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null;
+    // Anyone can edit an OSM website tag: never point a user at an IP literal or a local name.
+    return (u.protocol === "http:" || u.protocol === "https:") && isPublicWebHost(u.hostname) ? u.toString() : null;
   } catch {
     return null;
   }

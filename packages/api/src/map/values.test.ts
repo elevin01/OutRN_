@@ -8,6 +8,10 @@ describe("fact values → contract values", () => {
     expect(websiteUrl("javascript:alert(1)")).toBeNull();
     expect(websiteUrl("call us")).toBeNull();
     expect(websiteUrl(null)).toBeNull();
+    // An OSM edit must not turn "Visit website" into a link to the user's router or a metadata address.
+    for (const local of ["http://192.168.1.1/", "https://169.254.169.254/latest/meta-data/", "http://[::1]:8080/", "http://localhost/", "http://router.local/", "http://2130706433/"]) {
+      expect(websiteUrl(local), local).toBeNull();
+    }
   });
 
   it("reads prices the way the engine's budget gate does, in cents", () => {
