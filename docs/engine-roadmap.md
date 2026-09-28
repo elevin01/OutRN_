@@ -46,6 +46,9 @@ changelog.
   - Wikimedia Commons and Wikidata, for parks, museums and landmarks.
   - Mapillary street view, to show the entrance.
   - The preview image from the venue's own site.
+- **Whose host is a link on?** A menu link from OSM may be on any public https host (the same trust
+  as the website link). Decide with the photos work: accept a menu on the venue's own registrable
+  domain (needs the Public Suffix List) or on a known menu platform or CDN, and drop the rest.
 - **Counter-service supply (needs your call).** `amenity=fast_food` isn't ingested today, so
   slices, dumplings and bagel counters never appear. Adding it brings chains too; the plan would be
   to include it with chains ranked below independents.
