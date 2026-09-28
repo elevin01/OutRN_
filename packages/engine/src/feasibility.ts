@@ -344,8 +344,11 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
   if (timing.closesAt && hoursConfidence < 0.4) unresolved.push("HOURS_UNVERIFIED");
   // An expected wait is an estimate: when it could eat the visit or run past last orders, check first.
   if (waitMayNotFit(timing, timing.conditions)) unresolved.push("WAIT_MAY_NOT_FIT");
-  const fresh = c.facts["open_state"] ?? c.facts["queue"] ?? c.facts["crowd_level"];
-  if (fresh && fresh.evidenceClass === "observation" && (!fresh.validUntil || fresh.validUntil > ctx.now)) reasons.push("FRESH_REPORT");
+  // A report is a reason only while it still holds at the arrival, the rule the conditions use: a
+  // crowd or queue report that became a condition, or an open/closed report valid past the arrival.
+  const open = c.facts.open_state;
+  const openHolds = open !== undefined && open.evidenceClass === "observation" && open.validUntil !== null && open.validUntil > timing.arrival;
+  if (openHolds || timing.conditions.some((x) => x.basis === "report")) reasons.push("FRESH_REPORT");
 
   // Positive timing reasons
   const shortTravel = ctx.mode === "walk" ? timing.travel.minutes <= 10 : timing.travel.minutes <= 15;

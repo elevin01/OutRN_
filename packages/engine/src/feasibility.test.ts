@@ -882,6 +882,31 @@ describe("conditions: crowd and wait at the arrival", () => {
     expect(one(later, afternoon).timing!.conditions[0]).toMatchObject({ basis: "typical" });
   });
 
+  it("'recent report' is a reason only while the report holds at the arrival", () => {
+    // Asked at 7pm, arriving 7:13pm.
+    const x = ctx("2026-10-03 19:00", 180);
+    const withReport = (attribute: "crowd_level" | "queue" | "open_state", value: string, validUntil: Date) => {
+      const v = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+      v.facts[attribute] = { value: { value }, confidence: 0.9, evidenceClass: "observation", validUntil, independentSources: 1, verifiedAt: x.now };
+      return one(v, x);
+    };
+    const at = (hm: string) => fromLocal("2026-10-03", Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3)), TZ);
+    // Lapsed at 7:05pm: neither a report-based condition nor the reason.
+    const lapsed = withReport("crowd_level", "quiet", at("19:05"));
+    expect(lapsed.timing!.arrival).toEqual(at("19:13"));
+    expect(lapsed.timing!.conditions.some((c) => c.basis === "report")).toBe(false);
+    expect(lapsed.reasons).not.toContain("FRESH_REPORT");
+    // Valid until 7:25pm: both.
+    const holds = withReport("crowd_level", "quiet", at("19:25"));
+    expect(holds.timing!.conditions[0]).toMatchObject({ basis: "report", level: "quiet" });
+    expect(holds.reasons).toContain("FRESH_REPORT");
+    // The same for a queue report, and for an open/closed report (which has no condition of its own).
+    expect(withReport("queue", "none", at("19:05")).reasons).not.toContain("FRESH_REPORT");
+    expect(withReport("queue", "none", at("19:25")).reasons).toContain("FRESH_REPORT");
+    expect(withReport("open_state", "open", at("19:05")).reasons).not.toContain("FRESH_REPORT");
+    expect(withReport("open_state", "open", at("19:25")).reasons).toContain("FRESH_REPORT");
+  });
+
   it("events have no crowd pattern: the programme is the crowd", () => {
     const x = ctx("2026-10-03 19:00", 240);
     const show = venue({ category: "live_music", hours: null, kind: "occurrence", occurrence: { id: "o1", title: "Show", start: new Date(x.now.getTime() + 60 * 60_000), end: new Date(x.now.getTime() + 150 * 60_000), entryCutoff: null, lateEntry: null, status: "scheduled" } });
