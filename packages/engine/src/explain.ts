@@ -1,4 +1,4 @@
-import { waitFloorMinutes } from "./conditions.js";
+import { waitCeilingMinutes } from "./conditions.js";
 import { ageLimitOf } from "./feasibility.js";
 import { fmtDuration, fmtTime } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
@@ -76,7 +76,7 @@ export function caveatNotes(e: Evaluation): Note[] {
   return e.unresolved.map((code) => ({
     code,
     text: ageText[code] ?? UNRESOLVED_TEXT[code] ?? code.toLowerCase().replace(/_/g, " "),
-    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : code === "WAIT_MAY_NOT_FIT" ? { waitMinutes: waitFloorMinutes(e.timing?.conditions ?? []) } : {},
+    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : code === "WAIT_MAY_NOT_FIT" ? { waitMinutes: waitCeilingMinutes(e.timing?.conditions ?? []) } : {},
   }));
 }
 

@@ -81,13 +81,17 @@ async function seed(db: pg.Pool): Promise<void> {
     { subjectKind: "venue", subjectId: disputed, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-01:00" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: called 5/26", sourceUpdatedAt: new Date("2026-05-26T16:00:00Z"), fetchedAt: new Date("2026-05-26T16:00:00Z"), confidence: 0.9, lineageGroup: "founder" },
     { subjectKind: "venue", subjectId: disputed, attribute: "opening_hours", value: { osm: "Mo-Su 18:00-02:00" }, evidenceClass: "published", sourceId: "osm", evidence: "osm: opening_hours tag", sourceUpdatedAt: new Date("2026-08-30T10:00:00Z"), fetchedAt: FETCHED, confidence: 0.7, lineageGroup: "osm" },
   ]);
-  // A visitor's report eight minutes before: busy, with a short line. The card reads it instead of the usual pattern.
-  const seen = new Date(SAT_EVENING.getTime() - 8 * 60_000);
-  await writeFacts(db, [
-    { subjectKind: "venue", subjectId: confirmed, attribute: "crowd_level", value: { value: "busy" }, evidenceClass: "observation", sourceId: "user_observation", observedAt: seen, fetchedAt: seen, confidence: 0.7 },
-    { subjectKind: "venue", subjectId: confirmed, attribute: "queue", value: { value: "short" }, evidenceClass: "observation", sourceId: "user_observation", observedAt: seen, fetchedAt: seen, confidence: 0.7 },
-  ]);
   await materializeSubjects(db, "venue", [confirmed, disputed], SAT_EVENING);
+
+  // A visitor's report two minutes before, at a kitchen a five-minute walk away: busy, with a short
+  // line. Both still hold when the walk arrives, so the card reads them instead of the usual pattern.
+  const reported = await id("Forsyth Clinton Kitchen");
+  const seen = new Date(SAT_EVENING.getTime() - 2 * 60_000);
+  await writeFacts(db, [
+    { subjectKind: "venue", subjectId: reported, attribute: "crowd_level", value: { value: "busy" }, evidenceClass: "observation", sourceId: "user_observation", observedAt: seen, fetchedAt: seen, confidence: 0.7 },
+    { subjectKind: "venue", subjectId: reported, attribute: "queue", value: { value: "short" }, evidenceClass: "observation", sourceId: "user_observation", observedAt: seen, fetchedAt: seen, confidence: 0.7 },
+  ]);
+  await materializeSubjects(db, "venue", [reported], SAT_EVENING);
   // Bars that serve no food come out of the pipeline as "usually 21+" (an estimate): the family scenario shows it.
 
   // One performance tonight at the Delancey Playhouse.

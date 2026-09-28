@@ -27,8 +27,8 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 - **1.3.0** (additive). What to expect there:
   - `conditions` on every item: how busy it is and any wait, at the arrival. Crowd comes first, then wait. Each has a `kind` (`crowd`, `wait`; open-ended), a `level` (crowd: `quiet`, `moderate`, `busy`; wait: `none`, `short`, `long`), a `basis`, `isEstimate`, `minutes` (a wait's usual range, e.g. 15–30), `reportedAt`, and default `text`.
-  - Basis `typical` is what's usual for this kind of place at that day and hour. It's an estimate, never a claim about the place, and its text says "usually". Basis `report` is a recent visitor report of the place itself, and replaces the typical pattern while it's fresh.
-  - A new caveat, `WAIT_MAY_NOT_FIT` (params `waitMinutes`): the expected wait could leave too little time for the visit, or run past last orders. An expected wait never excludes a place.
+  - Basis `typical` is what's usual for this kind of place at that day and hour. It's an estimate, never a claim about the place, and its text says "usually". Basis `report` is a recent visitor report of the place itself. It replaces the typical pattern only while it's still valid at the arrival.
+  - A new caveat, `WAIT_MAY_NOT_FIT` (params `waitMinutes`, the long end of the wait): at the long end of its usual range, the wait would leave too little time for the visit, or run past last orders. A reported line counts as its band (short up to 15 minutes, long up to 30). An expected wait never excludes a place.
   - The default `copy.summary` shows an expected wait ("~15–30 min wait") or a reported line ("short line reported").
   - Items stored by a 1.2 API page with `conditions: []`: that search computed none.
 - **1.2.0** (additive). What a visit takes, and the plan:

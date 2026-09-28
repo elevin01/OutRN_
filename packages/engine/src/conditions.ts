@@ -1,4 +1,4 @@
-import { addMinutes, localClock, minutesBetween, type Category } from "@outrn/core";
+import { addMinutes, localClock, type Category } from "@outrn/core";
 import { isPublicHolidayOn } from "@outrn/facts";
 import { fmtTime } from "./format.js";
 import type { Candidate, Condition, RequestContext, TimingBase, Visit } from "./types.js";
@@ -147,15 +147,16 @@ function typicalWait(c: Candidate, visit: Visit): { minutes: { min: number; max:
   return null;
 }
 
-/** A report counts for an arrival within this long of the request. */
-const REPORT_REACH_MINUTES = 60;
-
-/** A crowd or queue observation that still holds and speaks to this arrival. */
-function freshReport(c: Candidate, attribute: "crowd_level" | "queue", ctx: RequestContext, arrival: Date): { value: string; at: Date | null } | null {
+/**
+ * A crowd or queue observation that still holds when the user gets there. The fact model says how
+ * long a report is good for (valid_until); one that lapses before the arrival says nothing about it,
+ * and the typical pattern stands instead.
+ */
+function freshReport(c: Candidate, attribute: "crowd_level" | "queue", arrival: Date): { value: string; at: Date | null } | null {
   const f = c.facts[attribute];
   const value = (f?.value as { value?: unknown } | undefined)?.value;
   if (!f || f.evidenceClass !== "observation" || typeof value !== "string") return null;
-  if (!f.validUntil || f.validUntil <= ctx.now || minutesBetween(ctx.now, arrival) > REPORT_REACH_MINUTES) return null;
+  if (!f.validUntil || f.validUntil <= arrival) return null;
   return { value, at: f.verifiedAt ?? null };
 }
 
@@ -168,7 +169,7 @@ export function conditionsFor(c: Candidate, ctx: RequestContext, t: TimingBase, 
   const tz = ctx.timezone;
   const reported = (at: Date | null) => (at ? ` at ${fmtTime(at, tz)}` : " recently");
 
-  const crowdReport = freshReport(c, "crowd_level", ctx, t.arrival);
+  const crowdReport = freshReport(c, "crowd_level", t.arrival);
   const typical = typicalCrowd(c.category, t.arrival, tz);
   let crowd: Condition["level"] | null = null;
   if (crowdReport && (crowdReport.value === "quiet" || crowdReport.value === "moderate" || crowdReport.value === "busy")) {
@@ -179,7 +180,7 @@ export function conditionsFor(c: Candidate, ctx: RequestContext, t: TimingBase, 
     out.push({ kind: "crowd", level: crowd, basis: "typical", isEstimate: true, minutes: null, reportedAt: null, text: `Places like this are usually ${CROWD_WORDS[typical.level]} on ${typical.when}` });
   }
 
-  const queueReport = freshReport(c, "queue", ctx, t.arrival);
+  const queueReport = freshReport(c, "queue", t.arrival);
   if (queueReport && (queueReport.value === "none" || queueReport.value === "short" || queueReport.value === "long")) {
     const words = { none: "no line", short: "a short line", long: "a long line" }[queueReport.value];
     out.push({ kind: "wait", level: queueReport.value, basis: "report", isEstimate: false, minutes: null, reportedAt: queueReport.at, text: `Reported ${words}${reported(queueReport.at)}` });
@@ -190,20 +191,36 @@ export function conditionsFor(c: Candidate, ctx: RequestContext, t: TimingBase, 
   return out;
 }
 
-/** The least a wait is expected to take: the low end of its range, or a reported line's usual floor. */
-export function waitFloorMinutes(conditions: readonly Condition[]): number {
+/**
+ * What a reported line is taken to cost, for the time math only: a report gives a level, not a time.
+ * The same bands the levels are defined by (short is up to 15 minutes).
+ */
+const REPORTED_WAIT: Record<string, { min: number; max: number }> = { none: { min: 0, max: 0 }, short: { min: 5, max: 15 }, long: { min: 15, max: 30 } };
+
+/** The expected wait as a range: its usual range, or a reported line's band. */
+function waitRange(conditions: readonly Condition[]): { min: number; max: number } | null {
   const w = conditions.find((x) => x.kind === "wait");
-  if (!w) return 0;
-  return w.minutes?.min ?? (w.level === "long" ? 15 : w.level === "short" ? 5 : 0);
+  return w ? (w.minutes ?? REPORTED_WAIT[w.level] ?? null) : null;
+}
+
+/** The least a wait is expected to take: what ranking discounts from the time there. */
+export function waitFloorMinutes(conditions: readonly Condition[]): number {
+  return waitRange(conditions)?.min ?? 0;
+}
+
+/** The most a wait usually takes: what the "could leave too little time" check assumes. */
+export function waitCeilingMinutes(conditions: readonly Condition[]): number {
+  return waitRange(conditions)?.max ?? 0;
 }
 
 /**
- * True when the expected wait could leave too little of the visit: less than its minimum, or past a
- * published last order or last entry. An estimate, so it only ever asks the user to check.
+ * True when the expected wait could leave too little of the visit: at the long end of its range, less
+ * than the visit's minimum is left, or it runs past a published last order or last entry. An
+ * estimate, so it only ever asks the user to check.
  */
 export function waitMayNotFit(t: TimingBase, conditions: readonly Condition[]): boolean {
-  const floor = waitFloorMinutes(conditions);
-  if (floor === 0) return false;
-  if (t.usefulMinutes - floor < t.minUsefulMinutes) return true;
-  return t.latestArrival !== null && !t.latestArrivalIsEstimate && addMinutes(t.arrival, floor) > t.latestArrival;
+  const worst = waitCeilingMinutes(conditions);
+  if (worst === 0) return false;
+  if (t.usefulMinutes - worst < t.minUsefulMinutes) return true;
+  return t.latestArrival !== null && !t.latestArrivalIsEstimate && addMinutes(t.arrival, worst) > t.latestArrival;
 }

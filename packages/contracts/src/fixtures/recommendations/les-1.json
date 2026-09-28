@@ -220,23 +220,20 @@
         {
           "kind": "crowd",
           "level": "busy",
-          "basis": "typical",
-          "isEstimate": true,
+          "basis": "report",
+          "isEstimate": false,
           "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually busy on Saturday evenings"
+          "reportedAt": "2026-10-03T22:28:00.000Z",
+          "text": "Reported busy at 6:28pm"
         },
         {
           "kind": "wait",
-          "level": "long",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": {
-            "min": 15,
-            "max": 30
-          },
-          "reportedAt": null,
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)"
+          "level": "short",
+          "basis": "report",
+          "isEstimate": false,
+          "minutes": null,
+          "reportedAt": "2026-10-03T22:28:00.000Z",
+          "text": "Reported a short line at 6:28pm"
         }
       ],
       "price": {
@@ -268,12 +265,18 @@
             "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
+        },
+        {
+          "code": "FRESH_REPORT",
+          "text": "recent report",
+          "params": {},
+          "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~5 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
-        "sentence": "A short walk, plenty of time, open late.",
+        "summary": "~5 min walk · takes about 1h20 · short line reported · until 11pm · price unknown",
+        "sentence": "A short walk, plenty of time, open late, recent report.",
         "caveat": null,
         "action": "Go now"
       },
@@ -345,21 +348,12 @@
       "conditions": [
         {
           "kind": "crowd",
-          "level": "busy",
-          "basis": "report",
-          "isEstimate": false,
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
           "minutes": null,
-          "reportedAt": "2026-10-03T22:22:00.000Z",
-          "text": "Reported busy at 6:22pm"
-        },
-        {
-          "kind": "wait",
-          "level": "short",
-          "basis": "report",
-          "isEstimate": false,
-          "minutes": null,
-          "reportedAt": "2026-10-03T22:22:00.000Z",
-          "text": "Reported a short line at 6:22pm"
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
         }
       ],
       "price": {
@@ -393,18 +387,12 @@
             "verifiedAt": "2026-09-29T16:00:00.000Z"
           },
           "required": false
-        },
-        {
-          "code": "FRESH_REPORT",
-          "text": "recent report",
-          "params": {},
-          "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · takes about 1h · short line reported · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late, hours confirmed, recent report.",
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
       },

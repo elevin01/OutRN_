@@ -156,7 +156,6 @@
       "excludedBy": null,
       "reasons": [
         "OPEN_LATE",
-        "FRESH_REPORT",
         "ENOUGH_TIME",
         "HOURS_CONFIRMED"
       ],
@@ -1333,6 +1332,7 @@
       "excludedBy": null,
       "reasons": [
         "OPEN_LATE",
+        "FRESH_REPORT",
         "SHORT_TRAVEL",
         "ENOUGH_TIME"
       ],

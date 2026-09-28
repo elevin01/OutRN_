@@ -131,7 +131,8 @@ export type PlanStep = z.infer<typeof PlanStep>;
 /**
  * What to expect there at the arrival. Render `text`; style `kind` and `level` when you know them.
  * Basis "typical" is what's usual for this kind of place at that day and hour (an estimate, never a
- * claim about the place: show it as "usually"); "report" is a recent report of the place itself.
+ * claim about the place: show it as "usually"); "report" is a recent report of the place itself,
+ * used only while it is still valid at the arrival.
  */
 export const Condition = z.object({
   /** "crowd" | "wait". Open-ended (traffic, transit and weather may follow): fall back to `text`. */

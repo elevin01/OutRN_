@@ -41,10 +41,11 @@ changelog.
     the venue. There's no pattern where the programme is the crowd (cinema, theatre, live music).
   - **Waits:** at busy times, a table (15–30 min, unless the place takes reservations), a line to
     order (5–15 min), lanes (20–45 min, unless booked), or the door of a club.
-  - **Reports first:** a fresh visitor report of the crowd or the line replaces the pattern.
-  - **In the time math:** waiting isn't time there, so it lowers the fit. A wait that could eat
-    the visit or run past last orders makes the card Check first (`WAIT_MAY_NOT_FIT`). Like every
-    estimate, it never excludes a place.
+  - **Reports first:** a visitor report of the crowd or the line replaces the pattern, as long as
+    it's still valid when the user arrives.
+  - **In the time math:** waiting isn't time there, so the short end of the wait lowers the fit. If
+    the long end would eat the visit or run past last orders, the card is Check first
+    (`WAIT_MAY_NOT_FIT`). Like every estimate, it never excludes a place.
   - Contract 1.3 (additive): `conditions` on every item. The summary shows "~15–30 min wait".
 
 ## Next, in order
