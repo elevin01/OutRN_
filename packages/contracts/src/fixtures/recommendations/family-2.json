@@ -25,6 +25,7 @@
       "bar"
     ],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 120,
@@ -37,17 +38,44 @@
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
-        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown · usually 21+",
+        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
       "name": "Stanton Bar",
+      "plan": [
+        {
+          "at": "2026-10-04T05:15:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 1:15am",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-04T05:43:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 1:43am",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T07:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 3am, when it closes",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "check_first",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 23,
@@ -61,6 +89,7 @@
         "usefulMinutes": 77
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://stantonbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
@@ -107,17 +136,44 @@
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
-        "summary": "~23 min walk · until 3am, you'd have 1h17 · price unknown · usually 21+",
+        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
       "name": "Delancey Bar",
+      "plan": [
+        {
+          "at": "2026-10-04T05:15:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 1:15am",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-04T05:43:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 1:43am",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T07:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 3am, when it closes",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "check_first",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 23,
@@ -131,6 +187,7 @@
         "usefulMinutes": 77
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking"

@@ -25,6 +25,7 @@
       "bar"
     ],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -37,17 +38,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~18 min walk · until 2am, you'd have 2h37 · price unknown · usually 21+",
+        "summary": "~18 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Norfolk Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:53:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:53pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 18,
@@ -61,6 +89,7 @@
         "usefulMinutes": 157
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://norfolkbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
@@ -106,17 +135,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~15 min walk · until 2am, you'd have 2h40 · price unknown · usually 21+",
+        "summary": "~15 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Ridge Tavern",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:50:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:50pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 15,
@@ -130,6 +186,7 @@
         "usefulMinutes": 160
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": null,
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking"
@@ -175,17 +232,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~22 min walk · until 2am, you'd have 2h33 · price unknown · usually 21+",
+        "summary": "~22 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Eldridge Norfolk Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:57:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:57pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
         "travel": {
           "mode": "walk",
           "minutes": 22,
@@ -199,6 +283,7 @@
         "usefulMinutes": 153
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://eldridgenorfolkbar.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking"

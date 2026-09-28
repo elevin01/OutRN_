@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
-import { explain } from "./explain.js";
+import { explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import type { Candidate, CategoryPolicy, RequestContext } from "./types.js";
 
@@ -29,7 +29,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
 ]);
 
 let n = 0;
-function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number; kitchen?: string }): Candidate {
+function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number; kitchen?: string; takeout?: "yes" | "no" | "only" }): Candidate {
   const id = over.id ?? `v${++n}`;
   const facts: Candidate["facts"] = {
     name: { value: { value: over.name ?? id }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 },
@@ -39,6 +39,7 @@ function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: n
   if (over.hours !== null) facts.opening_hours = { value: { osm: over.hours ?? "Mo-Su 09:00-22:00" }, confidence: over.hoursConf ?? 0.6, evidenceClass: "published", validUntil: null, independentSources: 1, sources: over.hoursSources ?? ["osm"], verifiedAt: over.hoursVerifiedAt ?? null, conflict: over.hoursConflict ?? false };
   if (over.price !== undefined) facts.price = { value: over.price, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.wheelchair) facts.wheelchair = { value: { value: over.wheelchair }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
+  if (over.takeout) facts.takeout = { value: { value: over.takeout }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.kitchen) facts.kitchen_hours = { value: { osm: over.kitchen }, confidence: 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.lastEntry) facts.last_entry_offset = { value: { minutes: over.lastEntry }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
   return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: 0, excluded: false, hasLandmarkId: false, parentVenueId: null, brand: over.brand ?? null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
@@ -636,3 +637,124 @@ describe("feasibility: scheduled closure", () => {
     expect(one(closing(venue({ category: "cafe", hours: "Mo-Su 08:00-23:00" })), ctx("2026-11-09 22:40", 120)).excludedBy).toBe("NOT_ENOUGH_TIME");
   });
 });
+
+describe("visit: what it takes, and takeout", () => {
+  it("a sit-down dinner takes longer than lunch; the minimum is what feasibility used", () => {
+    const r = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+    expect(one(r, ctx("2026-10-03 19:00", 180)).timing!.visit).toEqual({ style: "dine_in", minMinutes: 60, typicalMinutes: 80, isEstimate: true });
+    expect(one(r, ctx("2026-10-03 12:00", 180)).timing!.visit).toMatchObject({ style: "dine_in", typicalMinutes: 60 });
+    expect(one(venue({ category: "museum", hours: "Mo-Su 10:00-18:00" }), ctx("2026-10-03 11:00", 240)).timing!.visit).toMatchObject({ style: "visit", minMinutes: 80, typicalMinutes: 120 });
+  });
+
+  it("takeout needs only the time to order and collect: it fits where a sit-down visit would not", () => {
+    const c = venue({ category: "cafe", hours: "Mo-Su 07:00-20:30" });
+    expect(one(c, ctx("2026-10-03 20:00", 120)).excludedBy).toBe("NOT_ENOUGH_TIME");
+    const e = one(c, ctx("2026-10-03 20:00", 120, { visitStyle: "takeout" }));
+    expect(e.class).not.toBe("ineligible");
+    expect(e.timing!.visit).toEqual({ style: "takeout", minMinutes: 15, typicalMinutes: 20, isEstimate: true });
+    expect(explain(e, TZ).factLine).toContain("to go, about 20 min");
+    // Not food: a takeout request changes nothing.
+    expect(one(venue({ category: "museum", hours: "Mo-Su 10:00-18:00" }), ctx("2026-10-03 11:00", 240, { visitStyle: "takeout" })).timing!.visit.style).toBe("visit");
+  });
+
+  it("respects what the place says about takeout", () => {
+    const noTakeout = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", takeout: "no" });
+    expect(one(noTakeout, ctx("2026-10-03 19:00", 180, { visitStyle: "takeout" })).excludedBy).toBe("NO_TAKEOUT");
+    const counter = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", takeout: "only" });
+    expect(one(counter, ctx("2026-10-03 19:00", 180)).excludedBy).toBe("TAKEOUT_ONLY");
+    const s = recommend([counter], ctx("2026-10-03 19:00", 180), POLICIES, { size: 3 });
+    expect(s.relaxations).toContainEqual({ code: "takeout", text: "get food to go", admits: 1 });
+    expect(one(counter, ctx("2026-10-03 19:00", 180, { visitStyle: "takeout" })).timing!.visit.style).toBe("takeout");
+    // A takeout-only coffee window is still a quick stop on a sit-down request.
+    expect(one(venue({ category: "cafe", hours: "Mo-Su 07:00-20:00", takeout: "only" }), ctx("2026-10-03 15:00", 120)).timing!.visit.style).toBe("takeout");
+  });
+
+  it("the card says what the visit takes, not how long the user may stay", () => {
+    const e = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-10-03 19:00", 180));
+    expect(explain(e, TZ).factLine).toContain("takes about 1h20 · until 11pm");
+    expect(explain(e, TZ).factLine).not.toMatch(/you'd have/);
+  });
+});
+
+describe("plan steps", () => {
+  it("leave, arrive, order by (published kitchen hours), wrap up when it closes", () => {
+    const e = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", kitchen: "Mo-Su 11:00-22:00" }), ctx("2026-10-03 21:00", 180));
+    expect(planSteps(e, { timezone: TZ }).map((s) => [s.kind, s.text, s.isEstimate])).toEqual([
+      ["leave", "Leave at 9pm", false],
+      ["arrive", "Arrive around 9:13pm", true],
+      ["order_by", "Order by 9:45pm", false],
+      ["wrap_up", "Wrap up by 11pm, when it closes", false],
+    ]);
+  });
+
+  it("an estimated last entry says so; waiting for an opening says so", () => {
+    const museum = one(venue({ category: "museum", hours: "Mo-Su 10:00-18:00" }), ctx("2026-10-03 15:00", 240));
+    expect(planSteps(museum, { timezone: TZ }).find((s) => s.kind === "last_entry")).toMatchObject({ text: "Last entry likely around 5pm", isEstimate: true });
+    const bar = one(venue({ category: "bar", hours: "Mo-Su 17:00-02:00" }), ctx("2026-10-03 16:30", 180));
+    expect(planSteps(bar, { timezone: TZ })[1]).toMatchObject({ kind: "arrive", text: "Arrive as it opens at 5pm" });
+  });
+
+  it("an event starts and ends; a be-back-by plan ends with the trip back", () => {
+    const start = fromLocal("2026-10-03", 20 * 60, TZ);
+    const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "o5", title: "Set", start, end: fromLocal("2026-10-03", 22 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    const kinds = planSteps(one(show, ctx("2026-10-03 19:00", 240)), { timezone: TZ }).map((s) => s.text);
+    expect(kinds).toEqual(["Leave at 7pm", "Arrive around 7:18pm", "Starts at 8pm", "Wrap up by 10pm, when it ends"]);
+    const backBy = fromLocal("2026-10-03", 22 * 60, TZ);
+    const home = one(venue({ category: "cafe", hours: "Mo-Su 07:00-23:00" }), ctx("2026-10-03 19:00", 240, { backBy }));
+    const steps = planSteps(home, { timezone: TZ, backBy });
+    expect(steps.at(-2)).toMatchObject({ kind: "wrap_up", text: expect.stringMatching(/to get back in time$/) });
+    expect(steps.at(-1)).toMatchObject({ kind: "back_by", text: "Back by 10pm" });
+  });
+});
+
+describe("plan steps are physically consistent", () => {
+  const isChronological = (steps: { at: Date }[]) => steps.every((s, i) => i === 0 || steps[i - 1]!.at.getTime() <= s.at.getTime());
+
+  it("waiting for an opening moves the departure, so the trip really arrives as it opens", () => {
+    const e = one(venue({ category: "bar", hours: "Mo-Su 17:00-02:00" }), ctx("2026-10-03 16:00", 180));
+    const steps = planSteps(e, { timezone: TZ });
+    const leave = steps.find((s) => s.kind === "leave")!;
+    const arrive = steps.find((s) => s.kind === "arrive")!;
+    expect(arrive).toMatchObject({ text: "Arrive as it opens at 5pm" });
+    // Travel plus the entry buffer, not an hour of standing outside.
+    expect((arrive.at.getTime() - leave.at.getTime()) / 60_000).toBe(e.timing!.travel.minutes + 5);
+    expect(leave.at.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 16 * 60, TZ).getTime());
+    expect(e.timing!.departAt.getTime()).toBe(leave.at.getTime());
+    // Same for a kitchen that opens later than the restaurant.
+    const k = one(venue({ category: "restaurant", hours: "24/7", kitchen: "Mo-Su 10:00-20:00" }), ctx("2026-10-03 09:00", 180));
+    expect((k.timing!.arrival.getTime() - k.timing!.departAt.getTime()) / 60_000).toBe(k.timing!.travel.minutes + 10);
+    expect(isChronological(planSteps(k, { timezone: TZ }))).toBe(true);
+  });
+
+  it("an event joined late: no stale entry cutoff, no start in the past, steps in order", () => {
+    const start = fromLocal("2026-10-03", 20 * 60, TZ);
+    const end = fromLocal("2026-10-03", 22 * 60, TZ);
+    for (const entryCutoff of [start, null]) {
+      const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: `late-${entryCutoff ? "cutoff" : "none"}`, title: "Set", start, end, entryCutoff, lateEntry: true, status: "scheduled" } });
+      const e = one(show, ctx("2026-10-03 20:30", 180));
+      expect(e.class).toBe("check_first");
+      const steps = planSteps(e, { timezone: TZ });
+      expect(steps.map((s) => s.kind)).toEqual(["leave", "arrive", "wrap_up"]);
+      expect(steps[1]!.text).toMatch(/started at 8pm; joining late\)$/);
+      expect(isChronological(steps)).toBe(true);
+    }
+  });
+
+  it("a cutoff still ahead stays, in order; a guessed last entry already passed is not an instruction", () => {
+    const start = fromLocal("2026-10-03", 20 * 60, TZ);
+    const show = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "cut", title: "Set", start, end: fromLocal("2026-10-03", 22 * 60, TZ), entryCutoff: fromLocal("2026-10-03", 20 * 60 + 15, TZ), lateEntry: null, status: "scheduled" } });
+    const steps = planSteps(one(show, ctx("2026-10-03 19:30", 180)), { timezone: TZ });
+    expect(steps.map((s) => s.kind)).toEqual(["leave", "arrive", "event_starts", "entry_by", "wrap_up"]);
+    expect(isChronological(steps)).toBe(true);
+    // Reached after a guessed last entry (check first): the step becomes a note on arrival. With the
+    // default policies the minimum visit already rules this out, so use one with a shorter minimum.
+    const shortVisits = new Map(POLICIES).set("museum", { ...POLICIES.get("museum")!, minUsefulMinutes: 30 });
+    const museum = evaluateAll([venue({ category: "museum", hours: "Mo-Su 10:00-18:00" })], ctx("2026-10-03 17:05", 240), shortVisits)[0]!;
+    expect(museum.unresolved).toContain("LATE_ENTRY_UNCERTAIN");
+    const m = planSteps(museum, { timezone: TZ });
+    expect(m.map((s) => s.kind)).not.toContain("last_entry");
+    expect(m.find((s) => s.kind === "arrive")!.text).toMatch(/last entry may have passed\)$/);
+    expect(isChronological(m)).toBe(true);
+  });
+});
+

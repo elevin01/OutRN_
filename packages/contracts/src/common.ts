@@ -92,3 +92,15 @@ export const Note = z.object({
   params: z.record(z.string(), NoteParam),
 });
 export type Note = z.infer<typeof Note>;
+
+/**
+ * One of the place's own pages: its Instagram, Facebook, or menu. Always an https link the backend
+ * rebuilt or checked. `kind` is open-ended: style the ones you know, fall back to `label`.
+ */
+export const VenueLink = z.object({
+  kind: z.string().min(1),
+  label: z.string(),
+  url: z.url(),
+});
+export type VenueLink = z.infer<typeof VenueLink>;
+

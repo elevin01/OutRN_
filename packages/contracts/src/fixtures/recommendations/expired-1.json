@@ -27,7 +27,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [
     {
@@ -59,8 +60,35 @@
         "arriveAt": "2026-10-03T22:43:00.000Z",
         "usefulMinutes": 107,
         "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z"
+        "closesAt": "2026-10-04T05:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:43:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:43pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T00:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 8:30pm"
+        }
+      ],
       "price": {
         "kind": "free",
         "evidence": "estimate"
@@ -107,7 +135,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~8 min walk · until 1am, you'd have 1h47 · usually free",
+        "summary": "~8 min walk · takes about 1h · until 1am · usually free",
         "sentence": "A short walk, plenty of time, open late, free, sunset window.",
         "caveat": null,
         "action": "Go now"
@@ -115,7 +143,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking",
         "websiteUrl": "https://pittpark.example/",
-        "phone": null
+        "phone": null,
+        "links": []
       }
     },
     {
@@ -147,8 +176,35 @@
         "arriveAt": "2026-10-03T22:49:00.000Z",
         "usefulMinutes": 101,
         "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z"
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:49:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:49pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T00:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 8:30pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -184,7 +240,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · until 2am, you'd have 1h41 · price unknown · usually 21+",
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
@@ -192,7 +248,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
         "websiteUrl": null,
-        "phone": "+1 212 555 8297"
+        "phone": "+1 212 555 8297",
+        "links": []
       }
     },
     {
@@ -224,8 +281,35 @@
         "arriveAt": "2026-10-03T22:41:00.000Z",
         "usefulMinutes": 109,
         "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T01:00:00.000Z"
+        "closesAt": "2026-10-04T01:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 30,
+          "typicalMinutes": 30,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:41:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:41pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T00:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 8:30pm"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -251,7 +335,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~6 min walk · until 9pm, you'd have 1h49 · price unknown",
+        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
         "sentence": "A short walk, plenty of time.",
         "caveat": null,
         "action": "Go now"
@@ -259,7 +343,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
         "websiteUrl": "https://delanceybooks.example/",
-        "phone": null
+        "phone": null,
+        "links": []
       }
     }
   ],

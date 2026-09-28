@@ -59,6 +59,7 @@ function echo(page: RecommendationResponse, body: RecommendationRequest): Recomm
     origin: body.origin ? { lat: Math.round(body.origin.lat * 1000) / 1000, lon: Math.round(body.origin.lon * 1000) / 1000 } : area.center,
     originIsDefault: body.origin === undefined,
     backBy: body.backBy ?? null,
+    visitStyle: body.visitStyle ?? "dine_in",
   };
   return { ...page, request };
 }

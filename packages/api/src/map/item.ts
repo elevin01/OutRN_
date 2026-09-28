@@ -1,8 +1,10 @@
 import type { RecommendationItem } from "@outrn/contracts";
 import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
-import { caveatNotes, explain, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
+import { caveatNotes, explain, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
-import { ageLimitFrom, directionsUrl, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
+import { ageLimitFrom, directionsUrl, linksFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
+
+const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
 
 /**
  * Engine evaluation → public item. The engine's `Evaluation` never crosses the boundary: only what
@@ -38,7 +40,9 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
       usefulMinutes: t.usefulMinutes,
       finishBy: t.latestFinish.toISOString(),
       closesAt: t.closesAt?.toISOString() ?? null,
+      visit: { style: t.visit.style, label: VISIT_LABEL[t.visit.style] ?? "Visit", minMinutes: t.visit.minMinutes, typicalMinutes: t.visit.typicalMinutes, isEstimate: t.visit.isEstimate },
     },
+    plan: planSteps(e, ctx).map((s) => ({ kind: s.kind, at: s.at.toISOString(), isEstimate: s.isEstimate, text: s.text })),
     price: priceOf(c.facts.price),
     ageLimit: ageLimitFrom(c.facts.age_limit),
     reasons: reasonNotes(e, ctx.timezone).map((n) => ({ ...n, required: false })),
@@ -48,6 +52,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
       directionsUrl: directionsUrl(c.point, t.travel.mode),
       websiteUrl: websiteUrl(textFrom(c.facts.website?.value)),
       phone: textFrom(c.facts.phone?.value),
+      links: linksFrom(c.facts.links?.value),
     },
   };
 }

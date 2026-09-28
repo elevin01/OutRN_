@@ -44,6 +44,21 @@ describe("opening hours evaluation", () => {
     expect(nov.openNow).toBe(false);
   });
 
+  it("public holidays resolve for New York, and a PH rule is exact on an ordinary day", () => {
+    const rule = { osm: "Mo-Su 09:00-17:00; PH off" };
+    for (const day of ["2026-07-04", "2026-11-26", "2026-12-25"]) {
+      // Independence Day, Thanksgiving, Christmas: closed, flagged approximate (venues read PH differently).
+      const ev = evaluateHours(rule, at(day, 12), TZ);
+      expect([ev.openNow, ev.approximate], day).toEqual([false, true]);
+    }
+    const ordinary = evaluateHours(rule, at("2026-11-19", 12), TZ);
+    expect([ordinary.openNow, ordinary.approximate]).toEqual([true, false]);
+    // The evening before a holiday is approximate too: a window can run into it.
+    expect(evaluateHours(rule, at("2026-11-25", 12), TZ).approximate).toBe(true);
+    // School holidays are not defined for New York: such a rule is unreadable (hours unknown), never a guess.
+    expect(evaluateHours({ osm: "Mo-Fr 08:00-15:00; SH off" }, at("2026-11-19", 12), TZ).openNow).toBeNull();
+  });
+
   it("garbage yields a parse error, never a state", () => {
     const ev = evaluateHours({ osm: "ask inside" }, at("2026-10-03", 12), TZ);
     expect(ev.openNow).toBeNull();

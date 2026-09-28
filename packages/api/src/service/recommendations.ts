@@ -136,16 +136,20 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
  * Snapshots outlive deploys: a search started before a release is paged after it. Read them through
  * the contract: upgrade the shapes earlier versions wrote, serve the page only if it then satisfies
  * today's schema, and otherwise expire the search with a restart. Stored data never causes a 500.
+ * (A 1.1 page's items have no visit or plan and cannot be rebuilt without the engine: those searches
+ * expire with a restart, as designed.)
  */
 async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> {
   if (!stored || typeof stored !== "object") return stored;
-  const r = stored as Record<string, unknown>;
+  let r = stored as Record<string, unknown>;
   // Contract 1.0 had no origin or backBy: every 1.0 search planned from the area's center, with no back-by.
   if (!("origin" in r) && !("originIsDefault" in r) && !("backBy" in r) && typeof r["areaId"] === "string") {
     const area = await findArea(q, r["areaId"]);
-    if (area) return { ...r, origin: { lat: Number(area.lat), lon: Number(area.lon) }, originIsDefault: true, backBy: null };
+    if (area) r = { ...r, origin: { lat: Number(area.lat), lon: Number(area.lon) }, originIsDefault: true, backBy: null };
   }
-  return stored;
+  // Before 1.2 there was no visitStyle: every search was a sit-down one.
+  if (!("visitStyle" in r)) r = { ...r, visitStyle: "dine_in" };
+  return r;
 }
 
 /** Another page of a search: a slice of its frozen list. Never re-runs the engine. */

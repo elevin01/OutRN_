@@ -1,4 +1,4 @@
-import type { AgeLimit, Evidence, Option, Price, TravelMode } from "@outrn/contracts";
+import type { AgeLimit, Evidence, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
 import { isPublicWebHost } from "@outrn/core";
 import { labelOf } from "../config.js";
 
@@ -59,3 +59,23 @@ const MAPS_MODE: Record<TravelMode, string> = { walk: "walking", drive: "driving
 export function directionsUrl(point: { lat: number; lon: number }, mode: TravelMode): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${point.lat},${point.lon}`)}&travelmode=${MAPS_MODE[mode]}`;
 }
+
+const LINK_LABEL: Record<string, string> = { instagram: "Instagram", facebook: "Facebook", menu: "Menu" };
+
+/** The place's own pages from its links fact, in a fixed order; only https on a public host ever reaches a user. */
+export function linksFrom(value: unknown): VenueLink[] {
+  const v = (value ?? {}) as Record<string, unknown>;
+  const out: VenueLink[] = [];
+  for (const kind of ["menu", "instagram", "facebook"]) {
+    const url = v[kind];
+    if (typeof url !== "string") continue;
+    try {
+      const u = new URL(url);
+      if (u.protocol === "https:" && isPublicWebHost(u.hostname)) out.push({ kind, label: LINK_LABEL[kind]!, url });
+    } catch {
+      // stored values are validated on write; anything else is dropped here too
+    }
+  }
+  return out;
+}
+

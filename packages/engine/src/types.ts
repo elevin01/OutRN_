@@ -32,6 +32,8 @@ export interface RequestContext {
   youngestAge?: number;
   /** Narrow to these categories (user tapped a chip). Diversity across activity types is skipped. */
   categories?: Category[];
+  /** How the user wants to eat, for food places: to go is quick. Missing = sitting down. */
+  visitStyle?: "dine_in" | "takeout";
   /** Items shown recently on this device, and items dismissed. */
   seenIds?: string[];
   dismissedIds?: string[];
@@ -133,6 +135,8 @@ export type ExclusionCode =
   | "NOT_ENOUGH_TIME"
   | "LAST_ENTRY_PASSED"
   | "KITCHEN_CLOSED"
+  | "TAKEOUT_ONLY"
+  | "NO_TAKEOUT"
   | "EVENT_CANCELLED"
   | "EVENT_SOLD_OUT"
   | "EVENT_STARTED"
@@ -146,12 +150,24 @@ export type ExclusionCode =
   | "NO_PROGRAMME"
   | "AGE_RESTRICTED";
 
-export interface Timing {
+/** How a visit is done, what it needs at least, and how long it typically takes. */
+export interface Visit {
+  style: "dine_in" | "counter" | "takeout" | "visit" | "event";
+  /** The minimum the engine required for the visit to be worthwhile. */
+  minMinutes: number;
+  /** How long people typically spend; never less than the minimum. */
+  typicalMinutes: number;
+  isEstimate: boolean;
+}
+
+export interface TimingBase {
   travel: TravelEstimate;
   departAt: Date;
   arrival: Date;
   latestArrival: Date | null;
   latestArrivalIsEstimate: boolean;
+  /** What `latestArrival` is: last orders (kitchen), last entry, or an event's entry cutoff. */
+  latestArrivalKind: "last_order" | "last_entry" | "event_entry" | null;
   latestFinish: Date;
   usefulMinutes: number;
   minUsefulMinutes: number;
@@ -159,6 +175,10 @@ export interface Timing {
   closesAt: Date | null;
   deadline: Date;
   returnTravel: TravelEstimate | null;
+}
+
+export interface Timing extends TimingBase {
+  visit: Visit;
 }
 
 export interface Scores {

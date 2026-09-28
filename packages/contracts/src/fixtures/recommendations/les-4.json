@@ -23,6 +23,7 @@
     "company": null,
     "categories": [],
     "travelMode": "walk",
+    "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
@@ -35,17 +36,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~12 min walk · until 11:30pm, you'd have 2h38 · price unknown",
+        "summary": "~12 min walk · takes about 1h20 · until 11:30pm · price unknown",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
       "name": "Ridge Ludlow Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:52:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:52pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "walk",
           "minutes": 12,
@@ -59,6 +87,7 @@
         "usefulMinutes": 158
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 7135",
         "websiteUrl": "https://ridgeludlowkitchen.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking"
@@ -101,17 +130,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~10 min walk · until 8pm, you'd have 1h15 · price unknown",
+        "summary": "~10 min walk · takes about 35 min · until 8pm · price unknown",
         "sentence": "A short walk, plenty of time."
       },
       "kind": "venue",
       "name": "Eldridge Coffee",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:45:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:45pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8pm, when it closes",
+          "isEstimate": false
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Counter service",
+          "style": "counter",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 35
+        },
         "travel": {
           "mode": "walk",
           "minutes": 10,
@@ -125,6 +181,7 @@
         "usefulMinutes": 75
       },
       "actions": {
+        "links": [],
         "phone": null,
         "websiteUrl": "https://eldridgecoffee.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=walking"
@@ -168,17 +225,44 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~13 min walk · until 10pm, you'd have 2h27 · price unknown",
+        "summary": "~13 min walk · takes about 1h20 · until 10pm · price unknown",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
       "name": "Stanton Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:53:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:53pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:20:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:20pm",
+          "isEstimate": true
+        }
+      ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
       "status": "ready",
       "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
         "travel": {
           "mode": "walk",
           "minutes": 13,
@@ -192,6 +276,7 @@
         "usefulMinutes": 147
       },
       "actions": {
+        "links": [],
         "phone": "+1 212 555 7138",
         "websiteUrl": "https://stantonkitchen.example/",
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking"

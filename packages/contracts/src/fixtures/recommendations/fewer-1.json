@@ -27,7 +27,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [
     {
@@ -59,8 +60,35 @@
         "arriveAt": "2026-10-04T06:45:00.000Z",
         "usefulMinutes": 45,
         "finishBy": "2026-10-04T07:30:00.000Z",
-        "closesAt": null
+        "closesAt": null,
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T06:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 2:30am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T06:45:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 2:45am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3:30am"
+        }
+      ],
       "price": {
         "kind": "free",
         "evidence": "estimate"
@@ -92,7 +120,7 @@
         }
       ],
       "copy": {
-        "summary": "~10 min walk · you'd have 45 min · usually free",
+        "summary": "~10 min walk · takes about 1h · usually free",
         "sentence": "A short walk, free.",
         "caveat": "Check first: hours not listed",
         "action": "Check first"
@@ -100,7 +128,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
         "websiteUrl": "https://stantonpark.example/",
-        "phone": "+1 212 555 6468"
+        "phone": "+1 212 555 6468",
+        "links": []
       }
     },
     {
@@ -132,8 +161,35 @@
         "arriveAt": "2026-10-04T06:53:00.000Z",
         "usefulMinutes": 37,
         "finishBy": "2026-10-04T07:30:00.000Z",
-        "closesAt": null
+        "closesAt": null,
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 25,
+          "typicalMinutes": 25,
+          "isEstimate": true
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T06:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 2:30am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T06:53:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 2:53am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3:30am"
+        }
+      ],
       "price": {
         "kind": "free",
         "evidence": "estimate"
@@ -156,7 +212,7 @@
         }
       ],
       "copy": {
-        "summary": "~18 min walk · you'd have 37 min · usually free",
+        "summary": "~18 min walk · takes about 25 min · usually free",
         "sentence": "Free.",
         "caveat": "Check first: hours not listed",
         "action": "Check first"
@@ -164,7 +220,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
         "websiteUrl": null,
-        "phone": null
+        "phone": null,
+        "links": []
       }
     }
   ],

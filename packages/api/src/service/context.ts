@@ -78,6 +78,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (backBy ?? overrides.backBy) ctx.backBy = (backBy ?? overrides.backBy)!;
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
+  if (request.visitStyle === "takeout") ctx.visitStyle = "takeout";
   // Enables the sunset window for viewpoints, waterfronts and parks.
   ctx.sunset = sunsetOn(origin, at, area.timezone);
   if (overrides.maxTravelMinutes) ctx.maxTravelMinutes = overrides.maxTravelMinutes;
@@ -102,6 +103,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     origin,
     originIsDefault: origin === center,
     backBy: backBy?.toISOString() ?? null,
+    visitStyle: request.visitStyle ?? "dine_in",
   };
   return { area, ctx, resolved, request: deviceOrigin ? { ...request, origin: deviceOrigin } : request };
 }

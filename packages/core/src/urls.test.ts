@@ -27,4 +27,30 @@ describe("links shown to users point at public hosts only", () => {
       "https://intranet/",
     ]) expect(isPublicWebHost(hostOf(url)), url).toBe(false);
   });
+
+  it("refuses names that only resolve inside a network: private-use, special-use and withdrawn suffixes", () => {
+    for (const url of [
+      "https://router.lan/menu",
+      "https://router.home/menu",
+      "https://nas.corp/menu",
+      "https://files.private/",
+      "https://portal.intranet/",
+      "https://box.localdomain/",
+      "https://pc.workgroup/",
+      "https://setup.router/",
+      "https://my.gateway/",
+      "https://exchange.mail/",
+      "https://www.domain/",
+      "https://site.test/",
+      "https://x.invalid/",
+      "https://hidden.onion/",
+      "https://name.alt/",
+      "https://1.0.168.192.in-addr.arpa/",
+    ]) expect(isPublicWebHost(hostOf(url)), url).toBe(false);
+    // A numeric top label is not a TLD (the URL parser itself refuses "https://router.1/").
+    expect(isPublicWebHost("router.1")).toBe(false);
+    // Real public suffixes that look close stay public; .example stays allowed for fixtures.
+    for (const url of ["https://menu.homes/", "https://joes.cafe/", "https://a.corporate.com/", "https://fritz.box/", "https://bageldepot.example/"]) expect(isPublicWebHost(hostOf(url)), url).toBe(true);
+  });
 });
+

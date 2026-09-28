@@ -63,7 +63,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.1.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.2.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -286,11 +286,19 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const first = await search({ areaId: "les", windowMinutes: 180 });
     const next = { cursor: first.page.nextCursor! } as unknown as RecommendationRequest;
     const expected = (await search(next)).items.map((i) => i.id);
-    // Exactly what a v1.0 API stored: no origin, originIsDefault or backBy in the resolved request.
+    // What a v1.1 API stored: no visitStyle (every search was a sit-down one).
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'visitStyle' where run_id = $1`, [first.requestId]);
+    expect((await search(next)).request.visitStyle).toBe("dine_in");
+    // Exactly what a v1.0 API stored: no origin, originIsDefault or backBy either.
     await db.query(`update recommendation_snapshots set resolved = resolved - 'origin' - 'originIsDefault' - 'backBy' where run_id = $1`, [first.requestId]);
     const upgraded = await search(next);
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
-    expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null });
+    expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
+
+    // Items written before 1.2 have no visit or plan, which cannot be rebuilt without the engine: that search restarts.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i #- '{timing,visit}') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    const older = await call("POST", "/v1/recommendations", next);
+    expect([older.status, ApiError.parse(older.json).error.code]).toEqual([410, "CURSOR_EXPIRED"]);
 
     // A shape nobody can read: expire it and hand back the search to run again.
     await db.query(`update recommendation_snapshots set resolved = '{}' where run_id = $1`, [first.requestId]);
@@ -302,6 +310,40 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     await db.query(`update recommendation_snapshots set request = '"garbage"' where run_id = $1`, [first.requestId]);
     const lost = await call("POST", "/v1/recommendations", next);
     expect([lost.status, ApiError.parse(lost.json).error.code]).toEqual([400, "CURSOR_INVALID"]);
+  });
+
+  it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {
+    now = SAT_EVENING;
+    const page = await search({ areaId: "les", windowMinutes: 180 });
+    expect(page.request.visitStyle).toBe("dine_in");
+    for (const item of page.items) {
+      expect(item.timing.visit.typicalMinutes).toBeGreaterThanOrEqual(item.timing.visit.minMinutes);
+      expect(item.plan.slice(0, 2).map((s) => s.kind)).toEqual(["leave", "arrive"]);
+      expect(item.plan.at(-1)!.kind).toBe("wrap_up");
+      expect(item.copy.summary).not.toMatch(/you'd have/);
+    }
+    const food = await search({ areaId: "les", windowMinutes: 60, categories: ["restaurant", "cafe"], visitStyle: "takeout" });
+    expect(food.request.visitStyle).toBe("takeout");
+    expect(food.items.length).toBeGreaterThan(0);
+    expect(food.items.every((i) => i.timing.visit.style === "takeout" && i.timing.visit.minMinutes === 15)).toBe(true);
+  });
+
+  it("links a place's own pages (from OSM contact tags) on cards and details", async () => {
+    now = SAT_EVENING;
+    const first = (await search({ areaId: "les", windowMinutes: 180 })).items[0]!;
+    const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [first.placeId])).rows[0]!.external_id;
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: first.placeId, attribute: "links", value: { instagram: "https://www.instagram.com/pittpark/", menu: "https://pittpark.example/menu" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "contact:instagram=pittpark; website:menu=https://pittpark.example/menu", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.75 }]);
+    await materializeSubjects(db, "venue", [first.placeId], now);
+    const expected = [
+      { kind: "menu", label: "Menu", url: "https://pittpark.example/menu" },
+      { kind: "instagram", label: "Instagram", url: "https://www.instagram.com/pittpark/" },
+    ];
+    const card = (await search({ areaId: "les", windowMinutes: 180 })).items.find((i) => i.placeId === first.placeId)!;
+    expect(card.actions.links).toEqual(expected);
+    const details = PlaceDetails.parse((await call("GET", `/v1/places/${first.placeId}`)).json);
+    expect(details.actions.links).toEqual(expected);
+    // Links are actions, not a "what we know" row.
+    expect(details.facts.map((f) => f.attribute)).not.toContain("links");
   });
 
   it("rejects bad cursors and bad requests with field-level errors", async () => {

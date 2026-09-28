@@ -29,7 +29,8 @@
       "lon": -73.988
     },
     "originIsDefault": true,
-    "backBy": null
+    "backBy": null,
+    "visitStyle": "dine_in"
   },
   "items": [
     {
@@ -66,8 +67,41 @@
         "arriveAt": "2026-10-03T23:02:00.000Z",
         "usefulMinutes": 120,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T01:30:00.000Z"
+        "closesAt": "2026-10-04T01:30:00.000Z",
+        "visit": {
+          "style": "event",
+          "label": "Event",
+          "minMinutes": 45,
+          "typicalMinutes": 120,
+          "isEstimate": false
+        }
       },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T23:02:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 7:02pm"
+        },
+        {
+          "kind": "event_starts",
+          "at": "2026-10-03T23:30:00.000Z",
+          "isEstimate": false,
+          "text": "Starts at 7:30pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm, when it ends"
+        }
+      ],
       "price": {
         "kind": "paid",
         "minCents": 2500,
@@ -113,7 +147,8 @@
       "actions": {
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=walking",
         "websiteUrl": "https://delanceyplayhouse.example/",
-        "phone": null
+        "phone": null,
+        "links": []
       }
     }
   ],

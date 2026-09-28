@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parseCharge, surveyedHoursConfidence } from "./osm-normalize.js";
+import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
 const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
@@ -246,6 +246,58 @@ describe("OSM normalization", () => {
   it("an opening date more than a year ahead is not believed: anyone can edit OSM", () => {
     expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: "2027-06-01" }), "business_status")).toMatchObject({ value: { status: "closed_temporarily" } });
     for (const far of ["2027-12-01", "9998-12-31"]) expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: far }), "business_status"), far).toMatchObject({ value: { status: "operating" } });
+  });
+
+  it("takeaway becomes a published takeout fact; other values are ignored", () => {
+    expect(fact(rec({ name: "Slice", amenity: "restaurant", takeaway: "only" }), "takeout")).toMatchObject({ evidenceClass: "published", value: { value: "only" }, evidence: "takeaway=only" });
+    expect(fact(rec({ name: "Bistro", amenity: "restaurant", takeaway: "no" }), "takeout")).toMatchObject({ value: { value: "no" } });
+    expect(fact(rec({ name: "Diner", amenity: "restaurant", takeaway: "sometimes" }), "takeout")).toBeUndefined();
+  });
+
+  describe("the venue's own links", () => {
+    it("rebuilds Instagram and Facebook links from the handle, on the official host", () => {
+      expect(venueLinks({ "contact:instagram": "https://instagram.com/essexcoffee?igsh=abc" })?.links).toEqual({ instagram: "https://www.instagram.com/essexcoffee/" });
+      expect(venueLinks({ "contact:instagram": "@essex.coffee" })?.links).toEqual({ instagram: "https://www.instagram.com/essex.coffee/" });
+      expect(venueLinks({ "contact:facebook": "https://m.facebook.com/EssexCoffeeNYC/" })?.links).toEqual({ facebook: "https://www.facebook.com/EssexCoffeeNYC" });
+      expect(venueLinks({ "website:menu": "https://essex.example/menu.pdf" })?.links).toEqual({ menu: "https://essex.example/menu.pdf" });
+    });
+
+    it("drops anything it cannot vouch for", () => {
+      for (const tags of [
+        { "contact:instagram": "https://instagram.com/p/Cx12ab" }, // a post, not an account
+        { "contact:instagram": "https://evil.example/instagram.com/x" },
+        { "contact:instagram": "javascript:alert(1)" },
+        { "contact:facebook": "https://facebook.com/profile.php?id=123" },
+        { "contact:facebook": "https://facebook.com.evil.example/page" },
+        { "website:menu": "http://essex.example/menu" }, // not https
+        { "website:menu": "https://user:pw@essex.example/menu" },
+        { "website:menu": "javascript:alert(1)" },
+        { "website:menu": "menu on the wall" },
+      ]) expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
+    });
+
+    it("becomes one published links fact with its tags as evidence", () => {
+      expect(fact(rec({ name: "Essex Coffee", amenity: "cafe", "contact:instagram": "essexcoffee", "website:menu": "https://essex.example/menu" }), "links")).toMatchObject({
+        evidenceClass: "published",
+        value: { instagram: "https://www.instagram.com/essexcoffee/", menu: "https://essex.example/menu" },
+        evidence: "contact:instagram=essexcoffee; website:menu=https://essex.example/menu",
+      });
+    });
+  });
+
+  describe("menu links from OSM point at public hosts only", () => {
+    it("drops a website:menu on an IP literal or a network-local name", () => {
+      for (const menu of ["https://169.254.169.254/latest/meta-data/", "https://192.168.1.1/menu", "https://[::1]/", "https://0x7f.1/", "https://router.local/menu", "https://intranet/menu", "https://router.lan/menu", "https://router.home/menu", "https://nas.corp/menu"]) {
+        expect(venueLinks({ "website:menu": menu }), menu).toBeNull();
+      }
+      expect(venueLinks({ "website:menu": "https://bageldepot.example/menu.pdf" })?.links.menu).toBe("https://bageldepot.example/menu.pdf");
+    });
+
+    it("drops handles that are not accounts: a redirect path, or no letters at all", () => {
+      for (const tags of [{ "contact:facebook": "https://facebook.com/l.php?u=https://evil.example" }, { "contact:facebook": ".." }, { "contact:instagram": ".." }, { "contact:instagram": "__" }]) {
+        expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
+      }
+    });
   });
 });
 
