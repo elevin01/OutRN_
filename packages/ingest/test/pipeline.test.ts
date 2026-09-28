@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
+import { writeFacts } from "@outrn/facts";
 import { fromLocal } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
 import { ingestOsmArea } from "../src/pipeline.js";
@@ -269,6 +270,51 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       `select t.attribute, t.question from verification_tasks t join venues v on v.id = t.subject_id where v.canonical_name = 'Allen Kitchen' and t.dedupe_key like '%:osm_closure'`,
     );
     expect(task.rows).toEqual([{ attribute: "business_status", question: "OpenStreetMap now says this place has closed. Has it?" }]);
+  });
+
+  it("the ledger is append-only: returning to an earlier claim adds a row instead of reviving the old one", async () => {
+    const subjectId = crypto.randomUUID();
+    const claim = (evidenceClass: "estimate" | "published", survey: string | null, fetchedAt: string) => ({
+      subjectKind: "venue" as const, subjectId, attribute: "business_status" as const, value: { status: "operating" }, sourceId: "osm", lineageGroup: "osm",
+      evidenceClass, evidence: survey ? `check_date=${survey}` : null, observedAt: survey ? new Date(`${survey}T12:00:00Z`) : null, fetchedAt: new Date(fetchedAt), confidence: 0.5,
+    });
+    await writeFacts(db, [claim("estimate", null, "2026-09-01T00:00:00Z")]); // A
+    await writeFacts(db, [claim("published", "2026-01-10", "2026-09-10T00:00:00Z")]); // B: a mapper's survey
+    const again = await writeFacts(db, [claim("estimate", null, "2026-09-20T00:00:00Z")]); // A again: the survey withdrawn
+    expect(again.inserted).toBe(1);
+    // Re-asserting the identical active claim stays idempotent.
+    expect((await writeFacts(db, [claim("estimate", null, "2026-09-21T00:00:00Z")])).inserted).toBe(0);
+    const rows = await db.query<{ evidence_class: string; active: boolean; fetched_at: Date }>(
+      `select evidence_class, superseded_at is null as active, fetched_at from facts where subject_id = $1 order by created_at, fetched_at`,
+      [subjectId],
+    );
+    expect(rows.rows.map((r) => [r.evidence_class, r.active])).toEqual([["estimate", false], ["published", false], ["estimate", true]]);
+    expect(rows.rows[0]!.fetched_at).toEqual(new Date("2026-09-01T00:00:00Z")); // the first estimate is left as it was
+  });
+
+  it("claims belong to their record: a node and its building keep their own, and tombstoning one retracts only its claims", async () => {
+    const active = async () =>
+      (await db.query<{ attribute: string; source_record: string }>(
+        `select f.attribute, f.source_record from facts f join venues v on v.id = f.subject_id
+          where v.canonical_name in ('Orchard St. Coffee', 'Orchard Street Coffee') and v.publish_state <> 'merged'
+            and f.source_id = 'osm' and f.superseded_at is null and f.attribute in ('name', 'opening_hours', 'website') order by 1, 2`,
+      )).rows.map((r) => `${r.attribute}@${r.source_record}`);
+    // The two records disagree on the name: both claims stand (a conflict to review), neither overwrites the other.
+    expect(await active()).toEqual(["name@node/100084", "name@way/100085", "opening_hours@node/100084", "website@node/100084", "website@way/100085"]);
+    const name = await db.query<{ conflict: boolean }>(`select cf.conflict from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name in ('Orchard St. Coffee', 'Orchard Street Coffee') and cf.attribute = 'name'`);
+    expect(name.rows[0]!.conflict).toBe(true);
+
+    // The node is deleted upstream; the building stays.
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { type: string; id: number; lat?: number; lon?: number; tags: Record<string, string> }[] };
+    const node = fixture.elements.find((e) => e.type === "node" && e.id === 100084)!;
+    const way = fixture.elements.find((e) => e.type === "way" && e.id === 100085)!;
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const path = join(dir, "les-node-deleted.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [way], outrn_extent: { lat: node.lat, lon: node.lon, radius_m: 5 } }));
+    const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    expect(s.raw.tombstoned).toBe(1);
+    // Only the node's claims go: the building's name and website remain, and the hours (the node's alone) are gone.
+    expect(await active()).toEqual(["name@way/100085", "website@way/100085"]);
   });
 });
 

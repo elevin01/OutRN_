@@ -151,7 +151,7 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
     if (row.deleted_at) {
       const linked = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null`, [row.id]);
       for (const l of linked.rows) {
-        s.factsSuperseded += await retractSourceFacts(q, "venue", l.venue_id, "osm");
+        s.factsSuperseded += await retractSourceFacts(q, "venue", l.venue_id, "osm", row.external_id);
         s.venueIds.add(l.venue_id);
       }
       continue;
@@ -186,19 +186,14 @@ export async function processSourceEntities(q: Queryable, sourceEntityIds: strin
     s.venueIds.add(outcome.venueId);
     const w = await writeFacts(
       q,
-      norm.facts.map((f) => ({ ...f, subjectKind: "venue" as const, subjectId: outcome.venueId, fetchedAt: o.fetchedAt, ingestionRunId: o.runId })),
+      norm.facts.map((f) => ({ ...f, subjectKind: "venue" as const, subjectId: outcome.venueId, fetchedAt: o.fetchedAt, ingestionRunId: o.runId, sourceRecord: row.external_id })),
     );
     s.factsInserted += w.inserted;
     s.factsSuperseded += w.superseded;
     s.factsRejected += w.rejected.length;
-    // A tag removed upstream takes its fact along, when this record is the venue's only OSM input
-    // (with two, the other record may still assert it).
-    const osmInputs = await q.query<{ n: string }>(
-      `select count(*) as n from entity_links el join source_entities se on se.id = el.source_entity_id
-        where el.venue_id = $1 and el.superseded_by is null and el.decision <> 'rejected' and se.source_id = 'osm' and se.deleted_at is null`,
-      [outcome.venueId],
-    );
-    if (Number(osmInputs.rows[0]!.n) === 1) s.factsSuperseded += await retractSourceFactsExcept(q, "venue", outcome.venueId, "osm", norm.facts.map((f) => f.attribute));
+    // A tag removed upstream takes its fact along; claims are per record, so a venue's other OSM
+    // record (a node inside its building) keeps its own.
+    s.factsSuperseded += await retractSourceFactsExcept(q, "venue", outcome.venueId, "osm", norm.facts.map((f) => f.attribute), row.external_id);
     if (norm.rejects.length) o.log(`  ${row.external_id} "${norm.name}": ${norm.rejects.join("; ")}`);
   }
   const normalized = rows.filter((r) => !r.deleted_at).map((r) => r.id);

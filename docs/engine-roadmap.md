@@ -21,6 +21,9 @@ changelog.
   - Bars that don't serve food are estimated "usually 21+".
   - Closure tags (`disused:*`, `was:*`, `opening_hours=off|closed`) were already handled; vacant
     shops never map to a category.
+  - The fact ledger is append-only and per record. A claim is its value plus its evidence, and it
+    belongs to the OSM element it came from, so a node and its building keep their own claims.
+  - Ingest re-normalizes when the rules change or a date in the tags comes due.
 
 ## Next, in order
 
@@ -46,10 +49,6 @@ changelog.
 - **Holidays.** Check that `PH` rules resolve to New York public holidays, with tests for July
   4th, Thanksgiving and Christmas.
 - Contract 1.2 (additive): `visit`, `plan`, `media`, `links`.
-
-- **Per-record OSM claims.** Key OSM facts by the element they came from. A venue mapped as both
-  a node and a building then keeps each record's claims side by side; today they share one row,
-  and the last record processed decides its evidence.
 
 ### Batch 4: live conditions (free keys; jobs outside the request path)
 - **Weather:** an NWS hourly forecast per area. Rain or cold sinks outdoor options; clear evenings

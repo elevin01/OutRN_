@@ -57,7 +57,9 @@ describe.skipIf(!available)("founder-entered supply", () => {
 
   it("an OSM edit made after the founder's check that disagrees with it is a conflict for review", async () => {
     const v = await resolveVenueRef(db, "Hester Lane Kitchen");
-    await writeFacts(db, [{ subjectKind: "venue", subjectId: v.id, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-23:00" }, evidenceClass: "published", sourceId: "osm", evidence: "opening_hours=Mo-Su 17:00-23:00", sourceUpdatedAt: new Date("2026-09-28T12:00:00Z"), fetchedAt: new Date("2026-09-28T13:00:00Z"), confidence: 0.62, lineageGroup: "osm" }]);
+    // The edit arrives as the venue's own OSM record re-asserting its hours.
+    const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [v.id])).rows[0]!.external_id;
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: v.id, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-23:00" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, evidence: "opening_hours=Mo-Su 17:00-23:00", sourceUpdatedAt: new Date("2026-09-28T12:00:00Z"), fetchedAt: new Date("2026-09-28T13:00:00Z"), confidence: 0.62, lineageGroup: "osm" }]);
     await materializeSubjects(db, "venue", [v.id]);
     const cf = await db.query<{ conflict: boolean; source_ids: string[] }>(`select conflict, source_ids from current_facts where subject_id = $1 and attribute = 'opening_hours'`, [v.id]);
     expect(cf.rows[0]).toMatchObject({ conflict: true, source_ids: ["founder"] });

@@ -19,9 +19,10 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
 
 /**
  * Version of the rules below. Bump it whenever a change would turn the same tags into different
- * facts: the next ingest then re-normalizes every record in its capture, not only the edited ones.
+ * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
+ * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.4";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.5";
 
 export interface OsmRecord {
   externalId: string;

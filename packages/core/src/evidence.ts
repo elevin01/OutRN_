@@ -86,6 +86,11 @@ export interface FactInput {
   confidence: number;
   /** Sources sharing an upstream share a lineage group and count as one. */
   lineageGroup?: string | null;
+  /**
+   * The source's own record the claim came from (OSM "node/123"). Claims are superseded and
+   * retracted per record, so two records of one venue keep their own. Null: the source as a whole.
+   */
+  sourceRecord?: string | null;
   ingestionRunId?: string | null;
 }
 
