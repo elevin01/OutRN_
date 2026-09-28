@@ -1,6 +1,7 @@
 import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
-import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing } from "./types.js";
+import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
+import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
 /**
  * Feasibility: can this person arrive, get in, and have enough useful time before the earlier
@@ -119,6 +120,12 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     }
   }
 
+  // How the food is had: a place that does not do takeout cannot serve a takeout request, and a
+  // takeout-only counter has no seats for a sit-down meal (both published; offered as relaxations).
+  const takeout = takeoutOf(c);
+  if (ctx.visitStyle === "takeout" && FOOD_CATEGORIES.has(c.category) && takeout === "no") return out("NO_TAKEOUT");
+  if (ctx.visitStyle !== "takeout" && c.category === "restaurant" && takeout === "only") return out("TAKEOUT_ONLY");
+
   // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
   // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".
   if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) return out("NO_PROGRAMME");
@@ -148,13 +155,16 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const closureBinds = closureAt !== null && deadline === closureAt;
 
   // Minimum useful duration: published for the venue, else category estimate.
+  // Food to go needs only the time to order and collect it.
   const minPub = fact<{ minutes: number }>(c, "min_useful_minutes");
-  const minUsefulMinutes = minPub && !minPub.isEstimate ? minPub.value.minutes : policy.minUsefulMinutes;
-  const minUsefulIsEstimate = !(minPub && !minPub.isEstimate);
+  const takingOut = isTakeout(c, ctx);
+  const minUsefulMinutes = takingOut ? TAKEOUT_MINUTES : minPub && !minPub.isEstimate ? minPub.value.minutes : policy.minUsefulMinutes;
+  const minUsefulIsEstimate = takingOut || !(minPub && !minPub.isEstimate);
 
   let closesAt: Date | null = null;
   let latestArrival: Date | null = null;
   let latestArrivalIsEstimate = false;
+  let latestArrivalKind: TimingBase["latestArrivalKind"] = null;
   let latestFinish = deadline;
   let hoursConfidence = 0;
 
@@ -183,7 +193,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (minutesBetween(ctx.now, o.start) <= 90 && o.start > ctx.now) reasons.push("EVENT_STARTS_SOON");
     hoursConfidence = 0.8; // dated occurrence from a source, status current
     closesAt = end;
-    const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel };
+    const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: o.entryCutoff ? "event_entry" : null, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
 
@@ -209,7 +219,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: Timing = { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
+    const timing: TimingBase = { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
@@ -220,7 +230,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt, arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -239,6 +249,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const kitchen = kitchenGate();
   if (typeof kitchen === "string") return out(kitchen);
   latestArrival = kitchen.latestArrival;
+  if (latestArrival) latestArrivalKind = "last_order";
   if (closesAt) {
     let effectiveClose = closesAt;
     // Without them, the category's guess at when the kitchen stops stands in.
@@ -247,10 +258,14 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     const lastEntryPub = fact<{ minutes: number }>(c, "last_entry_offset");
     if (lastEntryPub && !lastEntryPub.isEstimate) {
       const lastEntry = addMinutes(closesAt, -lastEntryPub.value.minutes);
-      if (!latestArrival || lastEntry < latestArrival) latestArrival = lastEntry;
+      if (!latestArrival || lastEntry < latestArrival) {
+        latestArrival = lastEntry;
+        latestArrivalKind = "last_entry";
+      }
       if (arrival > lastEntry) return out("LAST_ENTRY_PASSED");
     } else if (policy.lastEntryDefaultMinutes && !latestArrival) {
       latestArrival = addMinutes(closesAt, -policy.lastEntryDefaultMinutes);
+      latestArrivalKind = "last_entry";
       latestArrivalIsEstimate = true;
       if (arrival > latestArrival) unresolved.push("LATE_ENTRY_UNCERTAIN");
     }
@@ -262,7 +277,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
   if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
-  const timing: Timing = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
+  const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }
 
@@ -281,7 +296,8 @@ function priceOf(c: Candidate, ctx: RequestContext): { price: Evaluation["price"
   return { price: { text, isEstimate: p.isEstimate, unknown: false }, ok: "yes", free: false };
 }
 
-function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unresolved: ReasonCode[], timing: Timing, hoursConfidence: number): FeasibilityOutcome {
+function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unresolved: ReasonCode[], base: TimingBase, hoursConfidence: number): FeasibilityOutcome {
+  const timing: Timing = { ...base, visit: visitFor(c, ctx, base) };
   const bail = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
 
   // Budget

@@ -25,6 +25,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - indoor_outdoor     : { value: "indoor"|"covered"|"outdoor"|"mixed" }
  *  - parking            : { kind: "lot"|"street"|"garage"|"none"|"unknown", cost?: "free"|"paid"|"unknown", note?: string }
  *  - wheelchair         : { value: "yes"|"limited"|"no"|"unknown" }
+ *  - takeout            : { value: "yes"|"no"|"only" }  food to go (OSM takeaway); "only" has no seats
+ *  - links              : { instagram?, facebook?, menu? }  the venue's own pages, as https URLs
  *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
  *  - age_limit          : { minAge: number }  minimum admission age; 0 = no age limit; absent = unknown
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
@@ -48,6 +50,8 @@ export const ATTRIBUTES = [
   "indoor_outdoor",
   "parking",
   "wheelchair",
+  "takeout",
+  "links",
   "subtype",
   "age_limit",
   "crowd_level",

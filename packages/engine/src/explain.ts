@@ -1,6 +1,6 @@
 import { localClock } from "@outrn/core";
 import { ageLimitOf } from "./feasibility.js";
-import type { Evaluation, ReasonCode } from "./types.js";
+import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
 
 /**
  * Explanations are rendered from reason codes and timing facts, never free text. A sentence
@@ -42,7 +42,7 @@ export interface Note {
 }
 
 export interface CardCopy {
-  /** e.g. "~12 min walk · until 10pm, you'd have 1h40 · $15–35" */
+  /** e.g. "~12 min walk · takes about 1h20 · until 10pm · $15–35" */
   factLine: string;
   /** e.g. "Short walk, plenty of time, free." */
   sentence: string;
@@ -99,10 +99,10 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   if (e.candidate.kind === "occurrence" && e.candidate.occurrence) {
     const o = e.candidate.occurrence;
     parts.push(`starts ${fmtTime(o.start, tz)}${o.end ? `, ends ${fmtTime(o.end, tz)}` : ""}`);
-  } else if (t.closesAt) {
-    parts.push(`until ${fmtTime(t.closesAt, tz)}, you'd have ${fmtDuration(t.usefulMinutes)}`);
   } else {
-    parts.push(`you'd have ${fmtDuration(t.usefulMinutes)}`);
+    // What the visit takes, not how long the user may stay: their time is theirs.
+    parts.push(t.visit.style === "takeout" ? `to go, about ${fmtDuration(t.visit.typicalMinutes)}` : `takes about ${fmtDuration(t.visit.typicalMinutes)}`);
+    if (t.closesAt) parts.push(`until ${fmtTime(t.closesAt, tz)}`);
   }
   parts.push(e.price.unknown ? "price unknown" : e.price.isEstimate && e.price.text === "free" ? "usually free" : e.price.text);
   // An age limit is always on the card, whoever is asking; an estimated one says so.
@@ -118,3 +118,47 @@ export function explain(e: Evaluation, tz: string): CardCopy {
   const cta = e.cta === "go" ? "Go now" : e.cta === "book" ? "Book" : e.cta === "check" ? "Check first" : null;
   return { factLine, sentence, caveat, cta };
 }
+
+/** One step of the plan, in order: when to leave, arrive, order or get in, wrap up, be back. */
+export interface PlanStep {
+  kind: "leave" | "arrive" | "event_starts" | "order_by" | "last_entry" | "entry_by" | "wrap_up" | "back_by";
+  at: Date;
+  /** True when the time rests on an estimate (travel today; a guessed last entry). */
+  isEstimate: boolean;
+  /** Default wording, sentence case. */
+  text: string;
+}
+
+/**
+ * The plan behind a card as timed steps. Built from the same timing the engine checked, so the steps
+ * never promise more than feasibility allowed.
+ */
+export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | "backBy">): PlanStep[] {
+  const t = e.timing;
+  if (e.class === "ineligible" || !t) return [];
+  const tz = ctx.timezone;
+  const at = (d: Date) => fmtTime(d, tz);
+  const steps: PlanStep[] = [{ kind: "leave", at: t.departAt, isEstimate: false, text: `Leave at ${at(t.departAt)}` }];
+  const opensThen = e.reasons.includes("WAIT_FOR_OPENING");
+  steps.push({ kind: "arrive", at: t.arrival, isEstimate: t.travel.isEstimate, text: opensThen ? `Arrive as it opens at ${at(t.arrival)}` : `Arrive around ${at(t.arrival)}` });
+  const o = e.candidate.kind === "occurrence" ? e.candidate.occurrence : undefined;
+  if (o) steps.push({ kind: "event_starts", at: o.start, isEstimate: false, text: `Starts at ${at(o.start)}` });
+  if (t.latestArrival && t.latestArrivalKind) {
+    const la = t.latestArrival;
+    if (t.latestArrivalKind === "last_order") steps.push({ kind: "order_by", at: la, isEstimate: t.latestArrivalIsEstimate, text: `Order by ${at(la)}` });
+    else if (t.latestArrivalKind === "last_entry") steps.push({ kind: "last_entry", at: la, isEstimate: t.latestArrivalIsEstimate, text: t.latestArrivalIsEstimate ? `Last entry likely around ${at(la)}` : `Last entry ${at(la)}` });
+    else steps.push({ kind: "entry_by", at: la, isEstimate: false, text: `Get in by ${at(la)}` });
+  }
+  const f = t.latestFinish;
+  const byClose = t.closesAt !== null && f.getTime() === t.closesAt.getTime();
+  // With a back-by time, the deadline already leaves room for the (estimated) trip back.
+  const forTripBack = !byClose && Boolean(ctx.backBy && t.returnTravel) && f < ctx.backBy!;
+  const byDeadline = f.getTime() === t.deadline.getTime();
+  const why = byClose ? (o ? ", when it ends" : ", when it closes") : forTripBack ? " to get back in time" : "";
+  // Otherwise the finish is a guess, like a kitchen's usual last orders before a posted close.
+  const isEstimate = byClose ? false : forTripBack ? t.returnTravel!.isEstimate : !byDeadline;
+  steps.push({ kind: "wrap_up", at: f, isEstimate, text: `Wrap up by ${at(f)}${why}` });
+  if (ctx.backBy && t.returnTravel) steps.push({ kind: "back_by", at: ctx.backBy, isEstimate: t.returnTravel.isEstimate, text: `Back by ${at(ctx.backBy)}` });
+  return steps;
+}
+

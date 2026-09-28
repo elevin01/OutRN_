@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.5";
+export const OSM_NORMALIZE_VERSION = "2026-09-28.6";
 
 export interface OsmRecord {
   externalId: string;
@@ -155,6 +155,41 @@ export function parseCharge(value: string | undefined): { min: number; max: numb
   return { min, max, basis: bases.size === 1 && bases.has("per_group") ? "per_group" : "per_person" };
 }
 
+const INSTAGRAM_RESERVED = new Set(["p", "reel", "reels", "explore", "stories", "accounts", "tv"]);
+const FACEBOOK_RESERVED = new Set(["profile.php", "pages", "groups", "events", "sharer", "share.php", "login"]);
+
+/**
+ * The venue's own pages from OSM contact tags, as links we are willing to show: rebuilt from the
+ * handle on the official host (never passed through raw), https only. Anything else is dropped.
+ */
+export function venueLinks(t: Record<string, string>): { links: { instagram?: string; facebook?: string; menu?: string }; evidence: string[] } | null {
+  const links: { instagram?: string; facebook?: string; menu?: string } = {};
+  const evidence: string[] = [];
+  const ig = t["contact:instagram"]?.trim().match(/^(?:https?:\/\/(?:www\.)?instagram\.com\/)?@?([A-Za-z0-9._]{1,30})\/?(?:\?[^\s]*)?$/);
+  if (ig && !INSTAGRAM_RESERVED.has(ig[1]!.toLowerCase())) {
+    links.instagram = `https://www.instagram.com/${ig[1]}/`;
+    evidence.push(`contact:instagram=${t["contact:instagram"]!.trim()}`);
+  }
+  const fb = t["contact:facebook"]?.trim().match(/^(?:https?:\/\/(?:www\.|m\.)?facebook\.com\/)?([A-Za-z0-9.\-]{2,80})\/?(?:\?[^\s]*)?$/);
+  if (fb && !FACEBOOK_RESERVED.has(fb[1]!.toLowerCase())) {
+    links.facebook = `https://www.facebook.com/${fb[1]}`;
+    evidence.push(`contact:facebook=${t["contact:facebook"]!.trim()}`);
+  }
+  const menu = t["website:menu"]?.trim();
+  if (menu && menu.length <= 500) {
+    try {
+      const u = new URL(menu);
+      if (u.protocol === "https:" && !u.username && !u.password) {
+        links.menu = u.toString();
+        evidence.push(`website:menu=${menu}`);
+      }
+    } catch {
+      // not a URL: dropped
+    }
+  }
+  return evidence.length ? { links, evidence } : null;
+}
+
 /** A bar says it serves food: food=yes, a cuisine, or kitchen hours. Without one, NY bars are usually 21+. */
 function servesFood(t: Record<string, string>): boolean {
   return t["food"] === "yes" || Boolean(t["cuisine"]?.trim()) || Boolean(t["opening_hours:kitchen"]?.trim());
@@ -266,6 +301,13 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     const { oh } = parseOsmHours(kitchen, rec.point.lat, rec.point.lon);
     if (oh) pub("kitchen_hours", { osm: kitchen }, `opening_hours:kitchen=${kitchen}`, hoursConfidence(rec.sourceUpdatedAt, now));
   }
+
+  // Food to go (OSM takeaway): "only" means no seats, "no" means it is not offered.
+  const takeaway = t["takeaway"]?.trim();
+  if (takeaway === "yes" || takeaway === "no" || takeaway === "only") pub("takeout", { value: takeaway }, `takeaway=${takeaway}`, 0.7);
+
+  const own = venueLinks(t);
+  if (own) pub("links", own.links, own.evidence.join("; "), 0.75);
 
   const website = t["website"] ?? t["contact:website"] ?? t["url"];
   if (website) pub("website", { value: website }, `website=${website}`, 0.8);
