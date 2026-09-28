@@ -48,7 +48,7 @@ describe.skipIf(!available)("founder-entered supply", () => {
     expect(hours.value).toEqual({ osm: "Mo-Su 12:00-23:00" });
     expect(hours.evidence_class).toBe("published");
     expect(Number(hours.confidence)).toBeGreaterThanOrEqual(0.85);
-    const again = await setFounderFact(db, { venueId: v.id, attribute: "opening_hours", value: { osm: "Mo-Su 12:00-22:00" }, evidence: "called 9/27" });
+    const again = await setFounderFact(db, { venueId: v.id, attribute: "opening_hours", value: { osm: "Mo-Su 12:00-22:00" }, evidence: "called 9/27", verifiedAt: new Date("2026-09-27T20:00:00Z") });
     expect(again.superseded).toBe(1);
     expect((await current(v.id, "opening_hours"))!.value).toEqual({ osm: "Mo-Su 12:00-22:00" });
     const log = await db.query(`select 1 from audit_log where action = 'fact.set.opening_hours' and target_id = $1`, [v.id]);
@@ -57,7 +57,7 @@ describe.skipIf(!available)("founder-entered supply", () => {
 
   it("an OSM edit made after the founder's check that disagrees with it is a conflict for review", async () => {
     const v = await resolveVenueRef(db, "Hester Lane Kitchen");
-    // The edit arrives as the venue's own OSM record re-asserting its hours.
+    // The edit arrives as the venue's own OSM record re-asserting its hours, the day after the 9/27 check.
     const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [v.id])).rows[0]!.external_id;
     await writeFacts(db, [{ subjectKind: "venue", subjectId: v.id, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-23:00" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, evidence: "opening_hours=Mo-Su 17:00-23:00", sourceUpdatedAt: new Date("2026-09-28T12:00:00Z"), fetchedAt: new Date("2026-09-28T13:00:00Z"), confidence: 0.62, lineageGroup: "osm" }]);
     await materializeSubjects(db, "venue", [v.id]);
