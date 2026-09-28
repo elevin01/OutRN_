@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
-import { explain, planSteps } from "./explain.js";
+import { waitFloorMinutes } from "./conditions.js";
+import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import type { Candidate, CategoryPolicy, RequestContext } from "./types.js";
 
@@ -671,7 +672,7 @@ describe("visit: what it takes, and takeout", () => {
 
   it("the card says what the visit takes, not how long the user may stay", () => {
     const e = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-10-03 19:00", 180));
-    expect(explain(e, TZ).factLine).toContain("takes about 1h20 · until 11pm");
+    expect(explain(e, TZ).factLine).toContain("takes about 1h20 · ~15–30 min wait · until 11pm");
     expect(explain(e, TZ).factLine).not.toMatch(/you'd have/);
   });
 });
@@ -755,6 +756,161 @@ describe("plan steps are physically consistent", () => {
     expect(m.map((s) => s.kind)).not.toContain("last_entry");
     expect(m.find((s) => s.kind === "arrive")!.text).toMatch(/last entry may have passed\)$/);
     expect(isChronological(m)).toBe(true);
+  });
+});
+
+describe("conditions: crowd and wait at the arrival", () => {
+  const observed = (value: string, minutesAgo: number, now: Date, validFor: number) => ({
+    value: { value },
+    confidence: 0.9,
+    evidenceClass: "observation" as const,
+    validUntil: new Date(now.getTime() + (validFor - minutesAgo) * 60_000),
+    independentSources: 1,
+    verifiedAt: new Date(now.getTime() - minutesAgo * 60_000),
+  });
+
+  it("a sit-down dinner on a Saturday evening: usually busy, and a wait for a table without a reservation", () => {
+    const e = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-10-03 19:00", 180));
+    expect(e.timing!.conditions).toEqual([
+      { kind: "crowd", level: "busy", basis: "typical", isEstimate: true, minutes: null, reportedAt: null, text: "Places like this are usually busy on Saturday evenings" },
+      { kind: "wait", level: "long", basis: "typical", isEstimate: true, minutes: { min: 15, max: 30 }, reportedAt: null, text: "Without a reservation, expect a wait for a table (usually 15–30 min)" },
+    ]);
+    // The same place on a Tuesday afternoon: quiet, no wait, and the card says nothing about one.
+    const quiet = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-09-29 15:00", 180));
+    expect(quiet.timing!.conditions.map((x) => [x.kind, x.level])).toEqual([["crowd", "quiet"]]);
+    expect(explain(quiet, TZ).factLine).not.toMatch(/wait/);
+  });
+
+  it("a booking avoids the wait; takeout and counters wait in line; a fairly busy hour has no wait", () => {
+    const booked = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", admission: "reservation" }), ctx("2026-10-03 19:00", 180));
+    expect(booked.timing!.conditions.map((x) => x.kind)).toEqual(["crowd"]);
+    const togo = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-10-03 19:00", 60, { visitStyle: "takeout" }));
+    expect(togo.timing!.conditions[1]).toMatchObject({ kind: "wait", level: "short", minutes: { min: 5, max: 15 }, text: "Expect a line to order (usually 5–15 min)" });
+    const coffee = one(venue({ category: "cafe", hours: "Mo-Su 07:00-19:00" }), ctx("2026-09-29 08:00", 60));
+    expect(coffee.timing!.conditions.map((x) => [x.kind, x.level])).toEqual([["crowd", "busy"], ["wait", "short"]]);
+    const lanes = one(venue({ category: "bowling", hours: "Mo-Su 10:00-24:00" }), ctx("2026-10-03 20:00", 180));
+    expect(lanes.timing!.conditions[1]).toMatchObject({ kind: "wait", level: "long", minutes: { min: 20, max: 45 }, text: "Without a booking, expect a wait for a lane (usually 20–45 min)" });
+    const escape = one(venue({ category: "activity", hours: "Mo-Su 10:00-24:00" }), ctx("2026-10-03 20:00", 180));
+    expect(escape.timing!.conditions.map((x) => [x.kind, x.level])).toEqual([["crowd", "busy"]]);
+    const weeknight = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), ctx("2026-09-30 18:30", 180));
+    expect(weeknight.timing!.conditions.map((x) => [x.kind, x.level])).toEqual([["crowd", "moderate"]]);
+  });
+
+  it("an expected wait never excludes, but one that could eat the visit makes it Check first", () => {
+    // 75 minutes: arrive 7:13, 62 minutes there. A sit-down meal needs 60; a 15-minute wait leaves 47.
+    const tight = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", admission: "walk_in" }), ctx("2026-10-03 19:00", 75));
+    expect(tight.class).toBe("check_first");
+    expect(tight.unresolved).toEqual(["WAIT_MAY_NOT_FIT"]);
+    expect(caveatNotes(tight)).toEqual([{ code: "WAIT_MAY_NOT_FIT", text: "a wait could leave too little time", params: { waitMinutes: 30 } }]);
+    // The same window on a quiet Tuesday afternoon is simply Ready.
+    expect(one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", admission: "walk_in" }), ctx("2026-09-29 15:00", 75)).class).toBe("ready");
+    // Or the wait runs past published last orders: arrive 9:13pm, orders by 9:15pm.
+    const late = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", kitchen: "Mo-Su 11:00-21:30", admission: "walk_in" }), ctx("2026-10-03 21:00", 180));
+    expect(late.unresolved).toContain("WAIT_MAY_NOT_FIT");
+  });
+
+  it("the check assumes the long end of the wait: it could be 30 minutes, not only 15", () => {
+    // 93 minutes: arrive 7:13, 80 minutes there. A 15-minute wait leaves 65 (enough for 60); a 30-minute one leaves 50.
+    const e = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", admission: "walk_in" }), ctx("2026-10-03 19:00", 93));
+    expect([e.timing!.usefulMinutes, e.timing!.minUsefulMinutes]).toEqual([80, 60]);
+    expect(e.timing!.conditions[1]!.minutes).toEqual({ min: 15, max: 30 });
+    expect([e.class, e.unresolved]).toEqual(["check_first", ["WAIT_MAY_NOT_FIT"]]);
+    // Last orders at 9:35pm, arriving 9:13pm: seated by 9:28 after a short wait, but 9:43 after a long one.
+    const orders = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", kitchen: "Mo-Su 11:00-21:50", admission: "walk_in" }), ctx("2026-10-03 21:00", 180));
+    expect(orders.timing!.latestArrival!.getTime() - orders.timing!.arrival.getTime()).toBe(22 * 60_000);
+    expect(orders.timing!.usefulMinutes - 30).toBeGreaterThanOrEqual(orders.timing!.minUsefulMinutes);
+    expect(orders.unresolved).toEqual(["WAIT_MAY_NOT_FIT"]);
+    // Ranking still discounts only the wait the visit will surely pay: the short end.
+    expect(waitFloorMinutes(e.timing!.conditions)).toBe(15);
+  });
+
+  it("a reported line is taken at its band's long end: a long line could be 30 minutes", () => {
+    const x = ctx("2026-10-03 19:00", 93);
+    const reported = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", admission: "walk_in" });
+    reported.facts.queue = { value: { value: "long" }, confidence: 0.9, evidenceClass: "observation", validUntil: new Date(x.now.getTime() + 20 * 60_000), independentSources: 1, verifiedAt: x.now };
+    const e = one(reported, x);
+    expect(e.timing!.conditions[1]).toMatchObject({ kind: "wait", basis: "report", minutes: null });
+    expect(e.unresolved).toEqual(["WAIT_MAY_NOT_FIT"]);
+    reported.facts.queue = { ...reported.facts.queue, value: { value: "none" } };
+    expect(one(reported, x).class).toBe("ready");
+  });
+
+  it("time spent waiting is not time there: it lowers the fit", () => {
+    const busy = one(venue({ category: "restaurant", hours: "24/7", admission: "walk_in" }), ctx("2026-10-03 19:00", 120));
+    const quiet = one(venue({ category: "restaurant", hours: "24/7", admission: "walk_in" }), ctx("2026-09-29 15:00", 120));
+    expect(busy.timing!.usefulMinutes).toBe(quiet.timing!.usefulMinutes);
+    expect(busy.scores.fit).toBeLessThan(quiet.scores.fit);
+  });
+
+  it("a fresh report replaces the typical pattern; an old one, or one that lapses before the arrival, does not", () => {
+    const x = ctx("2026-10-03 19:00", 180);
+    const reported = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+    reported.facts.crowd_level = observed("quiet", 10, x.now, 30);
+    reported.facts.queue = observed("none", 5, x.now, 20);
+    const e = one(reported, x);
+    expect(e.timing!.conditions).toEqual([
+      { kind: "crowd", level: "quiet", basis: "report", isEstimate: false, minutes: null, reportedAt: new Date(x.now.getTime() - 10 * 60_000), text: "Reported quiet at 6:50pm" },
+      { kind: "wait", level: "none", basis: "report", isEstimate: false, minutes: null, reportedAt: new Date(x.now.getTime() - 5 * 60_000), text: "Reported no line at 6:55pm" },
+    ]);
+    expect(explain(e, TZ).factLine).not.toMatch(/wait|line/);
+
+    const line = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+    line.facts.queue = observed("long", 5, x.now, 20);
+    const withLine = one(line, x);
+    expect(withLine.timing!.conditions[1]).toMatchObject({ kind: "wait", level: "long", basis: "report", text: "Reported a long line at 6:55pm" });
+    expect(explain(withLine, TZ).factLine).toContain("long line reported");
+
+    const stale = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+    stale.facts.crowd_level = observed("quiet", 40, x.now, 30);
+    expect(one(stale, x).timing!.conditions[0]).toMatchObject({ basis: "typical", level: "busy" });
+
+    // Only while it still holds at the arrival (7:13pm): not one that lapses before it, nor as it arrives.
+    const arrival = one(venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" }), x).timing!.arrival;
+    const basis = (validUntil: Date) => {
+      const v = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+      v.facts.crowd_level = { value: { value: "quiet" }, confidence: 0.9, evidenceClass: "observation", validUntil, independentSources: 1, verifiedAt: x.now };
+      return one(v, x).timing!.conditions[0]!.basis;
+    };
+    expect(basis(new Date(arrival.getTime() + 60_000))).toBe("report");
+    expect(basis(arrival)).toBe("typical");
+    expect(basis(new Date(x.now.getTime() + 5 * 60_000))).toBe("typical");
+
+    const later = venue({ category: "restaurant", hours: "Mo-Su 17:00-23:00" });
+    const afternoon = ctx("2026-10-03 15:30", 240);
+    later.facts.crowd_level = observed("quiet", 5, afternoon.now, 30);
+    // Arrives when it opens at 5pm, long after the report lapses.
+    expect(one(later, afternoon).timing!.conditions[0]).toMatchObject({ basis: "typical" });
+  });
+
+  it("'recent report' is a reason only while the report holds at the arrival", () => {
+    // Asked at 7pm, arriving 7:13pm.
+    const x = ctx("2026-10-03 19:00", 180);
+    const withReport = (attribute: "crowd_level" | "queue" | "open_state", value: string, validUntil: Date) => {
+      const v = venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+      v.facts[attribute] = { value: { value }, confidence: 0.9, evidenceClass: "observation", validUntil, independentSources: 1, verifiedAt: x.now };
+      return one(v, x);
+    };
+    const at = (hm: string) => fromLocal("2026-10-03", Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3)), TZ);
+    // Lapsed at 7:05pm: neither a report-based condition nor the reason.
+    const lapsed = withReport("crowd_level", "quiet", at("19:05"));
+    expect(lapsed.timing!.arrival).toEqual(at("19:13"));
+    expect(lapsed.timing!.conditions.some((c) => c.basis === "report")).toBe(false);
+    expect(lapsed.reasons).not.toContain("FRESH_REPORT");
+    // Valid until 7:25pm: both.
+    const holds = withReport("crowd_level", "quiet", at("19:25"));
+    expect(holds.timing!.conditions[0]).toMatchObject({ basis: "report", level: "quiet" });
+    expect(holds.reasons).toContain("FRESH_REPORT");
+    // The same for a queue report, and for an open/closed report (which has no condition of its own).
+    expect(withReport("queue", "none", at("19:05")).reasons).not.toContain("FRESH_REPORT");
+    expect(withReport("queue", "none", at("19:25")).reasons).toContain("FRESH_REPORT");
+    expect(withReport("open_state", "open", at("19:05")).reasons).not.toContain("FRESH_REPORT");
+    expect(withReport("open_state", "open", at("19:25")).reasons).toContain("FRESH_REPORT");
+  });
+
+  it("events have no crowd pattern: the programme is the crowd", () => {
+    const x = ctx("2026-10-03 19:00", 240);
+    const show = venue({ category: "live_music", hours: null, kind: "occurrence", occurrence: { id: "o1", title: "Show", start: new Date(x.now.getTime() + 60 * 60_000), end: new Date(x.now.getTime() + 150 * 60_000), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    expect(one(show, x).timing!.conditions).toEqual([]);
   });
 });
 

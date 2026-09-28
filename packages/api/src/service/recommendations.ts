@@ -139,6 +139,13 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
  * (A 1.1 page's items have no visit or plan and cannot be rebuilt without the engine: those searches
  * expire with a restart, as designed.)
  */
+
+/** Items a 1.2 API stored have no conditions: that search computed none, which is what an empty list says. */
+function upgradeItems(items: unknown): unknown {
+  if (!Array.isArray(items)) return items;
+  return items.map((i: unknown) => (i && typeof i === "object" && !("conditions" in i) ? { ...i, conditions: [] } : i));
+}
+
 async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> {
   if (!stored || typeof stored !== "object") return stored;
   let r = stored as Record<string, unknown>;
@@ -169,7 +176,7 @@ export async function page(q: Queryable, cursor: string, opts: ServiceOptions = 
   const expire = () => new ApiProblem("CURSOR_EXPIRED", "These results have expired. Run the search again for current options.", { restart: request.data });
   if (row.expires_at <= clock()) throw expire();
   const result = pageOf(
-    { runId: run, request: request.data, resolved: (await upgradeResolved(q, row.resolved)) as ResolvedRequest, area: row.area, items: row.items, insufficient: row.insufficient, attributions: row.attributions, asOf: row.as_of, generatedAt: row.generated_at, expiresAt: row.expires_at },
+    { runId: run, request: request.data, resolved: (await upgradeResolved(q, row.resolved)) as ResolvedRequest, area: row.area, items: upgradeItems(row.items) as RecommendationItem[], insufficient: row.insufficient, attributions: row.attributions, asOf: row.as_of, generatedAt: row.generated_at, expiresAt: row.expires_at },
     offset,
   );
   if (!RecommendationResponse.safeParse(result).success) throw expire();

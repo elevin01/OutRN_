@@ -76,6 +76,8 @@ describe("fixtures cover every state a screen must handle", () => {
     ["hours confirmed by a check", () => items.some((i) => i.reasons.some((r) => r.code === "HOURS_CONFIRMED"))],
     ["an estimated age limit", () => items.some((i) => i.ageLimit?.evidence === "estimate")],
     ["a drive with parking", () => items.some((i) => i.timing.travel.parkingMinutes !== null)],
+    ["a usual crowd with an expected wait", () => items.some((i) => i.conditions.some((c) => c.kind === "crowd" && c.basis === "typical") && i.conditions.some((c) => c.kind === "wait" && c.minutes !== null))],
+    ["a recent report of the crowd and the line", () => items.some((i) => i.conditions.some((c) => c.kind === "crowd" && c.basis === "report" && c.reportedAt !== null) && i.conditions.some((c) => c.kind === "wait" && c.basis === "report"))],
     ["a known price and an unknown one", () => items.some((i) => i.price.kind === "paid" && i.price.minCents !== null) && items.some((i) => i.price.kind === "unknown")],
     ["fewer than three, with relaxations", () => pages.some((p) => p.insufficient && p.insufficient.found > 0 && p.insufficient.relaxations.length > 0)],
     ["nothing fits", () => pages.some((p) => p.insufficient?.found === 0 && p.items.length === 0)],

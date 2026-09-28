@@ -4,8 +4,8 @@
   "createdAt": "2026-10-03T22:30:00.000Z",
   "candidateCount": 80,
   "durationMs": 42,
-  "engineVersion": "0.2.0",
-  "weightsVersion": "2026-09-27.4",
+  "engineVersion": "0.3.0",
+  "weightsVersion": "2026-09-28.1",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
     "mode": "walk",
@@ -1332,6 +1332,7 @@
       "excludedBy": null,
       "reasons": [
         "OPEN_LATE",
+        "FRESH_REPORT",
         "SHORT_TRAVEL",
         "ENOUGH_TIME"
       ],

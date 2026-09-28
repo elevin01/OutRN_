@@ -36,7 +36,7 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~12 min walk · takes about 1h20 · until 11:30pm · price unknown",
+        "summary": "~12 min walk · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
@@ -123,6 +123,29 @@
         "lon": -73.979899
       },
       "placeName": "Ridge Ludlow Kitchen",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -218,6 +241,17 @@
         "lon": -73.98462
       },
       "placeName": "Eldridge Coffee",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday evenings",
+          "basis": "typical",
+          "level": "quiet",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -225,7 +259,7 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~13 min walk · takes about 1h20 · until 10pm · price unknown",
+        "summary": "~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
         "sentence": "Plenty of time."
       },
       "kind": "venue",
@@ -304,6 +338,29 @@
         "lon": -73.979262
       },
       "placeName": "Stanton Kitchen",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],

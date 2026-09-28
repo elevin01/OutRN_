@@ -91,6 +91,17 @@
           "text": "Wrap up by 9:30pm"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -196,6 +207,17 @@
           "text": "Wrap up by 9:30pm"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -291,6 +313,17 @@
           "at": "2026-10-04T01:30:00.000Z",
           "isEstimate": false,
           "text": "Wrap up by 9:30pm"
+        }
+      ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
         }
       ],
       "price": {

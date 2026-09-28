@@ -136,6 +136,17 @@
         "lon": -73.996037
       },
       "placeName": "Pitt Street Nightcap",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -233,6 +244,17 @@
         "lon": -74.00022
       },
       "placeName": "Ridge Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -330,6 +352,17 @@
         "lon": -73.986761
       },
       "placeName": "Hester Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],

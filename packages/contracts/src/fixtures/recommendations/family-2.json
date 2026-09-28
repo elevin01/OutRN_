@@ -129,6 +129,17 @@
         "lon": -73.986194
       },
       "placeName": "Stanton Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday nights",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "check"
     },
     {
@@ -227,6 +238,17 @@
         "lon": -73.999704
       },
       "placeName": "Delancey Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday nights",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "check"
     }
   ],

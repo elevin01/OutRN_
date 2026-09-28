@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.2.0";
-export const WEIGHTS_VERSION = "2026-09-27.4";
+export const ENGINE_VERSION = "0.3.0";
+export const WEIGHTS_VERSION = "2026-09-28.1";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -123,7 +123,8 @@ export type ReasonCode =
   | "WAIT_FOR_OPENING"
   | "HOURS_CONFIRMED"
   | "AGE_LIMIT_LIKELY"
-  | "AGE_LIMIT_UNCERTAIN";
+  | "AGE_LIMIT_UNCERTAIN"
+  | "WAIT_MAY_NOT_FIT";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -177,8 +178,29 @@ export interface TimingBase {
   returnTravel: TravelEstimate | null;
 }
 
+/**
+ * What to expect there at the arrival: how busy it is and whether there is a wait. Basis "typical" is
+ * a prior for this kind of place at that day and hour, never a claim about the venue; "report" is a
+ * fresh observation of it.
+ */
+export interface Condition {
+  kind: "crowd" | "wait";
+  /** crowd: quiet, moderate, busy. wait: none, short (up to 15 min), long. */
+  level: "quiet" | "moderate" | "busy" | "none" | "short" | "long";
+  basis: "typical" | "report";
+  isEstimate: boolean;
+  /** What it may cost, as a range (a wait for a table: 15–30). Null when there is no estimate. */
+  minutes: { min: number; max: number } | null;
+  /** When the report was made (basis "report"). */
+  reportedAt: Date | null;
+  /** Default wording, sentence case. */
+  text: string;
+}
+
 export interface Timing extends TimingBase {
   visit: Visit;
+  /** Crowd first, then any wait. Empty when nothing is known or usual for this kind of place. */
+  conditions: Condition[];
 }
 
 export interface Scores {

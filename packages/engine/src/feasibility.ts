@@ -1,6 +1,7 @@
 import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
+import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
 /**
@@ -301,7 +302,8 @@ function priceOf(c: Candidate, ctx: RequestContext): { price: Evaluation["price"
 }
 
 function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unresolved: ReasonCode[], base: TimingBase, hoursConfidence: number): FeasibilityOutcome {
-  const timing: Timing = { ...base, visit: visitFor(c, ctx, base) };
+  const visit = visitFor(c, ctx, base);
+  const timing: Timing = { ...base, visit, conditions: conditionsFor(c, ctx, base, visit) };
   const bail = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
 
   // Budget
@@ -340,8 +342,13 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
 
   // Evidence on hours
   if (timing.closesAt && hoursConfidence < 0.4) unresolved.push("HOURS_UNVERIFIED");
-  const fresh = c.facts["open_state"] ?? c.facts["queue"] ?? c.facts["crowd_level"];
-  if (fresh && fresh.evidenceClass === "observation" && (!fresh.validUntil || fresh.validUntil > ctx.now)) reasons.push("FRESH_REPORT");
+  // An expected wait is an estimate: when it could eat the visit or run past last orders, check first.
+  if (waitMayNotFit(timing, timing.conditions)) unresolved.push("WAIT_MAY_NOT_FIT");
+  // A report is a reason only while it still holds at the arrival, the rule the conditions use: a
+  // crowd or queue report that became a condition, or an open/closed report valid past the arrival.
+  const open = c.facts.open_state;
+  const openHolds = open !== undefined && open.evidenceClass === "observation" && open.validUntil !== null && open.validUntil > timing.arrival;
+  if (openHolds || timing.conditions.some((x) => x.basis === "report")) reasons.push("FRESH_REPORT");
 
   // Positive timing reasons
   const shortTravel = ctx.mode === "walk" ? timing.travel.minutes <= 10 : timing.travel.minutes <= 15;

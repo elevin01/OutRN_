@@ -24,7 +24,7 @@ changelog.
   - The fact ledger is append-only and per record. A claim is its value plus its evidence, and it
     belongs to the OSM element it came from, so a node and its building keep their own claims.
   - Ingest re-normalizes when the rules change or a date in the tags comes due.
-- **Batch 3a (this PR): what the visit takes, and the plan.**
+- **Batch 3a: what the visit takes, and the plan.**
   - **What a visit takes:** sit-down, counter service, takeout, or a visit; the minimum the engine
     checks and the typical length. Takeout on request; takeout-only counters and "no takeout" places
     handled from OSM `takeaway`.
@@ -34,13 +34,23 @@ changelog.
   - **Public holidays:** `PH` rules resolve to New York holidays (tested). They are flagged
     approximate only on or just before one.
   - Contract 1.2 (additive): `visitStyle`, `timing.visit`, `plan`, `actions.links`.
+- **Batch 3b, part 1 (this PR): crowds and waits.**
+  - **How busy, at the arrival:** busy-hour patterns per kind of place, by day and hour, for NYC
+    and Westchester. Public holidays follow Sunday, and after midnight counts as the night before.
+    Always worded as "places like this are usually busy on Friday evenings", never as a claim about
+    the venue. There's no pattern where the programme is the crowd (cinema, theatre, live music).
+  - **Waits:** at busy times, a table (15–30 min, unless the place takes reservations), a line to
+    order (5–15 min), lanes (20–45 min, unless booked), or the door of a club.
+  - **Reports first:** a visitor report of the crowd or the line replaces the pattern, as long as
+    it's still valid when the user arrives.
+  - **In the time math:** waiting isn't time there, so the short end of the wait lowers the fit. If
+    the long end would eat the visit or run past last orders, the card is Check first
+    (`WAIT_MAY_NOT_FIT`). Like every estimate, it never excludes a place.
+  - Contract 1.3 (additive): `conditions` on every item. The summary shows "~15–30 min wait".
 
 ## Next, in order
 
-### Batch 3b: crowds, parking, photos (no new vendors)
-- **Crowd and wait estimates**, labelled as estimates:
-  - Busy-hour patterns per category and day, plus reservation policy.
-  - Big nearby events, for example "Yankees home game: expect crowds and traffic".
+### Batch 3b, the rest: parking, photos (no new vendors)
 - **Parking near the venue:** nearest OSM lot or garage, its fee, and the walk from it.
 - **Free photos:**
   - Wikimedia Commons and Wikidata, for parks, museums and landmarks.
@@ -59,7 +69,9 @@ changelog.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
-  and concerts, which drive the crowd and traffic signals.
+  and concerts, which drive the crowd and traffic signals. For example, "Yankees home game: expect
+  crowds and traffic" becomes a `crowd` condition on places near the stadium.
+- Weather, traffic and transit arrive as more `conditions` kinds, so the UI shows them the same way.
 - Each job writes to a table. A search only reads, so it still makes no external calls.
 
 ### Batch 5: photos, reviews and "must try" (paid; needs your call)

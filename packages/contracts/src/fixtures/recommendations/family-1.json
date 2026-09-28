@@ -91,6 +91,17 @@
           "text": "Wrap up by 3:15am"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday nights"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -189,6 +200,17 @@
           "text": "Wrap up by 3am, when it closes"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday nights"
+        }
+      ],
       "price": {
         "kind": "unknown"
       },
@@ -285,6 +307,17 @@
           "at": "2026-10-04T07:00:00.000Z",
           "isEstimate": false,
           "text": "Wrap up by 3am, when it closes"
+        }
+      ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday nights"
         }
       ],
       "price": {

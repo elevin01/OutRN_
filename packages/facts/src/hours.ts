@@ -99,6 +99,12 @@ function isPublicHoliday(wallClockDay: Date): boolean {
   return remember(holidays, String(wallClockDay.getTime()), 2_000, () => parseOsmHours("PH").oh?.getState(new Date(wallClockDay.getTime() + 12 * 3_600_000)) ?? false);
 }
 
+/** Whether a local calendar day ("YYYY-MM-DD") is a New York public holiday, as `PH` in hours resolves it. */
+export function isPublicHolidayOn(localDate: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(localDate);
+  return m ? isPublicHoliday(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) : false;
+}
+
 export function clearHoursCaches(): void {
   parsed.clear();
   intervals.clear();

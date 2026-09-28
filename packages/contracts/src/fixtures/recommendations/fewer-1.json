@@ -89,6 +89,17 @@
           "text": "Wrap up by 3:30am"
         }
       ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "quiet",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually quiet on Saturday nights"
+        }
+      ],
       "price": {
         "kind": "free",
         "evidence": "estimate"
@@ -188,6 +199,17 @@
           "at": "2026-10-04T07:30:00.000Z",
           "isEstimate": false,
           "text": "Wrap up by 3:30am"
+        }
+      ],
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "quiet",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually quiet on Saturday nights"
         }
       ],
       "price": {

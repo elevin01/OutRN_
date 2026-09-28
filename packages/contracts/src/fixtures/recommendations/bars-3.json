@@ -128,6 +128,17 @@
         "lon": -73.99412
       },
       "placeName": "Norfolk Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -225,6 +236,17 @@
         "lon": -73.998263
       },
       "placeName": "Ridge Tavern",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     },
     {
@@ -322,6 +344,17 @@
         "lon": -74.001489
       },
       "placeName": "Eldridge Norfolk Bar",
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
       "callToAction": "go"
     }
   ],

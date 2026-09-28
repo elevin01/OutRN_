@@ -93,6 +93,13 @@ Contract 1.2 also adds, on every item:
 
 The default `copy.summary` now reads "takes about 1h20 · until 10pm" instead of "you'd have 1h40".
 
+Contract 1.3 adds `conditions` on every item: how busy it is and any wait, at the arrival
+("Places like this are usually busy on Saturday evenings", "Without a reservation, expect a wait
+for a table (usually 15–30 min)", "Reported a short line at 6:22pm"). Render `text`, or style
+`kind` and `level` as chips. A `typical` basis is an estimate for this kind of place, so keep the
+"usually" wording. A `report` is a recent visitor report, and `reportedAt` says when. The summary
+shows an expected wait as "~15–30 min wait".
+
 ## Rules
 
 - Import only `@outrn/contracts` from the workspace. Engine, db, api and ingestion packages are
