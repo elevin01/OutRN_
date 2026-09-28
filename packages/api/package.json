@@ -20,7 +20,8 @@
     "dev:mock": "tsx --conditions=outrn-src src/bin/mock.ts",
     "start": "tsx --conditions=outrn-src src/bin/server.ts",
     "mock": "tsx --conditions=outrn-src src/bin/mock.ts",
-    "fixtures": "tsx --conditions=outrn-src scripts/fixtures.ts"
+    "fixtures": "tsx --conditions=outrn-src scripts/fixtures.ts",
+    "golden": "tsx --conditions=outrn-src scripts/golden.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",
