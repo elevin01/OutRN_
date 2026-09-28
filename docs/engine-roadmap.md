@@ -100,10 +100,21 @@ changelog.
   posts can be embedded by URL, curated or sent in by venues, and YouTube has an API.
 
 ### Batch 6: ranking quality
-- **Time-of-day fit.** Open isn't the same as a good idea: a café at 10pm, a bar at 3pm or a museum 40 minutes before close should rank lower.
-- **Window fit and worth the trip.** Long windows should allow bigger, farther places; short ones should favour close and quick.
-- **Diversity within a type.** Avoid three Italian restaurants; use subtype and cuisine, not only activity type.
-- **A golden scenario set per area**, like the 26 Sep case, run in CI. Ranking changes then show up as reviewable diffs rather than surprises.
+- **Part 1 (next PR): golden scenarios, time of day, and travel against the window.**
+  - **Golden scenarios:** twelve fixed searches over the synthetic areas, with each ranking's top
+    six pinned in `fixtures/golden/scenarios.json` and checked in CI. `pnpm golden` accepts an
+    intended change as a reviewable diff.
+  - **Time-of-day fit:** each kind of place has prime, fair and off hours, and parks and gardens
+    end an hour after sunset. Off hours sink a place in ranking, and variety no longer promotes it.
+    Examples: a park at 10:30pm, a bar at 10am or 3pm, a café at 9pm. Prime hours lift it a
+    little. It never excludes.
+  - **Travel against the window:** a walk counts against the time the user has, so a 15-minute
+    walk weighs more in an hour than in an evening.
+- **Still to do:**
+  - **Worth the trip.** Long windows should favour bigger places, not only allow farther ones.
+  - **Diversity within a type.** Avoid three Italian restaurants: store the OSM cuisine, and
+    prefer distinct cuisines and subtypes before repeating one.
+  - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.

@@ -3,6 +3,7 @@ import { fromLocal } from "@outrn/core";
 import { waitFloorMinutes } from "./conditions.js";
 import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
+import { APPEAL_WEIGHTS } from "./score.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, NearbyParking, RequestContext } from "./types.js";
 
@@ -413,13 +414,54 @@ describe("appeal signals", () => {
     expect(narrowed[0]!.scores.appeal).toBe(narrowed[1]!.scores.appeal);
   });
 
-  it("after 9pm, bars and late food get a late-night bonus; at 3pm they do not", () => {
+  it("after 9pm, bars and late food get a late-night bonus; at 4:30pm they do not", () => {
+    // Against a kind of place with no time-of-day rule, so only the bar's own hour moves it.
     const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
-    const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 12:00-02:00" });
-    const late = evaluateAll([bar, cafe], ctx("2026-09-26 21:30", 120), POLICIES);
-    expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(0.1, 3);
-    const afternoon = evaluateAll([bar, cafe], ctx("2026-09-26 15:00", 120), POLICIES);
+    const hall = venue({ id: "hall", category: "community", hours: "Mo-Su 12:00-02:00" });
+    const late = evaluateAll([bar, hall], ctx("2026-09-26 21:30", 120), POLICIES);
+    // 9:30pm is also a bar's prime time.
+    expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(APPEAL_WEIGHTS.lateNight + APPEAL_WEIGHTS.primeTime, 3);
+    // 4:30pm is fair for a bar: neither bonus nor penalty.
+    const afternoon = evaluateAll([bar, hall], ctx("2026-09-26 16:30", 120), POLICIES);
     expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
+  });
+
+  it("open isn't the same as a good idea: a park after dark, a bar at 10am, a café at 9pm sink; the right place for the hour rises", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-01:00" });
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 08:00-04:00" });
+    const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-23:00" });
+    const order = (x: RequestContext) => recommend([park, bar, cafe], x, POLICIES).ordered.map((e) => e.candidate.id);
+    // Saturday 10:30pm: the bar leads; the park (after dark) and the café (off hours) follow.
+    expect(order(ctx("2026-10-03 22:30", 120, { sunset }))[0]).toBe("bar");
+    // Saturday 10am: the park and the café are both a good idea; the bar is last.
+    expect(order(ctx("2026-10-03 10:00", 120, { sunset })).at(-1)).toBe("bar");
+    // Saturday 9pm: the café is open but off hours, so it follows the bar.
+    const nine = order(ctx("2026-10-03 21:00", 120, { sunset }));
+    expect(nine.indexOf("cafe")).toBeGreaterThan(nine.indexOf("bar"));
+  });
+
+  it("variety never promotes a poor idea for the hour: a park after dark waits for its score, not its activity type", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-01:00", price: { free: true, currency: "USD" } });
+    const bars = ["b1", "b2", "b3"].map((id) => venue({ id, category: "bar", hours: "Mo-Su 16:00-04:00" }));
+    const late = recommend([park, ...bars], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    // Three bars is the answer at 10:30pm; the park (a different activity type) no longer takes a first-page slot.
+    expect(late.items.map((e) => e.candidate.id)).toEqual(["b1", "b2", "b3"]);
+    expect(late.ordered.at(-1)!.candidate.id).toBe("park");
+    // By day the same park is a good idea and variety brings it forward.
+    expect(recommend([park, ...bars], ctx("2026-10-03 17:00", 120, { sunset }), POLICIES).items.map((e) => e.candidate.id)).toContain("park");
+  });
+
+  it("travel counts against the time the user has: the same walk weighs more in an hour than in an evening", () => {
+    const near = venue({ id: "near", category: "bookshop", hours: "Mo-Su 09:00-22:00" });
+    const farther = venue({ id: "farther", category: "bookshop", hours: "Mo-Su 09:00-22:00", point: { lat: 40.7265, lon: -73.987 } });
+    const fit = (minutes: number) => Object.fromEntries(evaluateAll([near, farther], ctx("2026-10-03 14:00", minutes), POLICIES).map((e) => [e.candidate.id, e.scores.fit]));
+    const hour = fit(60);
+    const evening = fit(240);
+    expect(hour["near"]!).toBeGreaterThan(hour["farther"]!);
+    // The gap between near and farther is wider in an hour than in four hours.
+    expect(hour["near"]! - hour["farther"]!).toBeGreaterThan(evening["near"]! - evening["farther"]!);
   });
 
   const daysBefore = (x: RequestContext, days: number) => new Date(x.now.getTime() - days * 86_400_000);

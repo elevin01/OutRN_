@@ -57,23 +57,25 @@
     },
     {
      "rank": 5,
-     "name": "Delancey Tavern",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "WAIT_FOR_OPENING",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
      "name": "Delancey Coffee",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
       "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Norfolk Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     }
@@ -260,19 +262,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
      "name": "Clinton Bar",
      "category": "bar",
      "status": "ready",
@@ -283,7 +272,7 @@
      "caveats": []
     },
     {
-     "rank": 3,
+     "rank": 2,
      "name": "Broome Bar",
      "category": "bar",
      "status": "ready",
@@ -294,7 +283,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 3,
      "name": "Delancey Tavern",
      "category": "bar",
      "status": "ready",
@@ -305,7 +294,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Pitt Street Nightcap",
      "category": "bar",
      "status": "ready",
@@ -316,8 +305,19 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "Hester Bar",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Ridge Bar",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -479,13 +479,14 @@
     },
     {
      "rank": 6,
-     "name": "Rivington Stanton Gallery",
-     "category": "gallery",
+     "name": "Delancey Coffee",
+     "category": "cafe",
      "status": "check_first",
-     "reasons": [],
+     "reasons": [
+      "OPEN_LATE"
+     ],
      "caveats": [
-      "HOURS_UNKNOWN",
-      "ADMISSION_UNKNOWN"
+      "WAIT_MAY_NOT_FIT"
      ]
     }
    ],
@@ -536,17 +537,6 @@
     },
     {
      "rank": 4,
-     "name": "Delancey Tavern",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "Suffolk Library",
      "category": "library",
      "status": "ready",
@@ -557,13 +547,26 @@
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Delancey Coffee",
-     "category": "cafe",
+     "rank": 5,
+     "name": "Norfolk Bar",
+     "category": "bar",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
+      "WAIT_FOR_OPENING",
       "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Norfolk Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     }
@@ -589,6 +592,18 @@
     },
     {
      "rank": 2,
+     "name": "Allen Kitchen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
      "name": "Orchard St. Coffee",
      "category": "cafe",
      "status": "ready",
@@ -600,29 +615,7 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Delancey Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 4,
-     "name": "Bagel Depot",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "Pitt 2 Coffee",
      "category": "cafe",
      "status": "ready",
@@ -634,12 +627,23 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "Eldridge Coffee",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Delancey Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -655,20 +659,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
      "name": "Delancey Books",
      "category": "bookshop",
      "status": "ready",
@@ -679,7 +669,7 @@
      "caveats": []
     },
     {
-     "rank": 3,
+     "rank": 2,
      "name": "Clinton Bar",
      "category": "bar",
      "status": "ready",
@@ -690,7 +680,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 3,
      "name": "Eldridge Scoops",
      "category": "dessert",
      "status": "ready",
@@ -701,7 +691,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Hester Community House",
      "category": "community",
      "status": "ready",
@@ -711,15 +701,23 @@
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Norfolk Park",
-     "category": "park",
+     "rank": 5,
+     "name": "Delancey Tavern",
+     "category": "bar",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Broome Bar",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -733,18 +731,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Suffolk Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
      "name": "Broome Scoops",
      "category": "dessert",
      "status": "ready",
@@ -756,7 +742,7 @@
      "caveats": []
     },
     {
-     "rank": 3,
+     "rank": 2,
      "name": "Ridge Bar",
      "category": "bar",
      "status": "ready",
@@ -768,20 +754,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Pitt Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
+     "rank": 3,
      "name": "Broome Kitchen",
      "category": "restaurant",
      "status": "ready",
@@ -793,7 +766,7 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 4,
      "name": "Clinton Norfolk Kitchen",
      "category": "restaurant",
      "status": "ready",
@@ -801,6 +774,29 @@
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Stanton Kitchen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Essex Kitchen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -863,18 +859,6 @@
     },
     {
      "rank": 5,
-     "name": "Broome Scoops",
-     "category": "dessert",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
      "name": "Pitt Park",
      "category": "park",
      "status": "ready",
@@ -883,6 +867,18 @@
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Attorney Kitchen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }

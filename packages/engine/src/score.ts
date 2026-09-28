@@ -1,7 +1,8 @@
 import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
-import { ageLimitOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
+import { dayPart, type DayPart } from "./daypart.js";
+import { ageLimitOf, deadlineOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -12,7 +13,7 @@ const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
 /** What a 9pm+ window is for: bars and late food. */
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25 } as const;
 const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
   relaxed: ["food", "outdoors", "browse"],
   active: ["outdoors", "entertainment"],
@@ -26,13 +27,16 @@ const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, str
   family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
 
-export function scoreCandidate(c: Candidate, ctx: RequestContext, f: FeasibilityOutcome, policy: CategoryPolicy, maxTravel: number): { scores: Scores; extraReasons: ReasonCode[] } {
+export function scoreCandidate(c: Candidate, ctx: RequestContext, f: FeasibilityOutcome, policy: CategoryPolicy, maxTravel: number): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null } {
   const extra: ReasonCode[] = [];
   const t = f.timing!;
   const activity = ACTIVITY_OF_CATEGORY[c.category];
 
-  // Fit: travel slack, time slack, chips, weather
-  const travelScore = Math.max(0, 1 - t.travel.minutes / Math.max(1, maxTravel));
+  // Fit: travel slack, time slack, chips, weather.
+  // Travel counts against the time the user has: a 15-minute walk is nothing in an evening, a lot in an hour.
+  const windowMinutes = Math.max(1, minutesBetween(ctx.now, deadlineOf(ctx)));
+  const reach = Math.min(maxTravel, Math.max(10, windowMinutes * 0.25));
+  const travelScore = Math.max(0, 1 - t.travel.minutes / reach);
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
@@ -75,6 +79,11 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
   if ((arrivalHour >= 21 || arrivalHour < 4) && LATE_NIGHT.has(c.category)) appeal += APPEAL_WEIGHTS.lateNight;
+  // Open isn't the same as a good idea: a park after dark or a bar at 10am sinks, a café at 8am rises.
+  // An event is its own time, so the kind of place it is held in doesn't judge it.
+  const part = c.kind === "occurrence" ? null : dayPart(c.category, t.arrival, ctx.timezone, ctx.sunset);
+  if (part === "prime") appeal += APPEAL_WEIGHTS.primeTime;
+  else if (part === "off") appeal -= APPEAL_WEIGHTS.offHours;
   // "Confirmed" needs a recent verification (a founder check or an observation) and no dispute;
   // which source published the hours is not enough, and a fetch date is not a verification.
   const hours = c.kind === "venue" ? c.facts.opening_hours : undefined;
@@ -100,7 +109,7 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   novelty = Math.max(0, novelty);
 
   void policy;
-  return { scores: { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) }, extraReasons: extra };
+  return { scores: { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) }, extraReasons: extra, dayPart: part };
 }
 
 /** Ordering within the eligible set: class, then appeal, then fit, novelty as tiebreaker. */

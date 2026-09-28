@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.4.0";
-export const WEIGHTS_VERSION = "2026-09-28.1";
+export const WEIGHTS_VERSION = "2026-09-28.2";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -241,6 +241,8 @@ export interface Evaluation {
   scores: Scores;
   cta: "go" | "check" | "book" | null;
   price: { text: string; isEstimate: boolean; unknown: boolean };
+  /** How good an idea this kind of place is at the arrival (null: no rule, or ineligible). */
+  dayPart?: "prime" | "fair" | "off" | null;
 }
 
 /** A specific change that would admit more options: "allow a longer walk" (+4). */
