@@ -77,7 +77,16 @@ changelog.
 - **Weather: done** (`outrn weather refresh`, hourly). The NWS hourly forecast is stored per area.
   Over a plan's first two hours, rain likely (50%+) or cold (38°F or below) sinks outdoor options,
   and a dry, mild forecast marks them "good weather for it". A forecast over 12 hours old is ignored.
-  Next: show the rain as a `conditions` kind on outdoor cards.
+- **Weather on the card: done.** Outdoor places (and outdoor events) carry a `weather` condition
+  from the forecast: rain, cold, hot (90°F or more) or fair, with the hours it covers.
+  - Rain likely is a caveat, so the place is Check first ("70% chance of rain between 2 and 4pm").
+    It is never an exclusion.
+  - Cold or heat goes on the fact line ("down to 34°F", "up to 93°F").
+  - Heat is not "good weather for it".
+  - Indoors, nothing is shown.
+  - No contract change: condition kinds and caveat codes are open-ended.
+  - Next, in the UIs: render `conditions` (crowd, wait and weather). Neither app shows them yet;
+    today the rain reaches users through the caveat, and cold or heat through the fact line.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
