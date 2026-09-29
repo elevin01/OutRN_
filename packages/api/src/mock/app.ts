@@ -56,6 +56,8 @@ function echo(page: RecommendationResponse, body: RecommendationRequest): Recomm
     youngestAge: body.youngestAge ?? null,
     categories: body.categories ?? [],
     cuisines: body.cuisines ?? [],
+    diets: body.diets ?? [],
+    features: body.features ?? [],
     ...(body.at ? { at: body.at, atIsExplicit: true } : {}),
     origin: body.origin ? { lat: Math.round(body.origin.lat * 1000) / 1000, lon: Math.round(body.origin.lon * 1000) / 1000 } : area.center,
     originIsDefault: body.origin === undefined,

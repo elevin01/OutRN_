@@ -1,9 +1,10 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
+import { dietLevelsOf, dietsFromNameOnly, hasFeature } from "./offers.js";
 import { parkingMinutesFor, parkingOpenFor } from "./parking.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
@@ -132,6 +133,18 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (c.kind === "occurrence" || !CUISINE_CATEGORIES.has(c.category)) return out("NOT_REQUESTED");
     if (!cuisineMatches(ctx.cuisines, cuisinesOf(c))) return out("OTHER_CUISINE");
   }
+  if (ctx.diets?.length) {
+    // A diet is a need, so a search for one is a search for food known to serve it: all of the
+    // diets asked for, since one party eats together. Unknown is not a yes.
+    if (c.kind === "occurrence" || !CUISINE_CATEGORIES.has(c.category)) return out("NOT_REQUESTED");
+    const levels = dietLevelsOf(c);
+    if (!ctx.diets.every((d) => servesDiet(levels, d))) return out("DIET_NOT_KNOWN");
+    // A diet is a need (celiac, kosher, halal), and a name is not a record ("kosher-style" delis are
+    // not kosher): a place known only by its name is Check first, with the reason named.
+    if (dietsFromNameOnly(c)) unresolved.push("DIET_FROM_NAME");
+  }
+  // Must-haves the place's record has to state: tables outside, wifi.
+  if (ctx.features?.length && !ctx.features.every((f) => hasFeature(c, f))) return out("FEATURE_NOT_KNOWN");
 
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out(status.value.status === "closed_temporarily" ? "CLOSED_TEMPORARILY" : "CLOSED_PERMANENTLY");

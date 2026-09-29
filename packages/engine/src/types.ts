@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.5.0";
-export const WEIGHTS_VERSION = "2026-09-29.2";
+export const ENGINE_VERSION = "0.6.0";
+export const WEIGHTS_VERSION = "2026-09-29.3";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -34,6 +34,10 @@ export interface RequestContext {
   categories?: Category[];
   /** Only food places serving one of these (CUISINE_FILTERS ids). Diversity across activity types is skipped. */
   cuisines?: string[];
+  /** Only food places known to serve all of these (DIETS ids). Diversity across activity types is skipped. */
+  diets?: string[];
+  /** Only places known to have all of these (outdoor_seating, wifi; wheelchair is requireWheelchair). */
+  features?: string[];
   /** How the user wants to eat, for food places: to go is quick. Missing = sitting down. */
   visitStyle?: "dine_in" | "takeout";
   /** Items shown recently on this device, and items dismissed. */
@@ -150,7 +154,13 @@ export type ReasonCode =
   /** A cinema, theatre or music venue with nothing listed here: see what's on on its own site. */
   | "PROGRAMME_UNLISTED"
   /** Outdoors, and the forecast gives rain a 50% chance or more over the start of the plan. */
-  | "RAIN_LIKELY";
+  | "RAIN_LIKELY"
+  /** A diet asked for is known only from the place's name ("Grand Kosher Cafe"): check it with them. */
+  | "DIET_FROM_NAME"
+  /** Happy hour is on at the arrival, or starts soon after it. */
+  | "HAPPY_HOUR"
+  /** Tables outside, and the forecast is dry and mild. */
+  | "OUTDOOR_SEATING";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -158,6 +168,8 @@ export type ExclusionCode =
   | "EXCLUDED_BY_OVERRIDE"
   | "NOT_REQUESTED"
   | "OTHER_CUISINE"
+  | "DIET_NOT_KNOWN"
+  | "FEATURE_NOT_KNOWN"
   | "TOO_FAR"
   | "CLOSED_ON_ARRIVAL"
   | "NOT_ENOUGH_TIME"

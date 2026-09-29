@@ -1,8 +1,8 @@
 import type { Photo, RecommendationItem } from "@outrn/contracts";
-import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
-import { caveatNotes, cuisinesOf, explain, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
+import { CUISINE_CATEGORIES, DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
+import { caveatNotes, cuisinesOf, dietLevelsOf, dietsFromNameOnly, explain, hasFeature, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
-import { ageLimitFrom, cuisineOptions, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
+import { ageLimitFrom, cuisineOptions, dietOptions, directionsUrl, featureOptions, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
 
 const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
 
@@ -26,6 +26,9 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
     category: { id: c.category, label: labelOf(c.category) },
     subtype: subtypeFrom(c.facts.subtype?.value),
     cuisines: cuisineOptions(cuisinesOf(c, ctx.cuisines)),
+    // As the record states them: a name's guess is a caveat (DIET_FROM_NAME), never a label.
+    diets: CUISINE_CATEGORIES.has(c.category) && !dietsFromNameOnly(c) ? dietOptions(dietLevelsOf(c)) : [],
+    features: featureOptions((f) => hasFeature(c, f)),
     status: e.class,
     callToAction: e.cta ?? "check",
     location: { lat: c.point.lat, lon: c.point.lon },

@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "mock-cuisine",
     "backBy": null,
     "budget": {
@@ -24,6 +25,7 @@
     "cuisines": [
       "italian"
     ],
+    "features": [],
     "categories": [],
     "travelMode": "walk",
     "visitStyle": "dine_in",
@@ -64,6 +66,13 @@
         {
           "id": "italian",
           "label": "Italian"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "id": "00000000-0000-4000-8000-000000000029",
@@ -190,6 +199,8 @@
           "label": "Italian"
         }
       ],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-00000000002a",
       "copy": {
         "action": "Check first",
@@ -314,6 +325,13 @@
         {
           "id": "pizza",
           "label": "Pizza"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "id": "00000000-0000-4000-8000-00000000002b",

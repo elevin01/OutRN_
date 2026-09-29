@@ -1369,3 +1369,130 @@ describe("asking for a cuisine", () => {
     expect(line({ ...eat("books", ["coffee_shop", "italian"]), category: "bookshop" })).toMatch(/^~\d+ min walk · /);
   });
 });
+
+describe("what a place offers at the hour: happy hour, tables outside", () => {
+  const withFacts = (c: Candidate, extra: Candidate["facts"]): Candidate => ({ ...c, facts: { ...c.facts, ...extra } });
+  const happy = (id: string, rule: string) => withFacts(venue({ id, category: "bar", hours: "Mo-Su 12:00-02:00" }), { happy_hours: { value: { osm: rule }, confidence: 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 } });
+  const patio = (id: string) => withFacts(venue({ id, category: "restaurant", hours: "Mo-Su 11:00-23:00" }), { outdoor_seating: { value: { value: "yes" }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 } });
+  // Friday 5:30pm, 2 hours; the walk is ~3 minutes.
+  const friday = (over: Partial<RequestContext> = {}) => ctx("2026-10-02 17:30", 120, over);
+  const sentence = (c: Candidate, x: RequestContext) => explain(one(c, x), TZ).sentence;
+
+  it("happy hour on at the arrival: a reason with when it ends, and a little appeal", () => {
+    const e = one(happy("h", "Mo-Fr 17:00-19:00"), friday());
+    expect(e.reasons).toContain("HAPPY_HOUR");
+    expect(sentence(happy("h", "Mo-Fr 17:00-19:00"), friday())).toContain("happy hour until 7pm");
+    expect(e.scores.appeal - one(venue({ id: "plain", category: "bar", hours: "Mo-Su 12:00-02:00" }), friday()).scores.appeal).toBeCloseTo(0.05, 5);
+  });
+
+  it("starting soon after the arrival counts too; ending within 20 minutes, or long after, does not", () => {
+    expect(sentence(happy("soon", "Mo-Fr 18:00-20:00"), friday())).toContain("happy hour from 6pm");
+    expect(one(happy("ending", "Mo-Fr 16:00-17:45"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("later", "Mo-Fr 19:00-21:00"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("weekend", "Sa-Su 17:00-19:00"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    // A happy hour that never ends is no reason to go now.
+    expect(one(happy("always", "24/7"), friday()).reasons).not.toContain("HAPPY_HOUR");
+  });
+
+  it("happy hour is never a reason for a party with a child", () => {
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ youngestAge: 10 })).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ company: "family" })).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ youngestAge: 25 })).reasons).toContain("HAPPY_HOUR");
+  });
+
+  it("tables outside are a reason only when the forecast is dry and mild", () => {
+    const at = (weather: RequestContext["weather"]) => one(patio("p"), friday({ weather }));
+    expect(at({ temperatureF: 66, precipProbability: 10, highF: 70 }).reasons).toContain("OUTDOOR_SEATING");
+    expect(sentence(patio("p"), friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } }))).toContain("good weather to sit outside");
+    for (const w of [
+      { temperatureF: 66, precipProbability: 40, highF: 70 }, // a real chance of rain
+      { temperatureF: 50, precipProbability: 0, highF: 58 }, // too cool to sit outside
+      { temperatureF: 88, precipProbability: 0, highF: 93 }, // hot
+      { temperatureF: 66, precipProbability: null, highF: 70 }, // no word on rain
+      null,
+    ]) expect(at(w).reasons, JSON.stringify(w)).not.toContain("OUTDOOR_SEATING");
+    // Without tables outside, fair weather says nothing about the place.
+    expect(one(venue({ id: "in", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } })).reasons).not.toContain("OUTDOOR_SEATING");
+  });
+
+  it("tables only outside make the place outdoors: rain counts against it, and fair weather is the weather reason, not a second one", () => {
+    const setting = (id: string, value: string) => withFacts(patio(id), { indoor_outdoor: { value: { value }, confidence: 0.6, evidenceClass: "estimate", validUntil: null, independentSources: 1 } });
+    const rain = friday({ weather: { temperatureF: 66, precipProbability: 60, highF: 70 } });
+    const outside = one(setting("only", "outdoor"), rain);
+    const mixed = one(setting("mixed", "mixed"), rain);
+    expect(outside.unresolved).toContain("RAIN_LIKELY");
+    expect(mixed.unresolved).not.toContain("RAIN_LIKELY");
+    expect(outside.scores.appeal).toBeLessThan(mixed.scores.appeal);
+    expect(outside.scores.fit).toBeLessThan(mixed.scores.fit);
+    const fair = friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } });
+    expect(one(setting("only", "outdoor"), fair).reasons).toEqual(expect.arrayContaining(["WEATHER_SUITABLE"]));
+    expect(one(setting("only", "outdoor"), fair).reasons).not.toContain("OUTDOOR_SEATING");
+    expect(one(setting("mixed", "mixed"), fair).reasons).toContain("OUTDOOR_SEATING");
+  });
+
+  it("an offer breaks a near-tie; it never lifts a place past its class", () => {
+    const plain = venue({ id: "plain", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const s = recommend([plain, happy("h", "Mo-Fr 17:00-19:00")], friday({ categories: ["bar"] }), POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["h", "plain"]);
+    const unlisted = withFacts(happy("u", "Mo-Fr 17:00-19:00"), { opening_hours: undefined });
+    const both = recommend([plain, unlisted], friday({ categories: ["bar"] }), POLICIES);
+    expect(both.items.map((e) => [e.candidate.id, e.class])).toEqual([["plain", "ready"], ["u", "check_first"]]);
+  });
+});
+
+describe("asking for a diet or a must-have", () => {
+  const fact = (value: unknown) => ({ value, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 });
+  const eat = (id: string, diets?: Record<string, string>, extra: Candidate["facts"] = {}, category: Candidate["category"] = "restaurant") => {
+    const v = venue({ id, category, hours: "Mo-Su 08:00-23:00" });
+    return { ...v, facts: { ...v.facts, ...(diets ? { diets: fact(diets) } : {}), ...extra } };
+  };
+  const x = (over: Partial<RequestContext>) => ctx("2026-10-02 12:30", 120, over);
+  const excluded = (cands: Candidate[], over: Partial<RequestContext>) => Object.fromEntries(evaluateAll(cands, x(over), POLICIES).map((e) => [e.candidate.id, e.excludedBy]));
+
+  it("a diet keeps only food places known to serve it; vegan food is vegetarian; unknown or limited is not a yes", () => {
+    const cands = [eat("vegan", { vegan: "only" }), eat("veg", { vegetarian: "yes" }), eat("few", { vegetarian: "limited" }), eat("none"), venue({ id: "park", category: "park" })];
+    expect(excluded(cands, { diets: ["vegetarian"] })).toEqual({ vegan: null, veg: null, few: "DIET_NOT_KNOWN", none: "DIET_NOT_KNOWN", park: "NOT_REQUESTED" });
+    expect(excluded(cands, { diets: ["vegan"] })).toMatchObject({ vegan: null, veg: "DIET_NOT_KNOWN" });
+    expect(excluded(cands, { diets: ["__proto__"] })).toMatchObject({ vegan: "DIET_NOT_KNOWN" });
+  });
+
+  it("a diet known only from the name is Check first, with the reason named; a stated one is not", () => {
+    const named = { ...eat("named"), facts: { ...eat("named").facts, diets: { ...fact({ kosher: "only" }), evidenceClass: "estimate" as const, confidence: 0.5 } } };
+    const stated = eat("stated", { kosher: "only" });
+    const [n, s] = evaluateAll([named, stated], x({ diets: ["kosher"] }), POLICIES);
+    expect([n!.class, n!.unresolved]).toEqual(["check_first", ["DIET_FROM_NAME"]]);
+    expect(caveatNotes(n!).map((c) => c.text)).toEqual(["only its name says it serves this diet: check with them"]);
+    expect([s!.class, s!.unresolved]).toEqual(["ready", []]);
+    // Without a diet search, a name's guess changes nothing.
+    expect(evaluateAll([named], x({}), POLICIES)[0]!.unresolved).not.toContain("DIET_FROM_NAME");
+  });
+
+  it("several diets must all be served: one party eats together", () => {
+    const cands = [eat("both", { vegan: "yes", gluten_free: "yes" }), eat("vegan", { vegan: "only" }), eat("gf", { gluten_free: "yes" })];
+    expect(excluded(cands, { diets: ["vegan", "gluten_free"] })).toEqual({ both: null, vegan: "DIET_NOT_KNOWN", gf: "DIET_NOT_KNOWN" });
+  });
+
+  it("a must-have is what the record states: tables outside, wifi (a library's too); unknown is no", () => {
+    const cands = [
+      eat("patio", undefined, { outdoor_seating: fact({ value: "yes" }) }),
+      eat("inside", undefined, { outdoor_seating: fact({ value: "no" }) }),
+      eat("wifi", undefined, { internet_access: fact({ value: "wlan" }) }, "cafe"),
+      eat("wired", undefined, { internet_access: fact({ value: "wired" }) }, "cafe"),
+      // Internet of an unknown kind: maybe a port or a terminal, so not wifi.
+      eat("net", undefined, { internet_access: fact({ value: "yes" }) }, "cafe"),
+      { ...venue({ id: "library", category: "library", hours: "Mo-Su 09:00-20:00" }), facts: { ...venue({ id: "l" }).facts, internet_access: fact({ value: "wlan" }) } },
+    ];
+    expect(excluded(cands, { features: ["outdoor_seating"] })).toMatchObject({ patio: null, inside: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
+    expect(excluded(cands, { features: ["wifi"] })).toMatchObject({ wifi: null, wired: "FEATURE_NOT_KNOWN", net: "FEATURE_NOT_KNOWN", library: null, patio: "FEATURE_NOT_KNOWN" });
+    expect(excluded(cands, { features: ["outdoor_seating", "wifi"] })).toMatchObject({ patio: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
+  });
+
+  it("offers going without a must-have, never without a diet; a diet search narrows like a cuisine", () => {
+    const cands = [eat("vegan", { vegan: "only" }), eat("plain"), eat("plain2"), venue({ id: "b1", category: "bookshop", hours: "Mo-Su 10:00-21:00" })];
+    const diet = recommend(cands, x({ diets: ["vegan"] }), POLICIES);
+    expect(diet.items.map((e) => e.candidate.id)).toEqual(["vegan"]);
+    expect(diet.relaxations.map((r) => r.code)).toEqual([]);
+    const patio = recommend([...cands, eat("patio", undefined, { outdoor_seating: fact({ value: "yes" }) })], x({ features: ["outdoor_seating", "wifi"] }), POLICIES);
+    expect(patio.relaxations).toEqual([{ code: "without_features", text: "without outdoor seating or Wi-Fi", admits: 5 }]);
+  });
+});

@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T23:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "bronxville",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": null,
     "cuisines": [],
+    "features": [],
     "categories": [],
     "travelMode": "drive",
     "visitStyle": "dine_in",
@@ -75,6 +77,13 @@
         {
           "id": "mexican",
           "label": "Mexican"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "id": "00000000-0000-4000-8000-000000000015",
@@ -217,6 +226,13 @@
           "label": "Korean"
         }
       ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000016",
       "copy": {
         "action": "Go now",
@@ -354,6 +370,13 @@
         {
           "id": "pizza",
           "label": "Pizza"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "id": "00000000-0000-4000-8000-000000000017",

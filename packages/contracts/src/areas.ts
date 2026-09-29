@@ -39,6 +39,10 @@ export const AreasResponse = z.object({
     categories: z.array(Option),
     /** Cuisines a request may ask for (`cuisines`), each taking in its kinds: Japanese includes sushi and ramen. */
     cuisines: z.array(Option),
+    /** Diets a request may ask for (`diets`): vegetarian, vegan, gluten-free, halal, kosher. */
+    diets: z.array(Option),
+    /** Must-haves a request may ask for (`features`): outdoor seating, wifi, wheelchair access. */
+    features: z.array(Option),
   }),
   limits: z.object({
     windowMinutes: Range,
@@ -46,6 +50,10 @@ export const AreasResponse = z.object({
     maxCategories: z.int(),
     /** Most cuisines a request may ask for (`cuisines`). */
     maxCuisines: z.int(),
+    /** Most diets a request may ask for (`diets`). */
+    maxDiets: z.int(),
+    /** Most must-haves a request may ask for (`features`). */
+    maxFeatures: z.int(),
     /** Items per page of recommendations. */
     pageSize: z.int(),
   }),

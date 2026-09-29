@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-04T05:15:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "mock-family",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": "family",
     "cuisines": [],
+    "features": [],
     "categories": [
       "bar"
     ],
@@ -49,6 +51,13 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000023",
       "copy": {
         "action": "Check first",
@@ -161,6 +170,13 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000026",
       "copy": {
         "action": "Check first",

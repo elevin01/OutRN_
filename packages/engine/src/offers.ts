@@ -1,0 +1,71 @@
+import { minutesBetween, type DietLevels } from "@outrn/core";
+import { evaluateHours, isHoursValue } from "@outrn/facts";
+import { isOutdoor, readWeather } from "./forecast.js";
+import type { Candidate, RequestContext } from "./types.js";
+
+/**
+ * What a place offers at the hour of the visit, from its own record: happy hour, or tables outside
+ * when the weather suits sitting there. Each lifts appeal a little and gives the card a reason; none
+ * ever excludes or changes a class. Policy, not fact.
+ */
+export const OFFERS = {
+  /** Happy hour counts when at least this much of it is left at the arrival… */
+  happyHourMinLeft: 20,
+  /** …or when it starts this soon after the arrival. */
+  happyHourStartsWithin: 30,
+  /** Sitting outside: dry (a rain chance known and below this), no colder than this, and not hot. */
+  outdoorMaxRainChance: 30,
+  outdoorMinF: 55,
+  appeal: 0.05,
+} as const;
+
+/**
+ * Happy hour at a visit arriving then and ending by `finish`: in progress (`until` when), or starting
+ * soon after the arrival (`from` when). Null without a parseable happy hour, or for one that never ends.
+ */
+export function happyHourAt(c: Candidate, arrival: Date, finish: Date): { from: Date | null; until: Date } | null {
+  const f = c.kind === "venue" ? c.facts.happy_hours : undefined;
+  if (!f || !isHoursValue(f.value)) return null;
+  const ev = evaluateHours(f.value, arrival, c.timezone, c.point);
+  if (!ev.interval || ev.always) return null;
+  const { open, close } = ev.interval;
+  if (ev.openNow) return minutesBetween(arrival, close) >= OFFERS.happyHourMinLeft ? { from: null, until: close } : null;
+  const startsIn = minutesBetween(arrival, open);
+  if (startsIn > 0 && startsIn <= OFFERS.happyHourStartsWithin && minutesBetween(open, finish) >= OFFERS.happyHourMinLeft) return { from: open, until: close };
+  return null;
+}
+
+/**
+ * Tables outside, and a forecast that says it is dry and mild over the start of the plan. Not for a
+ * place that is outdoors anyway (tables only outside): the weather is already the visit there.
+ */
+export function outdoorSeatingWeather(c: Candidate, ctx: RequestContext): boolean {
+  if ((c.facts.outdoor_seating?.value as { value?: unknown } | undefined)?.value !== "yes" || isOutdoor(c)) return false;
+  const w = ctx.weather;
+  if (!w || w.precipProbability === null) return false;
+  return w.precipProbability < OFFERS.outdoorMaxRainChance && w.temperatureF >= OFFERS.outdoorMinF && !readWeather(w).hot;
+}
+
+/** Whether its diets are only what its name says (an estimate), not what its record states. */
+export function dietsFromNameOnly(c: Candidate): boolean {
+  return c.facts.diets?.evidenceClass === "estimate";
+}
+
+/** What a place serves for diets (OSM diet:*, or its name), as its facts say; empty when unknown. */
+export function dietLevelsOf(c: Candidate): DietLevels {
+  const v = c.facts.diets?.value;
+  return v && typeof v === "object" && !Array.isArray(v) ? (v as DietLevels) : {};
+}
+
+const valueOf = (c: Candidate, a: "outdoor_seating" | "internet_access" | "wheelchair") => (c.facts[a]?.value as { value?: unknown } | undefined)?.value;
+
+/**
+ * Whether a place's record says it has a must-have: tables outside, wifi (internet_access=wlan; "yes"
+ * is internet of an unknown kind, maybe a wired port or a terminal), step-free access. Unknown is no.
+ */
+export function hasFeature(c: Candidate, feature: string): boolean {
+  if (feature === "outdoor_seating") return valueOf(c, "outdoor_seating") === "yes";
+  if (feature === "wifi") return valueOf(c, "internet_access") === "wlan";
+  if (feature === "wheelchair") return valueOf(c, "wheelchair") === "yes";
+  return false;
+}

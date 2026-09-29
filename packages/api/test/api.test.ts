@@ -65,18 +65,61 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.6.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.7.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
     expect(areas.filters.categories.map((c) => c.id)).toContain("bowling");
     expect(areas.filters.cuisines).toEqual(expect.arrayContaining([{ id: "japanese", label: "Japanese" }, { id: "pizza", label: "Pizza" }]));
     // The limits a UI reads are the ones the request schema enforces.
-    for (const [field, max] of [["categories", areas.limits.maxCategories], ["cuisines", areas.limits.maxCuisines]] as const) {
-      const ids = (field === "categories" ? areas.filters.categories : areas.filters.cuisines).map((o) => o.id);
+    expect(areas.filters.diets.map((o) => o.id)).toEqual(["vegetarian", "vegan", "gluten_free", "halal", "kosher"]);
+    expect(areas.filters.features).toEqual([{ id: "outdoor_seating", label: "Outdoor seating" }, { id: "wifi", label: "Wi-Fi" }, { id: "wheelchair", label: "Wheelchair accessible" }]);
+    for (const [field, max] of [["categories", areas.limits.maxCategories], ["cuisines", areas.limits.maxCuisines], ["diets", areas.limits.maxDiets], ["features", areas.limits.maxFeatures]] as const) {
+      // Past the cap, repeating ids when there are fewer options than it (5 diets, 3 must-haves).
+      const ids = Array.from({ length: max + 1 }, (_, i) => areas.filters[field][i % areas.filters[field].length]!.id);
       expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max) }).success, field).toBe(true);
       expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max + 1) }).success, field).toBe(false);
     }
+  });
+
+  it("finds a diet or a must-have: only places whose record says so, each card listing them", async () => {
+    now = SAT_EVENING;
+    // A kitchen within reach whose record says vegan, as a mapper would tag it.
+    const kitchen = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Allen Kitchen' and publish_state = 'eligible'`)).rows[0]!.id;
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: kitchen, attribute: "diets", value: { vegan: "only" }, evidenceClass: "published", sourceId: "osm", evidence: "diet:vegan=only", fetchedAt: SAT_EVENING, confidence: 0.7, lineageGroup: "osm" }]);
+    await materializeSubjects(db, "venue", [kitchen], SAT_EVENING);
+    try {
+      for (const diets of [["vegan"], ["vegetarian"]]) {
+        const page = await search({ areaId: "les", windowMinutes: 180, diets });
+        expect(page.request.diets).toEqual(diets);
+        expect(page.items.map((i) => [i.name, i.diets])).toEqual([["Allen Kitchen", [{ id: "vegan", label: "Vegan" }]]]);
+        // Nothing else is known to be vegan, and a diet is never relaxed.
+        expect(page.insufficient?.relaxations.map((r) => r.code) ?? []).not.toContain("more_categories");
+      }
+      expect((await search({ areaId: "les", windowMinutes: 180, diets: ["vegan", "halal"] })).items).toEqual([]);
+    } finally {
+      await db.query(`update facts set superseded_at = now() where subject_id = $1 and attribute = 'diets' and superseded_at is null`, [kitchen]);
+      await materializeSubjects(db, "venue", [kitchen], SAT_EVENING);
+    }
+    // Known only from its name ("Grand Kosher Cafe"): an option to check, never labelled kosher.
+    const named = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Forsyth Clinton Kitchen' and publish_state = 'eligible'`)).rows[0]!.id;
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: named, attribute: "diets", value: { kosher: "only" }, evidenceClass: "estimate", sourceId: "osm", evidence: "name=Forsyth Kosher Kitchen", fetchedAt: SAT_EVENING, confidence: 0.5, lineageGroup: "osm" }]);
+    await materializeSubjects(db, "venue", [named], SAT_EVENING);
+    try {
+      const kosher = await search({ areaId: "les", windowMinutes: 180, diets: ["kosher"] });
+      expect(kosher.items.map((i) => [i.name, i.status, i.diets, i.caveats.map((c) => c.code)])).toEqual([["Forsyth Clinton Kitchen", "check_first", [], ["DIET_FROM_NAME"]]]);
+    } finally {
+      await db.query(`update facts set superseded_at = now() where subject_id = $1 and attribute = 'diets' and superseded_at is null`, [named]);
+      await materializeSubjects(db, "venue", [named], SAT_EVENING);
+    }
+    // Tables outside: the synthetic places that tag them, and they say so on the card.
+    const outside = await search({ areaId: "les", windowMinutes: 180, features: ["outdoor_seating"] });
+    expect(outside.request.features).toEqual(["outdoor_seating"]);
+    expect(outside.items.length).toBeGreaterThan(0);
+    for (const i of outside.items) expect(i.features.map((f) => f.id), i.name).toContain("outdoor_seating");
+    // Step-free: only places whose record says wheelchair=yes or limited (limited is Check first).
+    const access = await search({ areaId: "les", windowMinutes: 180, features: ["wheelchair"] });
+    for (const i of access.items) expect(i.features.some((f) => f.id === "wheelchair") || i.caveats.some((c) => c.code === "ACCESS_LIMITED"), i.name).toBe(true);
   });
 
   it("finds a cuisine: only food places serving it, each card saying what it serves; offers any cuisine when few do", async () => {
@@ -335,6 +378,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
+    // Stored by a 1.6 API: no diets or must-haves asked for, and none listed on the items.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'diets' - 'features', items = (select jsonb_agg(i - 'diets' - 'features') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    const before17 = await search(next);
+    expect(before17.items.map((i) => i.id)).toEqual(expected);
+    expect([before17.request.diets, before17.request.features, before17.items.map((i) => [i.diets, i.features])]).toEqual([[], [], expected.map(() => [[], []])]);
     // Stored by a 1.5 API: no cuisines asked for, and none listed on the items.
     await db.query(`update recommendation_snapshots set resolved = resolved - 'cuisines', items = (select jsonb_agg(i - 'cuisines') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     const before16 = await search(next);
@@ -515,6 +563,10 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       [{ areaId: "les", windowMinutes: 120, categories: ["bar", "spaceport"] }, "categories.1"],
       [{ areaId: "les", windowMinutes: 120, cuisines: ["thai", "martian"] }, "cuisines.1"],
       [{ areaId: "les", windowMinutes: 120, cuisines: ["__proto__"] }, "cuisines.0"],
+      [{ areaId: "les", windowMinutes: 120, diets: ["vegan", "paleo"] }, "diets.1"],
+      [{ areaId: "les", windowMinutes: 120, diets: ["constructor"] }, "diets.0"],
+      [{ areaId: "les", windowMinutes: 120, features: ["jukebox"] }, "features.0"],
+      [{ areaId: "les", windowMinutes: 120, features: ["wifi", "wifi", "wifi", "wifi"] }, "features"],
       [{ areaId: "les", windowMinutes: 120, cuisines: ["thai", "pizza", "sushi", "ramen", "korean", "indian"] }, "cuisines"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
       [{ areaId: "les", windowMinutes: 120, colour: "blue" }, "(body)"],

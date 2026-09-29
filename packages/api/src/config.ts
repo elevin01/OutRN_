@@ -1,5 +1,5 @@
 import type { AreasResponse, Option } from "@outrn/contracts";
-import { CATEGORIES, CUISINE_FILTERS } from "@outrn/core";
+import { CATEGORIES, CUISINE_FILTERS, DIETS, FEATURES } from "@outrn/core";
 import type { Company, Mood } from "@outrn/engine";
 
 /**
@@ -51,6 +51,8 @@ export const FILTERS: AreasResponse["filters"] = {
   companies: options(COMPANIES),
   categories: REQUESTABLE_CATEGORIES.map((id) => ({ id, label: labelOf(id) })),
   cuisines: Object.entries(CUISINE_FILTERS).map(([id, c]) => ({ id, label: c.label })),
+  diets: options(DIETS),
+  features: options(FEATURES),
 };
 
 export const LIMITS: AreasResponse["limits"] = {
@@ -58,5 +60,7 @@ export const LIMITS: AreasResponse["limits"] = {
   youngestAge: { min: 0, max: 120 },
   maxCategories: 5,
   maxCuisines: 5,
+  maxDiets: 5,
+  maxFeatures: 3,
   pageSize: PAGE_SIZE,
 };
