@@ -1,6 +1,6 @@
 import { minutesBetween } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
-import { readWeather } from "./forecast.js";
+import { isOutdoor, readWeather } from "./forecast.js";
 import type { Candidate, RequestContext } from "./types.js";
 
 /**
@@ -35,9 +35,12 @@ export function happyHourAt(c: Candidate, arrival: Date, finish: Date): { from: 
   return null;
 }
 
-/** Tables outside, and a forecast that says it is dry and mild over the start of the plan. */
+/**
+ * Tables outside, and a forecast that says it is dry and mild over the start of the plan. Not for a
+ * place that is outdoors anyway (tables only outside): the weather is already the visit there.
+ */
 export function outdoorSeatingWeather(c: Candidate, ctx: RequestContext): boolean {
-  if ((c.facts.outdoor_seating?.value as { value?: unknown } | undefined)?.value !== "yes") return false;
+  if ((c.facts.outdoor_seating?.value as { value?: unknown } | undefined)?.value !== "yes" || isOutdoor(c)) return false;
   const w = ctx.weather;
   if (!w || w.precipProbability === null) return false;
   return w.precipProbability < OFFERS.outdoorMaxRainChance && w.temperatureF >= OFFERS.outdoorMinF && !readWeather(w).hot;

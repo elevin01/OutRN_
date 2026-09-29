@@ -1415,6 +1415,21 @@ describe("what a place offers at the hour: happy hour, tables outside", () => {
     expect(one(venue({ id: "in", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } })).reasons).not.toContain("OUTDOOR_SEATING");
   });
 
+  it("tables only outside make the place outdoors: rain counts against it, and fair weather is the weather reason, not a second one", () => {
+    const setting = (id: string, value: string) => withFacts(patio(id), { indoor_outdoor: { value: { value }, confidence: 0.6, evidenceClass: "estimate", validUntil: null, independentSources: 1 } });
+    const rain = friday({ weather: { temperatureF: 66, precipProbability: 60, highF: 70 } });
+    const outside = one(setting("only", "outdoor"), rain);
+    const mixed = one(setting("mixed", "mixed"), rain);
+    expect(outside.unresolved).toContain("RAIN_LIKELY");
+    expect(mixed.unresolved).not.toContain("RAIN_LIKELY");
+    expect(outside.scores.appeal).toBeLessThan(mixed.scores.appeal);
+    expect(outside.scores.fit).toBeLessThan(mixed.scores.fit);
+    const fair = friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } });
+    expect(one(setting("only", "outdoor"), fair).reasons).toEqual(expect.arrayContaining(["WEATHER_SUITABLE"]));
+    expect(one(setting("only", "outdoor"), fair).reasons).not.toContain("OUTDOOR_SEATING");
+    expect(one(setting("mixed", "mixed"), fair).reasons).toContain("OUTDOOR_SEATING");
+  });
+
   it("an offer breaks a near-tie; it never lifts a place past its class", () => {
     const plain = venue({ id: "plain", category: "bar", hours: "Mo-Su 12:00-02:00" });
     const s = recommend([plain, happy("h", "Mo-Fr 17:00-19:00")], friday({ categories: ["bar"] }), POLICIES);
