@@ -56,12 +56,15 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = OUTDOOR.has(c.category) || (c.facts["indoor_outdoor"]?.value as { value?: string } | undefined)?.value === "outdoor";
-  const rainy = ctx.weather ? (ctx.weather.precipProbability ?? 0) >= WEATHER_APPEAL.rainChance : false;
+  // A forecast hour with no chance of rain given says nothing about rain: neither wet nor dry.
+  const chance = ctx.weather?.precipProbability ?? null;
+  const rainy = chance !== null && chance >= WEATHER_APPEAL.rainChance;
+  const dry = chance !== null && chance < WEATHER_APPEAL.rainChance;
   const cold = ctx.weather ? ctx.weather.temperatureF <= WEATHER_APPEAL.coldF : false;
   if (ctx.weather) {
     if (outdoor) {
-      weather = rainy || cold ? 0.1 : 0.9;
-      if (!rainy && !cold) extra.push("WEATHER_SUITABLE");
+      weather = rainy || cold ? 0.1 : dry ? 0.9 : 0.5;
+      if (dry && !cold) extra.push("WEATHER_SUITABLE");
     } else weather = rainy || cold ? 0.7 : 0.5;
   }
   let fit = 0.4 * travelScore + 0.3 * timeSlack + 0.15 * chips + 0.15 * weather;
@@ -90,7 +93,8 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   }
   if (ctx.sunset && outdoor && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
     const m = minutesBetween(t.arrival, ctx.sunset);
-    const clear = (ctx.weather?.precipProbability ?? 0) < 50;
+    // No forecast keeps the window as before; a forecast must say it is dry, not merely not say rain.
+    const clear = !ctx.weather || dry;
     if (m >= -20 && m <= 60 && clear) {
       appeal += 0.15;
       extra.push("SUNSET_WINDOW");
