@@ -1,4 +1,4 @@
-import { ATTRIBUTES, CATEGORIES, DYNAMIC_ATTRIBUTES, isCategory, validateFactValue, type Attribute } from "@outrn/core";
+import { ATTRIBUTES, CATEGORIES, cuisineSlugs, DYNAMIC_ATTRIBUTES, isCategory, validateFactValue, type Attribute } from "@outrn/core";
 import { parseOsmHours } from "./hours.js";
 
 /**
@@ -111,6 +111,11 @@ function parseText(attribute: Attribute, raw: string, opts: { json?: boolean }):
       const v = text.toLowerCase().replace(/[\s-]+/g, "_");
       if (!/^[a-z0-9_]{2,40}$/.test(v)) throw new Error(`subtype is a short kind name, e.g. miniature_golf`);
       return { value: v };
+    }
+    case "cuisine": {
+      const values = cuisineSlugs(text);
+      if (!values.length || values.length !== text.split(/[;,]/).filter((x) => x.trim()).length) throw new Error(`cuisine is a list like "italian; pizza" (OSM cuisine names)`);
+      return { values };
     }
     case "age_limit": {
       const t = text.toLowerCase().replace(/[\s-]+/g, "_");

@@ -145,19 +145,6 @@
     },
     {
      "rank": 5,
-     "name": "Empirical Nonsense",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
      "name": "Hamilton Fish Park Library",
      "category": "library",
      "status": "ready",
@@ -166,6 +153,19 @@
       "OPEN_LATE",
       "FREE",
       "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Empirical Nonsense",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     }
@@ -206,19 +206,6 @@
     },
     {
      "rank": 3,
-     "name": "Empirical Nonsense",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Hamilton Fish Park Library",
      "category": "library",
      "status": "ready",
@@ -231,8 +218,8 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "bitforms gallery",
+     "rank": 4,
+     "name": "Empirical Nonsense",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -244,15 +231,28 @@
      "caveats": []
     },
     {
+     "rank": 5,
+     "name": "Petrosino Square",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 6,
-     "name": "Krause Gallery",
+     "name": "Sperone Westwater",
      "category": "gallery",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -313,20 +313,20 @@
     },
     {
      "rank": 5,
-     "name": "Fan Szechuan",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "La Contenta",
-     "category": "restaurant",
+     "name": "Excuse My French",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -404,13 +404,12 @@
     },
     {
      "rank": 6,
-     "name": "Pretty Ricky's",
-     "category": "bar",
+     "name": "Ye’s Apothecary",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -449,8 +448,8 @@
     },
     {
      "rank": 3,
-     "name": "Caffè Vita",
-     "category": "cafe",
+     "name": "Shopsin's",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -461,20 +460,20 @@
     },
     {
      "rank": 4,
-     "name": "Russ & Daughters Cafe",
+     "name": "Ferrara",
      "category": "cafe",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Roasting Plant",
-     "category": "cafe",
+     "name": "Kalye",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -485,7 +484,7 @@
     },
     {
      "rank": 6,
-     "name": "Sunday to Sunday",
+     "name": "Caffè Vita",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -570,13 +569,13 @@
     },
     {
      "rank": 6,
-     "name": "Fan Szechuan",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -650,7 +649,7 @@
     },
     {
      "rank": 6,
-     "name": "Roasting Plant",
+     "name": "Taikii Cafe",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -779,6 +778,30 @@
     },
     {
      "rank": 3,
+     "name": "Davelle NYC",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Rex",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Kalye",
      "category": "restaurant",
      "status": "ready",
@@ -790,32 +813,8 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Kuma Inn",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Ramen Ishida",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Cloud Vietnamese",
+     "name": "Ramen Ishida",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -893,13 +892,178 @@
     },
     {
      "rank": 6,
-     "name": "Ten Bells",
-     "category": "bar",
+     "name": "il laboratorio del gelato",
+     "category": "dessert",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-fri-dinner",
+   "title": "LES, Friday 7pm, 2 hours, dinner",
+   "eligible": 682,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Fan Szechuan",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "La Contenta",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Kalye",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Ramen Ishida",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Ye’s Apothecary",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sat-long",
+   "title": "LES, Saturday noon, 5 hours",
+   "eligible": 1468,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Seward Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hamilton Fish Park Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Essex Market",
+     "category": "market",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Old Flings",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -943,6 +1107,20 @@
     },
     {
      "rank": 3,
+     "name": "The Metrograph",
+     "category": "cinema",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 4,
      "name": "Teatro LATEA",
      "category": "theatre",
      "status": "check_first",
@@ -956,26 +1134,12 @@
      ]
     },
     {
-     "rank": 4,
-     "name": "Caveat",
-     "category": "theatre",
-     "status": "check_first",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
-     ],
-     "caveats": [
-      "PROGRAMME_UNLISTED",
-      "ADMISSION_UNCONFIRMED"
-     ]
-    },
-    {
      "rank": 5,
-     "name": "The Slipper Room",
-     "category": "theatre",
+     "name": "Angelika Film Center",
+     "category": "cinema",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL"
+      "LANDMARK"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -985,15 +1149,15 @@
     },
     {
      "rank": 6,
-     "name": "The Metrograph",
-     "category": "cinema",
+     "name": "Caveat",
+     "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL"
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
-      "HOURS_UNKNOWN",
       "ADMISSION_UNCONFIRMED"
      ]
     }
@@ -1042,18 +1206,6 @@
     },
     {
      "rank": 4,
-     "name": "Growlers",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "J.C. Fogarty's",
      "category": "restaurant",
      "status": "ready",
@@ -1065,9 +1217,21 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "tredici SOCIAL",
      "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Häagen-Dazs",
+     "category": "dessert",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -1112,6 +1276,18 @@
     },
     {
      "rank": 3,
+     "name": "Slave To the Grind",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
      "name": "Bronxville Public Library",
      "category": "library",
      "status": "ready",
@@ -1121,18 +1297,6 @@
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Dumpling + Noodle",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
      ],
      "caveats": []
     },
@@ -1150,8 +1314,8 @@
     },
     {
      "rank": 6,
-     "name": "Slave To the Grind",
-     "category": "cafe",
+     "name": "Dumpling + Noodle",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -1231,7 +1395,7 @@
     },
     {
      "rank": 6,
-     "name": "Dumpling + Noodle",
+     "name": "Full Moon Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [

@@ -57,15 +57,17 @@ describe("detail page facts", () => {
     expect(fresh!.age).toBe("confirmed Sep 1");
   });
 
-  it("kind and age-limit rows always show a supplied minimum age", () => {
+  it("kind, cuisine and age-limit rows read plainly, and age always shows a supplied minimum", () => {
     expect(formatFactValue("age_limit", { minAge: 0 })).toBe("All ages");
     expect(formatFactValue("age_limit", { minAge: 16 })).toBe("16+");
     expect(formatFactValue("age_limit", { minAge: 18 })).toBe("18+ (adults only)");
     expect(formatFactValue("age_limit", { minAge: 21 })).toBe("21+ (adults only)");
     expect(formatFactValue("age_limit", { minAge: 21 }, true)).toBe("Usually 21+ (adults only)");
     expect(formatFactValue("subtype", { value: "miniature_golf" })).toBe("Miniature golf");
-    const rows = describeFacts({ age_limit: rec({ value: { minAge: 21 }, evidenceClass: "estimate" }), subtype: rec({ value: { value: "casino" } }), opening_hours: rec({ value: { osm: "24/7" } }) }, { tz: TZ, point: P, now: NOW });
-    expect(rows.map((r) => r.label)).toEqual(["Hours", "Kind", "Age limit"]);
+    expect(formatFactValue("cuisine", { values: ["italian", "pizza"] })).toBe("Italian, pizza");
+    expect(formatFactValue("cuisine", { values: ["coffee_shop", "breakfast"] })).toBe("Coffee shop, breakfast");
+    const rows = describeFacts({ age_limit: rec({ value: { minAge: 21 }, evidenceClass: "estimate" }), cuisine: rec({ value: { values: ["burger"] } }), subtype: rec({ value: { value: "casino" } }), opening_hours: rec({ value: { osm: "24/7" } }) }, { tz: TZ, point: P, now: NOW });
+    expect(rows.map((r) => r.label)).toEqual(["Hours", "Kind", "Cuisine", "Age limit"]);
   });
 
   it("a mapper's survey reads as one, is never 'confirmed', and a later edit is named", () => {

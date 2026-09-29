@@ -46,6 +46,10 @@ describe("founder fact values", () => {
   });
 
   it("age limits are a single minimum age; 'adults only' must say which", () => {
+    expect(parseFounderValue("cuisine", "Italian; pizza")).toEqual({ values: ["italian", "pizza"] });
+    expect(parseFounderValue("cuisine", "tex-mex, bbq")).toEqual({ values: ["tex_mex", "bbq"] });
+    expect(() => parseFounderValue("cuisine", "italian; <b>")).toThrow(/cuisine is a list/);
+    expect(() => parseFounderValue("cuisine", "")).toThrow(/cuisine is a list/);
     expect(parseFounderValue("age_limit", "all ages")).toEqual({ minAge: 0 });
     expect(parseFounderValue("age_limit", "16+")).toEqual({ minAge: 16 });
     expect(parseFounderValue("age_limit", "18+")).toEqual({ minAge: 18 });
