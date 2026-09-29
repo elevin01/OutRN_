@@ -50,7 +50,7 @@ describe("category shortcuts on the web", () => {
 
   it("carry a shortcut's kinds back to the page from a resolved search", () => {
     // Only the fields the form reads.
-    const resolved = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, categories: ["cinema", "theatre"], youngestAge: null, at: "2026-10-02T23:00:00Z", atIsExplicit: false };
+    const resolved = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, categories: ["cinema", "theatre"], cuisines: [], diets: [], features: [], youngestAge: null, at: "2026-10-02T23:00:00Z", atIsExplicit: false };
     const form = formFromResolved(resolved as unknown as Parameters<typeof formFromResolved>[0], areas);
     expect(form["categories"]).toBe("cinema,theatre");
     expect(form["category"]).toBe("");

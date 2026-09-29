@@ -1,4 +1,4 @@
-import type { AreasResponse } from "@outrn/contracts";
+import type { AreasResponse, Option } from "@outrn/contracts";
 import type { FormValues } from "../lib/request";
 
 interface Props {
@@ -47,12 +47,21 @@ export function SearchForm({ meta, defaults = {}, ops = false }: Props) {
         </select>
       </label>
       <label>
+        <span>Cuisine</span>
+        <select name="cuisine" defaultValue={defaults["cuisine"] ?? ""}>
+          <option value="">Any cuisine</option>
+          {filters.cuisines.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+      </label>
+      <label>
         <span>Category</span>
         <select name="category" defaultValue={defaults["category"] ?? ""}>
           <option value="">Surprise me</option>
           {filters.categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
       </label>
+      <Choices legend="Diets (all served)" name="diets" options={filters.diets} checked={defaults["diets"]} />
+      <Choices legend="Must-haves" name="features" options={filters.features} checked={defaults["features"]} />
       {ops && (
         <label className="wide-field">
           <span>Evaluate at (ISO, blank means now)</span>
@@ -61,5 +70,21 @@ export function SearchForm({ meta, defaults = {}, ops = false }: Props) {
       )}
       <button className="primary-button" type="submit">{ops ? "Evaluate candidates" : "Show me three"}<span aria-hidden="true">→</span></button>
     </form>
+  );
+}
+
+/** Checkboxes sharing a name: each ticked one travels as its own `name=id` (the page reads them all). */
+function Choices({ legend, name, options, checked }: { legend: string; name: string; options: Option[]; checked: string | undefined }) {
+  const on = new Set((checked ?? "").split(",").filter(Boolean));
+  return (
+    <fieldset className="choices">
+      <legend>{legend}</legend>
+      {options.map((o) => (
+        <label key={o.id}>
+          <input type="checkbox" name={name} value={o.id} defaultChecked={on.has(o.id)} />
+          {o.label}
+        </label>
+      ))}
+    </fieldset>
   );
 }

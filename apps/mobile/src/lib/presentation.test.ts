@@ -3,10 +3,13 @@ import {
   ageLabel,
   actionLabel,
   clock,
+  conditionBriefs,
   isExpired,
   priceLabel,
   safeExternalUrl,
+  tagLabels,
 } from "./presentation";
+import type { Condition } from "@outrn/contracts";
 describe("truthful mobile presentation", () => {
   it("keeps booking and check-first cues on otherwise feasible activities", () => {
     expect(actionLabel({ status: "ready", callToAction: "book" })).toBe(
@@ -74,5 +77,64 @@ describe("truthful mobile presentation", () => {
     expect(safeExternalUrl("file:///private")).toBeNull();
     expect(safeExternalUrl("+1 (212) 555-1234", true)).toBe("tel:+12125551234");
     expect(safeExternalUrl("123;evil", true)).toBeNull();
+  });
+});
+describe("what a card says the place offers, and what to expect there", () => {
+  it("lists cuisines, diets and must-haves as the API states them, each once, at most four", () => {
+    expect(
+      tagLabels({
+        cuisines: [{ id: "thai", label: "Thai" }],
+        diets: [
+          { id: "vegan", label: "Vegan options" },
+          { id: "vegetarian", label: "Vegan options" },
+        ],
+        features: [
+          { id: "outdoor_seating", label: "Outdoor seating" },
+          { id: "wifi", label: "Wi-Fi" },
+          { id: "wheelchair", label: "Wheelchair accessible" },
+        ],
+      }),
+    ).toEqual(["Thai", "Vegan options", "Outdoor seating", "Wi-Fi"]);
+    expect(tagLabels({ cuisines: [], diets: [], features: [] })).toEqual([]);
+  });
+
+  it("briefs the crowd, a wait's range and plan-changing weather; leaves the rest to the full text", () => {
+    const c = (over: Partial<Condition>): Condition => ({
+      kind: "crowd",
+      level: "busy",
+      basis: "typical",
+      isEstimate: true,
+      minutes: null,
+      reportedAt: null,
+      text: "",
+      ...over,
+    });
+    expect(
+      conditionBriefs({
+        conditions: [
+          c({}),
+          c({ kind: "wait", level: "long", minutes: { min: 15, max: 30 } }),
+          c({ kind: "weather", level: "rain", basis: "forecast", text: "70% chance of rain between 2 and 4pm" }),
+        ],
+      }),
+    ).toEqual(["Usually busy", "~15–30 min wait", "70% chance of rain between 2 and 4pm"]);
+    expect(
+      conditionBriefs({
+        conditions: [
+          c({ basis: "report", level: "quiet" }),
+          c({ kind: "wait", level: "short", basis: "report" }),
+        ],
+      }),
+    ).toEqual(["Reported quiet", "Short line reported"]);
+    // A moderate crowd, fair weather and kinds this app doesn't know: nothing brief to say.
+    expect(
+      conditionBriefs({
+        conditions: [
+          c({ level: "moderate" }),
+          c({ kind: "weather", level: "fair", text: "Dry, 64–68°F" }),
+          c({ kind: "traffic", level: "heavy", text: "Heavy traffic" }),
+        ],
+      }),
+    ).toEqual([]);
   });
 });

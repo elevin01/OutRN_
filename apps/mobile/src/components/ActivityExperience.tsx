@@ -324,6 +324,12 @@ export function ActivityExperience({
             <>
               <Copy style={styles.admission}>{actionLabel(item)}</Copy>
               <RequiredNotes item={item} />
+              {/* What to expect at the arrival, in the API's words: the crowd, a wait, the weather. */}
+              {item.conditions.map((c, i) => (
+                <Copy key={`${c.kind}-${i}`} style={styles.sub}>
+                  {c.text}
+                </Copy>
+              ))}
             </>
           )}
           {item?.event && (
