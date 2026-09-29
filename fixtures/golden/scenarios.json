@@ -4,7 +4,7 @@
   {
    "id": "les-sat-morning",
    "title": "LES, Saturday 10am, 3 hours, walking",
-   "eligible": 1360,
+   "eligible": 1984,
    "top": [
     {
      "rank": 1,
@@ -89,7 +89,7 @@
   {
    "id": "les-sat-afternoon",
    "title": "LES, Saturday 2pm, 2 hours",
-   "eligible": 1387,
+   "eligible": 2011,
    "top": [
     {
      "rank": 1,
@@ -107,14 +107,14 @@
     },
     {
      "rank": 2,
-     "name": "Perrotin New York",
+     "name": "Sperone Westwater",
      "category": "gallery",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     },
@@ -158,7 +158,7 @@
     },
     {
      "rank": 6,
-     "name": "Empirical Nonsense",
+     "name": "Perrotin New York",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -175,7 +175,7 @@
   {
    "id": "les-sat-afternoon-free",
    "title": "LES, Saturday 2pm, 2 hours, free only",
-   "eligible": 209,
+   "eligible": 387,
    "top": [
     {
      "rank": 1,
@@ -193,14 +193,14 @@
     },
     {
      "rank": 2,
-     "name": "Perrotin New York",
+     "name": "Sperone Westwater",
      "category": "gallery",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     },
@@ -219,7 +219,7 @@
     },
     {
      "rank": 4,
-     "name": "Empirical Nonsense",
+     "name": "Perrotin New York",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -245,14 +245,14 @@
     },
     {
      "rank": 6,
-     "name": "Sperone Westwater",
+     "name": "Empirical Nonsense",
      "category": "gallery",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     }
@@ -262,7 +262,7 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 1417,
+   "eligible": 2050,
    "top": [
     {
      "rank": 1,
@@ -325,7 +325,7 @@
     },
     {
      "rank": 6,
-     "name": "Excuse My French",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -341,7 +341,7 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 888,
+   "eligible": 1522,
    "top": [
     {
      "rank": 1,
@@ -369,17 +369,6 @@
     },
     {
      "rank": 3,
-     "name": "Excuse My French",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
@@ -391,8 +380,20 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Mehanata Bulgarian Bar",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Pretty Ricky's",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -419,7 +420,7 @@
   {
    "id": "les-sun-brunch",
    "title": "LES, Sunday 11am, 2 hours, food",
-   "eligible": 884,
+   "eligible": 1230,
    "top": [
     {
      "rank": 1,
@@ -436,7 +437,7 @@
     },
     {
      "rank": 2,
-     "name": "Rex",
+     "name": "Russ & Daughters Cafe",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -448,30 +449,6 @@
     },
     {
      "rank": 3,
-     "name": "Shopsin's",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Ferrara",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "Kalye",
      "category": "restaurant",
      "status": "ready",
@@ -483,9 +460,33 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 4,
      "name": "Caffè Vita",
      "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Ferrara",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Shopsin's",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -500,7 +501,7 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 1391,
+   "eligible": 2015,
    "top": [
     {
      "rank": 1,
@@ -585,7 +586,7 @@
   {
    "id": "les-tue-breakfast",
    "title": "LES, Tuesday 8am, 1 hour",
-   "eligible": 312,
+   "eligible": 504,
    "top": [
     {
      "rank": 1,
@@ -665,7 +666,7 @@
   {
    "id": "les-tue-afternoon",
    "title": "LES, Tuesday 3pm, 2 hours",
-   "eligible": 1303,
+   "eligible": 1927,
    "top": [
     {
      "rank": 1,
@@ -683,14 +684,14 @@
     },
     {
      "rank": 2,
-     "name": "Perrotin New York",
+     "name": "Sperone Westwater",
      "category": "gallery",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     },
@@ -733,14 +734,14 @@
     },
     {
      "rank": 6,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
+     "name": "Perrotin New York",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     }
@@ -750,7 +751,7 @@
   {
    "id": "les-wed-lunch-takeout",
    "title": "LES, Wednesday 12:30pm, 45 minutes, food to go",
-   "eligible": 748,
+   "eligible": 1012,
    "top": [
     {
      "rank": 1,
@@ -814,7 +815,7 @@
     },
     {
      "rank": 6,
-     "name": "Ramen Ishida",
+     "name": "El Castillo de Jagua",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -830,7 +831,7 @@
   {
    "id": "les-fri-date",
    "title": "LES, Friday 7:30pm, 90 minutes, a date",
-   "eligible": 1164,
+   "eligible": 1705,
    "top": [
     {
      "rank": 1,
@@ -880,7 +881,7 @@
     },
     {
      "rank": 5,
-     "name": "Excuse My French",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -908,7 +909,7 @@
   {
    "id": "les-fri-dinner",
    "title": "LES, Friday 7pm, 2 hours, dinner",
-   "eligible": 682,
+   "eligible": 952,
    "top": [
     {
      "rank": 1,
@@ -961,7 +962,7 @@
     },
     {
      "rank": 5,
-     "name": "Ramen Ishida",
+     "name": "El Castillo de Jagua",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -989,7 +990,7 @@
   {
    "id": "les-sat-long",
    "title": "LES, Saturday noon, 5 hours",
-   "eligible": 1468,
+   "eligible": 2092,
    "top": [
     {
      "rank": 1,
@@ -1020,11 +1021,12 @@
     },
     {
      "rank": 3,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
+     "name": "Sperone Westwater",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
+      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1073,10 +1075,25 @@
   {
    "id": "les-fri-movies",
    "title": "LES, Friday 7pm, 3 hours, a movie or a show",
-   "eligible": 29,
+   "eligible": 48,
    "top": [
     {
      "rank": 1,
+     "name": "Close Up",
+     "category": "live_music",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 2,
      "name": "Rockwood Music Hall",
      "category": "theatre",
      "status": "check_first",
@@ -1091,7 +1108,22 @@
      ]
     },
     {
-     "rank": 2,
+     "rank": 3,
+     "name": "Lichtundfire",
+     "category": "live_music",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 4,
      "name": "Dixon Place",
      "category": "theatre",
      "status": "check_first",
@@ -1106,7 +1138,22 @@
      ]
     },
     {
-     "rank": 3,
+     "rank": 5,
+     "name": "Pianos",
+     "category": "live_music",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 6,
      "name": "The Metrograph",
      "category": "cinema",
      "status": "check_first",
@@ -1118,48 +1165,6 @@
       "HOURS_UNKNOWN",
       "ADMISSION_UNCONFIRMED"
      ]
-    },
-    {
-     "rank": 4,
-     "name": "Teatro LATEA",
-     "category": "theatre",
-     "status": "check_first",
-     "reasons": [
-      "SHORT_TRAVEL"
-     ],
-     "caveats": [
-      "PROGRAMME_UNLISTED",
-      "HOURS_UNKNOWN",
-      "ADMISSION_UNCONFIRMED"
-     ]
-    },
-    {
-     "rank": 5,
-     "name": "Angelika Film Center",
-     "category": "cinema",
-     "status": "check_first",
-     "reasons": [
-      "LANDMARK"
-     ],
-     "caveats": [
-      "PROGRAMME_UNLISTED",
-      "HOURS_UNKNOWN",
-      "ADMISSION_UNCONFIRMED"
-     ]
-    },
-    {
-     "rank": 6,
-     "name": "Caveat",
-     "category": "theatre",
-     "status": "check_first",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
-     ],
-     "caveats": [
-      "PROGRAMME_UNLISTED",
-      "ADMISSION_UNCONFIRMED"
-     ]
     }
    ],
    "relaxations": []
@@ -1167,7 +1172,7 @@
   {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 48,
+   "eligible": 79,
    "top": [
     {
      "rank": 1,
@@ -1246,7 +1251,7 @@
   {
    "id": "bronxville-sun-family",
    "title": "Bronxville, Sunday noon, 3 hours, family",
-   "eligible": 54,
+   "eligible": 85,
    "top": [
     {
      "rank": 1,
@@ -1302,7 +1307,7 @@
     },
     {
      "rank": 5,
-     "name": "Full Moon Pizza",
+     "name": "Scalini Osteria",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1330,7 +1335,7 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 45,
+   "eligible": 76,
    "top": [
     {
      "rank": 1,
@@ -1395,7 +1400,7 @@
     },
     {
      "rank": 6,
-     "name": "Full Moon Pizza",
+     "name": "Scalini Osteria",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
