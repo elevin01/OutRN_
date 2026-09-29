@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { testDatabaseAvailable, reset } from "@outrn/db";
-import { writeFacts } from "@outrn/facts";
-import { fromLocal } from "@outrn/core";
+import { migrate, testDatabaseAvailable, reset } from "@outrn/db";
+import { materializeSubjects, writeFacts } from "@outrn/facts";
+import { fromLocal, VENUE_FACTS_DOC_SQL } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -105,7 +105,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect((await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE })).raw.renormalized).toBe(0);
   });
 
-  it("a record that disappears from the source is tombstoned and its facts retracted; a changed record supersedes old facts", async () => {
+  it("a record that disappears from the source is tombstoned, its facts retracted and its venue no longer shown; a changed record supersedes old facts", async () => {
     const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { tags: Record<string, string> }[] };
     const idx = fixture.elements.findIndex((e) => e.tags["name"] === "Pitt Street Nightcap");
     const removedIdx = fixture.elements.findIndex((e) => e.tags["name"] === "East River Overlook");
@@ -127,6 +127,9 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
 
     const overlook = await db.query<{ n: string }>(`select count(*) as n from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'East River Overlook'`);
     expect(Number(overlook.rows[0]!.n)).toBe(0);
+    // With no source speaking for it any more, it is no longer shown.
+    const state = await db.query<{ publish_state: string }>(`select publish_state from venues where canonical_name = 'East River Overlook'`);
+    expect(state.rows).toEqual([{ publish_state: "candidate" }]);
   });
 
   it("a replayed capture only tombstones inside the extent it was saved with", async () => {
@@ -378,6 +381,27 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     const lots = await db.query<{ name: string | null }>(`select name from parking_facilities`);
     expect(lots.rows.map((r) => r.name)).toEqual(["Rivington Garage"]);
     await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+  });
+
+  it("every venue's fact document (what a search reads) is its current facts, after any change; re-applying 0018 rebuilds it", async () => {
+    const stale = async () => Number((await db.query<{ n: string }>(`select count(*) as n from venues v where v.publish_state <> 'merged' and v.facts_doc is distinct from ${VENUE_FACTS_DOC_SQL}`)).rows[0]!.n);
+    const withFacts = async () => Number((await db.query<{ n: string }>(`select count(*) as n from venues where publish_state = 'eligible' and facts_doc <> '{}'::jsonb`)).rows[0]!.n);
+    expect(await withFacts()).toBeGreaterThan(20);
+    expect(await stale()).toBe(0);
+    // A founder check, then a re-materialization: the document carries it, with its verification time.
+    const [v] = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Pitt Street Nightcap'`)).rows;
+    const at = new Date("2026-09-27T20:00:00Z");
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: v!.id, attribute: "opening_hours", value: { osm: "Mo-Su 17:00-02:00" }, evidenceClass: "published", sourceId: "founder", evidence: "called", sourceUpdatedAt: at, fetchedAt: at, confidence: 0.9, lineageGroup: "founder" }]);
+    await materializeSubjects(db, "venue", [v!.id], at);
+    const doc = (await db.query<{ facts_doc: Record<string, { value: unknown; sources: string[]; verified_at: string | null }> }>(`select facts_doc from venues where id = $1`, [v!.id])).rows[0]!.facts_doc;
+    expect(doc["opening_hours"]).toMatchObject({ value: { osm: "Mo-Su 17:00-02:00" }, sources: ["founder"] });
+    expect(new Date(doc["opening_hours"]!.verified_at!).toISOString()).toBe(at.toISOString());
+    expect(await stale()).toBe(0);
+    // A database migrated before the column: re-applying the migration backfills every document exactly.
+    await db.query(`update venues set facts_doc = '{}'::jsonb`);
+    expect(await stale()).toBeGreaterThan(20);
+    await migrate(db, undefined, { reapply: ["0018_venue_facts_doc.sql"] });
+    expect(await stale()).toBe(0);
   });
 });
 

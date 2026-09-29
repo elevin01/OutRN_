@@ -91,7 +91,16 @@ changelog.
 - **Weather: done** (`outrn weather refresh`, hourly). The NWS hourly forecast is stored per area.
   Over a plan's first two hours, rain likely (50%+) or cold (38°F or below) sinks outdoor options,
   and a dry, mild forecast marks them "good weather for it". A forecast over 12 hours old is ignored.
-  Next: show the rain as a `conditions` kind on outdoor cards.
+- **Weather on the card: done.** Outdoor places (and outdoor events) carry a `weather` condition
+  from the forecast: rain, cold, hot (90°F or more) or fair, with the hours it covers.
+  - Rain likely is a caveat, so the place is Check first ("70% chance of rain between 2 and 4pm").
+    It is never an exclusion.
+  - Cold or heat goes on the fact line ("down to 34°F", "up to 93°F").
+  - Heat is not "good weather for it".
+  - Indoors, nothing is shown.
+  - No contract change: condition kinds and caveat codes are open-ended.
+  - Next, in the UIs: render `conditions` (crowd, wait and weather). Neither app shows them yet;
+    today the rain reaches users through the caveat, and cold or heat through the fact line.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
@@ -165,8 +174,41 @@ changelog.
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the
-  API's developer documentation, so Overture does not stand in for Foursquare OS Places. Next: offer places
-  OSM lacks as review-gated new venues, from the matches' misses.
+  API's developer documentation, so Overture does not stand in for Foursquare OS Places.
+- **Overture places OSM lacks: done** (the same command; `--no-new-places` turns it off).
+  - **What is added:** only a place that is open, confidently recorded (0.8+), updated in the last
+    two years, and not from a company register alone. Its kind must change faster than mappers keep
+    up: restaurants, cafés, bars, galleries, music venues, clubs, arcades, farmers markets. Not fast
+    food (the founder's call), and not parks, museums or libraries: OSM maps them well, and
+    Overture's extras of those kinds were mostly not places to visit.
+  - **The name** must be a real one: not generic words, an address, a street, a company, a shop, or
+    mostly another script (records misplaced from abroad). It is not a chain's (a built-in list plus
+    every brand OSM tags).
+  - **A way to check first:** a phone number, or a website of its own.
+  - **Duplicates:** anything close is left out rather than risk two cards for one place:
+    - a venue with its name within 500 m;
+    - one sharing a distinctive word within 100 m ("Hunan 3" beside "Hunan III");
+    - one of its family (food, drink, art) within 10 m, most likely the storefront's earlier or
+      later tenant ("Milk & Honey" where Attaboy is now);
+    - anything identity resolution would flag for review.
+  - **The kind:** from Overture's category, or from the name when Overture only says "restaurant"
+    (ice cream or cheesecake is dessert, a bakery a café).
+  - **What it knows:** name, kind, status, website and phone, and the estimates any venue of its
+    kind gets. It has no hours, so it is always Check first.
+  - **Lifecycle:** it loses its claims, and stops being shown, when a later read no longer supports
+    it. A venue OSM later maps at the same spot joins it rather than duplicating it. A venue no
+    source speaks for any more (OSM deleted it, Overture dropped it) is no longer shown.
+  - **Scope:** a live read covers the area's venues from other sources (OSM, a founder) and a
+    margin. Venues made from Overture's places never widen it, so the reads don't creep outward
+    run after run.
+  - **Scale, on the captures:**
+    - LES: +1,130. Left out: 526 as possible duplicates, 125 chains, 212 stale records, 51 with
+      nothing to check them by. Candidates within reach go from 1,682 to 2,402; loading takes about
+      400 ms instead of 230, and ranking about 190 ms.
+    - Bronxville: 63 venues to 94. Its Sunday family search has 85 options instead of 54, and the
+      Ready places still lead.
+  - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
+    them can be Ready. And golden scenarios with Overture's places, once reviewed.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use
@@ -178,8 +220,14 @@ changelog.
 ## Performance budget
 
 - **Target:** under 300 ms engine time per request at 5,000 venues within reach.
-- **Now:** the engine takes about 140 ms warm and 340 ms cold, and loading takes about 310 ms, at 3,850 candidates.
-- **Next:** a set-based candidate query or a precomputed per-venue fact document to cut load time.
+- **Now:** the engine takes about 140 ms warm and 340 ms cold, at 3,850 candidates.
+- **Loading: done.** Each venue's current facts are kept as one document (`venues.facts_doc`),
+  rebuilt by materialization with the same SQL the loader used to run per candidate. On the LES
+  capture with Overture's places (2,402 candidates), loading takes about 125 ms instead of 325; the
+  database part is about 30 ms. A set-based query was tried first: it was slower (2.6 s), because
+  it cannot use the index to find each fact's inputs.
+- **Next:** landmark and brand come from the source records per candidate (about 16 ms at 2,400);
+  they could join the document if loading matters again.
 
 `pnpm --filter @outrn/engine bench <area>` measures it.
 

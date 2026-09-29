@@ -95,9 +95,27 @@ public bucket: the Lower East Side is about 40 MB and half a minute. A venue mat
 same name within 120 m, or a partial name within 40 m of a fitting kind. A match marks it operating,
 closes it only on Overture's own status signal for the same name and kind close by (and asks for a
 check, and never over a founder's newer check), and adds a website or phone number no other source
-has. It creates no venues. Only records whose every source is CDLA-Permissive-2.0 or CC0-1.0 are
-kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data. On the Lower East
-Side it matches 1,140 of 1,691 venues.
+has. Only records whose every source is CDLA-Permissive-2.0 or CC0-1.0 are kept: Foursquare's
+(Apache-2.0) are left out until its NOTICE ships with the data. On the Lower East Side it matches
+1,140 of 1,691 venues.
+
+It also adds the places OSM lacks, as venues of their own, under strict rules:
+- **The kind:** only kinds that change faster than mappers keep up (restaurants, cafés, bars,
+  galleries, music venues, clubs, arcades, farmers markets). Not fast food, and not parks, museums
+  or libraries, which OSM maps well.
+- **The record:** open, confident (0.8+), updated in the last two years, and not from a company
+  register alone.
+- **The name:** a real name (not generic words, an address, a street, a company, a shop, or mostly
+  another script), and not a chain's.
+- **A way to check it:** a phone number, or a website of its own.
+- **Not a duplicate:** nothing nearby may be it. No venue has its name within 500 m, none shares a
+  distinctive word of it within 100 m, and none of its kind stands within 10 m. Identity
+  resolution would not even flag one for review.
+
+Such a venue has no hours, so it is always Check first. It loses its claims when a later read no
+longer supports it, and a venue OSM later maps at the same spot joins it rather than duplicating
+it. The Lower East Side capture adds 1,130 places, leaving out 526 as possible duplicates, 125
+chains and 212 stale records. Bronxville goes from 63 venues to 94. `--no-new-places` turns this off.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.

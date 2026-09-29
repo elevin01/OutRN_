@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
-import { waitFloorMinutes } from "./conditions.js";
+import { conditionsFor, waitFloorMinutes } from "./conditions.js";
+import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { APPEAL_WEIGHTS } from "./score.js";
 import { parkingText, parkStepText } from "./parking.js";
-import type { Candidate, CategoryPolicy, NearbyParking, RequestContext } from "./types.js";
+import type { Candidate, CategoryPolicy, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
 
 /**
  * Correctness suite from the build plan: every case here is a bug that would change a
@@ -1250,6 +1251,62 @@ describe("weather", () => {
     expect(reasons({ temperatureF: 64, precipProbability: 10 })).toContain("SUNSET_WINDOW");
     expect(reasons({ temperatureF: 64, precipProbability: null })).not.toContain("SUNSET_WINDOW");
     expect(reasons({ temperatureF: 64, precipProbability: 70 })).not.toContain("SUNSET_WINDOW");
+  });
+
+  // A forecast as the API loads it: the span it read (2pm to 4pm here) and its warmest hour.
+  const forecast = (temperatureF: number, precipProbability: number | null, highF = temperatureF) => {
+    const x = ctx("2026-10-03 14:00", 120);
+    return { temperatureF, precipProbability, highF, from: x.now, until: new Date(x.now.getTime() + 120 * 60_000) };
+  };
+  const at2pm = (weather: RequestContext["weather"]) => ctx("2026-10-03 14:00", 120, { weather });
+
+  it("rain likely outdoors: the card gives the chance and the hours, and says check first; it never excludes, and indoors nothing changes", () => {
+    const wet = at2pm(forecast(61, 70, 63));
+    const p = one(park, wet);
+    expect(p.class).toBe("check_first");
+    expect(p.unresolved).toContain("RAIN_LIKELY");
+    expect(p.timing!.conditions.find((c) => c.kind === "weather")).toMatchObject({ level: "rain", basis: "forecast", isEstimate: true, chance: 70, text: "70% chance of rain between 2 and 4pm" });
+    expect(caveatNotes(p).find((n) => n.code === "RAIN_LIKELY")).toEqual({ code: "RAIN_LIKELY", text: "70% chance of rain between 2 and 4pm", params: { chance: 70 } });
+    expect(explain(p, TZ).caveat).toBe("Check first: 70% chance of rain between 2 and 4pm");
+    // Indoors: no weather on the card, and still Ready.
+    const c = one(venue({ id: "cafe2", category: "cafe", hours: "Mo-Su 08:00-20:00" }), wet);
+    expect(c.class).toBe("ready");
+    expect(c.timing!.conditions.some((x) => x.kind === "weather")).toBe(false);
+    // Cold as well: the condition says so; the caveat stays the rain.
+    const cold = one(park, at2pm(forecast(36, 80, 39)));
+    expect(cold.timing!.conditions.find((x) => x.kind === "weather")!.text).toBe("80% chance of rain between 2 and 4pm, down to 36°F");
+    expect(caveatNotes(cold).find((n) => n.code === "RAIN_LIKELY")!.text).toBe("80% chance of rain between 2 and 4pm");
+  });
+
+  it("cold and heat outdoors go on the fact line; a dry, mild forecast is a fair condition; an unknown chance of rain says nothing", () => {
+    const cold = one(park, at2pm(forecast(34, 0, 37)));
+    expect(cold.class).toBe("ready");
+    expect(cold.timing!.conditions.find((x) => x.kind === "weather")).toMatchObject({ level: "cold", text: "Cold: down to 34°F between 2 and 4pm" });
+    expect(explain(cold, TZ).factLine).toContain(" · down to 34°F");
+
+    const hot = recommend([park], at2pm(forecast(88, 0, 93)), POLICIES).items[0]!;
+    expect(hot.timing!.conditions.find((x) => x.kind === "weather")).toMatchObject({ level: "hot", text: "Hot: up to 93°F between 2 and 4pm" });
+    expect(explain(hot, TZ).factLine).toContain(" · up to 93°F");
+    expect(hot.reasons).not.toContain("WEATHER_SUITABLE"); // heat is not "good weather for it"
+
+    const fair = recommend([park], at2pm(forecast(62, 10, 66)), POLICIES).items[0]!;
+    expect(fair.timing!.conditions.find((x) => x.kind === "weather")).toMatchObject({ level: "fair", chance: 10, text: "Dry between 2 and 4pm, 62–66°F" });
+    expect(fair.reasons).toContain("WEATHER_SUITABLE");
+    expect(explain(fair, TZ).factLine).not.toMatch(/°F/);
+
+    expect(one(park, at2pm(forecast(64, null, 66))).timing!.conditions.some((x) => x.kind === "weather")).toBe(false);
+    expect(one(park, at2pm(null)).timing!.conditions.some((x) => x.kind === "weather")).toBe(false);
+  });
+
+  it("weather words: hours across noon name both halves, and an outdoor event gets the weather too", () => {
+    const x = ctx("2026-10-03 11:00", 120);
+    const w = { temperatureF: 60, precipProbability: 65, highF: 62, from: x.now, until: new Date(x.now.getTime() + 120 * 60_000) };
+    expect(weatherCondition(park, { ...x, weather: w })!.text).toBe("65% chance of rain between 11am and 1pm");
+    // A forecast without its span still reads, just without the hours.
+    expect(weatherCondition(park, { ...x, weather: { temperatureF: 60, precipProbability: 65 } })!.text).toBe("65% chance of rain");
+    // An event in a park: no crowd or wait (the programme is the crowd), but the weather is the event's too.
+    const event = { ...park, kind: "occurrence" as const };
+    expect(conditionsFor(event, { ...x, weather: w }, {} as TimingBase, {} as Visit).map((c) => c.kind)).toEqual(["weather"]);
   });
 
   it("only a dry, mild forecast says outdoor places are good for it", () => {

@@ -1,4 +1,4 @@
-import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
+import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, VENUE_FACTS_DOC_SQL, type Attribute, type EvidenceClass } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 
 /**
@@ -134,7 +134,18 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
       result.tasksCreated += await updateVenuePublishState(q, subjectId, byAttr, now);
     }
   }
+  if (subjectKind === "venue") await refreshFactDocs(q, subjectIds);
   return result;
+}
+
+/**
+ * Rebuild venues' fact documents (venues.facts_doc) from their current facts: what a search reads
+ * instead of aggregating current_facts per candidate. Materialization calls it for every venue it
+ * touches, so the document never lags the rows it is built from.
+ */
+export async function refreshFactDocs(q: Queryable, venueIds: readonly string[]): Promise<void> {
+  if (!venueIds.length) return;
+  await q.query(`update venues v set facts_doc = ${VENUE_FACTS_DOC_SQL} where v.id = any($1::uuid[])`, [[...venueIds]]);
 }
 
 /** Map data whose closures alone should be confirmed by someone, by display name. */
@@ -167,6 +178,8 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";
     else if (status === "closed_permanently") next = "excluded";
+    // No source speaks for it any more (OSM deleted it, Overture no longer lists it): not shown.
+    else if (!cur.length) next = "candidate";
     else if (v.canonical_name && v.category) next = "eligible";
     else next = "candidate";
   }
