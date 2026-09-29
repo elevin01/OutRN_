@@ -526,6 +526,23 @@ async function coveredElsewhere(q: Queryable, venueIds: string[], now: Date): Pr
   return out;
 }
 
+/**
+ * The box a live read covers: the area's venues that another source gave us (OSM, a founder), and a
+ * margin. Never the venues made from Overture's own places: one added near the edge would widen the
+ * next read, which could add another at its new edge, and so on out of the area. A replay reads
+ * its capture's own box instead.
+ */
+export function liveReadBox(venues: readonly { id: string; lat: number; lon: number }[], madeFromPlaces: ReadonlySet<string>): Bbox {
+  return bboxAround(venues.filter((v) => !madeFromPlaces.has(v.id)), OVERTURE_MATCH_M + 30);
+}
+
+/** The box the next live read of an area would cover (see liveReadBox). */
+export async function overtureReadBox(q: Queryable, areaSlug: string): Promise<Bbox> {
+  const area = await getArea(q, areaSlug);
+  const known = await overtureVenues(q);
+  return liveReadBox(await areaVenues(q, area.id), new Set([...known.values()].filter((v) => v.only).map((v) => v.venueId)));
+}
+
 /** A venue made from an Overture place OSM lacked, and whether Overture is still its only source. */
 interface OvertureVenue {
   venueId: string;
@@ -746,7 +763,9 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
   // A place added as a venue is kept as a source record (source_entities), for its identity links.
   if (opts.newPlaces !== false) await assertSourceAllowed(db, "overture", "retain");
   const venues = await areaVenues(db, area.id);
-  if (!venues.length) throw new Error(`${area.slug} has no venues yet: ingest it from OSM first (outrn ingest osm --area ${area.slug})`);
+  const known = await overtureVenues(db);
+  const madeFromPlaces = new Set([...known.values()].filter((v) => v.only).map((v) => v.venueId));
+  if (!venues.some((v) => !madeFromPlaces.has(v.id))) throw new Error(`${area.slug} has no venues yet: ingest it from OSM first (outrn ingest osm --area ${area.slug})`);
 
   let capture: OvertureCapture;
   let read: OvertureIngestSummary["read"] = null;
@@ -754,7 +773,7 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
     capture = await loadOvertureCapture(opts.fromFile);
     if (opts.release && opts.release !== capture.release) throw new Error(`${opts.fromFile} is release ${capture.release}, not ${opts.release}`);
   } else {
-    const bbox = bboxAround(venues, OVERTURE_MATCH_M + 30);
+    const bbox = liveReadBox(venues, madeFromPlaces);
     log(`reading Overture places in ${bbox.west},${bbox.south},${bbox.east},${bbox.north}`);
     const r = await fetchOverturePlaces({ bbox, categories: OVERTURE_CATEGORIES, ...(opts.release ? { release: opts.release } : {}), log });
     log(`read ${r.rowGroups.read} of ${r.rowGroups.total} row groups, ${(r.bytes / 1_048_576).toFixed(0)} MB; ${r.places.length} places kept (${r.skipped.category} other kinds, ${r.skipped.license} other or missing licenses)`);
@@ -768,8 +787,6 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
   const runId = await startRun(db, { sourceId: "overture", areaId: area.id, kind: opts.fromFile ? "replay" : "overture_places", params: { release: capture.release, bbox: capture.bbox, from_file: opts.fromFile ?? null } });
   try {
     const index = new PlaceIndex(capture.places);
-    const known = await overtureVenues(db);
-    const madeFromPlaces = new Set([...known.values()].filter((v) => v.only).map((v) => v.venueId));
     // Venues the capture covers entirely; the rest keep whatever an earlier run said. A venue made from
     // an Overture place is the new-place step's: matching it to its own place would retract its name.
     const considered = venues.filter((v) => !madeFromPlaces.has(v.id) && inside(capture.bbox, v, OVERTURE_MATCH_M));

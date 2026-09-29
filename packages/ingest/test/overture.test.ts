@@ -6,7 +6,7 @@ import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import type { Bbox, OvertureCapture, OverturePlace } from "@outrn/sources";
 import { setFounderFact } from "../src/founder.js";
-import { ingestOverture } from "../src/overture.js";
+import { ingestOverture, overtureReadBox } from "../src/overture.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /** Overture places against the synthetic LES venues, on a real Postgres + PostGIS (outrn_test, reset per file). */
@@ -305,5 +305,16 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     const s = await ingestOverture(db, { areaSlug: "les", newPlaces: false, fromFile: capture("no-new", [GRAND, place({ id: "ovt-new-kafana", name: "Kafana", lat: 40.7148, lon: -73.9902, phones: ["2125550111"] })]) });
     expect(s.newPlaces).toBeNull();
     expect(await venuesNamed("Kafana")).toEqual([]);
+  });
+
+  it("a place added at the edge of a live read never widens the next one", async () => {
+    const box = await overtureReadBox(db, "les");
+    // In the box's north-east corner, far from every venue: added.
+    const edge = place({ id: "ovt-new-edge", name: "Edge Lantern Bar", category: "bar", lat: box.north - 1e-5, lon: box.east - 1e-5, phones: ["2125550188"] });
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: capture("edge", [edge], box) });
+    expect(s.newPlaces).toMatchObject({ added: 1 });
+    expect(await venuesNamed("Edge Lantern Bar")).toMatchObject([{ publish_state: "eligible" }]);
+    // The next live read covers the same box: Overture's own venues are not where it reads.
+    expect(await overtureReadBox(db, "les")).toEqual(box);
   });
 });

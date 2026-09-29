@@ -184,6 +184,9 @@ changelog.
   - **Lifecycle:** it loses its claims, and stops being shown, when a later read no longer supports
     it. A venue OSM later maps at the same spot joins it rather than duplicating it. A venue no
     source speaks for any more (OSM deleted it, Overture dropped it) is no longer shown.
+  - **Scope:** a live read covers the area's venues from other sources (OSM, a founder) and a
+    margin. Venues made from Overture's places never widen it, so the reads don't creep outward
+    run after run.
   - **Scale, on the captures:**
     - LES: +1,130. Left out: 526 as possible duplicates, 125 chains, 212 stale records, 51 with
       nothing to check them by. Candidates within reach go from 1,682 to 2,402; loading takes about

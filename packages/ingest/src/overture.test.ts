@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { matchKey } from "@outrn/core";
 import type { OverturePlace } from "@outrn/sources";
-import { bboxAround, chainName, claimsFor, domainNamesVenue, genericName, KNOWN_CHAINS, kindEstimates, matchVenue, mostlyLatin, namesake, newPlaceGate, placeFacts, PlaceIndex, venuePhone, venueWebsite, type MatchVenue, type OvertureMatch } from "./overture.js";
+import { bboxAround, chainName, claimsFor, liveReadBox, domainNamesVenue, genericName, KNOWN_CHAINS, kindEstimates, matchVenue, mostlyLatin, namesake, newPlaceGate, placeFacts, PlaceIndex, venuePhone, venueWebsite, type MatchVenue, type OvertureMatch } from "./overture.js";
 
 const AT = { lat: 40.7205, lon: -73.9881 };
 /** A point `m` metres north of AT. */
@@ -172,6 +172,31 @@ describe("contact details", () => {
     expect(venuePhone("+44 20 7946 0958")).toBe("+442079460958");
     expect(venuePhone("555-0100")).toBeNull();
     expect(venuePhone("0125550100")).toBeNull();
+  });
+});
+
+describe("the box a live read covers", () => {
+  it("is the venues other sources gave us, and a margin: venues made from Overture's places never widen it", () => {
+    const supply = [
+      { id: "a", lat: 40.72, lon: -74.0 },
+      { id: "b", lat: 40.73, lon: -73.99 },
+    ];
+    const box = liveReadBox(supply, new Set());
+    expect(box).toEqual(bboxAround(supply, 150));
+    // Round after round, a place added at the very edge of the last read is a venue of Overture's own:
+    // the next read's box stays where it was.
+    const venues = [...supply];
+    const made = new Set<string>();
+    let b = box;
+    for (let i = 0; i < 5; i++) {
+      const edge = [{ id: `ne${i}`, lat: b.north - 1e-6, lon: b.east - 1e-6 }, { id: `sw${i}`, lat: b.south + 1e-6, lon: b.west + 1e-6 }];
+      venues.push(...edge);
+      for (const e of edge) made.add(e.id);
+      b = liveReadBox(venues, made);
+      expect(b, `round ${i + 1}`).toEqual(box);
+    }
+    // Without the rule, the same rounds walk the box outward.
+    expect(bboxAround(venues, 150).north).toBeGreaterThan(box.north);
   });
 });
 
