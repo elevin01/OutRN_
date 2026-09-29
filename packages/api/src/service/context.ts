@@ -41,8 +41,9 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   const area = await findArea(q, request.areaId);
   if (!area) throw invalid("areaId", `unknown area "${request.areaId}"`);
   if (!isServedArea(area) && !overrides.includeUnlaunched) throw invalid("areaId", `"${request.areaId}" is not open yet`);
-  if (request.mood !== undefined && !(request.mood in MOODS)) throw invalid("mood", `unknown mood "${request.mood}"`);
-  if (request.company !== undefined && !(request.company in COMPANIES)) throw invalid("company", `unknown company "${request.company}"`);
+  // The table's own keys only: `in` also finds "constructor", "toString", "__proto__"…
+  if (request.mood !== undefined && !Object.hasOwn(MOODS, request.mood)) throw invalid("mood", `unknown mood "${request.mood}"`);
+  if (request.company !== undefined && !Object.hasOwn(COMPANIES, request.company)) throw invalid("company", `unknown company "${request.company}"`);
   const categories = request.categories ?? [];
   categories.forEach((c, i) => {
     if (!(REQUESTABLE_CATEGORIES as readonly string[]).includes(c)) throw invalid(`categories.${i}`, `unknown category "${c}"`);
