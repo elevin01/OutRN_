@@ -18,6 +18,10 @@ import fx_recommendations_family_1 from "./recommendations/family-1.json" with {
 import fx_recommendations_family_2 from "./recommendations/family-2.json" with { type: "json" };
 import fx_recommendations_cuisine_1 from "./recommendations/cuisine-1.json" with { type: "json" };
 import fx_recommendations_cuisine_2 from "./recommendations/cuisine-2.json" with { type: "json" };
+import fx_recommendations_outside_1 from "./recommendations/outside-1.json" with { type: "json" };
+import fx_recommendations_outside_2 from "./recommendations/outside-2.json" with { type: "json" };
+import fx_recommendations_outside_3 from "./recommendations/outside-3.json" with { type: "json" };
+import fx_recommendations_outside_4 from "./recommendations/outside-4.json" with { type: "json" };
 import fx_recommendations_events_1 from "./recommendations/events-1.json" with { type: "json" };
 import fx_recommendations_fewer_1 from "./recommendations/fewer-1.json" with { type: "json" };
 import fx_recommendations_none_1 from "./recommendations/none-1.json" with { type: "json" };
@@ -60,10 +64,13 @@ import fx_places_00000000_0000_4000_8000_000000000028 from "./places/00000000-00
 import fx_places_00000000_0000_4000_8000_000000000029 from "./places/00000000-0000-4000-8000-000000000029.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002a from "./places/00000000-0000-4000-8000-00000000002a.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002b from "./places/00000000-0000-4000-8000-00000000002b.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000002d from "./places/00000000-0000-4000-8000-00000000002d.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002e from "./places/00000000-0000-4000-8000-00000000002e.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002f from "./places/00000000-0000-4000-8000-00000000002f.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_000000000031 from "./places/00000000-0000-4000-8000-000000000031.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000032 from "./places/00000000-0000-4000-8000-000000000032.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000033 from "./places/00000000-0000-4000-8000-000000000033.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000035 from "./places/00000000-0000-4000-8000-000000000035.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000036 from "./places/00000000-0000-4000-8000-000000000036.json" with { type: "json" };
 import fx_ops_evaluate from "./ops/evaluate.json" with { type: "json" };
 import fx_ops_runs from "./ops/runs.json" with { type: "json" };
 import fx_errors_cursor_expired from "./errors/cursor-expired.json" with { type: "json" };
@@ -103,6 +110,7 @@ export const scenarios: Scenario[] = [
   { id: "bars", area: {"id":"mock-bars","name":"Mock · bars, date night","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Bars on a date", description: "Narrowed to bars. One has hours confirmed by a call; another's place page shows a stale check and disagreeing sources.", request: {"areaId":"mock-bars","windowMinutes":180,"company":"date","categories":["bar"]}, pages: [fx_recommendations_bars_1, fx_recommendations_bars_2, fx_recommendations_bars_3, fx_recommendations_bars_4] as unknown as RecommendationResponse[] },
   { id: "family", area: {"id":"mock-family","name":"Mock · family, age limits","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Family, late, bars", description: "A family with no ages given: a bar that is usually 21+ is Check first with a required age caveat.", request: {"areaId":"mock-family","windowMinutes":120,"company":"family","categories":["bar"]}, pages: [fx_recommendations_family_1, fx_recommendations_family_2] as unknown as RecommendationResponse[] },
   { id: "cuisine", area: {"id":"mock-cuisine","name":"Mock · a cuisine","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Italian tonight", description: "Asking for a cuisine: only food places serving it, pizza included in Italian. Each card lists `cuisines` and its summary leads with one.", request: {"areaId":"mock-cuisine","windowMinutes":120,"cuisines":["italian"]}, pages: [fx_recommendations_cuisine_1, fx_recommendations_cuisine_2] as unknown as RecommendationResponse[] },
+  { id: "outside", area: {"id":"mock-outside","name":"Mock · must-haves","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Tables outside tonight", description: "Asking for must-haves (`features`): only places whose record says they have tables outside. Each card lists its `features`.", request: {"areaId":"mock-outside","windowMinutes":120,"features":["outdoor_seating"]}, pages: [fx_recommendations_outside_1, fx_recommendations_outside_2, fx_recommendations_outside_3, fx_recommendations_outside_4] as unknown as RecommendationResponse[] },
   { id: "events", area: {"id":"mock-events","name":"Mock · a scheduled event","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Theatre tonight", description: "A scheduled performance: kind \"event\" with start and end times.", request: {"areaId":"mock-events","windowMinutes":240,"categories":["theatre"]}, pages: [fx_recommendations_events_1] as unknown as RecommendationResponse[] },
   { id: "fewer", area: {"id":"mock-fewer","name":"Mock · fewer than three","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Free outdoors, 1 hour, 2:30am", description: "Fewer than three qualify: `insufficient` explains and offers relaxations. Never pad.", request: {"areaId":"mock-fewer","windowMinutes":60,"budget":{"kind":"free"},"categories":["park","viewpoint","waterfront"]}, pages: [fx_recommendations_fewer_1] as unknown as RecommendationResponse[] },
   { id: "none", area: {"id":"mock-none","name":"Mock · nothing fits","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Nothing fits", description: "Zero items, with relaxations.", request: {"areaId":"mock-none","windowMinutes":30,"budget":{"kind":"free"},"categories":["museum"]}, pages: [fx_recommendations_none_1] as unknown as RecommendationResponse[] },
@@ -150,10 +158,13 @@ export const places: Record<string, PlaceDetails> = {
   "00000000-0000-4000-8000-000000000029": fx_places_00000000_0000_4000_8000_000000000029 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002a": fx_places_00000000_0000_4000_8000_00000000002a as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002b": fx_places_00000000_0000_4000_8000_00000000002b as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000002d": fx_places_00000000_0000_4000_8000_00000000002d as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002e": fx_places_00000000_0000_4000_8000_00000000002e as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002f": fx_places_00000000_0000_4000_8000_00000000002f as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-000000000031": fx_places_00000000_0000_4000_8000_000000000031 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000032": fx_places_00000000_0000_4000_8000_000000000032 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000033": fx_places_00000000_0000_4000_8000_000000000033 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000035": fx_places_00000000_0000_4000_8000_000000000035 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000036": fx_places_00000000_0000_4000_8000_000000000036 as unknown as PlaceDetails,
 };
 
 export const ops = { evaluate: fx_ops_evaluate as unknown as OpsRunDetail, runs: fx_ops_runs as unknown as OpsRunList };

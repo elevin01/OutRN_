@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T23:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "bronxville",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": null,
     "cuisines": [],
+    "features": [],
     "categories": [],
     "travelMode": "drive",
     "visitStyle": "dine_in",
@@ -47,6 +49,8 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-000000000018",
       "copy": {
         "action": "Go now",
@@ -201,6 +205,13 @@
           "label": "Mexican"
         }
       ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000019",
       "copy": {
         "action": "Go now",
@@ -329,6 +340,8 @@
       },
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-00000000001a",
       "copy": {
         "action": "Check first",

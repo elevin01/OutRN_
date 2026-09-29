@@ -1,18 +1,18 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000001",
+  "requestId": "00000000-0000-4000-8000-00000000002c",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
   "area": {
-    "id": "les",
-    "name": "Lower East Side (test point)",
+    "id": "mock-outside",
+    "name": "Mock · must-haves",
     "timezone": "America/New_York"
   },
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
     "diets": [],
-    "areaId": "les",
+    "areaId": "mock-outside",
     "backBy": null,
     "budget": {
       "kind": "any"
@@ -23,13 +23,15 @@
     },
     "company": null,
     "cuisines": [],
-    "features": [],
+    "features": [
+      "outdoor_seating"
+    ],
     "categories": [],
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
-    "windowMinutes": 180,
+    "windowMinutes": 120,
     "originIsDefault": true,
     "travelModeIsDefault": true
   },
@@ -38,9 +40,145 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "moderate",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "vietnamese",
+          "label": "Vietnamese"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        },
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-00000000002d",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Vietnamese · ~18 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Ridge Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:58:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:58pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:58:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 92
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 9547",
+        "websiteUrl": "https://ridgekitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000002d",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 92
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.72504,
+        "lon": -73.997603
+      },
+      "placeName": "Ridge Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday evenings",
+          "basis": "typical",
+          "level": "quiet",
           "minutes": null,
           "isEstimate": true,
           "reportedAt": null
@@ -50,16 +188,21 @@
       "photos": [],
       "cuisines": [],
       "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-00000000000b",
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-00000000002e",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late."
+        "summary": "~22 min walk · takes about 35 min · until 8pm · price unknown",
+        "sentence": "Plenty of time."
       },
       "kind": "venue",
-      "name": "Delancey Tavern",
+      "name": "Ridge Coffee",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -68,15 +211,15 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:51:00.000Z",
+          "at": "2026-10-03T22:57:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:51pm",
+          "text": "Arrive around 6:57pm",
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:30:00.000Z",
+          "at": "2026-10-04T00:00:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
+          "text": "Wrap up by 8pm, when it closes",
           "isEstimate": false
         }
       ],
@@ -87,64 +230,53 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Counter service",
+          "style": "counter",
           "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
+          "minMinutes": 30,
+          "typicalMinutes": 35
         },
         "travel": {
           "mode": "walk",
-          "minutes": 16,
+          "minutes": 22,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:51:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 159
+        "arriveAt": "2026-10-03T22:57:00.000Z",
+        "closesAt": "2026-10-04T00:00:00.000Z",
+        "finishBy": "2026-10-04T00:00:00.000Z",
+        "usefulMinutes": 63
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://delanceytavern.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
+        "phone": "+1 212 555 1346",
+        "websiteUrl": "https://ridgecoffee.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000b",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 159
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
+            "usefulMinutes": 63
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
+      "ageLimit": null,
       "category": {
-        "id": "bar",
-        "label": "Bar"
+        "id": "cafe",
+        "label": "Cafe"
       },
       "location": {
-        "lat": 40.716973,
-        "lon": -73.998882
+        "lat": 40.728686,
+        "lon": -73.980324
       },
-      "placeName": "Delancey Tavern",
+      "placeName": "Ridge Coffee",
       "callToAction": "go"
     },
     {
@@ -157,26 +289,14 @@
           "minutes": null,
           "isEstimate": true,
           "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
       "cuisines": [
         {
-          "id": "japanese",
-          "label": "Japanese"
+          "id": "korean",
+          "label": "Korean"
         }
       ],
       "diets": [],
@@ -186,15 +306,15 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-00000000000c",
+      "id": "00000000-0000-4000-8000-00000000002f",
       "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Japanese · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
+        "action": "Book",
+        "caveat": "Check first: admission not confirmed",
+        "summary": "Korean · ~17 min walk · takes about 1h20 · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Stanton Kitchen",
+      "name": "Grand Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -203,23 +323,23 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:53:00.000Z",
+          "at": "2026-10-03T22:57:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:53pm",
+          "text": "Arrive around 6:57pm",
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:20:00.000Z",
+          "at": "2026-10-04T00:30:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
         }
       ],
       "event": null,
       "price": {
         "kind": "unknown"
       },
-      "status": "ready",
+      "status": "check_first",
       "timing": {
         "visit": {
           "label": "Sit-down meal",
@@ -230,30 +350,45 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 13,
+          "minutes": 17,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
+        "arriveAt": "2026-10-03T22:57:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 93
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 7138",
-        "websiteUrl": "https://stantonkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking"
+        "phone": "+1 212 555 5266",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking"
       },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "caveats": [
+        {
+          "code": "ADMISSION_UNCONFIRMED",
+          "text": "admission not confirmed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-00000000002f",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 147
+            "usefulMinutes": 93
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
         }
@@ -265,141 +400,21 @@
         "label": "Restaurant"
       },
       "location": {
-        "lat": 40.721023,
-        "lon": -73.979262
+        "lat": 40.726906,
+        "lon": -73.992709
       },
-      "placeName": "Stanton Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "pizza",
-          "label": "Pizza"
-        }
-      ],
-      "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-00000000000d",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Pizza · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Ridge Suffolk Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:53:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:53pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:20:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 5718",
-        "websiteUrl": "https://ridgesuffolkkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 147
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.712091,
-        "lon": -73.990301
-      },
-      "placeName": "Ridge Suffolk Kitchen",
-      "callToAction": "go"
+      "placeName": "Grand Kitchen",
+      "callToAction": "book"
     }
   ],
   "page": {
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [
-    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

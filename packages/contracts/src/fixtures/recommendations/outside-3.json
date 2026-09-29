@@ -1,18 +1,18 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000001",
+  "requestId": "00000000-0000-4000-8000-00000000002c",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
   "area": {
-    "id": "les",
-    "name": "Lower East Side (test point)",
+    "id": "mock-outside",
+    "name": "Mock · must-haves",
     "timezone": "America/New_York"
   },
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
     "diets": [],
-    "areaId": "les",
+    "areaId": "mock-outside",
     "backBy": null,
     "budget": {
       "kind": "any"
@@ -23,13 +23,15 @@
     },
     "company": null,
     "cuisines": [],
-    "features": [],
+    "features": [
+      "outdoor_seating"
+    ],
     "categories": [],
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
-    "windowMinutes": 180,
+    "windowMinutes": 120,
     "originIsDefault": true,
     "travelModeIsDefault": true
   },
@@ -50,16 +52,21 @@
       "photos": [],
       "cuisines": [],
       "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-00000000000b",
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-00000000001e",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "summary": "~17 min walk · takes about 1h · until 1am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Delancey Tavern",
+      "name": "Hester Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -68,15 +75,15 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:51:00.000Z",
+          "at": "2026-10-03T22:52:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:51pm",
+          "text": "Arrive around 6:52pm",
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:30:00.000Z",
+          "at": "2026-10-04T00:30:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
+          "text": "Wrap up by 8:30pm",
           "isEstimate": false
         }
       ],
@@ -95,30 +102,148 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 16,
+          "minutes": 17,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:51:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 159
+        "arriveAt": "2026-10-03T22:52:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 98
       },
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": "https://delanceytavern.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
+        "websiteUrl": "https://hesterbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000b",
+      "placeId": "00000000-0000-4000-8000-00000000001e",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 159
+            "usefulMinutes": 98
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T05:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.727329,
+        "lon": -73.986761
+      },
+      "placeName": "Hester Bar",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-00000000001f",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~18 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Norfolk Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:53:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:53pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:53:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 97
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://norfolkbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000001f",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 97
           },
           "required": false
         },
@@ -141,44 +266,27 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.716973,
-        "lon": -73.998882
+        "lat": 40.726726,
+        "lon": -73.99412
       },
-      "placeName": "Delancey Tavern",
+      "placeName": "Norfolk Bar",
       "callToAction": "go"
     },
     {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
           "basis": "typical",
-          "level": "busy",
+          "level": "moderate",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [
-        {
-          "id": "japanese",
-          "label": "Japanese"
-        }
-      ],
+      "cuisines": [],
       "diets": [],
       "features": [
         {
@@ -186,15 +294,15 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-00000000000c",
+      "id": "00000000-0000-4000-8000-000000000023",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "Japanese · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
+        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Stanton Kitchen",
+      "name": "Stanton Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -203,16 +311,16 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:53:00.000Z",
+          "at": "2026-10-03T22:58:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:53pm",
+          "text": "Arrive around 6:58pm",
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:20:00.000Z",
+          "at": "2026-10-04T00:30:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
         }
       ],
       "event": null,
@@ -222,184 +330,75 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
+          "label": "Visit",
+          "style": "visit",
           "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
+          "minMinutes": 45,
+          "typicalMinutes": 60
         },
         "travel": {
           "mode": "walk",
-          "minutes": 13,
+          "minutes": 23,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
+        "arriveAt": "2026-10-03T22:58:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 92
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 7138",
-        "websiteUrl": "https://stantonkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking"
+        "phone": null,
+        "websiteUrl": "https://stantonbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "placeId": "00000000-0000-4000-8000-000000000023",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 147
+            "usefulMinutes": 92
           },
           "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.721023,
-        "lon": -73.979262
-      },
-      "placeName": "Stanton Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
         },
         {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "pizza",
-          "label": "Pizza"
-        }
-      ],
-      "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-00000000000d",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Pizza · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Ridge Suffolk Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:53:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:53pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:20:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 5718",
-        "websiteUrl": "https://ridgesuffolkkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
+          "code": "OPEN_LATE",
+          "text": "open late",
           "params": {
-            "usefulMinutes": 147
+            "closesAt": "2026-10-04T07:00:00.000Z"
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
+        "id": "bar",
+        "label": "Bar"
       },
       "location": {
-        "lat": 40.712091,
-        "lon": -73.990301
+        "lat": 40.730851,
+        "lon": -73.986194
       },
-      "placeName": "Ridge Suffolk Kitchen",
+      "placeName": "Stanton Bar",
       "callToAction": "go"
     }
   ],
   "page": {
-    "offset": 9,
+    "offset": 6,
     "size": 3,
-    "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwibyI6Nn0"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [
-    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

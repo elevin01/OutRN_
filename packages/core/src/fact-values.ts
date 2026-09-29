@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CATEGORIES } from "./categories.js";
+import { DIET_LEVELS, type DIETS } from "./diets.js";
 import type { Attribute } from "./evidence.js";
 import { isPublicWebHost } from "./urls.js";
 
@@ -47,6 +48,8 @@ const price = z
   .refine((p) => p.min === undefined || p.max === undefined || p.min <= p.max, "price min is above max")
   .refine((p) => p.free === true || p.unknown === true || p.min !== undefined || p.max !== undefined, "price needs free, unknown, or an amount");
 
+const dietLevel = z.enum(DIET_LEVELS).optional();
+
 const hours = z.union([
   z.object({ osm: z.string().trim().min(1).max(1000) }).strict(),
   z.object({ weekly: z.array(weeklyInterval).min(1).max(100) }).strict(),
@@ -57,6 +60,13 @@ export const FACT_VALUE_SCHEMAS = {
   category: z.object({ value: z.enum(CATEGORIES) }).strict(),
   opening_hours: hours,
   kitchen_hours: hours,
+  happy_hours: hours,
+  outdoor_seating: oneOf(["yes", "no"]),
+  diets: z
+    .object({ vegetarian: dietLevel, vegan: dietLevel, gluten_free: dietLevel, halal: dietLevel, kosher: dietLevel } satisfies Record<keyof typeof DIETS, unknown>)
+    .strict()
+    .refine((d) => Object.keys(d).length > 0, "diets needs at least one diet"),
+  internet_access: oneOf(["wlan", "yes", "wired", "terminal", "no"]),
   last_entry_offset: minutes,
   admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "members_only", "unknown"]) }).strict(),
   admission_status: z.object({ status: z.enum(["confirmed", "unconfirmed", "sold_out", "cancelled"]) }).strict(),

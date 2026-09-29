@@ -4,6 +4,7 @@ import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
 import { dayPart, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
+import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -113,6 +114,16 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
       appeal += 0.15;
       extra.push("SUNSET_WINDOW");
     }
+  }
+  // What the place offers at this hour: happy hour (never offered to a party with a minor), and tables
+  // outside when the weather suits them.
+  if (!minorInParty(ctx) && happyHourAt(c, t.arrival, t.latestFinish)) {
+    appeal += OFFERS.appeal;
+    extra.push("HAPPY_HOUR");
+  }
+  if (outdoorSeatingWeather(c, ctx)) {
+    appeal += OFFERS.appeal;
+    extra.push("OUTDOOR_SEATING");
   }
   if (outdoor) appeal += (rainy ? WEATHER_APPEAL.rainOutdoor : 0) + (cold ? WEATHER_APPEAL.coldOutdoor : 0);
   else if (rainy) appeal += WEATHER_APPEAL.rainIndoor;

@@ -1,4 +1,4 @@
-import { ACTIVITY_OF_CATEGORY, cuisineGroups } from "@outrn/core";
+import { ACTIVITY_OF_CATEGORY, cuisineGroups, ownValue } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
 import { compareEvaluations, merit } from "./score.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
@@ -67,7 +67,7 @@ const PASSES: Pass[] = [
 /** Every eligible candidate in display order. Pages ("More options") are slices of this. */
 export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluation[] {
   const eligible = all.filter((e) => e.class !== "ineligible").sort(compareEvaluations);
-  const narrowed = Boolean(ctx.categories?.length || ctx.cuisines?.length);
+  const narrowed = Boolean(ctx.categories?.length || ctx.cuisines?.length || ctx.diets?.length);
   const ordered: Evaluation[] = [];
   const taken = new Set<Evaluation>();
   const usedVenues = new Set<string>();
@@ -164,6 +164,9 @@ export function selectShortlist(all: Evaluation[], ctx: RequestContext, opts: { 
   };
 }
 
+/** Must-haves in a relaxation's words: "without outdoor seating or Wi-Fi". */
+const FEATURE_WORDS: Readonly<Record<string, string>> = { outdoor_seating: "outdoor seating", wifi: "Wi-Fi" };
+
 /** Which single change would admit the most currently-ineligible candidates? Offer that, specifically. */
 export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[] {
   const counts = new Map<string, number>();
@@ -181,12 +184,15 @@ export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[
   add(["CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED"], "different_time", "try a different time");
   add("OVER_BUDGET", "higher_budget", "raise the budget");
   add("NOT_FREE", "include_paid", "include paid options");
-  // A cuisine search without categories asked for food: widening means any cuisine, not other kinds of place.
-  if (ctx.categories?.length || !ctx.cuisines?.length) add("NOT_REQUESTED", "more_categories", "widen the categories");
+  // A cuisine or diet search without categories asked for food: widening means any cuisine, not other kinds of place.
+  if (ctx.categories?.length || !(ctx.cuisines?.length || ctx.diets?.length)) add("NOT_REQUESTED", "more_categories", "widen the categories");
   add("OTHER_CUISINE", "any_cuisine", "try any cuisine");
+  // A must-have the user can live without; a diet is a need, and is never offered.
+  const optional = (ctx.features ?? []).map((f) => ownValue(FEATURE_WORDS, f)).filter((w): w is string => Boolean(w));
+  if (optional.length) add("FEATURE_NOT_KNOWN", "without_features", `without ${optional.join(" or ")}`);
   add("TAKEOUT_ONLY", "takeout", "get food to go");
   add("NO_TAKEOUT", "dine_in", "sit down to eat");
   add("EVENT_ENDS_AFTER_DEADLINE", "stay_later", "stay out later");
-  // Accessibility and dismissals are never offered as relaxations.
+  // Accessibility, diets and dismissals are never offered as relaxations.
   return out.slice(0, 3);
 }

@@ -1,5 +1,5 @@
 import type { AgeLimit, Evidence, NearbyParking, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
-import { cuisineLabel, isMenuUrlFor, isPublicWebHost } from "@outrn/core";
+import { cuisineLabel, DIETS, dietLabel, FEATURES, isMenuUrlFor, isPublicWebHost, type Diet, type DietLevels, type Feature } from "@outrn/core";
 import { parkingText, type NearbyParking as EngineParking } from "@outrn/engine";
 import { labelOf } from "../config.js";
 
@@ -44,6 +44,19 @@ export function cuisineOptions(slugs: readonly string[]): Option[] {
     if (out.length === 3) break;
   }
   return out;
+}
+
+/** The diets a place serves, in DIETS order: "Vegan" for a vegan place, "Vegan options" where there are some. */
+export function dietOptions(levels: DietLevels): Option[] {
+  return (Object.keys(DIETS) as Diet[]).flatMap((id) => {
+    const label = dietLabel(id, levels[id]);
+    return label ? [{ id, label }] : [];
+  });
+}
+
+/** The must-haves a place has, in FEATURES order. */
+export function featureOptions(has: (feature: Feature) => boolean): Option[] {
+  return (Object.keys(FEATURES) as Feature[]).filter(has).map((id) => ({ id, label: FEATURES[id] }));
 }
 
 export function textFrom(value: unknown): string | null {
