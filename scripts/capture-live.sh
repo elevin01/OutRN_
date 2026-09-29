@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # Records real data for every area (or the ones named) into fixtures/live, for `pnpm real` and the
-# golden scenarios to replay offline. Needs network access: overpass-api.de for places, and
-# www.wikidata.org + commons.wikimedia.org for photos.
+# golden scenarios to replay offline. Needs network access: overpass-api.de for places,
+# www.wikidata.org + commons.wikimedia.org for photos, and overturemaps-us-west-2.s3.us-west-2.amazonaws.com
+# for Overture Maps places (whether each place still operates, websites, phones).
 #
 #   pnpm capture                    # every area
 #   pnpm capture yonkers white_plains
 #   CAPTURE_PAUSE_SECONDS=30 pnpm capture   # seconds between areas (default 10)
 #
 # Each area is recorded into a staging directory next to fixtures/live and replaces
-# fixtures/live/<area>.json and <area>-photos.json only once every step for it has succeeded, so a
-# failed capture leaves the previous pair exactly as it was. The database is the script's own
+# fixtures/live/<area>.json, <area>-photos.json and <area>-overture.json only once every step for it
+# has succeeded, so a failed capture leaves the previous set exactly as it was. The database is the script's own
 # (outrn_capture on the local cluster, recreated each run). It runs on macOS's Bash 3.2.
 #
-# Captures are OpenStreetMap data (ODbL, © OpenStreetMap contributors) and Wikimedia metadata.
+# Captures are OpenStreetMap data (ODbL, © OpenStreetMap contributors), Wikimedia metadata, and
+# Overture Maps places (CDLA-Permissive-2.0, a few also CC0-1.0; Foursquare's Apache-2.0 records are left out).
 # fixtures/live is gitignored: add a capture on purpose (git add -f) to share it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -103,6 +105,8 @@ for slug in "${slugs[@]}"; do
   stage="$(mktemp -d "${ROOT}/fixtures/live/.staging.XXXXXX")"
   new_osm="${stage}/${slug}.json"
   new_photos="${stage}/${slug}-photos.json"
+  overture="fixtures/live/${slug}-overture.json"
+  new_overture="${stage}/${slug}-overture.json"
 
   problem=""
   if ! pnpm -s outrn ingest osm --area "$slug" --save "$new_osm"; then
@@ -117,6 +121,15 @@ for slug in "${slugs[@]}"; do
     fi
   fi
 
+  # Overture reads the venues the places step just stored: only after it succeeded.
+  if [ -z "$problem" ]; then
+    if ! pnpm -s outrn ingest overture --area "$slug" --save "$new_overture"; then
+      problem="overture"
+    elif [ ! -s "$new_overture" ]; then
+      problem="overture: nothing saved"
+    fi
+  fi
+
   if [ -n "$problem" ]; then
     echo "   ${slug} (${problem}) failed: kept the previous capture as it was" >&2
     failed="${failed:+${failed}, }${slug} (${problem})"
@@ -125,11 +138,12 @@ for slug in "${slugs[@]}"; do
     if $photos_supported; then
       mv -f "$new_photos" "$photos"
     fi
+    mv -f "$new_overture" "$overture"
     mv -f "$new_osm" "$osm"
     if $photos_supported; then
-      echo "   saved ${osm} and ${photos}"
+      echo "   saved ${osm}, ${photos} and ${overture}"
     else
-      echo "   saved ${osm}"
+      echo "   saved ${osm} and ${overture}"
       if [ -f "$photos" ]; then
         echo "   note: ${photos} is from an earlier capture (this checkout has no \`outrn ingest photos\`)"
       fi

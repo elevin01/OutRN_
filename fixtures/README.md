@@ -16,6 +16,20 @@ To capture a **real** response from a machine with network access:
 them when redistributed). The committed `les.json` and `bronxville.json` (OSM base 2026-09-27) are
 what the golden ranking scenarios run on; other captures stay local unless added on purpose.
 
+`live/<area>.json` and `live/<area>-overture.json` are **real** captures, kept on purpose (`git add -f`)
+so `pnpm real` and the golden scenarios run offline:
+
+- `<area>.json`: the Overpass response (OpenStreetMap, ODbL, © OpenStreetMap contributors).
+- `<area>-overture.json`: the Overture Maps places near the area's venues (`outrn ingest overture --save`),
+  release and bounding box included. Overture Maps Foundation data under the Community Data License
+  Agreement – Permissive, Version 2.0 ([CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/)); a few
+  places also draw on AllThePlaces records (CC0-1.0). Each place lists its sources' licenses, and only places
+  whose every source is CDLA-Permissive-2.0 or CC0-1.0 are kept: **Foursquare's records (Apache-2.0) are
+  excluded**, as is any record without a license. Credit "Overture Maps Foundation" where it is shown.
+
+`overture/places-mini.parquet` is an invented Overture-shaped file (two row groups, zstd) for the
+parquet reader's tests; `overture/make-mini.py` writes it (pyarrow).
+
 `nws/les-hourly-sample.json` is an **invented** National Weather Service hourly forecast in the shape
 api.weather.gov returns (Saturday 3 Oct 2026, noon to 8pm in New York: rain from 2pm), for the
 weather tests. Replay a real one with `outrn weather refresh --area les --from-file <path>`.
