@@ -83,6 +83,11 @@ farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
 
+**Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
+each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.
+Requests only read it: rain likely or cold over the first two hours sinks parks and other outdoor
+places, and a forecast over 12 hours old is ignored.
+
 The same query brings in parking (`amenity=parking`, named or not). Parking never becomes a venue.
 Ingest derives the places anyone may park into `parking_facilities`. It leaves out private,
 customer-only and permit lots, deciding by the most specific access tag for a car. It also keeps
