@@ -24,3 +24,7 @@ so `pnpm real` and the golden scenarios run offline:
 
 `overture/places-mini.parquet` is an invented Overture-shaped file (two row groups, zstd) for the
 parquet reader's tests; `overture/make-mini.py` writes it (pyarrow).
+
+`nws/les-hourly-sample.json` is an **invented** National Weather Service hourly forecast in the shape
+api.weather.gov returns (Saturday 3 Oct 2026, noon to 8pm in New York: rain from 2pm), for the
+weather tests. Replay a real one with `outrn weather refresh --area les --from-file <path>`.
