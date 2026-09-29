@@ -1122,3 +1122,27 @@ describe("ranking order", () => {
     expect(order([b, a, far]).slice(0, 2)).toEqual(["Alpha Cafe", "Beta Cafe"]);
   });
 });
+
+describe("weather", () => {
+  const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-22:00", point: NEAR });
+  // About 1 km away: on a dry afternoon the park, 3 minutes off, comes first; a rain chance alone
+  // (the fit term) is not enough to overturn that head start.
+  const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 08:00-20:00", point: { lat: 40.7275, lon: -73.988 } });
+  const order = (weather: RequestContext["weather"]) => recommend([park, cafe], ctx("2026-10-03 14:00", 120, { weather }), POLICIES).items.map((i) => i.candidate.id);
+
+  it("rain likely or cold puts an indoor place ahead of a nearer park; a dry, mild day leaves the park first", () => {
+    expect(order(null)[0]).toBe("park");
+    expect(order({ temperatureF: 64, precipProbability: 10 })[0]).toBe("park");
+    expect(order({ temperatureF: 61, precipProbability: 80 })[0]).toBe("cafe");
+    expect(order({ temperatureF: 34, precipProbability: 0 })[0]).toBe("cafe");
+    // Unknown chance of rain is not rain.
+    expect(order({ temperatureF: 64, precipProbability: null })[0]).toBe("park");
+  });
+
+  it("only a dry, mild forecast says outdoor places are good for it", () => {
+    const at = (weather: RequestContext["weather"]) => one(park, ctx("2026-10-03 14:00", 120, { weather }));
+    expect(recommend([park], ctx("2026-10-03 14:00", 120, { weather: { temperatureF: 64, precipProbability: 10 } }), POLICIES).items[0]!.reasons).toContain("WEATHER_SUITABLE");
+    expect(recommend([park], ctx("2026-10-03 14:00", 120, { weather: { temperatureF: 64, precipProbability: 60 } }), POLICIES).items[0]!.reasons).not.toContain("WEATHER_SUITABLE");
+    expect(at(null).class).toBe("ready");
+  });
+});
