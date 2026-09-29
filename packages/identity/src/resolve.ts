@@ -53,8 +53,8 @@ async function candidatesNear(q: Queryable, p: LatLon): Promise<VenueCandidate[]
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
      )
      select n.*,
-            (select se.raw->'tags'->>'website' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'website' is not null limit 1) as website,
-            (select se.raw->'tags'->>'phone' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'phone' is not null limit 1) as phone,
+            (select coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) is not null limit 1) as website,
+            (select coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) is not null limit 1) as phone,
             (select se.raw->'tags'->>'addr:housenumber' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'addr:housenumber' is not null limit 1) as housenumber,
             (select se.raw->'tags'->>'addr:street' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'addr:street' is not null limit 1) as street,
             (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'brand' is not null limit 1) as brand
@@ -81,22 +81,29 @@ async function link(q: Queryable, sourceEntityId: string, venueId: string, score
   );
 }
 
-export async function resolveOne(q: Queryable, input: ResolveInput): Promise<ResolveOutcome> {
-  const existing = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null and decision <> 'rejected'`, [input.sourceEntityId]);
-  if (existing.rows[0]) {
-    return { sourceEntityId: input.sourceEntityId, venueId: existing.rows[0].venue_id, decision: "auto", created: false, parentVenueId: null, score: 1, matchedVenueId: existing.rows[0].venue_id };
-  }
-  const cands = await candidatesNear(q, input.record.point);
-  let best: { c: VenueCandidate; s: ReturnType<typeof scorePair> } | null = null;
-  let child: { c: VenueCandidate; s: ReturnType<typeof scorePair> } | null = null;
-  for (const c of cands) {
-    const s = scorePair(input.record, { name: c.canonical_name, category: c.category, point: { lat: c.lat, lon: c.lon }, website: c.website, phone: c.phone, housenumber: c.housenumber, street: c.street, brand: c.brand });
+type Scored = { c: VenueCandidate; s: ReturnType<typeof scorePair> };
+
+/** The venue nearby most likely to be this record, and the one it most likely sits inside (a museum's café). */
+async function bestNear(q: Queryable, record: IdentityRecord): Promise<{ best: Scored | null; child: Scored | null }> {
+  let best: Scored | null = null;
+  let child: Scored | null = null;
+  for (const c of await candidatesNear(q, record.point)) {
+    const s = scorePair(record, { name: c.canonical_name, category: c.category, point: { lat: c.lat, lon: c.lon }, website: c.website, phone: c.phone, housenumber: c.housenumber, street: c.street, brand: c.brand });
     if (s.relation === "child_of") {
       if (!child || s.score > child.s.score) child = { c, s };
       continue;
     }
     if (!best || s.score > best.s.score) best = { c, s };
   }
+  return { best, child };
+}
+
+export async function resolveOne(q: Queryable, input: ResolveInput): Promise<ResolveOutcome> {
+  const existing = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null and decision <> 'rejected'`, [input.sourceEntityId]);
+  if (existing.rows[0]) {
+    return { sourceEntityId: input.sourceEntityId, venueId: existing.rows[0].venue_id, decision: "auto", created: false, parentVenueId: null, score: 1, matchedVenueId: existing.rows[0].venue_id };
+  }
+  const { best, child } = await bestNear(q, input.record);
   if (best && best.s.score >= AUTO_MERGE_THRESHOLD) {
     await link(q, input.sourceEntityId, best.c.id, best.s.score, "auto", { matched: best.c.id, ...best.s.evidence });
     return { sourceEntityId: input.sourceEntityId, venueId: best.c.id, decision: "auto", created: false, parentVenueId: null, score: best.s.score, matchedVenueId: best.c.id };
@@ -111,6 +118,20 @@ export async function resolveOne(q: Queryable, input: ResolveInput): Promise<Res
   }
   await link(q, input.sourceEntityId, venueId, best?.s.score ?? 0, "auto", { new_venue: true, ...(child ? { child_of: child.c.id, ...child.s.evidence } : {}), ...(best ? { nearest: best.c.id, nearest_score: best.s.score } : {}) });
   return { sourceEntityId: input.sourceEntityId, venueId, decision: "auto", created: true, parentVenueId: parentId, score: best?.s.score ?? 0, matchedVenueId: null };
+}
+
+/**
+ * A new venue for a record only when nothing nearby could be it: no candidate scores even a review
+ * (see REVIEW_THRESHOLD). Anything closer is left alone rather than risk a second card for one
+ * place. For sources that only add to what the map already has (Overture's places OSM lacks).
+ */
+export async function createIfNew(q: Queryable, input: ResolveInput): Promise<{ venueId: string; parentVenueId: string | null; nearest: { venueId: string; score: number } | null } | { skipped: { venueId: string; score: number } }> {
+  const { best, child } = await bestNear(q, input.record);
+  if (best && best.s.score >= REVIEW_THRESHOLD) return { skipped: { venueId: best.c.id, score: best.s.score } };
+  const parentId = child ? child.c.id : null;
+  const venueId = await createVenue(q, input, parentId);
+  await link(q, input.sourceEntityId, venueId, best?.s.score ?? 0, "auto", { new_venue: true, ...(child ? { child_of: child.c.id, ...child.s.evidence } : {}), ...(best ? { nearest: best.c.id, nearest_score: best.s.score } : {}) });
+  return { venueId, parentVenueId: parentId, nearest: best ? { venueId: best.c.id, score: best.s.score } : null };
 }
 
 /** Human decision: merge venue `from` into `to`. Re-points links and facts; reversible via audit + superseded links. */

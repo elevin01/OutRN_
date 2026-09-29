@@ -105,7 +105,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect((await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE })).raw.renormalized).toBe(0);
   });
 
-  it("a record that disappears from the source is tombstoned and its facts retracted; a changed record supersedes old facts", async () => {
+  it("a record that disappears from the source is tombstoned, its facts retracted and its venue no longer shown; a changed record supersedes old facts", async () => {
     const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { tags: Record<string, string> }[] };
     const idx = fixture.elements.findIndex((e) => e.tags["name"] === "Pitt Street Nightcap");
     const removedIdx = fixture.elements.findIndex((e) => e.tags["name"] === "East River Overlook");
@@ -127,6 +127,9 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
 
     const overlook = await db.query<{ n: string }>(`select count(*) as n from current_facts cf join venues v on v.id = cf.subject_id where v.canonical_name = 'East River Overlook'`);
     expect(Number(overlook.rows[0]!.n)).toBe(0);
+    // With no source speaking for it any more, it is no longer shown.
+    const state = await db.query<{ publish_state: string }>(`select publish_state from venues where canonical_name = 'East River Overlook'`);
+    expect(state.rows).toEqual([{ publish_state: "candidate" }]);
   });
 
   it("a replayed capture only tombstones inside the extent it was saved with", async () => {

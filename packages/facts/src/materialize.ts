@@ -167,6 +167,8 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";
     else if (status === "closed_permanently") next = "excluded";
+    // No source speaks for it any more (OSM deleted it, Overture no longer lists it): not shown.
+    else if (!cur.length) next = "candidate";
     else if (v.canonical_name && v.category) next = "eligible";
     else next = "candidate";
   }
