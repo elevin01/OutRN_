@@ -49,6 +49,8 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
       if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) continue;
       const act = ACTIVITY_OF_CATEGORY[e.candidate.category];
       if (pass.diverse && usedActivities.has(act)) continue;
+      // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am): it waits for its score.
+      if (pass.diverse && e.dayPart === "off") continue;
       ordered.push(e);
       taken.add(e);
       usedVenues.add(venueKey);

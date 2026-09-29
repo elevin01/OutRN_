@@ -52,6 +52,12 @@ on the **engine and the services behind it**. They meet at a single, versioned H
   `packages/contracts/src/fixtures`. Regenerate when the contract changes or a scenario needs new
   data — not after every engine tweak. Scenarios are defined in `packages/api/scripts/fixtures.ts`;
   the UI owner can ask for new ones.
+- **The golden scenarios** pin the engine's ranking instead: `fixtures/golden/scenarios.json` holds
+  the top six for fifteen fixed searches over real places (the OpenStreetMap captures of the Lower
+  East Side and Bronxville in `fixtures/live`). A database test fails when the ranking moves, so
+  review it as "would I go there, then?". When the move is intended, run `pnpm golden` and commit the file: its diff is how
+  reviewers see what people will now be shown. Scenarios are defined in
+  `packages/api/scripts/golden-lib.ts`.
 
 ## Running things
 
@@ -63,6 +69,7 @@ on the **engine and the services behind it**. They meet at a single, versioned H
 | See exactly what the UI gets | `pnpm outrn recommend --area les --json` | database |
 | Check boundaries / contract | `pnpm check:boundaries`, `pnpm --filter @outrn/contracts schema:check` | — |
 | Run tests | `pnpm test` (DB tests skip without a local database) | — |
+| Accept an intended ranking change | `pnpm golden`, then review the diff of `fixtures/golden/scenarios.json` | database |
 
 `pnpm dev` runs the API on :4000 and the web app on :3000. The web app finds the API at
 `OUTRN_API_URL` (default `http://127.0.0.1:4000`); the mock listens on the same port, so the UI
@@ -83,7 +90,8 @@ leaves that database's history impossible to reproduce. A database that ran an e
   compatible with the base branch (unless labelled `contract-breaking`), unit tests including every
   fixture against the schemas.
 - **database**: the database-backed tests on PostgreSQL + PostGIS (a missing database fails, it
-  never skips), the fixture generator, and a smoke test of the built UI against the real API.
+  never skips), the golden ranking scenarios among them, the fixture generator, and a smoke test
+  of the built UI against the real API.
 - **web**: UI typecheck and production build with no database, and a smoke test against the mock.
 
 ## Branches and pull requests

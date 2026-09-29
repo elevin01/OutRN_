@@ -301,6 +301,49 @@ describe("OSM normalization", () => {
   });
 });
 
+describe("who can go, and what it costs, when the tags don't say", () => {
+  it("access=private or members-only: not open to the public", () => {
+    for (const access of ["private", "no", "members", "permit"]) {
+      const a = fact(rec({ name: "Club", amenity: "bar", access }), "admission");
+      expect(a, access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published", evidence: `access=${access}` });
+    }
+    // Customers only is how every café works; permissive is open.
+    for (const access of ["customers", "permissive", "yes"]) expect(fact(rec({ name: "Cafe", amenity: "cafe", access }), "admission")?.value, access).toEqual({ requirement: "walk_in" });
+  });
+
+  it("a university or school's own library is members only; a public library is free to walk into", () => {
+    // Elmer Holmes Bobst Library, as mapped.
+    const nyu = rec({ name: "Elmer Holmes Bobst Library", amenity: "library", building: "university", operator: "New York University" });
+    expect(fact(nyu, "admission")).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "estimate" });
+    expect(fact(nyu, "price")).toBeUndefined();
+    for (const tags of [{ library: "academic" }, { operator: "Sarah Lawrence College" }, { operator: "Bronx High School of Science" }]) {
+      expect(fact(rec({ name: "L", amenity: "library", ...tags }), "admission")?.value, JSON.stringify(tags)).toEqual({ requirement: "members_only" });
+    }
+    // The record's own access tag outweighs the guess: open to the public, or explicitly restricted.
+    for (const access of ["yes", "permissive", "public"]) {
+      const open = rec({ ...{ name: "Bobst", amenity: "library", building: "university", operator: "New York University" }, access });
+      expect(fact(open, "admission")?.value, access).toEqual({ requirement: "walk_in" });
+      expect(fact(open, "price")?.value, access).toMatchObject({ free: true });
+    }
+    for (const access of ["private", "no", "members", "permit"]) {
+      expect(fact(rec({ name: "Bobst", amenity: "library", operator: "New York University", access }), "admission"), access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published" });
+    }
+    const nypl = rec({ name: "Seward Park Library", amenity: "library", operator: "New York Public Library" });
+    expect(fact(nypl, "admission")?.value).toEqual({ requirement: "walk_in" });
+    expect(fact(nypl, "price")).toMatchObject({ value: { free: true }, evidenceClass: "estimate" });
+    expect(fact(rec({ name: "Bronxville Public Library", amenity: "library", operator: "Village of Bronxville Public Library" }), "admission")?.value).toEqual({ requirement: "walk_in" });
+  });
+
+  it("a commercial art gallery is a free walk-in, unless its tags say there's a charge", () => {
+    const g = rec({ name: "Gallery", tourism: "gallery" });
+    expect(fact(g, "price")).toMatchObject({ value: { free: true }, evidenceClass: "estimate" });
+    expect(fact(g, "admission")?.value).toEqual({ requirement: "walk_in" });
+    const paid = rec({ name: "Gallery", tourism: "gallery", fee: "yes" });
+    expect(fact(paid, "price")?.value).toMatchObject({ paid: true });
+    expect(fact(paid, "admission")?.value).toEqual({ requirement: "ticket" });
+  });
+});
+
 describe("tag values that name what every object inherits", () => {
   const INHERITED = ["__proto__", "constructor", "toString", "hasOwnProperty", "valueOf"];
   const rec = (tags: Record<string, string>) => ({ externalId: "node/1", point: { lat: 40.72, lon: -73.99 }, timezone: "America/New_York", tags, sourceUpdatedAt: null });

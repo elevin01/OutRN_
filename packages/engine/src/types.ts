@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.4.0";
-export const WEIGHTS_VERSION = "2026-09-28.1";
+export const WEIGHTS_VERSION = "2026-09-28.2";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -139,7 +139,11 @@ export type ReasonCode =
   | "HOURS_CONFIRMED"
   | "AGE_LIMIT_LIKELY"
   | "AGE_LIMIT_UNCERTAIN"
-  | "WAIT_MAY_NOT_FIT";
+  | "WAIT_MAY_NOT_FIT"
+  /** A bar that serves food, with children in the party: no age limit is known, but it's a bar first. */
+  | "KIDS_UNCERTAIN"
+  /** A cinema, theatre or music venue with nothing listed here: see what's on on its own site. */
+  | "PROGRAMME_UNLISTED";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -164,7 +168,8 @@ export type ExclusionCode =
   | "DISMISSED"
   | "CHILD_OF_SHOWN_PARENT"
   | "NO_PROGRAMME"
-  | "AGE_RESTRICTED";
+  | "AGE_RESTRICTED"
+  | "MEMBERS_ONLY";
 
 /** How a visit is done, what it needs at least, and how long it typically takes. */
 export interface Visit {
@@ -241,6 +246,8 @@ export interface Evaluation {
   scores: Scores;
   cta: "go" | "check" | "book" | null;
   price: { text: string; isEstimate: boolean; unknown: boolean };
+  /** How good an idea this kind of place is at the arrival (null: no rule, or ineligible). */
+  dayPart?: "prime" | "fair" | "off" | null;
 }
 
 /** A specific change that would admit more options: "allow a longer walk" (+4). */

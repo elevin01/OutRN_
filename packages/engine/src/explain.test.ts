@@ -24,6 +24,12 @@ describe("reason and caveat notes", () => {
     expect(explain(e, "America/New_York").sentence).toBe("A short walk, plenty of time, free.");
   });
 
+  it("an estimated free reads 'usually free', as its fact line does; a published one reads 'free'", () => {
+    const e = (isEstimate: boolean): Evaluation => ({ ...evaluation(["SHORT_TRAVEL", "FREE"], []), price: { text: "free", isEstimate, unknown: false } });
+    expect(explain(e(true), "America/New_York").sentence).toBe("A short walk, usually free.");
+    expect(explain(e(false), "America/New_York").sentence).toBe("A short walk, free.");
+  });
+
   it("never drops a caveat: an unknown code still appears, by name", () => {
     const e = evaluation([], ["AGE_LIMIT_LIKELY", "SOMETHING_NEW"]);
     expect(caveatNotes(e)).toEqual([

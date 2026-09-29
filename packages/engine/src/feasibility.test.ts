@@ -3,6 +3,7 @@ import { fromLocal } from "@outrn/core";
 import { waitFloorMinutes } from "./conditions.js";
 import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
+import { APPEAL_WEIGHTS } from "./score.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, NearbyParking, RequestContext } from "./types.js";
 
@@ -28,6 +29,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
   ["gallery", { category: "gallery", minUsefulMinutes: 40, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: 30, activityType: "culture" }],
   ["activity", { category: "activity", minUsefulMinutes: 60, admissionBufferMinutes: 10, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["cinema", { category: "cinema", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
+  ["theatre", { category: "theatre", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
 ]);
 
 let n = 0;
@@ -232,6 +234,77 @@ describe("feasibility: programme venues", () => {
     expect(noHours.excludedBy).toBe("NO_PROGRAMME");
   });
 
+  it("with nothing listed but its own site, it's worth a look in the evening (Check first: see what's on), never in the morning", () => {
+    const site = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, website: { value: { value: "https://angelika.example/" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const evening = one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-09-29 19:30", 180));
+    expect(evening.class).toBe("check_first");
+    expect(evening.unresolved).toContain("PROGRAMME_UNLISTED");
+    expect(caveatNotes(evening).map((n) => n.text)).toContain("check what's on");
+    // A Tuesday morning is not a cinema's time, listed site or not.
+    expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-09-29 09:30", 180)).excludedBy).toBe("NO_PROGRAMME");
+    // A weekend afternoon is (matinees).
+    expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-10-03 13:00", 180)).class).toBe("check_first");
+  });
+
+  const withSite = (c: Candidate, url: string): Candidate => ({ ...c, facts: { ...c.facts, website: { value: { value: url }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+
+  it("only a site a user can open counts: not free text, a blank, another scheme, or a local or IP host", () => {
+    const at = ctx("2026-09-29 19:30", 180);
+    for (const bad of ["see our facebook", "   ", "javascript:alert(1)", "ftp://cinema.example.com/", "mailto:box@cinema.example.com", "http://192.168.0.10/", "https://localhost/", "http://cinema.local/showtimes"]) {
+      expect(one(withSite(venue({ category: "cinema", hours: null, admission: "ticket" }), bad), at).excludedBy, bad).toBe("NO_PROGRAMME");
+    }
+    for (const good of ["angelikafilmcenter.com", "https://www.filmforum.org/now_playing", "http://metrograph.com"]) {
+      expect(one(withSite(venue({ category: "cinema", hours: null, admission: "ticket" }), good), at).unresolved, good).toContain("PROGRAMME_UNLISTED");
+    }
+  });
+
+  it("its time of day is judged at the arrival, the instant the score reads, at both ends of prime time", () => {
+    // 3 minutes' walk and 15 to get in: leaving at :50 arrives at :08 past the next hour.
+    const bare = (category: "cinema" | "theatre" | "live_music") => withSite(venue({ category, hours: "24/7", admission: "ticket" }), "https://venue.example.com/");
+    const at = (category: "cinema" | "theatre" | "live_music", when: string) => one(bare(category), ctx(when, 300));
+    // Cinema prime 17:00-23:00, theatre 18:00-22:00, live music 19:00-01:00 (a Tuesday).
+    for (const [category, before, after] of [["cinema", "2026-09-29 16:50", "2026-09-29 22:50"], ["theatre", "2026-09-29 17:50", "2026-09-29 21:50"], ["live_music", "2026-09-29 18:50", "2026-09-29 00:50"]] as const) {
+      const starts = at(category, before);
+      expect(starts.class, `${category} leaving ${before}`).toBe("check_first");
+      expect(starts.unresolved, category).toContain("PROGRAMME_UNLISTED");
+      expect(at(category, after).excludedBy, `${category} leaving ${after}`).toBe("NO_PROGRAMME");
+    }
+  });
+
+  it("with anyone under 18 going, nothing listed means nothing to judge: the bare venue stays out (many are 21+ with no min_age tag)", () => {
+    const at = ctx("2026-10-02 19:00", 300);
+    for (const category of ["cinema", "theatre", "live_music"] as const) {
+      const bare = withSite(venue({ category, hours: null, admission: "ticket" }), "https://venue.example.com/");
+      for (const party of [{ company: "family" }, { youngestAge: 10 }, { youngestAge: 17 }, { company: "friends", youngestAge: 5 }] as const) {
+        expect(one(bare, { ...at, ...party }).excludedBy, `${category} ${JSON.stringify(party)}`).toBe("NO_PROGRAMME");
+      }
+      for (const party of [{}, { company: "friends" }, { youngestAge: 18 }, { youngestAge: 35 }] as const) {
+        expect(one(bare, { ...at, ...party }).unresolved, `${category} ${JSON.stringify(party)}`).toContain("PROGRAMME_UNLISTED");
+      }
+    }
+  });
+
+  it("a bare venue needs the time a show takes (cinema 120, theatre 120, music 90 min), not the zero its listed occurrences replace", () => {
+    const need = { cinema: 120, theatre: 120, live_music: 90 } as const;
+    for (const category of ["cinema", "theatre", "live_music"] as const) {
+      const v = withSite(venue({ category, hours: "24/7", admission: "ticket" }), "https://venue.example.com/");
+      // 30 minutes: 3 min walk + 15 min to get in leaves 12. The reviewer's case.
+      const short = one(v, ctx("2026-09-29 19:30", 30));
+      expect(short.excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      expect(short.reasons, category).not.toContain("ENOUGH_TIME");
+      // Closing soon: in at 19:48, closed at 20:30.
+      expect(one(withSite(venue({ category, hours: "Mo-Su 10:00-20:30", admission: "ticket" }), "https://venue.example.com/"), ctx("2026-09-29 19:30", 240)).excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      // Back by 21:00, with the walk home.
+      expect(one(v, ctx("2026-09-29 19:30", 240, { backBy: fromLocal("2026-09-29", 21 * 60, TZ) })).excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      // Enough for it: Check first (see what's on), with the show's length as the minimum.
+      const long = one(v, ctx("2026-09-29 19:30", need[category] + 30));
+      expect(long.class, category).toBe("check_first");
+      expect(long.timing?.minUsefulMinutes, category).toBe(need[category]);
+      expect(long.reasons, category).not.toContain("ENOUGH_TIME");
+      expect(one(v, ctx("2026-09-29 19:30", 300)).reasons, category).toContain("ENOUGH_TIME");
+    }
+  });
+
   it("a screening that fits the window is still a candidate, and NO_PROGRAMME is never offered as a relaxation", () => {
     const start = fromLocal("2026-09-26", 22 * 60, TZ);
     const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);
@@ -413,13 +486,54 @@ describe("appeal signals", () => {
     expect(narrowed[0]!.scores.appeal).toBe(narrowed[1]!.scores.appeal);
   });
 
-  it("after 9pm, bars and late food get a late-night bonus; at 3pm they do not", () => {
+  it("after 9pm, bars and late food get a late-night bonus; at 4:30pm they do not", () => {
+    // Against a kind of place with no time-of-day rule, so only the bar's own hour moves it.
     const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
-    const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 12:00-02:00" });
-    const late = evaluateAll([bar, cafe], ctx("2026-09-26 21:30", 120), POLICIES);
-    expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(0.1, 3);
-    const afternoon = evaluateAll([bar, cafe], ctx("2026-09-26 15:00", 120), POLICIES);
+    const hall = venue({ id: "hall", category: "community", hours: "Mo-Su 12:00-02:00" });
+    const late = evaluateAll([bar, hall], ctx("2026-09-26 21:30", 120), POLICIES);
+    // 9:30pm is also a bar's prime time.
+    expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(APPEAL_WEIGHTS.lateNight + APPEAL_WEIGHTS.primeTime, 3);
+    // 4:30pm is fair for a bar: neither bonus nor penalty.
+    const afternoon = evaluateAll([bar, hall], ctx("2026-09-26 16:30", 120), POLICIES);
     expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
+  });
+
+  it("open isn't the same as a good idea: a park after dark, a bar at 10am, a café at 9pm sink; the right place for the hour rises", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-01:00" });
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 08:00-04:00" });
+    const cafe = venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-23:00" });
+    const order = (x: RequestContext) => recommend([park, bar, cafe], x, POLICIES).ordered.map((e) => e.candidate.id);
+    // Saturday 10:30pm: the bar leads; the park (after dark) and the café (off hours) follow.
+    expect(order(ctx("2026-10-03 22:30", 120, { sunset }))[0]).toBe("bar");
+    // Saturday 10am: the park and the café are both a good idea; the bar is last.
+    expect(order(ctx("2026-10-03 10:00", 120, { sunset })).at(-1)).toBe("bar");
+    // Saturday 9pm: the café is open but off hours, so it follows the bar.
+    const nine = order(ctx("2026-10-03 21:00", 120, { sunset }));
+    expect(nine.indexOf("cafe")).toBeGreaterThan(nine.indexOf("bar"));
+  });
+
+  it("variety never promotes a poor idea for the hour: a park after dark waits for its score, not its activity type", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-01:00", price: { free: true, currency: "USD" } });
+    const bars = ["b1", "b2", "b3"].map((id) => venue({ id, category: "bar", hours: "Mo-Su 16:00-04:00" }));
+    const late = recommend([park, ...bars], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    // Three bars is the answer at 10:30pm; the park (a different activity type) no longer takes a first-page slot.
+    expect(late.items.map((e) => e.candidate.id)).toEqual(["b1", "b2", "b3"]);
+    expect(late.ordered.at(-1)!.candidate.id).toBe("park");
+    // By day the same park is a good idea and variety brings it forward.
+    expect(recommend([park, ...bars], ctx("2026-10-03 17:00", 120, { sunset }), POLICIES).items.map((e) => e.candidate.id)).toContain("park");
+  });
+
+  it("travel counts against the time the user has: the same walk weighs more in an hour than in an evening", () => {
+    const near = venue({ id: "near", category: "bookshop", hours: "Mo-Su 09:00-22:00" });
+    const farther = venue({ id: "farther", category: "bookshop", hours: "Mo-Su 09:00-22:00", point: { lat: 40.7265, lon: -73.987 } });
+    const fit = (minutes: number) => Object.fromEntries(evaluateAll([near, farther], ctx("2026-10-03 14:00", minutes), POLICIES).map((e) => [e.candidate.id, e.scores.fit]));
+    const hour = fit(60);
+    const evening = fit(240);
+    expect(hour["near"]!).toBeGreaterThan(hour["farther"]!);
+    // The gap between near and farther is wider in an hour than in four hours.
+    expect(hour["near"]! - hour["farther"]!).toBeGreaterThan(evening["near"]! - evening["farther"]!);
   });
 
   const daysBefore = (x: RequestContext, days: number) => new Date(x.now.getTime() - days * 86_400_000);
@@ -983,6 +1097,55 @@ describe("parking on a drive", () => {
     expect(parkingText(lot(5, { name: null, kind: "street", fee: "unknown", distanceM: 301 }))).toBe("Street parking 300 m away, ~5 min walk");
     expect(parkingText(lot(1, { name: null, distanceM: 3 }))).toBe("Lot 10 m away (paid), ~1 min walk");
     expect(parkingText(lot(2))).toBe("Orchard Street Lot (paid), ~2 min walk");
+  });
+});
+
+describe("feasibility: who can go", () => {
+  it("a place that isn't open to the public (members only) is never an option", () => {
+    const e = one(venue({ category: "cafe", admission: "members_only" }), ctx("2026-09-29 15:00", 120));
+    expect(e.class).toBe("ineligible");
+    expect(e.excludedBy).toBe("MEMBERS_ONLY");
+  });
+
+  it("with children, a bar that serves food and names no age limit is shown, flagged, and ranked below family places", () => {
+    const pub = venue({ id: "pub", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-22:00" });
+    const x = ctx("2026-10-04 13:00", 180, { company: "family" });
+    const e = one(pub, x);
+    expect(e.class).toBe("check_first");
+    expect(e.unresolved).toContain("KIDS_UNCERTAIN");
+    expect(caveatNotes(e).map((n) => n.text)).toContain("a bar: check children are welcome");
+    const order = recommend([pub, park], x, POLICIES).items.map((i) => i.candidate.id);
+    expect(order).toEqual(["park", "pub"]);
+    // Adults only: no flag.
+    expect(one(pub, ctx("2026-10-04 13:00", 180, { company: "friends" })).unresolved).not.toContain("KIDS_UNCERTAIN");
+  });
+
+  it("a child's age, when given, flags such a bar just the same, whoever the child is with; an adult's never does", () => {
+    const pub = venue({ category: "bar", hours: "Mo-Su 12:00-02:00" });
+    for (const youngestAge of [0, 5, 17]) {
+      for (const company of ["family", "friends", undefined] as const) {
+        const e = one(pub, ctx("2026-10-04 13:00", 180, { youngestAge, ...(company ? { company } : {}) }));
+        expect(e.class, `${youngestAge} ${company}`).toBe("check_first");
+        expect(e.unresolved, `${youngestAge} ${company}`).toContain("KIDS_UNCERTAIN");
+      }
+    }
+    for (const youngestAge of [18, 35]) expect(one(pub, ctx("2026-10-04 13:00", 180, { company: "family", youngestAge })).unresolved).not.toContain("KIDS_UNCERTAIN");
+    // A bar published as all ages is one children may go to.
+    const allAges: Candidate = { ...pub, facts: { ...pub.facts, age_limit: { value: { minAge: 0 }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } };
+    expect(one(allAges, ctx("2026-10-04 13:00", 180, { youngestAge: 5 })).unresolved).not.toContain("KIDS_UNCERTAIN");
+  });
+});
+
+describe("ranking order", () => {
+  it("places equal on merit come in the same order however they were loaded: nearer first, then by name", () => {
+    const x = ctx("2026-10-03 10:00", 120);
+    const a = venue({ id: "id-z", name: "Alpha Cafe" });
+    const b = venue({ id: "id-a", name: "Beta Cafe" });
+    const far = venue({ id: "id-m", name: "Aardvark Cafe", point: { lat: 40.7215, lon: -73.985 } });
+    const order = (cs: Candidate[]) => recommend(cs, x, POLICIES, { size: 3 }).items.map((i) => i.candidate.name);
+    expect(order([a, b, far])).toEqual(order([far, b, a]));
+    expect(order([b, a, far]).slice(0, 2)).toEqual(["Alpha Cafe", "Beta Cafe"]);
   });
 });
 
