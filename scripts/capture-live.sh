@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Records real data for every area (or the ones named) into fixtures/live, for `pnpm real` and the
-# golden scenarios to replay offline. Needs network access: overpass-api.de for places, and
-# www.wikidata.org + commons.wikimedia.org for photos.
+# golden scenarios to replay offline. Needs network access: overpass-api.de for places,
+# www.wikidata.org + commons.wikimedia.org for photos, and overturemaps-us-west-2.s3.us-west-2.amazonaws.com
+# for Overture Maps places (whether each place still operates, websites, phones).
 #
 #   pnpm capture                    # every area
 #   pnpm capture yonkers white_plains
 #
-# Captures are OpenStreetMap data (ODbL, © OpenStreetMap contributors) and Wikimedia metadata.
+# Captures are OpenStreetMap data (ODbL, © OpenStreetMap contributors), Wikimedia metadata, and
+# Overture Maps places (CDLA-Permissive-2.0; Foursquare's records Apache-2.0).
 # fixtures/live is gitignored: add a capture on purpose (git add -f) to share it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -41,6 +43,9 @@ for slug in "${slugs[@]}"; do
   fi
   if $photos_supported && ! pnpm -s outrn ingest photos --area "$slug" --save "fixtures/live/${slug}-photos.json"; then
     failed+=("${slug} (photos)")
+  fi
+  if ! pnpm -s outrn ingest overture --area "$slug" --save "fixtures/live/${slug}-overture.json"; then
+    failed+=("${slug} (overture)")
   fi
   sleep 10 # Overpass is a shared, free service: space the queries out
 done

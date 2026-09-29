@@ -63,12 +63,12 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
-switches those areas on, and starts the API. Recommendations are for right now, as they would be
-for someone there.
+checks their places against Overture Maps, switches those areas on, and starts the API.
+Recommendations are for right now, as they would be for someone there.
 
-`pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…) and their
-photos into `fixtures/live`, on a machine that can reach overpass-api.de, www.wikidata.org and
-commons.wikimedia.org. `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT`
+`pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
+photos and their Overture places into `fixtures/live`, on a machine that can reach overpass-api.de,
+www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com. `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT`
 first. Run `pnpm real` again afterwards and they are served too.
 
 The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
@@ -76,6 +76,14 @@ people open the app from; the backtest samples origins there), and ingest covers
 farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive ~13 km at night
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
+
+**Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
+overture --area <slug>` reads the Overture places near the area's venues straight from Overture's
+public bucket: the Lower East Side is about 40 MB and 15 seconds. A venue matches a place with the
+same name within 120 m, or a partial name within 40 m of a fitting kind. A match marks it operating,
+closes it only on Overture's own status signal (and asks for a check), and adds a website or phone
+number no other source has. It creates no venues. On the Lower East Side it matches 1,245 of 1,691
+venues.
 
 The same query brings in parking (`amenity=parking`, named or not). Parking never becomes a venue.
 Ingest derives the places anyone may park into `parking_facilities`. It leaves out private,

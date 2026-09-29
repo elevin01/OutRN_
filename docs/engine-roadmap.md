@@ -112,7 +112,10 @@ changelog.
 
 ### Batch 8: supply breadth
 - **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
-- **Foursquare OS Places** to fill OSM gaps (needs the export token).
+- **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
+  operates, signal-backed closures, and websites and phones OSM lacks. It already includes Foursquare's open
+  places (Apache-2.0), so Foursquare OS Places needs no token. Next: offer places OSM lacks as review-gated
+  new venues, from the matches' misses.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use

@@ -21,7 +21,7 @@ import type { Queryable } from "@outrn/db";
  *     filtering and recommendations never disagree with current_facts (no source writes them directly).
  */
 
-export const MATERIALIZE_POLICY_VERSION = "2026-09-28.1";
+export const MATERIALIZE_POLICY_VERSION = "2026-09-29.1";
 
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
@@ -30,6 +30,7 @@ const SOURCE_TRUST: Record<string, number> = {
   founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
   user_observation: 0.7,
   osm: 0.6,
+  overture: 0.6, // conflated from Meta, Microsoft, Foursquare…: as trusted as OSM, never above a check
   foursquare_os: 0.6,
   google_places: 0.65,
   category_policy: 0.3,
@@ -131,6 +132,12 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
   return result;
 }
 
+/** Map data whose closures alone should be confirmed by someone, by display name. */
+const MAP_SOURCES = new Map([
+  ["osm", "OpenStreetMap"],
+  ["overture", "Overture Maps"],
+]);
+
 const CONSEQUENCE: Partial<Record<Attribute, number>> = { opening_hours: 1.0, business_status: 1.0, admission: 0.8, price: 0.4 };
 
 async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Map<Attribute, FactRow[]>, now: Date): Promise<number> {
@@ -160,16 +167,17 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   }
   if (next !== v.publish_state) await q.query(`update venues set publish_state = $2 where id = $1`, [venueId, next]);
   let created = 0;
-  // Anyone can edit OSM: when an OSM closure alone delists a published venue, someone should confirm
-  // it, so a vandal's edit (or a mistaken one) does not quietly hide a place.
+  // Anyone can edit OSM, and Overture's closures are inferred: when map data alone delists a published
+  // venue, someone should confirm it, so a vandal's edit (or a wrong signal) does not quietly hide a place.
   const closure = get("business_status");
-  if (v.publish_state === "eligible" && next === "excluded" && !excluded && closure?.source_ids.length && closure.source_ids.every((s) => s === "osm")) {
+  if (v.publish_state === "eligible" && next === "excluded" && !excluded && closure?.source_ids.length && closure.source_ids.every((s) => MAP_SOURCES.has(s))) {
     const r = await q.query(
       `insert into verification_tasks (subject_kind, subject_id, attribute, question, options, priority, dedupe_key, expires_at)
        values ('venue', $1, 'business_status', $2, $3, 1.0, $4, $5)
        on conflict (dedupe_key) do update set priority = excluded.priority, expires_at = excluded.expires_at
        returning (xmax = 0) as inserted`,
-      [venueId, "OpenStreetMap now says this place has closed. Has it?", JSON.stringify(["operating", "closed", "not_sure"]), `venue:${venueId}:osm_closure`, new Date(now.getTime() + 14 * 86_400_000)],
+      // The key predates Overture: one closure check per venue, whichever map data asks for it.
+      [venueId, `${closure.source_ids.map((s) => MAP_SOURCES.get(s)).join(" and ")} now ${closure.source_ids.length > 1 ? "say" : "says"} this place has closed. Has it?`, JSON.stringify(["operating", "closed", "not_sure"]), `venue:${venueId}:osm_closure`, new Date(now.getTime() + 14 * 86_400_000)],
     );
     if ((r.rows[0] as { inserted: boolean }).inserted) created++;
   }

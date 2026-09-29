@@ -7,7 +7,8 @@
 #   REAL_DATABASE_URL=postgres://… pnpm real   # another database instead (its tables are replaced)
 #
 # Each fixtures/live/<area>.json is ingested and the area switched on (served); a
-# fixtures/live/<area>-photos.json next to it brings its photos. Capture more with `pnpm capture`.
+# fixtures/live/<area>-photos.json next to it brings its photos, and <area>-overture.json checks its
+# places against Overture Maps (still operating, closed, websites and phones). Capture more with `pnpm capture`.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -35,7 +36,7 @@ shopt -s nullglob
 served=()
 for file in fixtures/live/*.json; do
   slug="$(basename "$file" .json)"
-  case "$slug" in *-photos) continue ;; esac
+  case "$slug" in *-photos | *-overture) continue ;; esac
   echo
   echo "== ${slug}"
   if ! pnpm -s outrn ingest osm --area "$slug" --from-file "$file" | grep -E "venues|parking"; then
@@ -44,6 +45,9 @@ for file in fixtures/live/*.json; do
   fi
   if [ -f "fixtures/live/${slug}-photos.json" ] && $photos_supported; then
     pnpm -s outrn ingest photos --area "$slug" --from-file "fixtures/live/${slug}-photos.json" | grep -E "photos" || true
+  fi
+  if [ -f "fixtures/live/${slug}-overture.json" ]; then
+    pnpm -s outrn ingest overture --area "$slug" --from-file "fixtures/live/${slug}-overture.json" | grep -E "places|claims" || true
   fi
   if pnpm -s outrn areas launch "$slug" >/dev/null 2>&1; then served+=("$slug"); else echo "   not served: no eligible venues"; fi
 done

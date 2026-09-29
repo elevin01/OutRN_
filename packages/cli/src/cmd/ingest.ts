@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestOsmArea, ingestOverture } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -25,6 +25,26 @@ export function registerIngest(program: Command): void {
       console.log(`  facts      ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
       console.log(`  current    ${s.materialized.subjects} venues materialized · ${s.materialized.conflicts} conflicts · ${s.materialized.tasks} verification tasks`);
       console.log(`  parking    ${s.parking.facilities} public places to park · ${s.parking.removed} removed`);
+    });
+
+  ingest
+    .command("overture")
+    .description("Check an area's venues against Overture Maps places: still operating, closed, missing websites and phones (or replay a saved read)")
+    .requiredOption("--area <slug>", "service area slug; ingest it from OSM first")
+    .option("--from-file <path>", "replay a saved read instead of reading the Overture bucket")
+    .option("--save <path>", "save what was read for later replay")
+    .option("--release <name>", "an Overture release, e.g. 2026-09-23.1 (default: the newest)")
+    .action(async (o: { area: string; fromFile?: string; save?: string; release?: string }) => {
+      const db = getDb();
+      const t0 = Date.now();
+      const s = await ingestOverture(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.release ? { release: o.release } : {}), log: (l) => console.log(l) });
+      console.log("");
+      console.log(`run ${s.runId} · area ${s.area} · Overture ${s.release} · ${Date.now() - t0} ms`);
+      if (s.read) console.log(`  read       ${s.read.rowGroups} of ${s.read.totalRowGroups} row groups · ${(s.read.bytes / 1_048_576).toFixed(0)} MB`);
+      console.log(`  places     ${s.places} Overture places · ${s.venues.matched} of ${s.venues.considered} venues matched`);
+      console.log(`  claims     ${s.claims.operating} operating · ${s.claims.closed} closed · ${s.claims.website} websites · ${s.claims.phone} phones`);
+      console.log(`  facts      ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
+      console.log(`  current    ${s.materialized.subjects} venues materialized · ${s.materialized.conflicts} conflicts · ${s.materialized.tasks} verification tasks`);
     });
 
   program

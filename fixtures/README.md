@@ -13,3 +13,14 @@ To capture a **real** response from a machine with network access:
     pnpm outrn ingest osm --area les --save fixtures/live/les.json
 
 `fixtures/live/` is gitignored; real OSM data is ODbL and must be attributed when redistributed.
+
+`live/<area>.json` and `live/<area>-overture.json` are **real** captures, kept on purpose (`git add -f`)
+so `pnpm real` and the golden scenarios run offline:
+
+- `<area>.json`: the Overpass response (OpenStreetMap, ODbL, © OpenStreetMap contributors).
+- `<area>-overture.json`: the Overture Maps places near the area's venues (`outrn ingest overture --save`),
+  release and bounding box included. Overture Maps Foundation, CDLA-Permissive-2.0; records from
+  Foursquare are Apache-2.0 and from AllThePlaces CC0. Credit "Overture Maps Foundation" where it is shown.
+
+`overture/places-mini.parquet` is an invented Overture-shaped file (two row groups, zstd) for the
+parquet reader's tests; `overture/make-mini.py` writes it (pyarrow).
