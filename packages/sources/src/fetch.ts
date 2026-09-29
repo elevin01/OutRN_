@@ -188,7 +188,8 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
         continue;
       }
       const contentType = res.headers.get("content-type") ?? "";
-      if (opts.allowedContentTypes && !opts.allowedContentTypes.some((p) => contentType.startsWith(p))) {
+      // An error reply is reported by its status (below), whatever its body is: a proxy's refusal is text.
+      if (opts.allowedContentTypes && res.status < 400 && !opts.allowedContentTypes.some((p) => contentType.startsWith(p))) {
         throw new FetchBlocked(`unexpected content-type '${contentType}' from ${url.host}`);
       }
       // Too large is refused, never retried: by the length announced, else by what arrives.

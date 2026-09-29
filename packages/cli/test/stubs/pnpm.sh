@@ -9,6 +9,7 @@
 #   STUB_NO_VENUES      areas `areas launch` refuses for having no eligible venues
 #   STUB_FAIL_LAUNCH    areas `areas launch` fails for any other reason
 #   STUB_MIGRATE_EXIT   exit status of db:migrate
+#   STUB_FAIL_WEATHER   set: `weather refresh` fails (no network)
 set -u
 printf 'pnpm %s | DATABASE_URL=%s\n' "$*" "${DATABASE_URL:-}" >>"$STUB_LOG"
 listed() { case " $2 " in *" $1 "*) return 0 ;; esac; return 1; }
@@ -112,6 +113,13 @@ case "$group $cmd" in
     fi
     echo "  places     10 Overture places · 4 of 5 venues matched"
     echo "  claims     4 operating · 0 closed · 1 websites · 1 phones"
+    ;;
+  "weather refresh")
+    if [ -n "${STUB_FAIL_WEATHER:-}" ]; then
+      echo "error: les: could not resolve api.weather.gov" >&2
+      exit 1
+    fi
+    echo "les: 156 hours, 2026-10-03T16:00:00.000Z to 2026-10-10T04:00:00.000Z, issued 2026-10-03T15:30:12.000Z"
     ;;
   "areas launch")
     known

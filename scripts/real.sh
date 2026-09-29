@@ -13,6 +13,9 @@
 # places against Overture Maps (still operating, closed, websites and phones). A capture named after something
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
 # before the API starts, so what is served is never a silent subset. Capture more with `pnpm capture`.
+#
+# The served areas' weather is then fetched from the National Weather Service (api.weather.gov). It is
+# optional: when it can't be fetched, that is said, and plans ignore the weather.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -120,6 +123,19 @@ for file in fixtures/live/*.json; do
   fi
 done
 
+# Weather is optional: without a current forecast, recommendations ignore it. A forecast that can't be
+# fetched (no network, api.weather.gov down) is said plainly, and the areas are served without it.
+if [ -n "$served" ]; then
+  echo
+  echo "== weather"
+  if out="$(pnpm -s outrn weather refresh 2>&1)"; then
+    summary "$out" "hours" | sed 's/^/   /'
+  else
+    echo "   not refreshed: plans ignore the weather until \`pnpm outrn weather refresh\` succeeds (it needs api.weather.gov)"
+    printf '%s\n' "$out" | tail -n 1 | sed 's/^/   /'
+  fi
+fi
+
 cat <<EOF
 
 Serving ${served:-no areas} on http://${HOST}:${PORT}  (ctrl-c stops it)
@@ -130,7 +146,8 @@ Serving ${served:-no areas} on http://${HOST}:${PORT}  (ctrl-c stops it)
   Browser preview of the mobile app (pnpm mobile:web) is allowed from http://localhost:8081.
 
 Recommendations are for right now, where the area is. Only areas with a capture in fixtures/live
-are served; \`pnpm capture\` records the rest (needs network access).
+are served; \`pnpm capture\` records the rest (needs network access). Forecasts count for 12 hours:
+run \`pnpm outrn weather refresh\` (hourly is plenty) while this runs for longer.
 EOF
 export OUTRN_WEB_ORIGINS="${OUTRN_WEB_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081}"
 HOST="$HOST" PORT="$PORT" exec pnpm --silent --filter @outrn/api start
