@@ -160,8 +160,38 @@ changelog.
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the
-  API's developer documentation, so Overture does not stand in for Foursquare OS Places. Next: offer places
-  OSM lacks as review-gated new venues, from the matches' misses.
+  API's developer documentation, so Overture does not stand in for Foursquare OS Places.
+- **Overture places OSM lacks: done** (the same command; `--no-new-places` turns it off).
+  - **What is added:** only a place that is open, confidently recorded (0.8+), updated in the last
+    two years, and not from a company register alone. Its kind must change faster than mappers keep
+    up: restaurants, cafés, bars, galleries, music venues, clubs, arcades, farmers markets. Not fast
+    food (the founder's call), and not parks, museums or libraries: OSM maps them well, and
+    Overture's extras of those kinds were mostly not places to visit.
+  - **The name** must be a real one: not generic words, an address, a street, a company, a shop, or
+    mostly another script (records misplaced from abroad). It is not a chain's (a built-in list plus
+    every brand OSM tags).
+  - **A way to check first:** a phone number, or a website of its own.
+  - **Duplicates:** anything close is left out rather than risk two cards for one place:
+    - a venue with its name within 500 m;
+    - one sharing a distinctive word within 100 m ("Hunan 3" beside "Hunan III");
+    - one of its family (food, drink, art) within 10 m, most likely the storefront's earlier or
+      later tenant ("Milk & Honey" where Attaboy is now);
+    - anything identity resolution would flag for review.
+  - **The kind:** from Overture's category, or from the name when Overture only says "restaurant"
+    (ice cream or cheesecake is dessert, a bakery a café).
+  - **What it knows:** name, kind, status, website and phone, and the estimates any venue of its
+    kind gets. It has no hours, so it is always Check first.
+  - **Lifecycle:** it loses its claims, and stops being shown, when a later read no longer supports
+    it. A venue OSM later maps at the same spot joins it rather than duplicating it. A venue no
+    source speaks for any more (OSM deleted it, Overture dropped it) is no longer shown.
+  - **Scale, on the captures:**
+    - LES: +1,130. Left out: 526 as possible duplicates, 125 chains, 212 stale records, 51 with
+      nothing to check them by. Candidates within reach go from 1,682 to 2,402; loading takes about
+      400 ms instead of 230, and ranking about 190 ms.
+    - Bronxville: 63 venues to 94. Its Sunday family search has 85 options instead of 54, and the
+      Ready places still lead.
+  - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
+    them can be Ready. And golden scenarios with Overture's places, once reviewed.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use

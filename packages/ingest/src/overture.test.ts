@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { matchKey } from "@outrn/core";
 import type { OverturePlace } from "@outrn/sources";
-import { bboxAround, claimsFor, domainNamesVenue, genericName, matchVenue, PlaceIndex, venuePhone, venueWebsite, type MatchVenue, type OvertureMatch } from "./overture.js";
+import { bboxAround, chainName, claimsFor, domainNamesVenue, genericName, KNOWN_CHAINS, kindEstimates, matchVenue, mostlyLatin, namesake, newPlaceGate, placeFacts, PlaceIndex, venuePhone, venueWebsite, type MatchVenue, type OvertureMatch } from "./overture.js";
 
 const AT = { lat: 40.7205, lon: -73.9881 };
 /** A point `m` metres north of AT. */
@@ -182,5 +182,122 @@ describe("the box to read", () => {
     expect(b.north).toBeCloseTo(north(1150).lat, 4);
     expect(b.east - AT.lon).toBeGreaterThan(150 / 111_320);
     expect(() => bboxAround([], 150)).toThrow(/no venues/);
+  });
+});
+
+describe("places OSM lacks", () => {
+  // A place that can be checked: a phone number (see contactable).
+  const np = (over: Partial<OverturePlace> = {}) => place({ phones: ["2125550100"], ...over });
+
+  it("only a confident, open place of a kind we map, not from a company register alone", () => {
+    expect(newPlaceGate(np({ name: "Gotan", category: "coffee_shop" }))).toEqual({ category: "cafe" });
+    expect(newPlaceGate(np({ name: "Sorso", category: "lounge" }))).toEqual({ category: "bar" });
+    expect(newPlaceGate(np({ name: "A.I.R. Gallery", category: "art_gallery" }))).toEqual({ category: "gallery" });
+    expect(newPlaceGate(np({ name: "Gotan", status: "permanently_closed" }))).toEqual({ skip: "status" });
+    expect(newPlaceGate(np({ name: "Gotan", status: "temporarily_closed" }))).toEqual({ skip: "status" });
+    expect(newPlaceGate(np({ name: "Gotan", confidence: 0.79 }))).toEqual({ skip: "confidence" });
+    expect(newPlaceGate(np({ name: "Gotan", confidence: null }))).toEqual({ skip: "confidence" });
+    expect(newPlaceGate(np({ name: "Gotan", datasets: ["BrightQuery"] }))).toEqual({ skip: "register" });
+    expect(newPlaceGate(np({ name: "Gotan", datasets: ["BrightQuery", "meta"] }))).toEqual({ category: "restaurant" });
+    // Kinds OSM maps well (parks, museums, libraries, theatres), kinds that say too little, and fast food (the founder's call).
+    for (const category of ["park", "museum", "library", "theatre_venue", "movie_theater", "fast_food_restaurant", "food_and_beverage_store", "historic_site", "specialty_store", "playground", "constructor"]) {
+      expect(newPlaceGate(np({ name: "Gotan", category })), category).toEqual({ skip: "category" });
+    }
+  });
+
+  it("a way to check first: a phone, or a website that is the place's own", () => {
+    expect(newPlaceGate(place({ name: "Gotan" }))).toEqual({ skip: "contact" });
+    expect(newPlaceGate(place({ name: "Gotan", phones: ["not a phone"] }))).toEqual({ skip: "contact" });
+    expect(newPlaceGate(place({ name: "Gotan", websites: ["https://www.timeout.com/newyork/restaurants/best-new"] }))).toEqual({ skip: "contact" });
+    expect(newPlaceGate(place({ name: "Gotan", websites: ["https://www.instagram.com/gotan"] }))).toEqual({ skip: "contact" });
+    expect(newPlaceGate(place({ name: "Gotan", websites: ["https://gotannyc.com/"] }))).toEqual({ category: "restaurant" });
+    expect(newPlaceGate(place({ name: "Gotan", phones: ["+1 (212) 555-0142"] }))).toEqual({ category: "restaurant" });
+  });
+
+  it("a record not updated in two years before the read is not news about a place open now", () => {
+    const asOf = new Date("2026-09-29T00:00:00Z");
+    expect(newPlaceGate(np({ name: "Formerly Crow's", category: "bar", updatedAt: "2013-01-29T05:21:15.170Z" }), KNOWN_CHAINS, asOf)).toEqual({ skip: "stale" });
+    expect(newPlaceGate(np({ name: "Gotan", updatedAt: null }), KNOWN_CHAINS, asOf)).toEqual({ skip: "stale" });
+    expect(newPlaceGate(np({ name: "Gotan", updatedAt: "2025-01-01T00:00:00.000Z" }), KNOWN_CHAINS, asOf)).toEqual({ category: "restaurant" });
+  });
+
+  it("a name mostly in another script is a record misplaced from abroad", () => {
+    expect(mostlyLatin("Gotan")).toBe(true);
+    expect(mostlyLatin("Bánh Mì Cô Út")).toBe(true);
+    expect(mostlyLatin("ร้านโรตีบังดัน สาขา2 -เฉวง")).toBe(false);
+    expect(mostlyLatin("Juisangkong cafe จุ้ยแสงคงคาเฟ่ คาเฟ่ในดงสละ")).toBe(false);
+    expect(mostlyLatin("98")).toBe(false);
+    expect(newPlaceGate(np({ name: "ร้านโรตีบังดัน สาขา2 -เฉวง" }))).toEqual({ skip: "name" });
+  });
+
+  it("a name that is a name: not generic words, an address, a street, a company, a shop, or an artist's studio", () => {
+    for (const name of ["Deli & Grocery", "Pizza", "142 Sullivan St", "12A Orchard Street", "Grove st", "MoMoya 4 inc", "Lucky Star LLC", "S1 Grocers & Gourmet Deli", "Stuyvesant Gourmet Deli", "Ferris Mini Market and Deli", "Essex Pharmacy", "  "]) {
+      expect(newPlaceGate(np({ name })), name).toEqual({ skip: "name" });
+    }
+    expect(newPlaceGate(np({ name: "Nancy Pantirer Studio", category: "art_gallery" }))).toEqual({ skip: "name" });
+    // A restaurant may be named for its address; a studio restaurant is a restaurant.
+    expect(newPlaceGate(np({ name: "87 Ludlow" }))).toEqual({ category: "restaurant" });
+    expect(newPlaceGate(np({ name: "Studio Makan" }))).toEqual({ category: "restaurant" });
+  });
+
+  it("chains are left out: known ones, brands OSM tags, and a chain's name with more after it", () => {
+    for (const name of ["Starbucks", "Dunkin'", "Baskin-Robbins", "Häagen-Dazs & Cinnabon", "McDonald's"]) expect(newPlaceGate(np({ name })), name).toEqual({ skip: "chain" });
+    const withOsm = new Set([...KNOWN_CHAINS, matchKey("Joe's Pizza")]);
+    expect(newPlaceGate(np({ name: "Joe's Pizza" }), withOsm)).toEqual({ skip: "chain" });
+    expect(newPlaceGate(np({ name: "Joe's Pizza" }))).toEqual({ category: "restaurant" });
+    // Whole words from the start: "Starbucks" does not take "Starbuck Diner"; a brand inside a name is not its chain.
+    expect(chainName(matchKey("Starbuck Diner"), KNOWN_CHAINS)).toBe(false);
+    expect(chainName(matchKey("Not Starbucks"), KNOWN_CHAINS)).toBe(false);
+  });
+
+  it("the kind from the name when Overture only says restaurant: ice cream is dessert, a bakery or coffee bar a café", () => {
+    expect(newPlaceGate(np({ name: "Sweet Moon Ice Cream" }))).toEqual({ category: "dessert" });
+    expect(newPlaceGate(np({ name: "Eileen's Special Cheesecake" }))).toEqual({ category: "dessert" });
+    expect(newPlaceGate(np({ name: "Topps Bakery" }))).toEqual({ category: "cafe" });
+    expect(newPlaceGate(np({ name: "Voyager Espresso", category: "casual_eatery" }))).toEqual({ category: "cafe" });
+    // Only for a restaurant: a bar named for its coffee is still a bar.
+    expect(newPlaceGate(np({ name: "Coffee Bar Nights", category: "bar" }))).toEqual({ category: "bar" });
+  });
+
+  it("a namesake is left out: the same name within 500 m, or a distinctive word in common within 100 m", () => {
+    expect(namesake("Hunan 3", "Hunan III", 30)).toBe(true);
+    expect(namesake("Essex Kitchen", "Essex Kitchen", 300)).toBe(true);
+    expect(namesake("Essex Kitchen", "Essex Kitchen", 600)).toBe(false);
+    expect(namesake("The Grand Noodle House", "Grand Kitchen", 80)).toBe(true);
+    expect(namesake("The Grand Noodle House", "Grand Kitchen", 150)).toBe(false);
+    // Generic words alone tie nothing: "Thai Kitchen" beside "Italian Kitchen" are two places.
+    expect(namesake("Thai Kitchen", "Italian Kitchen", 20)).toBe(false);
+    expect(namesake("Sorso", "Gotan", 5)).toBe(false);
+  });
+
+  it("each kind gets the estimates the OSM rules give it, from its bare tags", () => {
+    const kinds = ["restaurant", "cafe", "dessert", "bar", "gallery", "live_music", "nightclub", "arcade", "market"] as const;
+    for (const k of kinds) expect(() => kindEstimates(k), k).not.toThrow();
+    const of = (k: (typeof kinds)[number], attribute: string) => kindEstimates(k).find((e) => e.attribute === attribute)?.value;
+    expect(of("cafe", "admission")).toEqual({ requirement: "walk_in" });
+    expect(of("gallery", "admission")).toEqual({ requirement: "walk_in" });
+    expect(of("gallery", "price")).toMatchObject({ free: true });
+    expect(of("bar", "age_limit")).toEqual({ minAge: 21 });
+    expect(of("live_music", "admission")).toEqual({ requirement: "ticket" });
+    expect(kindEstimates("restaurant").every((e) => e.attribute !== "name" && e.attribute !== "category")).toBe(true);
+  });
+
+  it("a new place's facts: its name and kind, status and contact details as for any match, and its kind's estimates", () => {
+    const now = new Date("2026-09-29T00:00:00Z");
+    const p = place({ id: "ovt-gotan", name: "Gotan", category: "coffee_shop", websites: ["https://www.instagram.com/gotan", "https://gotannyc.com/"], phones: ["2125550123"] });
+    const f = placeFacts("venue-1", p, "cafe", "run-1", now);
+    const by = (a: string) => f.find((x) => x.attribute === a);
+    expect(by("name")).toMatchObject({ value: { value: "Gotan" }, evidenceClass: "published", sourceId: "overture", lineageGroup: "overture", confidence: 0.8 });
+    expect(by("category")).toMatchObject({ value: { value: "cafe" }, evidence: "Overture place ovt-gotan: coffee_shop" });
+    expect(by("business_status")).toMatchObject({ value: { status: "operating" }, confidence: 0.6 });
+    expect(by("website")).toMatchObject({ value: { value: "https://gotannyc.com/" } });
+    expect(by("phone")).toMatchObject({ value: { value: "+1 212-555-0123" } });
+    expect(by("admission")).toMatchObject({ value: { requirement: "walk_in" }, evidenceClass: "estimate" });
+    expect(by("opening_hours")).toBeUndefined();
+    // One claim per attribute: the place's own status, never a kind estimate beside it.
+    expect(f.filter((x) => x.attribute === "business_status")).toHaveLength(1);
+    expect(new Set(f.map((x) => x.attribute)).size).toBe(f.length);
+    // Without Overture's signal or a confident record, no status at all: still no estimate in its place.
+    expect(placeFacts("venue-1", { ...p, confidence: 0.5 }, "cafe", null, now).some((x) => x.attribute === "business_status")).toBe(false);
   });
 });

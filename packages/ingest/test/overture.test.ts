@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -202,5 +202,108 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     // Nor one dated after the capture was taken: it would outrank every later check.
     const future = { ...undated, statusUpdatedAt: "2099-01-01T00:00:00.000Z" };
     await expect(ingestOverture(db, { areaSlug: "les", fromFile: capture("future", [future]) })).rejects.toThrow(/after the capture was taken/);
+  });
+});
+
+describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
+  // South of Delancey, 400 m and more from every synthetic venue.
+  const GOTAN = place({ id: "ovt-new-gotan", name: "Gotan", category: "coffee_shop", lat: 40.716, lon: -73.987, websites: ["https://www.instagram.com/gotan", "https://gotannyc.example.com/"], phones: ["2125550199"], ...SIGNAL });
+  const MOON = place({ id: "ovt-new-moon", name: "Sweet Moon Ice Cream", lat: 40.715, lon: -73.989, phones: ["2125550177"] });
+  // Beside Norfolk Bar (40.726726, -73.99412): 5 m off, most likely its storefront under an old name; 15 m off, the bar next door.
+  const SAME_SPOT = place({ id: "ovt-new-velvet", name: "Velvet Room", category: "bar", lat: 40.726771, lon: -73.99412, phones: ["2125550166"] });
+  const NEXT_DOOR = place({ id: "ovt-new-owl", name: "Night Owl", category: "bar", lat: 40.726861, lon: -73.99412, phones: ["2125550155"] });
+  const LEFT_OUT = [
+    place({ id: "ovt-new-sbux", name: "Starbucks", category: "coffee_shop", lat: 40.7155, lon: -73.988 }),
+    place({ id: "ovt-new-bq", name: "Lucky Orchid Noodles", datasets: ["BrightQuery"], lat: 40.7165, lon: -73.986 }),
+    place({ id: "ovt-new-low", name: "Kinfolk Tavern", category: "bar", confidence: 0.7, lat: 40.7145, lon: -73.9875 }),
+    place({ id: "ovt-new-cart", name: "Halal Cart Supreme", category: "fast_food_restaurant", lat: 40.7152, lon: -73.9865 }),
+    // 66 m from Grand Kitchen, sharing its one distinctive word; and Essex Kitchen's name 300 m from it.
+    place({ id: "ovt-new-grand", name: "The Grand Noodle House", lat: 40.7275, lon: -73.99268, phones: ["2125550144"] }),
+    { ...ESSEX_FAR, id: "ovt-new-essex", phones: ["2125550133"] },
+    SAME_SPOT,
+    // Nothing to check it by.
+    place({ id: "ovt-new-mute", name: "Quiet Lantern", lat: 40.7142, lon: -73.9895 }),
+    // Last updated in 2013.
+    place({ id: "ovt-new-old", name: "Formerly Crow's", category: "bar", lat: 40.7147, lon: -73.9899, phones: ["2125550122"], updatedAt: "2013-01-29T05:21:15.170Z" }),
+  ];
+  const venuesNamed = async (name: string) => (await db.query<{ id: string; publish_state: string; category: string }>(`select id, publish_state, category from venues where canonical_name = $1 and publish_state <> 'merged'`, [name])).rows;
+  const links = async (name: string) =>
+    (
+      await db.query<{ source_id: string; external_id: string; decision: string }>(
+        `select se.source_id, se.external_id, l.decision from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = $1 and l.superseded_by is null order by se.source_id`,
+        [await venueId(name)],
+      )
+    ).rows;
+
+  it("adds a confident, open, local place no venue could be: Overture its only source, Check first for want of hours", async () => {
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: capture("new", [GRAND, GOTAN, MOON, NEXT_DOOR, ...LEFT_OUT]) });
+    expect(s.newPlaces).toMatchObject({ added: 3, kept: 0, removed: 0, possibleDuplicates: 3, skipped: { status: 0, confidence: 1, register: 1, category: 1, name: 0, chain: 1, stale: 1, contact: 1 } });
+    expect(s.newPlaces!.examples).toEqual(["Gotan (cafe)", "Sweet Moon Ice Cream (dessert)", "Night Owl (bar)"]);
+    // Grand Kitchen's own place still only speaks for Grand Kitchen.
+    expect(await venuesNamed("Grand Kitchen")).toHaveLength(1);
+
+    expect(await venuesNamed("Gotan")).toMatchObject([{ publish_state: "eligible", category: "cafe" }]);
+    expect(await links("Gotan")).toEqual([{ source_id: "overture", external_id: "ovt-new-gotan", decision: "auto" }]);
+    expect(await current("Gotan", "name")).toMatchObject({ value: { value: "Gotan" }, source_ids: ["overture"] });
+    expect(await current("Gotan", "business_status")).toMatchObject({ value: { status: "operating" }, confidence: "0.750" });
+    expect(await current("Gotan", "website")).toMatchObject({ value: { value: "https://gotannyc.example.com/" } });
+    expect(await current("Gotan", "phone")).toMatchObject({ value: { value: "+1 212-555-0199" } });
+    expect(await current("Gotan", "admission")).toMatchObject({ value: { requirement: "walk_in" } });
+    // No hours: the engine can only ever say Check first.
+    expect(await current("Gotan", "opening_hours")).toBeUndefined();
+    // Overture files the ice cream parlor as a restaurant; its name says what it is.
+    expect(await venuesNamed("Sweet Moon Ice Cream")).toMatchObject([{ category: "dessert" }]);
+    for (const p of LEFT_OUT.filter((x) => x.name !== "Essex Kitchen")) expect(await venuesNamed(p.name), p.name).toEqual([]);
+    // The bar next door is its own place; the one on Norfolk Bar's spot is not.
+    expect(await venuesNamed("Night Owl")).toMatchObject([{ publish_state: "eligible", category: "bar" }]);
+    expect(await venuesNamed("Essex Kitchen")).toHaveLength(1);
+    // A place left out keeps no record.
+    expect((await db.query(`select 1 from source_entities where source_id = 'overture' and external_id = 'ovt-new-grand'`)).rowCount).toBe(0);
+    const run = await db.query(`select counts->>'new_places_added' as added from ingestion_runs where id = $1`, [s.runId]);
+    expect(run.rows).toEqual([{ added: "3" }]);
+  });
+
+  it("replaying the same read adds nothing and changes nothing", async () => {
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "new.json") });
+    expect(s.newPlaces).toMatchObject({ added: 0, kept: 3, removed: 0 });
+    expect(s.facts).toEqual({ inserted: 0, superseded: 0, rejected: 0 });
+    expect(await venuesNamed("Gotan")).toHaveLength(1);
+  });
+
+  it("a read without it takes it down; a later read with it lists it again", async () => {
+    const without = await ingestOverture(db, { areaSlug: "les", fromFile: capture("without-gotan", [GRAND, MOON, NEXT_DOOR]) });
+    expect(without.newPlaces).toMatchObject({ added: 0, kept: 2, removed: 1 });
+    expect(await venuesNamed("Gotan")).toMatchObject([{ publish_state: "candidate" }]);
+    expect(await current("Gotan", "name")).toBeUndefined();
+    expect((await db.query(`select deleted_at is not null as gone from source_entities where source_id = 'overture' and external_id = 'ovt-new-gotan'`)).rows).toEqual([{ gone: true }]);
+
+    const back = await ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "new.json") });
+    expect(back.newPlaces).toMatchObject({ added: 0, kept: 3, removed: 0 });
+    expect(await venuesNamed("Gotan")).toMatchObject([{ publish_state: "eligible" }]);
+    expect((await db.query(`select deleted_at is null as back from source_entities where source_id = 'overture' and external_id = 'ovt-new-gotan'`)).rows).toEqual([{ back: true }]);
+  });
+
+  it("when OSM maps the place, OSM's record joins the same venue and Overture only confirms it: no second card", async () => {
+    const osm = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: unknown[] };
+    const node = { type: "node", id: 990001, tags: { name: "Gotan", amenity: "cafe", opening_hours: "Mo-Su 08:00-18:00" }, timestamp: "2026-09-20T00:00:00.000Z", version: 1, lat: GOTAN.lat, lon: GOTAN.lon };
+    const withGotan = join(DIR, "les-with-gotan.json");
+    writeFileSync(withGotan, JSON.stringify({ ...osm, elements: [...osm.elements, node] }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: withGotan });
+    expect(await venuesNamed("Gotan")).toHaveLength(1);
+    expect((await links("Gotan")).map((l) => l.source_id)).toEqual(["osm", "overture"]);
+    expect(await current("Gotan", "opening_hours")).toMatchObject({ source_ids: ["osm"] });
+
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "new.json") });
+    expect(s.newPlaces).toMatchObject({ added: 0, kept: 2, removed: 0 });
+    expect(await venuesNamed("Gotan")).toMatchObject([{ publish_state: "eligible" }]);
+    // Now a venue like any other: Overture's status and the contact details OSM lacks; OSM's name and kind.
+    expect(await overtureFacts("Gotan")).toEqual(["business_status", "phone", "website"]);
+    expect(await current("Gotan", "name")).toMatchObject({ source_ids: ["osm"] });
+  });
+
+  it("--no-new-places checks existing venues only", async () => {
+    const s = await ingestOverture(db, { areaSlug: "les", newPlaces: false, fromFile: capture("no-new", [GRAND, place({ id: "ovt-new-kafana", name: "Kafana", lat: 40.7148, lon: -73.9902, phones: ["2125550111"] })]) });
+    expect(s.newPlaces).toBeNull();
+    expect(await venuesNamed("Kafana")).toEqual([]);
   });
 });
