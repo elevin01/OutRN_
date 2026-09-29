@@ -14,7 +14,7 @@ import { fetchOverturePlaces, finishRun, loadOvertureCapture, overtureCapture, p
  *  - Any open match: "operating", published. 0.75 when Overture's own status signal backs it,
  *    0.6 when only a confident record does (0.8+), nothing otherwise.
  *  - Closed: only when no match is open or temporarily closed, and a match closed permanently has
- *    all of: Overture's status signal (0.9+); the venue's name, within 60 m; a kind the venue's could
+ *    all of: Overture's status signal (0.9+), with its own date; the venue's name, within 60 m; a kind the venue's could
  *    be; a record confidence of 0.5+; a dataset other than a company register (a dissolved company
  *    is not a closed storefront). Never for a venue whose name is only generic words ("Deli &
  *    Grocery", "Pizza"): the same name 50 m away is as likely another shop. A closure excludes the
@@ -225,7 +225,9 @@ export function genericName(nameKey: string): boolean {
 function closes(venue: Pick<MatchVenue, "category">, m: OvertureMatch): boolean {
   const p = m.place;
   return (
-    p.status === "permanently_closed" && (p.statusSignal ?? 0) >= SIGNAL &&
+    // Dated by the signal itself: an undated closure would read as new on every run (its fetch time)
+    // and outrank a founder's later check; another field's date says nothing about the closure.
+    p.status === "permanently_closed" && (p.statusSignal ?? 0) >= SIGNAL && p.statusUpdatedAt !== null &&
     m.name === "same" && m.metres <= CLOSURE_MATCH_M &&
     (ownValue(ACCEPTS, venue.category) ?? ACCEPTS.other).has(p.category) &&
     (p.confidence ?? 0) >= CLOSURE_CONFIDENCE &&
@@ -250,7 +252,7 @@ export function claimsFor(venue: Pick<MatchVenue, "nameKey" | "category">, match
     const closed = matches.find((m) => closes(venue, m));
     if (closed) {
       const p = closed.place;
-      claims.push({ attribute: "business_status", value: { status: "closed_permanently" }, confidence: 0.65, evidence: `Overture place ${p.id} "${p.name}": permanently closed, by Overture's operating-status signal`, sourceUpdatedAt: date(p.statusUpdatedAt ?? p.updatedAt) });
+      claims.push({ attribute: "business_status", value: { status: "closed_permanently" }, confidence: 0.65, evidence: `Overture place ${p.id} "${p.name}": permanently closed, by Overture's operating-status signal`, sourceUpdatedAt: date(p.statusUpdatedAt) });
     }
   }
   // Contact details only from a place believed to be operating, that is the venue and not something in it.

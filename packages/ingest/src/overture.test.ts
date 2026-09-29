@@ -73,7 +73,7 @@ describe("what a venue's matches claim", () => {
   });
 
   it("closed only on Overture's signal, for the same name close by, and never while a duplicate is open", () => {
-    const closed = { status: "permanently_closed", statusSignal: 1 } as const;
+    const closed = { status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-06-26T16:25:14.000Z" } as const;
     expect(claimsFor(GK, [m(closed)], none)).toEqual([expect.objectContaining({ value: { status: "closed_permanently" }, confidence: 0.65 })]);
     // A company register's "closed" (no signal) is not a closed storefront.
     expect(claimsFor(GK, [m({ status: "permanently_closed" })], none)).toEqual([]);
@@ -85,7 +85,7 @@ describe("what a venue's matches claim", () => {
   });
 
   describe("a permanent closure needs every condition", () => {
-    const closed: Partial<OverturePlace> = { status: "permanently_closed", statusSignal: 1, confidence: 0.9, datasets: ["meta"] };
+    const closed: Partial<OverturePlace> = { status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-06-26T16:25:14.000Z", confidence: 0.9, datasets: ["meta"] };
     const closes = (venue: { nameKey: string; category: MatchVenue["category"] }, ...matches: OvertureMatch[]) =>
       claimsFor(venue, matches, none).some((c) => (c.value as { status?: string }).status === "closed_permanently");
 
@@ -106,6 +106,14 @@ describe("what a venue's matches claim", () => {
       expect(closes(GK, m({ ...closed, confidence: 0.26 }))).toBe(false);
       expect(closes(GK, m({ ...closed, confidence: null }))).toBe(false);
       expect(closes(GK, m({ ...closed, confidence: 0.5 }))).toBe(true);
+    });
+
+    it("a signal with its own date, and the closure dated by it alone", () => {
+      // Undated, it would read as new on every run and outrank a founder's later check.
+      expect(closes(GK, m({ ...closed, statusUpdatedAt: null }))).toBe(false);
+      expect(closes(GK, m({ ...closed, statusUpdatedAt: null, updatedAt: "2026-09-01T00:00:00.000Z" }))).toBe(false);
+      const claim = claimsFor(GK, [m({ ...closed, updatedAt: "2026-09-01T00:00:00.000Z" })], none).find((c) => c.attribute === "business_status");
+      expect(claim?.sourceUpdatedAt).toEqual(new Date("2026-06-26T16:25:14.000Z"));
     });
 
     it("never while any match is temporarily closed", () => {

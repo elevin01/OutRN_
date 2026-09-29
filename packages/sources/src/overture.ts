@@ -403,9 +403,16 @@ const CaptureSchema = z
   .strict()
   .superRefine((c, ctx) => {
     const seen = new Set<string>();
+    // A date after the capture was taken is not one it could have read: a closure dated 2099 would
+    // outrank every later check. A day of slack for clocks and time zones.
+    const latest = Date.parse(c.fetchedAt) + 86_400_000;
     c.places.forEach((p, i) => {
       if (seen.has(p.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["places", i, "id"], message: `duplicate place id ${p.id}` });
       seen.add(p.id);
+      for (const key of ["statusUpdatedAt", "updatedAt"] as const) {
+        const d = p[key];
+        if (d !== null && Date.parse(d) > latest) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["places", i, key], message: `${d} is after the capture was taken (${c.fetchedAt})` });
+      }
     });
   });
 

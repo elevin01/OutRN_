@@ -188,4 +188,19 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     expect(await state("Norfolk Kitchen")).toBe("eligible");
     expect(await closureTasks("Norfolk Kitchen")).toEqual([]);
   });
+
+  it("an undated closure never outranks a founder's check, on the first run or a replay", async () => {
+    const at = async (name: string) => (await db.query<{ lat: number; lon: number }>(`select ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues where id = $1`, [await venueId(name)])).rows[0]!;
+    await setFounderFact(db, { venueId: await venueId("Broome Kitchen"), attribute: "business_status", value: { status: "operating" }, evidence: "called", verifiedAt: new Date("2026-09-20T18:00:00Z") });
+    const undated = place({ id: "ovt-broome-undated", name: "Broome Kitchen", ...(await at("Broome Kitchen")), status: "permanently_closed", statusSignal: 1, statusUpdatedAt: null, updatedAt: null });
+    for (const run of ["first", "replay"]) {
+      const s = await ingestOverture(db, { areaSlug: "les", fromFile: run === "first" ? capture("undated", [undated]) : join(DIR, "undated.json") });
+      expect(s.claims.closed, run).toBe(0);
+      expect(await state("Broome Kitchen"), run).toBe("eligible");
+      expect(await current("Broome Kitchen", "business_status"), run).toMatchObject({ value: { status: "operating" }, source_ids: ["founder"] });
+    }
+    // Nor one dated after the capture was taken: it would outrank every later check.
+    const future = { ...undated, statusUpdatedAt: "2099-01-01T00:00:00.000Z" };
+    await expect(ingestOverture(db, { areaSlug: "les", fromFile: capture("future", [future]) })).rejects.toThrow(/after the capture was taken/);
+  });
 });
