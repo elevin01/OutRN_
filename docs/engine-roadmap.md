@@ -100,14 +100,24 @@ changelog.
   posts can be embedded by URL, curated or sent in by venues, and YouTube has an API.
 
 ### Batch 6: ranking quality
-- **Part 1 (next PR): golden scenarios, time of day, and travel against the window.**
-  - **Golden scenarios:** twelve fixed searches over the synthetic areas, with each ranking's top
-    six pinned in `fixtures/golden/scenarios.json` and checked in CI. `pnpm golden` accepts an
-    intended change as a reviewable diff.
-  - **Time-of-day fit:** each kind of place has prime, fair and off hours, and parks and gardens
-    end an hour after sunset. Off hours sink a place in ranking, and variety no longer promotes it.
-    Examples: a park at 10:30pm, a bar at 10am or 3pm, a café at 9pm. Prime hours lift it a
-    little. It never excludes.
+- **Part 1 (this PR): relevant results on real places.**
+  - **Golden scenarios:** fifteen fixed searches over the real LES and Bronxville captures, with
+    each ranking's top six pinned in `fixtures/golden/scenarios.json` and checked in CI.
+    `pnpm golden` accepts an intended change as a reviewable diff. Places equal on merit are
+    ordered by evidence, then distance, then name, so the same search always gives the same order.
+  - **Time-of-day fit:** each kind of place has prime, fair and off hours. Parks and gardens are
+    fair in the last 45 minutes before sunset and off after it. Off hours sink a place in ranking,
+    and variety no longer promotes it. Examples: a park after dark, a bar at 10am or 3pm, a café at
+    9pm. Prime hours lift it a little. It never excludes.
+  - **Who can go:** `access=private` (and no, members, permit) and a university or school's own
+    library are members only, and never an option.
+  - **Free when it is:** a public library and a commercial art gallery are estimated free, and a
+    gallery walk-in, so "free" and weekend afternoons include them.
+  - **Children:** a bar that serves food and names no age limit is shown to families, flagged
+    ("check children are welcome") and ranked below family places.
+  - **Nothing listed:** a cinema, theatre or music venue with no events loaded but its own website
+    is a Check-first "check what's on" in its time of day (evenings, weekend matinees). Without a
+    site, or in the morning, it is still not an option.
   - **Travel against the window:** a walk counts against the time the user has, so a 15-minute
     walk weighs more in an hour than in an evening.
 - **Still to do:**

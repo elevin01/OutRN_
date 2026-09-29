@@ -6,9 +6,10 @@ import { ingestOsmArea } from "@outrn/ingest";
 import { runEngine } from "../src/service/recommendations.js";
 
 /**
- * The golden scenario set: fixed searches over the synthetic areas, and the ranking each one gives.
- * A change to the engine that moves what people see shows up as a reviewable diff of
- * fixtures/golden/scenarios.json, not as a surprise. Accept a reviewed change with `pnpm golden`.
+ * The golden scenario set: fixed searches over real places (the OpenStreetMap captures in
+ * fixtures/live, ODbL, © OpenStreetMap contributors), and the ranking each one gives. A change to the
+ * engine that moves what people see shows up as a reviewable diff of fixtures/golden/scenarios.json,
+ * not as a surprise: read it as "would I go there, then?". Accept a reviewed change with `pnpm golden`.
  */
 
 export const GOLDEN_FILE = "fixtures/golden/scenarios.json";
@@ -26,14 +27,17 @@ interface GoldenScenario {
 
 export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   { id: "les-sat-morning", title: "LES, Saturday 10am, 3 hours, walking", at: "2026-10-03T14:00:00Z", request: { areaId: "les", windowMinutes: 180 } },
+  { id: "les-sat-afternoon", title: "LES, Saturday 2pm, 2 hours", at: "2026-10-03T18:00:00Z", request: { areaId: "les", windowMinutes: 120 } },
   { id: "les-sat-afternoon-free", title: "LES, Saturday 2pm, 2 hours, free only", at: "2026-10-03T18:00:00Z", request: { areaId: "les", windowMinutes: 120, budget: { kind: "free" } } },
   { id: "les-sat-evening", title: "LES, Saturday 6:30pm, 3 hours", at: "2026-10-03T22:30:00Z", request: { areaId: "les", windowMinutes: 180 } },
   { id: "les-sat-late", title: "LES, Saturday 10:30pm, 2 hours", at: "2026-10-04T02:30:00Z", request: { areaId: "les", windowMinutes: 120 } },
+  { id: "les-sun-brunch", title: "LES, Sunday 11am, 2 hours, food", at: "2026-10-04T15:00:00Z", request: { areaId: "les", windowMinutes: 120, categories: ["restaurant", "cafe"] } },
   { id: "les-sun-family", title: "LES, Sunday 1pm, 4 hours, family", at: "2026-10-04T17:00:00Z", request: { areaId: "les", windowMinutes: 240, company: "family" } },
   { id: "les-tue-breakfast", title: "LES, Tuesday 8am, 1 hour", at: "2026-09-29T12:00:00Z", request: { areaId: "les", windowMinutes: 60 } },
   { id: "les-tue-afternoon", title: "LES, Tuesday 3pm, 2 hours", at: "2026-09-29T19:00:00Z", request: { areaId: "les", windowMinutes: 120 } },
   { id: "les-wed-lunch-takeout", title: "LES, Wednesday 12:30pm, 45 minutes, food to go", at: "2026-09-30T16:30:00Z", request: { areaId: "les", windowMinutes: 45, categories: ["restaurant", "cafe"], visitStyle: "takeout" } },
   { id: "les-fri-date", title: "LES, Friday 7:30pm, 90 minutes, a date", at: "2026-10-02T23:30:00Z", request: { areaId: "les", windowMinutes: 90, company: "date" } },
+  { id: "les-fri-movies", title: "LES, Friday 7pm, 3 hours, a movie or a show", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 180, categories: ["cinema", "theatre", "live_music"] } },
   { id: "bronxville-sat-evening", title: "Bronxville, Saturday 7:30pm, 2 hours, driving", at: "2026-10-03T23:30:00Z", request: { areaId: "bronxville", windowMinutes: 120 } },
   { id: "bronxville-sun-family", title: "Bronxville, Sunday noon, 3 hours, family", at: "2026-10-04T16:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, company: "family" } },
   { id: "bronxville-mon-after-work", title: "Bronxville, Monday 5:30pm, 90 minutes", at: "2026-09-28T21:30:00Z", request: { areaId: "bronxville", windowMinutes: 90 } },
@@ -58,10 +62,11 @@ export interface GoldenResult {
   relaxations: string[];
 }
 
-/** A throwaway database seeded with the synthetic areas: the same data every run. */
+/** A throwaway database seeded with the real captures: the same data every run. */
 export async function seedGolden(db: Db, root: string): Promise<void> {
   await reset(db);
-  for (const area of ["les", "bronxville"]) await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(root, `fixtures/osm/${area}-synthetic.json`), clock: () => new Date("2026-09-26T12:00:00Z") });
+  // Just after the captures were made (OSM base 2026-09-27), so their survey dates all count.
+  for (const area of ["les", "bronxville"]) await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}.json`), clock: () => new Date("2026-09-28T12:00:00Z") });
 }
 
 export async function runGolden(db: Db): Promise<GoldenResult[]> {

@@ -12,4 +12,6 @@ To capture a **real** response from a machine with network access:
 
     pnpm outrn ingest osm --area les --save fixtures/live/les.json
 
-`fixtures/live/` is gitignored; real OSM data is ODbL and must be attributed when redistributed.
+`fixtures/live/` holds real OpenStreetMap captures (© OpenStreetMap contributors, ODbL: attribute
+them when redistributed). The committed `les.json` and `bronxville.json` (OSM base 2026-09-27) are
+what the golden ranking scenarios run on; other captures stay local unless added on purpose.

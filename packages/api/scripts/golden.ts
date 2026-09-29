@@ -1,6 +1,6 @@
 /**
  * Regenerates fixtures/golden/scenarios.json: what the engine ranks first for each golden scenario,
- * on the synthetic areas. Run it when a ranking change is intended, and review the diff.
+ * on the real LES and Bronxville captures. Run it when a ranking change is intended, and review the diff.
  *
  *   pnpm golden
  */

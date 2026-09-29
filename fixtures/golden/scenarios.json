@@ -4,11 +4,96 @@
   {
    "id": "les-sat-morning",
    "title": "LES, Saturday 10am, 3 hours, walking",
-   "eligible": 62,
+   "eligible": 1360,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Seward Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hamilton Fish Park Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Essex Market",
+     "category": "market",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Shopsin's",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sat-afternoon",
+   "title": "LES, Saturday 2pm, 2 hours",
+   "eligible": 1414,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -22,34 +107,37 @@
     },
     {
      "rank": 2,
-     "name": "Delancey Books",
-     "category": "bookshop",
+     "name": "Perrotin New York",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Orchard St. Coffee",
+     "name": "Yonah Shimmel Knish Bakery",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 4,
-     "name": "Suffolk Library",
-     "category": "library",
+     "name": "Essex Market",
+     "category": "market",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -57,25 +145,27 @@
     },
     {
      "rank": 5,
-     "name": "Delancey Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Norfolk Park",
-     "category": "park",
+     "name": "Empirical Nonsense",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Hamilton Fish Park Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -85,11 +175,11 @@
   {
    "id": "les-sat-afternoon-free",
    "title": "LES, Saturday 2pm, 2 hours, free only",
-   "eligible": 8,
+   "eligible": 209,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -103,8 +193,8 @@
     },
     {
      "rank": 2,
-     "name": "Norfolk Park",
-     "category": "park",
+     "name": "Perrotin New York",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -116,10 +206,11 @@
     },
     {
      "rank": 3,
-     "name": "Rivington Norfolk Park",
-     "category": "park",
+     "name": "Empirical Nonsense",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
@@ -128,45 +219,42 @@
     },
     {
      "rank": 4,
-     "name": "Stanton Park",
-     "category": "park",
-     "status": "check_first",
+     "name": "Hamilton Fish Park Library",
+     "category": "library",
+     "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
      ],
-     "caveats": [
-      "HOURS_UNKNOWN"
-     ]
+     "caveats": []
     },
     {
      "rank": 5,
-     "name": "Essex Garden",
-     "category": "garden",
-     "status": "check_first",
+     "name": "bitforms gallery",
+     "category": "gallery",
+     "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
      ],
-     "caveats": [
-      "ADMISSION_UNKNOWN"
-     ]
+     "caveats": []
     },
     {
      "rank": 6,
-     "name": "Broome Garden",
-     "category": "garden",
-     "status": "check_first",
+     "name": "Krause Gallery",
+     "category": "gallery",
+     "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
      ],
-     "caveats": [
-      "ADMISSION_UNKNOWN"
-     ]
+     "caveats": []
     }
    ],
    "relaxations": []
@@ -174,27 +262,25 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 53,
+   "eligible": 1417,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
-     "category": "park",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE",
-      "SUNSET_WINDOW",
       "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Forsyth Clinton Kitchen",
-     "category": "restaurant",
+     "name": "The Grand Delancey",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -205,7 +291,7 @@
     },
     {
      "rank": 3,
-     "name": "Delancey Books",
+     "name": "Sweet Pickle Books",
      "category": "bookshop",
      "status": "ready",
      "reasons": [
@@ -216,39 +302,36 @@
     },
     {
      "rank": 4,
-     "name": "Clinton Bar",
-     "category": "bar",
+     "name": "Eden Gallery",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Fan Szechuan",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Norfolk Park",
-     "category": "park",
+     "rank": 6,
+     "name": "La Contenta",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "SUNSET_WINDOW"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Rivington Norfolk Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "SUNSET_WINDOW"
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -258,47 +341,50 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 27,
+   "eligible": 891,
    "top": [
     {
      "rank": 1,
-     "name": "Clinton Bar",
+     "name": "The Grand Delancey",
      "category": "bar",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Broome Bar",
-     "category": "bar",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Delancey Tavern",
+     "name": "Excuse My French",
      "category": "bar",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 4,
-     "name": "Pitt Street Nightcap",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -306,10 +392,11 @@
     },
     {
      "rank": 5,
-     "name": "Hester Bar",
+     "name": "Mehanata Bulgarian Bar",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -317,10 +404,92 @@
     },
     {
      "rank": 6,
-     "name": "Ridge Bar",
+     "name": "Pretty Ricky's",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sun-brunch",
+   "title": "LES, Sunday 11am, 2 hours, food",
+   "eligible": 884,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Rex",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Caffè Vita",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Russ & Daughters Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Roasting Plant",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sunday to Sunday",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -332,11 +501,11 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 59,
+   "eligible": 1417,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -350,20 +519,21 @@
     },
     {
      "rank": 2,
-     "name": "Forsyth Clinton Kitchen",
+     "name": "Katz's Delicatessen",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Delancey Books",
-     "category": "bookshop",
+     "name": "Essex Market",
+     "category": "market",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -374,8 +544,8 @@
     },
     {
      "rank": 4,
-     "name": "Norfolk Park",
-     "category": "park",
+     "name": "bitforms gallery",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -387,22 +557,24 @@
     },
     {
      "rank": 5,
-     "name": "Orchard St. Coffee",
+     "name": "Yonah Shimmel Knish Bakery",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Delancey Coffee",
-     "category": "cafe",
+     "name": "Fan Szechuan",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -414,11 +586,34 @@
   {
    "id": "les-tue-breakfast",
    "title": "LES, Tuesday 8am, 1 hour",
-   "eligible": 21,
+   "eligible": 312,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
+     "name": "Davelle NYC",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Essex Market",
+     "category": "market",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -430,32 +625,8 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Orchard St. Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Pitt 2 Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 4,
-     "name": "Eldridge Coffee",
+     "name": "Rex",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -467,27 +638,27 @@
     },
     {
      "rank": 5,
-     "name": "Norfolk Park",
-     "category": "park",
+     "name": "Caffè Vita",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "OPEN_LATE",
-      "FREE"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Delancey Coffee",
+     "name": "Roasting Plant",
      "category": "cafe",
-     "status": "check_first",
+     "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
-     "caveats": [
-      "WAIT_MAY_NOT_FIT"
-     ]
+     "caveats": []
     }
    ],
    "relaxations": []
@@ -495,11 +666,11 @@
   {
    "id": "les-tue-afternoon",
    "title": "LES, Tuesday 3pm, 2 hours",
-   "eligible": 55,
+   "eligible": 1303,
    "top": [
     {
      "rank": 1,
-     "name": "Pitt Park",
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -513,7 +684,33 @@
     },
     {
      "rank": 2,
-     "name": "Delancey Books",
+     "name": "Perrotin New York",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Sweet Pickle Books",
      "category": "bookshop",
      "status": "ready",
      "reasons": [
@@ -524,34 +721,12 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Orchard St. Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Suffolk Library",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 5,
-     "name": "Norfolk Bar",
+     "name": "Conor's Goat",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "WAIT_FOR_OPENING",
       "OPEN_LATE"
      ],
@@ -559,14 +734,14 @@
     },
     {
      "rank": 6,
-     "name": "Norfolk Park",
-     "category": "park",
+     "name": "Hamilton Fish Park Library",
+     "category": "library",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -576,11 +751,11 @@
   {
    "id": "les-wed-lunch-takeout",
    "title": "LES, Wednesday 12:30pm, 45 minutes, food to go",
-   "eligible": 31,
+   "eligible": 748,
    "top": [
     {
      "rank": 1,
-     "name": "Forsyth Clinton Kitchen",
+     "name": "Shopsin's",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -592,7 +767,7 @@
     },
     {
      "rank": 2,
-     "name": "Allen Kitchen",
+     "name": "Fan Szechuan",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -604,8 +779,8 @@
     },
     {
      "rank": 3,
-     "name": "Orchard St. Coffee",
-     "category": "cafe",
+     "name": "Kalye",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -616,8 +791,8 @@
     },
     {
      "rank": 4,
-     "name": "Pitt 2 Coffee",
-     "category": "cafe",
+     "name": "Kuma Inn",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -628,8 +803,8 @@
     },
     {
      "rank": 5,
-     "name": "Eldridge Coffee",
-     "category": "cafe",
+     "name": "Ramen Ishida",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -640,10 +815,11 @@
     },
     {
      "rank": 6,
-     "name": "Delancey Coffee",
-     "category": "cafe",
+     "name": "Cloud Vietnamese",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -655,11 +831,35 @@
   {
    "id": "les-fri-date",
    "title": "LES, Friday 7:30pm, 90 minutes, a date",
-   "eligible": 43,
+   "eligible": 1193,
    "top": [
     {
      "rank": 1,
-     "name": "Delancey Books",
+     "name": "The Grand Delancey",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Soft Swerve",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Sweet Pickle Books",
      "category": "bookshop",
      "status": "ready",
      "reasons": [
@@ -669,43 +869,23 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Clinton Bar",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Eldridge Scoops",
-     "category": "dessert",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 4,
-     "name": "Hester Community House",
-     "category": "community",
+     "name": "Eden Gallery",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Delancey Tavern",
+     "name": "Excuse My French",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -713,10 +893,12 @@
     },
     {
      "rank": 6,
-     "name": "Broome Bar",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
@@ -725,25 +907,113 @@
    "relaxations": []
   },
   {
-   "id": "bronxville-sat-evening",
-   "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 18,
+   "id": "les-fri-movies",
+   "title": "LES, Friday 7pm, 3 hours, a movie or a show",
+   "eligible": 29,
    "top": [
     {
      "rank": 1,
-     "name": "Broome Scoops",
-     "category": "dessert",
-     "status": "ready",
+     "name": "Rockwood Music Hall",
+     "category": "theatre",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LANDMARK"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 2,
+     "name": "Dixon Place",
+     "category": "theatre",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LANDMARK"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 3,
+     "name": "Teatro LATEA",
+     "category": "theatre",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "Caveat",
+     "category": "theatre",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
-     "caveats": []
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "ADMISSION_UNCONFIRMED"
+     ]
     },
     {
-     "rank": 2,
-     "name": "Ridge Bar",
+     "rank": 5,
+     "name": "The Slipper Room",
+     "category": "theatre",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 6,
+     "name": "New York Theatre Workshop",
+     "category": "theatre",
+     "status": "check_first",
+     "reasons": [
+      "ENOUGH_TIME",
+      "LANDMARK"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-evening",
+   "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
+   "eligible": 49,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Ernie's Wine Bar & Eats",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -754,9 +1024,20 @@
      "caveats": []
     },
     {
+     "rank": 2,
+     "name": "Gelateria Sorella",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 3,
-     "name": "Broome Kitchen",
-     "category": "restaurant",
+     "name": "Whistling Rail",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -767,8 +1048,8 @@
     },
     {
      "rank": 4,
-     "name": "Clinton Norfolk Kitchen",
-     "category": "restaurant",
+     "name": "Growlers",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -779,7 +1060,7 @@
     },
     {
      "rank": 5,
-     "name": "Stanton Kitchen",
+     "name": "J.C. Fogarty's",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -791,12 +1072,13 @@
     },
     {
      "rank": 6,
-     "name": "Essex Kitchen",
+     "name": "tredici SOCIAL",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -806,24 +1088,25 @@
   {
    "id": "bronxville-sun-family",
    "title": "Bronxville, Sunday noon, 3 hours, family",
-   "eligible": 19,
+   "eligible": 55,
    "top": [
     {
      "rank": 1,
-     "name": "Suffolk Park",
-     "category": "park",
+     "name": "Yonkers Public Library Grinton I. Will Branch",
+     "category": "library",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE"
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Broome Kitchen",
+     "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -835,20 +1118,22 @@
     },
     {
      "rank": 3,
-     "name": "Ludlow Coffee",
-     "category": "cafe",
+     "name": "Bronxville Public Library",
+     "category": "library",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 4,
-     "name": "Attorney Coffee",
-     "category": "cafe",
+     "name": "Dumpling + Noodle",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -859,21 +1144,20 @@
     },
     {
      "rank": 5,
-     "name": "Pitt Park",
-     "category": "park",
+     "name": "Full Moon Pizza",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Attorney Kitchen",
-     "category": "restaurant",
+     "name": "Slave To the Grind",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -888,26 +1172,26 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 18,
+   "eligible": 46,
    "top": [
     {
      "rank": 1,
-     "name": "Suffolk Park",
-     "category": "park",
+     "name": "Yonkers Public Library Grinton I. Will Branch",
+     "category": "library",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE",
-      "SUNSET_WINDOW"
+      "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Broome Scoops",
-     "category": "dessert",
+     "name": "Slave To the Grind",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -918,7 +1202,7 @@
     },
     {
      "rank": 3,
-     "name": "Ridge Bar",
+     "name": "Growlers",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -930,22 +1214,8 @@
     },
     {
      "rank": 4,
-     "name": "Pitt Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "SUNSET_WINDOW"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Pitt Coffee",
-     "category": "cafe",
+     "name": "Häagen-Dazs",
+     "category": "dessert",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -955,8 +1225,19 @@
      "caveats": []
     },
     {
+     "rank": 5,
+     "name": "Hunan III",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 6,
-     "name": "Broome Kitchen",
+     "name": "Dumpling + Noodle",
      "category": "restaurant",
      "status": "ready",
      "reasons": [

@@ -53,8 +53,9 @@ on the **engine and the services behind it**. They meet at a single, versioned H
   data — not after every engine tweak. Scenarios are defined in `packages/api/scripts/fixtures.ts`;
   the UI owner can ask for new ones.
 - **The golden scenarios** pin the engine's ranking instead: `fixtures/golden/scenarios.json` holds
-  the top six for twelve fixed searches over the synthetic areas. A database test fails when the
-  ranking moves. When the move is intended, run `pnpm golden` and commit the file: its diff is how
+  the top six for fifteen fixed searches over real places (the OpenStreetMap captures of the Lower
+  East Side and Bronxville in `fixtures/live`). A database test fails when the ranking moves, so
+  review it as "would I go there, then?". When the move is intended, run `pnpm golden` and commit the file: its diff is how
   reviewers see what people will now be shown. Scenarios are defined in
   `packages/api/scripts/golden-lib.ts`.
 

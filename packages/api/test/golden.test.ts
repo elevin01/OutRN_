@@ -27,7 +27,7 @@ beforeAll(async () => {
   db = new pg.Pool({ connectionString: TEST_URL });
   await db.query("create extension if not exists postgis; create extension if not exists pgcrypto;");
   await seedGolden(db, ROOT);
-});
+}, 300_000); // two real areas: about 30 s of ingest
 
 afterAll(async () => {
   if (db) await db.end();
