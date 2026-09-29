@@ -1488,6 +1488,167 @@
    "relaxations": []
   },
   {
+   "id": "les-fri-dinner-wheelchair",
+   "title": "LES, Friday 7pm, 2 hours, dinner, step-free",
+   "eligible": 54,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Ms. Yoo",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "ACCESSIBLE_RESTROOM"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Ramen Ishida",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Contra",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Bar Bianchi",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Les Enfants de Bohème",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Kiki's",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sun-toddler",
+   "title": "LES, Sunday 12:30pm, 2 hours, food with a 2-year-old",
+   "eligible": 1276,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Russ & Daughters Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Soft Swerve",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Fan Szechuan",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Caffè Vita",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Ferrara",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
    "eligible": 79,

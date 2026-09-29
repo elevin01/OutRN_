@@ -1,4 +1,4 @@
-import { CUISINE_CATEGORIES, cuisineFromName, cuisineSlugs, dietsFromName, dietsFromTags, hasDietTags, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { CUISINE_CATEGORIES, cuisineFromName, cuisineSlugs, dietsFromName, dietsFromTags, hasDietTags, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type KidFacilities, type LatLon, type Restroom } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -7,7 +7,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  *
  * Evidence classes:
  *  - published: the tag states it (name, opening_hours, website, phone, wheelchair, fee, charge,
- *    reservation, disused, end_date, opening_date, a mapper's check_date)
+ *    reservation, disused, end_date, opening_date, a mapper's check_date, toilets, highchair)
  *  - estimate : inferred from category (walk-in for cafés, outdoor for parks, 21+ for bars)
  *
  * Dates. The element's edit timestamp covers ANY tag, so a name fix makes six-year-old hours look
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.13";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.15";
 
 export interface OsmRecord {
   externalId: string;
@@ -256,6 +256,81 @@ export function seatingOf(t: Readonly<Record<string, string>>): { outside: "yes"
   const noSeatsInside = t["indoor_seating"]?.trim().toLowerCase() === "no";
   return { outside: "yes", outdoorOnly: parts.includes("only") || noSeatsInside, evidence: `outdoor_seating=${raw}${noSeatsInside ? "; indoor_seating=no" : ""}` };
 }
+/** toilets:access values a visitor may use (a customer is a visitor), and ones they may not (staff only, none). */
+const RESTROOM_OPEN: ReadonlySet<string> = new Set(["yes", "customers", "permissive", "public", "key"]);
+const RESTROOM_CLOSED: ReadonlySet<string> = new Set(["no", "private"]);
+/** toilets:wheelchair values; "designated" (built for wheelchair users) is accessible. */
+const RESTROOM_WHEELCHAIR: Readonly<Record<string, NonNullable<Restroom["wheelchair"]>>> = { yes: "yes", designated: "yes", limited: "limited", no: "no" };
+
+/**
+ * A restroom visitors may use, and its step-free access, from toilets, toilets:access and
+ * toilets:wheelchair. What the tags don't state stays absent; a restroom visitors can't use has no
+ * access to describe, and an accessible one is a restroom. Null when the tags say nothing we know.
+ */
+export function restroomOf(t: Readonly<Record<string, string>>): { value: Restroom; evidence: string } | null {
+  const tag = (k: string) => t[k]?.trim().toLowerCase().slice(0, 50);
+  const toilets = tag("toilets");
+  const access = tag("toilets:access");
+  const wheelchair = tag("toilets:wheelchair");
+  const used: string[] = [];
+  let available: Restroom["available"];
+  if (toilets === "yes" || toilets === "customers") available = "yes";
+  else if (toilets === "no") available = "no";
+  if (available) used.push(`toilets=${toilets}`);
+  // Staff only or none: not for visitors, whatever toilets says.
+  if (access && RESTROOM_CLOSED.has(access) && available !== "no") {
+    available = "no";
+    used.push(`toilets:access=${access}`);
+  } else if (access && RESTROOM_OPEN.has(access) && !available) {
+    available = "yes";
+    used.push(`toilets:access=${access}`);
+  }
+  let wheelchairAccess: Restroom["wheelchair"];
+  if (available !== "no" && wheelchair && ownValue(RESTROOM_WHEELCHAIR, wheelchair)) {
+    wheelchairAccess = ownValue(RESTROOM_WHEELCHAIR, wheelchair);
+    used.push(`toilets:wheelchair=${wheelchair}`);
+    if (wheelchairAccess !== "no") available ??= "yes";
+  }
+  if (!available && !wheelchairAccess) return null;
+  return { value: { ...(available ? { available } : {}), ...(wheelchairAccess ? { wheelchair: wheelchairAccess } : {}) }, evidence: used.join("; ") };
+}
+
+/**
+ * What a place has for children, read as OSM documents each key:
+ *  - highchair: yes (or how many), no.
+ *  - changing_table: yes, limited (somewhere to change a diaper that isn't a purpose-built table), no.
+ *  - kids_area: yes or designated, limited, no; kids_area:indoor=yes or kids_area:outdoor=yes say
+ *    where one is. kids_area=indoor|outdoor, a documented mistake for those subtags, still counts,
+ *    but only when no documented tag says anything. A kids' area both denied and present says nothing.
+ * Other values say nothing. Null when none is stated.
+ */
+export function kidFacilitiesOf(t: Readonly<Record<string, string>>): { value: KidFacilities; evidence: string } | null {
+  const tag = (k: string) => t[k]?.trim().toLowerCase().slice(0, 50);
+  const value: KidFacilities = {};
+  const used: string[] = [];
+  const chairs = tag("highchair");
+  const highchair = chairs === undefined ? null : chairs === "yes" || /^[1-9]\d{0,2}$/.test(chairs) ? "yes" : chairs === "no" || chairs === "0" ? "no" : null;
+  if (highchair) {
+    value.highchair = highchair;
+    used.push(`highchair=${chairs}`);
+  }
+  const table = tag("changing_table");
+  if (table === "yes" || table === "limited" || table === "no") {
+    value.changing_table = table;
+    used.push(`changing_table=${table}`);
+  }
+  const area = tag("kids_area");
+  const documented = area === "yes" || area === "designated" ? "yes" : area === "limited" || area === "no" ? area : null;
+  const where = ["kids_area:indoor", "kids_area:outdoor"].filter((k) => tag(k) === "yes");
+  const legacy = area === "indoor" || area === "outdoor";
+  const kids = documented === "no" ? (where.length ? null : "no") : (documented ?? (where.length || legacy ? "yes" : null));
+  if (kids) {
+    value.kids_area = kids;
+    used.push(...(documented || legacy ? [`kids_area=${area}`] : []), ...where.map((k) => `${k}=yes`));
+  }
+  return used.length ? { value, evidence: used.join("; ") } : null;
+}
+
 /** Kinds with an age limit by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
 const DEFAULT_AGE_LIMIT: Readonly<Record<string, number>> = { casino: 21, nightclub: 21 };
 
@@ -388,6 +463,11 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // Internet access wherever it is tagged (a café, a library); "wifi" is wlan.
   const net = internetAccess(t["internet_access"]);
   if (category && net) pub("internet_access", { value: net }, `internet_access=${t["internet_access"]!.trim().slice(0, 100)}`, 0.7);
+  // A restroom (and its step-free access), and what a place has for children, wherever tagged.
+  const restroom = category ? restroomOf(t) : null;
+  if (restroom) pub("restroom", restroom.value, restroom.evidence, 0.7);
+  const kids = category ? kidFacilitiesOf(t) : null;
+  if (kids) pub("kid_facilities", kids.value, kids.evidence, 0.7);
 
   // Food to go (OSM takeaway): "only" means no seats, "no" means it is not offered.
   const takeaway = t["takeaway"]?.trim();

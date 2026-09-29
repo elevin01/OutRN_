@@ -3,7 +3,7 @@ import { fromLocal } from "@outrn/core";
 import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
-import { caveatNotes, explain, planSteps } from "./explain.js";
+import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { APPEAL_WEIGHTS } from "./score.js";
 import { parkingText, parkStepText } from "./parking.js";
@@ -1494,5 +1494,85 @@ describe("asking for a diet or a must-have", () => {
     expect(diet.relaxations.map((r) => r.code)).toEqual([]);
     const patio = recommend([...cands, eat("patio", undefined, { outdoor_seating: fact({ value: "yes" }) })], x({ features: ["outdoor_seating", "wifi"] }), POLICIES);
     expect(patio.relaxations).toEqual([{ code: "without_features", text: "without outdoor seating or Wi-Fi", admits: 5 }]);
+  });
+});
+
+describe("restrooms and what a place has for children, for who is going", () => {
+  const withFacts = (c: Candidate, extra: Candidate["facts"]): Candidate => ({ ...c, facts: { ...c.facts, ...extra } });
+  const published = (value: unknown) => ({ value, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 });
+  const cafe = (id: string, extra: Candidate["facts"] = {}) => withFacts(venue({ id, category: "cafe", hours: "Mo-Su 08:00-20:00", wheelchair: "yes" }), extra);
+  // Friday 11am, 2 hours; the walk is ~3 minutes.
+  const friday = (over: Partial<RequestContext> = {}) => ctx("2026-10-02 11:00", 120, over);
+  const lift = (c: Candidate, x: RequestContext) => one(c, x).scores.appeal - one(cafe("plain"), x).scores.appeal;
+
+  it("a wheelchair user hears when its restroom isn't accessible: check first, never an exclusion", () => {
+    const wheels = friday({ requireWheelchair: true });
+    const no = one(cafe("no", { restroom: published({ available: "yes", wheelchair: "no" }) }), wheels);
+    expect(no.class).toBe("check_first");
+    expect(no.unresolved).toContain("RESTROOM_NOT_ACCESSIBLE");
+    expect(caveatNotes(no).map((n) => n.text)).toContain("its restroom isn't wheelchair accessible");
+    expect(explain(no, TZ).caveat).toMatch(/^Check first: .*its restroom isn't wheelchair accessible/);
+    const limited = one(cafe("limited", { restroom: published({ wheelchair: "limited" }) }), wheels);
+    expect(limited.unresolved).toContain("RESTROOM_ACCESS_LIMITED");
+    expect(caveatNotes(limited).map((n) => n.text)).toContain("its restroom has limited wheelchair access");
+    // Nobody asked for step-free access: the restroom's access is the details page's business.
+    const anyone = one(cafe("no", { restroom: published({ available: "yes", wheelchair: "no" }) }), friday());
+    expect(anyone.unresolved).not.toContain("RESTROOM_NOT_ACCESSIBLE");
+    expect(anyone.class).toBe(one(cafe("plain"), friday()).class);
+  });
+
+  it("an accessible restroom is a reason for a wheelchair user, with a little appeal; for no one else", () => {
+    const ok = cafe("ok", { restroom: published({ available: "yes", wheelchair: "yes" }) });
+    const wheels = friday({ requireWheelchair: true });
+    expect(one(ok, wheels).reasons).toContain("ACCESSIBLE_RESTROOM");
+    expect(one(ok, wheels).unresolved.filter((c) => c.startsWith("RESTROOM"))).toEqual([]);
+    expect(explain(one(ok, wheels), TZ).sentence).toContain("an accessible restroom");
+    expect(lift(ok, wheels)).toBeCloseTo(0.05, 5);
+    expect(one(ok, friday()).reasons).not.toContain("ACCESSIBLE_RESTROOM");
+    expect(lift(ok, friday())).toBeCloseTo(0, 5);
+  });
+
+  it("high chairs, a changing table, a kids' area: each said only when the youngest is young enough for it", () => {
+    const all = cafe("all", { kid_facilities: published({ highchair: "yes", changing_table: "yes", kids_area: "yes" }) });
+    const said = (x: RequestContext) => one(all, x).reasons.filter((r) => ["HIGH_CHAIRS", "CHANGING_TABLE", "KIDS_AREA"].includes(r));
+    expect(said(friday({ youngestAge: 1 }))).toEqual(["HIGH_CHAIRS", "CHANGING_TABLE", "KIDS_AREA"]);
+    expect(explain(one(all, friday({ youngestAge: 1 })), TZ).sentence).toContain("high chairs, a changing table, a kids' area");
+    expect(said(friday({ youngestAge: 4 }))).toEqual(["HIGH_CHAIRS", "KIDS_AREA"]);
+    expect(said(friday({ youngestAge: 8 }))).toEqual(["KIDS_AREA"]);
+    expect(said(friday({ youngestAge: 12 }))).toEqual([]);
+    // A family whose ages we don't know hears all of it; adults hear none of it.
+    expect(said(friday({ company: "family" }))).toEqual(["HIGH_CHAIRS", "CHANGING_TABLE", "KIDS_AREA"]);
+    expect(said(friday())).toEqual([]);
+    expect(said(friday({ company: "friends" }))).toEqual([]);
+    // One lift however many; none when they don't matter; what the record says it lacks is no reason.
+    expect(lift(all, friday({ youngestAge: 1 }))).toBeCloseTo(0.05, 5);
+    expect(lift(all, friday({ youngestAge: 12 }))).toBeCloseTo(0, 5);
+    expect(one(cafe("none", { kid_facilities: published({ highchair: "no", kids_area: "no" }) }), friday({ youngestAge: 1 })).reasons.filter((r) => r === "HIGH_CHAIRS" || r === "KIDS_AREA")).toEqual([]);
+  });
+
+  it("a limited changing table or kids' area is a reason too, worded as what it is", () => {
+    const some = cafe("some", { kid_facilities: published({ changing_table: "limited", kids_area: "limited" }) });
+    const toddler = friday({ youngestAge: 1 });
+    expect(one(some, toddler).reasons.filter((r) => r === "CHANGING_TABLE" || r === "KIDS_AREA")).toEqual(["CHANGING_TABLE", "KIDS_AREA"]);
+    const notes = reasonNotes(one(some, toddler), TZ).filter((n) => n.code === "CHANGING_TABLE" || n.code === "KIDS_AREA");
+    expect(notes).toEqual([
+      { code: "CHANGING_TABLE", text: "somewhere to change a diaper", params: { level: "limited" } },
+      { code: "KIDS_AREA", text: "a limited kids' area", params: { level: "limited" } },
+    ]);
+    expect(explain(one(some, toddler), TZ).sentence).toContain("somewhere to change a diaper, a limited kids' area");
+    expect(lift(some, toddler)).toBeCloseTo(0.05, 5);
+    // A full one keeps its plain words.
+    const full = cafe("full", { kid_facilities: published({ changing_table: "yes" }) });
+    expect(reasonNotes(one(full, toddler), TZ).find((n) => n.code === "CHANGING_TABLE")).toEqual({ code: "CHANGING_TABLE", text: "a changing table", params: { level: "yes" } });
+  });
+
+  it("no restroom sinks a place a little for young children, and says nothing else", () => {
+    const none = cafe("none", { restroom: published({ available: "no" }) });
+    expect(lift(none, friday({ youngestAge: 6 }))).toBeCloseTo(-0.05, 5);
+    expect(lift(none, friday({ company: "family" }))).toBeCloseTo(-0.05, 5);
+    expect(lift(none, friday({ youngestAge: 10 }))).toBeCloseTo(0, 5);
+    expect(lift(none, friday())).toBeCloseTo(0, 5);
+    expect(one(none, friday({ youngestAge: 6 })).class).toBe(one(cafe("plain"), friday({ youngestAge: 6 })).class);
+    expect(one(none, friday({ youngestAge: 6 })).unresolved).toEqual(one(cafe("plain"), friday({ youngestAge: 6 })).unresolved);
   });
 });

@@ -11,4 +11,5 @@ export * from "./parking.js";
 export * from "./weather.js";
 export * from "./forecast.js";
 export * from "./offers.js";
+export * from "./amenities.js";
 export * from "./cuisine.js";
