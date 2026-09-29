@@ -1,12 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   Image,
+  Linking,
   PanResponder,
   Pressable,
   StyleSheet,
   View,
   type ImageSourcePropType,
 } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { PlaceDetails, RecommendationItem } from "@outrn/contracts";
@@ -16,9 +18,12 @@ import {
   actionLabel,
   clock,
   priceLabel,
+  safeExternalUrl,
   travelLabel,
 } from "../lib/presentation";
 import { demoMode } from "../lib/api";
+import { categoryIcon } from "../lib/categories";
+import type { ShownPhoto } from "../lib/photos";
 
 export function ActivityProfile({
   item,
@@ -28,6 +33,8 @@ export function ActivityProfile({
   area,
   timezone,
   photos = [],
+  fallbackPhotos = [],
+  strip,
   height,
   saved,
   saveDisabled,
@@ -44,7 +51,12 @@ export function ActivityProfile({
   category: string;
   area: string;
   timezone: string;
-  photos?: ImageSourcePropType[];
+  /** The place's photos, or representative ones when it has none. */
+  photos?: ShownPhoto<ImageSourcePropType>[];
+  /** Shown instead when every photo fails to load (a representative photo, else the artwork). */
+  fallbackPhotos?: ShownPhoto<ImageSourcePropType>[];
+  /** Category shortcuts, under the header. */
+  strip?: ReactNode;
   height: number;
   saved: boolean;
   saveDisabled: boolean;
@@ -56,22 +68,27 @@ export function ActivityProfile({
   onBack?: () => void;
 }) {
   const [photo, setPhoto] = useState(0);
+  const [failed, setFailed] = useState<ReadonlySet<ShownPhoto<ImageSourcePropType>>>(new Set());
+  const loaded = photos.filter((p) => !failed.has(p));
+  const shown = loaded.length ? loaded : fallbackPhotos.filter((p) => !failed.has(p));
+  const current = shown[Math.min(photo, Math.max(0, shown.length - 1))];
+  const credit = current?.creditUrl ? safeExternalUrl(current.creditUrl) : undefined;
   const inset = useSafeAreaInsets();
   const gesture = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, g) =>
-          photos.length > 1 &&
+          shown.length > 1 &&
           Math.abs(g.dx) > 18 &&
           Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
         onPanResponderRelease: (_, g) => {
           if (Math.abs(g.dx) > 55 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5)
             setPhoto(
-              (p) => (p + (g.dx < 0 ? 1 : photos.length - 1)) % photos.length,
+              (p) => (p + (g.dx < 0 ? 1 : shown.length - 1)) % shown.length,
             );
         },
       }),
-    [photos.length],
+    [shown.length],
   );
   const categoryId = item?.category.id || place?.category.id || "";
   const nature = /park|garden|waterfront|viewpoint/.test(categoryId);
@@ -103,13 +120,17 @@ export function ActivityProfile({
       style={[styles.hero, { minHeight: height, paddingTop: inset.top + 16 }]}
       {...gesture.panHandlers}
     >
-      {photos[photo] ? (
+      {current ? (
         <Image
           testID="activity-photo"
-          source={photos[photo]}
+          source={current.source}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
-          accessibilityLabel={`Illustrative photo ${photo + 1} of ${photos.length}, not this venue`}
+          accessibilityLabel={current.alt}
+          onError={() => {
+            setFailed((f) => new Set(f).add(current));
+            setPhoto(0);
+          }}
         />
       ) : (
         <View
@@ -149,24 +170,27 @@ export function ActivityProfile({
         )}
         <Copy style={styles.area}>{area}</Copy>
       </View>
+      {strip}
       <Copy style={styles.caption}>
         {demoMode
           ? "Demo places · illustrative photos and posts"
-          : photos.length
-            ? ""
-            : "Category artwork · venue photos not available"}
+          : current?.kind === "representative"
+            ? "Representative photo · not this place"
+            : current
+              ? ""
+              : "No photo of this place yet"}
       </Copy>
-      {photos.length > 0 && (
+      {shown.length > 1 && (
         <Copy style={styles.counter}>
-          {photo + 1} / {photos.length}
+          {Math.min(photo, shown.length - 1) + 1} / {shown.length}
         </Copy>
       )}
       <View style={styles.spacer} />
       <View style={styles.bottom}>
         <View style={styles.copy}>
-          {photos.length > 1 && (
+          {shown.length > 1 && (
             <View style={styles.dots}>
-              {photos.map((_, i) => (
+              {shown.map((_, i) => (
                 <Pressable
                   key={i}
                   accessibilityRole="button"
@@ -182,7 +206,15 @@ export function ActivityProfile({
               ))}
             </View>
           )}
-          <Copy style={styles.kind}>{category}</Copy>
+          <View style={styles.kindRow}>
+            <MaterialCommunityIcons
+              name={categoryIcon(categoryId)}
+              size={16}
+              color="#F7F5EF"
+              accessible={false}
+            />
+            <Copy style={styles.kind}>{category}</Copy>
+          </View>
           <Copy accessibilityRole="header" style={styles.title}>
             {name}
           </Copy>
@@ -205,6 +237,19 @@ export function ActivityProfile({
             )}
           </View>
           {item && <RequiredNotes item={item} light />}
+          {current && (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`Photo credit: ${current.credit}`}
+              disabled={!credit}
+              onPress={() => credit && void Linking.openURL(credit).catch(() => undefined)}
+              style={styles.creditHit}
+            >
+              <Copy style={styles.credit} numberOfLines={1}>
+                {current.kind === "representative" ? "Representative photo" : "Photo"}: {current.credit}
+              </Copy>
+            </Pressable>
+          )}
         </View>
         <View style={styles.rail}>
           <Rail
@@ -313,6 +358,9 @@ const styles = StyleSheet.create({
     maxWidth: "58%",
   },
   caption: { color: "#F7F5EF", fontSize: 12, lineHeight: 18, marginTop: 10 },
+  kindRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  creditHit: { minHeight: 32, justifyContent: "center", marginTop: 4 },
+  credit: { color: "#D7E2D3", fontSize: 11, lineHeight: 16 },
   counter: {
     color: "white",
     fontSize: 12,
