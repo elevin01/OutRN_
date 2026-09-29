@@ -279,11 +279,12 @@
     },
     {
      "rank": 2,
-     "name": "The Grand Delancey",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "HAPPY_HOUR",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -325,7 +326,7 @@
     },
     {
      "rank": 6,
-     "name": "Ten Bells",
+     "name": "The Grand Delancey",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -722,11 +723,12 @@
     },
     {
      "rank": 5,
-     "name": "Conor's Goat",
+     "name": "Superbueno",
      "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "HAPPY_HOUR",
       "WAIT_FOR_OPENING",
       "OPEN_LATE"
      ],
@@ -1046,11 +1048,11 @@
     },
     {
      "rank": 5,
-     "name": "Old Flings",
+     "name": "Botantica Bar",
      "category": "bar",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "HAPPY_HOUR",
       "WAIT_FOR_OPENING",
       "OPEN_LATE"
      ],

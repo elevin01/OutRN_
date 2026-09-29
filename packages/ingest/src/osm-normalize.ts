@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.8";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.9";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,6 +225,8 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
+/** OSM outdoor_seating values that mean tables outside: "yes", or where they are. */
+const OUTDOOR_SEATING_KINDS: ReadonlySet<string> = new Set(["yes", "only", "sidewalk", "pavement", "street", "parklet", "garden", "patio", "terrace", "veranda", "roof", "rooftop", "balcony", "pedestrian_zone", "courtyard", "backyard", "bench", "picnic_table"]);
 /** Kinds with an age limit by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
 const DEFAULT_AGE_LIMIT: Readonly<Record<string, number>> = { casino: 21, nightclub: 21 };
 
@@ -335,6 +337,16 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (kitchen) {
     const { oh } = parseOsmHours(kitchen, rec.point.lat, rec.point.lon);
     if (oh) pub("kitchen_hours", { osm: kitchen }, `opening_hours:kitchen=${kitchen}`, hoursConfidence(rec.sourceUpdatedAt, now));
+  }
+
+  // Where food and drink are served: happy hour, in opening-hours syntax (only a parseable rule counts),
+  // and tables outside, whatever kind ("sidewalk", "garden", "roof"; "only" has no seats inside).
+  if (category && CUISINE_CATEGORIES.has(category)) {
+    const happy = t["happy_hours"]?.trim();
+    if (happy && parseOsmHours(happy, rec.point.lat, rec.point.lon).oh) pub("happy_hours", { osm: happy }, `happy_hours=${happy}`, hoursConfidence(rec.sourceUpdatedAt, now));
+    const outside = t["outdoor_seating"]?.trim().toLowerCase();
+    if (outside === "no") pub("outdoor_seating", { value: "no" }, "outdoor_seating=no", 0.7);
+    else if (outside && outside.split(";").every((x) => OUTDOOR_SEATING_KINDS.has(x.trim()))) pub("outdoor_seating", { value: "yes" }, `outdoor_seating=${outside}`, 0.7);
   }
 
   // Food to go (OSM takeaway): "only" means no seats, "no" means it is not offered.

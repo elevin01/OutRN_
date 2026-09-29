@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.5.0";
-export const WEIGHTS_VERSION = "2026-09-29.2";
+export const WEIGHTS_VERSION = "2026-09-29.3";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -150,7 +150,11 @@ export type ReasonCode =
   /** A cinema, theatre or music venue with nothing listed here: see what's on on its own site. */
   | "PROGRAMME_UNLISTED"
   /** Outdoors, and the forecast gives rain a 50% chance or more over the start of the plan. */
-  | "RAIN_LIKELY";
+  | "RAIN_LIKELY"
+  /** Happy hour is on at the arrival, or starts soon after it. */
+  | "HAPPY_HOUR"
+  /** Tables outside, and the forecast is dry and mild. */
+  | "OUTDOOR_SEATING";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"

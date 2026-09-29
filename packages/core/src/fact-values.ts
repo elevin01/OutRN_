@@ -57,6 +57,8 @@ export const FACT_VALUE_SCHEMAS = {
   category: z.object({ value: z.enum(CATEGORIES) }).strict(),
   opening_hours: hours,
   kitchen_hours: hours,
+  happy_hours: hours,
+  outdoor_seating: oneOf(["yes", "no"]),
   last_entry_offset: minutes,
   admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "members_only", "unknown"]) }).strict(),
   admission_status: z.object({ status: z.enum(["confirmed", "unconfirmed", "sold_out", "cancelled"]) }).strict(),

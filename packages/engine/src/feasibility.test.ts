@@ -1369,3 +1369,58 @@ describe("asking for a cuisine", () => {
     expect(line({ ...eat("books", ["coffee_shop", "italian"]), category: "bookshop" })).toMatch(/^~\d+ min walk · /);
   });
 });
+
+describe("what a place offers at the hour: happy hour, tables outside", () => {
+  const withFacts = (c: Candidate, extra: Candidate["facts"]): Candidate => ({ ...c, facts: { ...c.facts, ...extra } });
+  const happy = (id: string, rule: string) => withFacts(venue({ id, category: "bar", hours: "Mo-Su 12:00-02:00" }), { happy_hours: { value: { osm: rule }, confidence: 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 } });
+  const patio = (id: string) => withFacts(venue({ id, category: "restaurant", hours: "Mo-Su 11:00-23:00" }), { outdoor_seating: { value: { value: "yes" }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 } });
+  // Friday 5:30pm, 2 hours; the walk is ~3 minutes.
+  const friday = (over: Partial<RequestContext> = {}) => ctx("2026-10-02 17:30", 120, over);
+  const sentence = (c: Candidate, x: RequestContext) => explain(one(c, x), TZ).sentence;
+
+  it("happy hour on at the arrival: a reason with when it ends, and a little appeal", () => {
+    const e = one(happy("h", "Mo-Fr 17:00-19:00"), friday());
+    expect(e.reasons).toContain("HAPPY_HOUR");
+    expect(sentence(happy("h", "Mo-Fr 17:00-19:00"), friday())).toContain("happy hour until 7pm");
+    expect(e.scores.appeal - one(venue({ id: "plain", category: "bar", hours: "Mo-Su 12:00-02:00" }), friday()).scores.appeal).toBeCloseTo(0.05, 5);
+  });
+
+  it("starting soon after the arrival counts too; ending within 20 minutes, or long after, does not", () => {
+    expect(sentence(happy("soon", "Mo-Fr 18:00-20:00"), friday())).toContain("happy hour from 6pm");
+    expect(one(happy("ending", "Mo-Fr 16:00-17:45"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("later", "Mo-Fr 19:00-21:00"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("weekend", "Sa-Su 17:00-19:00"), friday()).reasons).not.toContain("HAPPY_HOUR");
+    // A happy hour that never ends is no reason to go now.
+    expect(one(happy("always", "24/7"), friday()).reasons).not.toContain("HAPPY_HOUR");
+  });
+
+  it("happy hour is never a reason for a party with a child", () => {
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ youngestAge: 10 })).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ company: "family" })).reasons).not.toContain("HAPPY_HOUR");
+    expect(one(happy("h", "Mo-Fr 17:00-19:00"), friday({ youngestAge: 25 })).reasons).toContain("HAPPY_HOUR");
+  });
+
+  it("tables outside are a reason only when the forecast is dry and mild", () => {
+    const at = (weather: RequestContext["weather"]) => one(patio("p"), friday({ weather }));
+    expect(at({ temperatureF: 66, precipProbability: 10, highF: 70 }).reasons).toContain("OUTDOOR_SEATING");
+    expect(sentence(patio("p"), friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } }))).toContain("good weather to sit outside");
+    for (const w of [
+      { temperatureF: 66, precipProbability: 40, highF: 70 }, // a real chance of rain
+      { temperatureF: 50, precipProbability: 0, highF: 58 }, // too cool to sit outside
+      { temperatureF: 88, precipProbability: 0, highF: 93 }, // hot
+      { temperatureF: 66, precipProbability: null, highF: 70 }, // no word on rain
+      null,
+    ]) expect(at(w).reasons, JSON.stringify(w)).not.toContain("OUTDOOR_SEATING");
+    // Without tables outside, fair weather says nothing about the place.
+    expect(one(venue({ id: "in", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), friday({ weather: { temperatureF: 66, precipProbability: 10, highF: 70 } })).reasons).not.toContain("OUTDOOR_SEATING");
+  });
+
+  it("an offer breaks a near-tie; it never lifts a place past its class", () => {
+    const plain = venue({ id: "plain", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const s = recommend([plain, happy("h", "Mo-Fr 17:00-19:00")], friday({ categories: ["bar"] }), POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["h", "plain"]);
+    const unlisted = withFacts(happy("u", "Mo-Fr 17:00-19:00"), { opening_hours: undefined });
+    const both = recommend([plain, unlisted], friday({ categories: ["bar"] }), POLICIES);
+    expect(both.items.map((e) => [e.candidate.id, e.class])).toEqual([["plain", "ready"], ["u", "check_first"]]);
+  });
+});

@@ -118,6 +118,29 @@
       }
     },
     {
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "No",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-08-08T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
+      }
+    },
+    {
       "attribute": "indoor_outdoor",
       "label": "Setting",
       "value": "Indoor",

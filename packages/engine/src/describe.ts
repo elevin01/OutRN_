@@ -41,6 +41,8 @@ export interface FactRow {
 const LABEL: Record<string, string> = {
   opening_hours: "Hours",
   kitchen_hours: "Kitchen",
+  happy_hours: "Happy hour",
+  outdoor_seating: "Outdoor seating",
   business_status: "Status",
   scheduled_closure: "Closing",
   admission: "Admission",
@@ -59,7 +61,7 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
 
@@ -95,7 +97,8 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
   const tilde = isEstimate ? "~" : "";
   switch (attribute) {
     case "opening_hours":
-    case "kitchen_hours": {
+    case "kitchen_hours":
+    case "happy_hours": {
       if (typeof v["osm"] === "string") return v["osm"];
       if (Array.isArray(v["weekly"])) {
         const byDay = new Map<number, string[]>();
@@ -231,6 +234,15 @@ export function hoursToday(value: unknown, now: Date, tz: string, point: LatLon)
   return "Closed today";
 }
 
+/** "On now until 7pm", "Today from 5pm", or nothing when there is none today. */
+export function happyHourToday(value: unknown, now: Date, tz: string, point: LatLon): string | null {
+  if (!isHoursValue(value)) return null;
+  const ev = evaluateHours(value, now, tz, point);
+  if (ev.parseError || ev.always || !ev.interval) return null;
+  if (ev.openNow) return `On now until ${fmtTime(ev.interval.close, tz)}`;
+  return localClock(ev.interval.open, tz).date === localClock(now, tz).date ? `Today from ${fmtTime(ev.interval.open, tz)}` : null;
+}
+
 export function describeFacts(facts: Record<string, FactRecord>, ctx: { tz: string; point: LatLon; now: Date }): FactRow[] {
   const rows: FactRow[] = [];
   const hours = facts["opening_hours"];
@@ -247,7 +259,7 @@ export function describeFacts(facts: Record<string, FactRecord>, ctx: { tz: stri
       attribute,
       label: LABEL[attribute] ?? sentenceCase(attribute),
       value: formatFactValue(attribute, f.value, isEstimate, ctx.tz),
-      detail: attribute === "opening_hours" || attribute === "kitchen_hours" ? hoursToday(f.value, ctx.now, ctx.tz, ctx.point) : null,
+      detail: attribute === "opening_hours" || attribute === "kitchen_hours" ? hoursToday(f.value, ctx.now, ctx.tz, ctx.point) : attribute === "happy_hours" ? happyHourToday(f.value, ctx.now, ctx.tz, ctx.point) : null,
       source: sourceLabel(f.sources),
       age: ageLabel(f, ctx.tz, ctx.now),
       evidence: f.evidenceClass === "observation" ? "reported" : f.evidenceClass,
