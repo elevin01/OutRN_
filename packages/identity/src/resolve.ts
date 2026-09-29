@@ -142,7 +142,7 @@ export async function mergeVenues(q: Queryable, from: string, to: string, actor:
     await q.query(`update entity_links set superseded_by = $2 where id = $1`, [l.id, ins.rows[0]!.id]);
   }
   await q.query(`update facts set subject_id = $2 where subject_kind = 'venue' and subject_id = $1`, [from, to]);
-  await q.query(`update venues set publish_state = 'merged', merged_into = $2 where id = $1`, [from, to]);
+  await q.query(`update venues set publish_state = 'merged', merged_into = $2, facts_doc = '{}'::jsonb where id = $1`, [from, to]);
   await q.query(`delete from current_facts where subject_kind = 'venue' and subject_id = $1`, [from]);
   await audit(q, { actor, action: "identity.merge", targetKind: "venue", targetId: from, after: { into: to, reason } });
 }

@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
-import { materializeSubjects, writeFacts } from "@outrn/facts";
+import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
 import { ingestExtentFor, ingestOsmArea } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
@@ -374,6 +374,8 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const others = (await restaurants()).filter((id) => id !== kitchen);
     // Every fact about the place now comes from a founder check; the parking near it is OSM's.
     await db.query(`update current_facts set source_ids = '{founder}' where subject_kind = 'venue' and subject_id = $1`, [kitchen]);
+    // What a search reads (materialization keeps it; this test edits the rows behind it directly).
+    await refreshFactDocs(db, [kitchen]);
     try {
       const details = PlaceDetails.parse((await call("GET", `/v1/places/${kitchen}`)).json);
       expect(details.facts.flatMap((f) => f.provenance.sources.map((x) => x.id))).not.toContain("osm");

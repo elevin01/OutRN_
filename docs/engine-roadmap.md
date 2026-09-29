@@ -206,8 +206,14 @@ changelog.
 ## Performance budget
 
 - **Target:** under 300 ms engine time per request at 5,000 venues within reach.
-- **Now:** the engine takes about 140 ms warm and 340 ms cold, and loading takes about 310 ms, at 3,850 candidates.
-- **Next:** a set-based candidate query or a precomputed per-venue fact document to cut load time.
+- **Now:** the engine takes about 140 ms warm and 340 ms cold, at 3,850 candidates.
+- **Loading: done.** Each venue's current facts are kept as one document (`venues.facts_doc`),
+  rebuilt by materialization with the same SQL the loader used to run per candidate. On the LES
+  capture with Overture's places (2,402 candidates), loading takes about 125 ms instead of 325; the
+  database part is about 30 ms. A set-based query was tried first: it was slower (2.6 s), because
+  it cannot use the index to find each fact's inputs.
+- **Next:** landmark and brand come from the source records per candidate (about 16 ms at 2,400);
+  they could join the document if loading matters again.
 
 `pnpm --filter @outrn/engine bench <area>` measures it.
 
