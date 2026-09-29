@@ -17,10 +17,9 @@ import { RequiredNotes } from "./PlaceCard";
 import {
   actionLabel,
   clock,
-  conditionBriefs,
+  nowFacts,
   priceLabel,
   safeExternalUrl,
-  tagLabels,
   travelLabel,
 } from "../lib/presentation";
 import { demoMode } from "../lib/api";
@@ -237,13 +236,11 @@ export function ActivityProfile({
             )}
             {/* What to expect there (a wait, a busy room, rain), then what it offers: "Thai", "Vegan options". */}
             {item &&
-              [...conditionBriefs(item), ...tagLabels(item).slice(0, 3)].map(
-                (text) => (
-                  <Copy key={text} style={styles.fact}>
-                    {text}
-                  </Copy>
-                ),
-              )}
+              nowFacts(item).map((text) => (
+                <Copy key={text} style={styles.fact}>
+                  {text}
+                </Copy>
+              ))}
           </View>
           {item && <RequiredNotes item={item} light />}
           {current && (

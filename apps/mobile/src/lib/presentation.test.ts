@@ -5,6 +5,7 @@ import {
   clock,
   conditionBriefs,
   isExpired,
+  nowFacts,
   priceLabel,
   safeExternalUrl,
   tagLabels,
@@ -136,5 +137,27 @@ describe("what a card says the place offers, and what to expect there", () => {
         ],
       }),
     ).toEqual([]);
+  });
+  it("shows each Now-card chip once, even when two conditions brief the same", () => {
+    const wait: Condition = {
+      kind: "wait",
+      level: "long",
+      basis: "typical",
+      isEstimate: true,
+      minutes: { min: 15, max: 30 },
+      reportedAt: null,
+      text: "",
+    };
+    expect(
+      nowFacts({
+        conditions: [wait, { ...wait, text: "another source" }],
+        cuisines: [{ id: "thai", label: "Thai" }],
+        diets: [{ id: "vegan", label: "Vegan options" }],
+        features: [
+          { id: "outdoor_seating", label: "Outdoor seating" },
+          { id: "wifi", label: "Wi-Fi" },
+        ],
+      }),
+    ).toEqual(["~15–30 min wait", "Thai", "Vegan options", "Outdoor seating"]);
   });
 });

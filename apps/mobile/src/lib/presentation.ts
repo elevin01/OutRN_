@@ -84,6 +84,10 @@ export function conditionBriefs(
   }
   return out;
 }
+/** The Now card's extra chips: what to expect, then up to three tags. Each text once, so no chip repeats. */
+export const nowFacts = (
+  item: Pick<RecommendationItem, "conditions" | "cuisines" | "diets" | "features">,
+) => [...new Set([...conditionBriefs(item), ...tagLabels(item).slice(0, 3)])];
 /** Keep eligibility and admission separate: a feasible visit can still require booking. */
 export const actionLabel = (
   item: Pick<RecommendationItem, "status" | "callToAction">,
