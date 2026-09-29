@@ -21,6 +21,8 @@
     "youngestAge": null,
     "categories": [],
     "cuisines": [],
+    "diets": [],
+    "features": [],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -45,6 +47,13 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -167,6 +176,13 @@
         {
           "id": "mexican",
           "label": "Mexican"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "status": "ready",
@@ -301,6 +317,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "ready",
       "callToAction": "go",
       "location": {

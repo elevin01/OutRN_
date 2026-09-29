@@ -43,6 +43,13 @@ describe("detail page facts", () => {
     ]);
   });
 
+  it("diets and internet read as words", () => {
+    expect(formatFactValue("diets", { vegan: "only", gluten_free: "yes", halal: "limited", kosher: "no" })).toBe("Vegan; gluten-free options; some halal dishes; no kosher options");
+    expect(formatFactValue("diets", { vegetarian: "yes" })).toBe("Vegetarian options");
+    expect(formatFactValue("internet_access", { value: "wlan" })).toBe("Wi-Fi");
+    expect(formatFactValue("internet_access", { value: "terminal" })).toBe("Computers to use");
+  });
+
   it("hours come first and are always present; each row names its source, age and evidence class", () => {
     const rows = describeFacts(
       {

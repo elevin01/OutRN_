@@ -13,6 +13,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - kitchen_hours      : same shape as opening_hours; when food is served (last orders at the close)
  *  - happy_hours        : same shape as opening_hours; when drinks (and often food) are discounted
  *  - outdoor_seating    : { value: "yes"|"no" }  tables outside (a sidewalk, a garden, a roof)
+ *  - diets              : { vegetarian?, vegan?, gluten_free?, halal?, kosher? } each "only"|"yes"|"limited"|"no" (OSM diet:*)
+ *  - internet_access    : { value: "wlan"|"yes"|"wired"|"terminal"|"no" }  wifi is "wlan" (OSM internet_access)
  *  - last_entry_offset  : { minutes: number }  minutes before close that admission stops
  *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"members_only"|"unknown" }
  *                         members_only: not open to the public (a private club, a university library)
@@ -44,6 +46,8 @@ export const ATTRIBUTES = [
   "kitchen_hours",
   "happy_hours",
   "outdoor_seating",
+  "diets",
+  "internet_access",
   "last_entry_offset",
   "admission",
   "admission_status",

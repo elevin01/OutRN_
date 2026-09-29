@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T23:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "bronxville",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": null,
     "cuisines": [],
+    "features": [],
     "categories": [],
     "travelMode": "drive",
     "visitStyle": "dine_in",
@@ -62,6 +64,13 @@
         {
           "id": "korean",
           "label": "Korean"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "id": "00000000-0000-4000-8000-000000000012",
@@ -211,6 +220,8 @@
           "label": "Vietnamese"
         }
       ],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-000000000013",
       "copy": {
         "action": "Go now",
@@ -334,6 +345,8 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-000000000014",
       "copy": {
         "action": "Go now",

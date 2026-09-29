@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000030",
+  "requestId": "00000000-0000-4000-8000-000000000034",
   "asOf": "2026-10-04T06:30:00.000Z",
   "generatedAt": "2026-10-04T06:30:00.000Z",
   "expiresAt": "2026-10-04T06:50:00.000Z",
@@ -25,6 +25,8 @@
       "waterfront"
     ],
     "cuisines": [],
+    "diets": [],
+    "features": [],
     "at": "2026-10-04T06:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -37,9 +39,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000031",
+      "id": "00000000-0000-4000-8000-000000000035",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000031",
+      "placeId": "00000000-0000-4000-8000-000000000035",
       "name": "Stanton Park",
       "placeName": "Stanton Park",
       "photos": [],
@@ -49,6 +51,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "check_first",
       "callToAction": "check",
       "location": {
@@ -152,9 +156,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000032",
+      "id": "00000000-0000-4000-8000-000000000036",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000032",
+      "placeId": "00000000-0000-4000-8000-000000000036",
       "name": "East River Overlook",
       "placeName": "East River Overlook",
       "photos": [],
@@ -164,6 +168,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "check_first",
       "callToAction": "check",
       "location": {

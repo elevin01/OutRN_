@@ -25,6 +25,16 @@ export const RecommendationRequest = z.strictObject({
    * sushi bars and ramen shops too. With `categories`, only those of them that serve food.
    */
   cuisines: z.array(z.string().min(1)).max(5).optional(),
+  /**
+   * Only food places known to serve every one of these (AreasResponse.filters.diets ids): a vegan and
+   * a gluten-free diner eat together. Places whose record says nothing are not options.
+   */
+  diets: z.array(z.string().min(1)).max(5).optional(),
+  /**
+   * Only places whose record states every one of these (AreasResponse.filters.features ids): tables
+   * outside, wifi, wheelchair access (step-free; "limited" access is Check first).
+   */
+  features: z.array(z.string().min(1)).max(3).optional(),
   /** Plan for this instant instead of now. */
   at: IsoDateTime.optional(),
   /**
@@ -67,6 +77,10 @@ export const ResolvedRequest = z.object({
   categories: z.array(z.string()),
   /** The request's `cuisines`, or none. */
   cuisines: z.array(z.string()),
+  /** The request's `diets`, or none. */
+  diets: z.array(z.string()),
+  /** The request's `features`, or none. */
+  features: z.array(z.string()),
   /** The instant planned for (the request's `at`, or when it arrived). */
   at: IsoDateTime,
   /** True when the request gave `at` explicitly. */
@@ -204,6 +218,13 @@ export const RecommendationItem = z.object({
    * places that are not about food.
    */
   cuisines: z.array(Option).max(3),
+  /**
+   * What a food place serves for diets, as its record says ("Vegan" for a vegan place, "Vegan options"
+   * where there are some). Empty when unknown, and for places that are not about food.
+   */
+  diets: z.array(Option).max(5),
+  /** Must-haves the place's record states: `outdoor_seating`, `wifi`, `wheelchair` (step-free). */
+  features: z.array(Option).max(3),
   /**
    * `ready`: everything that matters checks out. `check_first`: worth going, but something in
    * `caveats` needs checking. Never recompute or upgrade this in the UI.

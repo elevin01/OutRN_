@@ -25,6 +25,8 @@ export function registerRecommend(program: Command): void {
     .option("--company <alone|date|friends|family>")
     .option("--categories <list>", "comma-separated categories to narrow to")
     .option("--cuisines <list>", "comma-separated cuisines (japanese, pizza…): only food places serving one")
+    .option("--diets <list>", "comma-separated diets (vegetarian, vegan, gluten_free, halal, kosher): only food places known to serve all")
+    .option("--features <list>", "comma-separated must-haves (outdoor_seating, wifi, wheelchair)")
     .option("--wheelchair", "require wheelchair access")
     .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
     .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
@@ -49,6 +51,8 @@ export function registerRecommend(program: Command): void {
         ...(typeof o["youngest"] === "number" && Number.isFinite(o["youngest"]) ? { youngestAge: o["youngest"] } : {}),
         ...(o["categories"] ? { categories: String(o["categories"]).split(",").map((x) => x.trim()) } : {}),
         ...(o["cuisines"] ? { cuisines: String(o["cuisines"]).split(",").map((x) => x.trim()) } : {}),
+        ...(o["diets"] ? { diets: String(o["diets"]).split(",").map((x) => x.trim()) } : {}),
+        ...(o["features"] ? { features: String(o["features"]).split(",").map((x) => x.trim()) } : {}),
         ...(o["at"] ? { at: new Date(String(o["at"])).toISOString() } : {}),
       });
       if (!parsed.success) {

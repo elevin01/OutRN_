@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000034",
+  "requestId": "00000000-0000-4000-8000-000000000038",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -21,6 +21,8 @@
     "youngestAge": null,
     "categories": [],
     "cuisines": [],
+    "diets": [],
+    "features": [],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -45,6 +47,13 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -164,6 +173,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -276,6 +287,13 @@
         {
           "id": "mexican",
           "label": "Mexican"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "status": "ready",
@@ -401,7 +419,7 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM0IiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM4IiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

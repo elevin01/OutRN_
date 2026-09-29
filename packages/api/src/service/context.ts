@@ -1,5 +1,5 @@
 import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
-import { CUISINE_FILTERS, haversineMetres, type Category, type LatLon } from "@outrn/core";
+import { CUISINE_FILTERS, DIETS, FEATURES, haversineMetres, type Category, type LatLon } from "@outrn/core";
 import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadParkingBuffer, loadWeather, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
@@ -52,6 +52,14 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   cuisines.forEach((c, i) => {
     if (!Object.hasOwn(CUISINE_FILTERS, c)) throw invalid(`cuisines.${i}`, `unknown cuisine "${c}"`);
   });
+  const diets = request.diets ?? [];
+  diets.forEach((d, i) => {
+    if (!Object.hasOwn(DIETS, d)) throw invalid(`diets.${i}`, `unknown diet "${d}"`);
+  });
+  const features = request.features ?? [];
+  features.forEach((f, i) => {
+    if (!Object.hasOwn(FEATURES, f)) throw invalid(`features.${i}`, `unknown feature "${f}"`);
+  });
   const budget: Budget = request.budget ?? { kind: "any" };
   if (budget.kind === "max" && budget.currency !== "USD") throw invalid("budget.currency", "only USD is supported");
 
@@ -81,6 +89,11 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.youngestAge !== undefined) ctx.youngestAge = request.youngestAge;
   if (categories.length) ctx.categories = categories as Category[];
   if (cuisines.length) ctx.cuisines = cuisines;
+  if (diets.length) ctx.diets = diets;
+  // Step-free access is the engine's own accessibility gate; the rest are must-haves on the record.
+  if (features.includes("wheelchair")) ctx.requireWheelchair = true;
+  const onRecord = features.filter((f) => f !== "wheelchair");
+  if (onRecord.length) ctx.features = onRecord;
   if (backBy ?? overrides.backBy) ctx.backBy = (backBy ?? overrides.backBy)!;
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
@@ -108,6 +121,8 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     youngestAge: request.youngestAge ?? null,
     categories,
     cuisines,
+    diets,
+    features,
     at: at.toISOString(),
     atIsExplicit: request.at !== undefined,
     origin,

@@ -21,6 +21,8 @@
     "youngestAge": null,
     "categories": [],
     "cuisines": [],
+    "diets": [],
+    "features": [],
     "at": "2026-10-03T23:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -45,6 +47,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -193,6 +197,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -337,6 +343,8 @@
           "label": "Mexican"
         }
       ],
+      "diets": [],
+      "features": [],
       "status": "ready",
       "callToAction": "go",
       "location": {

@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "mock-bars",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": "date",
     "cuisines": [],
+    "features": [],
     "categories": [
       "bar"
     ],
@@ -49,6 +51,13 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-00000000001c",
       "copy": {
         "action": "Go now",
@@ -160,6 +169,8 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-00000000001d",
       "copy": {
         "action": "Go now",
@@ -279,6 +290,13 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-00000000001e",
       "copy": {
         "action": "Go now",

@@ -1,4 +1,4 @@
-import { isFreshConfirmation, localClock, type LatLon } from "@outrn/core";
+import { DIETS, dietLabel, isFreshConfirmation, localClock, ownValue, type Diet, type LatLon } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { fmtTime } from "./explain.js";
 
@@ -43,6 +43,8 @@ const LABEL: Record<string, string> = {
   kitchen_hours: "Kitchen",
   happy_hours: "Happy hour",
   outdoor_seating: "Outdoor seating",
+  diets: "Diets",
+  internet_access: "Internet",
   business_status: "Status",
   scheduled_closure: "Closing",
   admission: "Admission",
@@ -61,7 +63,8 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const NET_LABEL: Readonly<Record<string, string>> = { wlan: "Wi-Fi", yes: "Yes", wired: "Wired", terminal: "Computers to use", no: "None" };
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
 
@@ -154,6 +157,24 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
     }
     case "subtype":
       return sentenceCase(String(v["value"] ?? "unknown"));
+    case "diets": {
+      // "Vegan; gluten-free options; no halal options": each diet the record names, in DIETS order.
+      const parts = (Object.keys(DIETS) as Diet[]).flatMap((d) => {
+        const level = v[d];
+        const name = DIETS[d];
+        if (level === "only" || level === "yes") return [dietLabel(d, level)!.toLowerCase()];
+        if (level === "limited") return [`some ${name.toLowerCase()} dishes`];
+        if (level === "no") return [`no ${name.toLowerCase()} options`];
+        return [];
+      });
+      if (parts.length) return sentenceCase(parts.join("; "));
+      break;
+    }
+    case "internet_access": {
+      const net = ownValue(NET_LABEL, String(v["value"] ?? ""));
+      if (net) return net;
+      break;
+    }
     case "cuisine": {
       // "Italian, pizza": the mapper's words, in their order.
       const values = Array.isArray(v["values"]) ? v["values"].filter((x): x is string => typeof x === "string") : [];

@@ -317,6 +317,42 @@
         "id": "sandwich",
         "label": "Sandwiches and delis"
       }
+    ],
+    "diets": [
+      {
+        "id": "vegetarian",
+        "label": "Vegetarian"
+      },
+      {
+        "id": "vegan",
+        "label": "Vegan"
+      },
+      {
+        "id": "gluten_free",
+        "label": "Gluten-free"
+      },
+      {
+        "id": "halal",
+        "label": "Halal"
+      },
+      {
+        "id": "kosher",
+        "label": "Kosher"
+      }
+    ],
+    "features": [
+      {
+        "id": "outdoor_seating",
+        "label": "Outdoor seating"
+      },
+      {
+        "id": "wifi",
+        "label": "Wi-Fi"
+      },
+      {
+        "id": "wheelchair",
+        "label": "Wheelchair accessible"
+      }
     ]
   },
   "limits": {
@@ -330,6 +366,8 @@
     },
     "maxCategories": 5,
     "maxCuisines": 5,
+    "maxDiets": 5,
+    "maxFeatures": 3,
     "pageSize": 3
   }
 }

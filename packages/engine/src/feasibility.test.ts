@@ -1439,3 +1439,47 @@ describe("what a place offers at the hour: happy hour, tables outside", () => {
     expect(both.items.map((e) => [e.candidate.id, e.class])).toEqual([["plain", "ready"], ["u", "check_first"]]);
   });
 });
+
+describe("asking for a diet or a must-have", () => {
+  const fact = (value: unknown) => ({ value, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 });
+  const eat = (id: string, diets?: Record<string, string>, extra: Candidate["facts"] = {}, category: Candidate["category"] = "restaurant") => {
+    const v = venue({ id, category, hours: "Mo-Su 08:00-23:00" });
+    return { ...v, facts: { ...v.facts, ...(diets ? { diets: fact(diets) } : {}), ...extra } };
+  };
+  const x = (over: Partial<RequestContext>) => ctx("2026-10-02 12:30", 120, over);
+  const excluded = (cands: Candidate[], over: Partial<RequestContext>) => Object.fromEntries(evaluateAll(cands, x(over), POLICIES).map((e) => [e.candidate.id, e.excludedBy]));
+
+  it("a diet keeps only food places known to serve it; vegan food is vegetarian; unknown or limited is not a yes", () => {
+    const cands = [eat("vegan", { vegan: "only" }), eat("veg", { vegetarian: "yes" }), eat("few", { vegetarian: "limited" }), eat("none"), venue({ id: "park", category: "park" })];
+    expect(excluded(cands, { diets: ["vegetarian"] })).toEqual({ vegan: null, veg: null, few: "DIET_NOT_KNOWN", none: "DIET_NOT_KNOWN", park: "NOT_REQUESTED" });
+    expect(excluded(cands, { diets: ["vegan"] })).toMatchObject({ vegan: null, veg: "DIET_NOT_KNOWN" });
+    expect(excluded(cands, { diets: ["__proto__"] })).toMatchObject({ vegan: "DIET_NOT_KNOWN" });
+  });
+
+  it("several diets must all be served: one party eats together", () => {
+    const cands = [eat("both", { vegan: "yes", gluten_free: "yes" }), eat("vegan", { vegan: "only" }), eat("gf", { gluten_free: "yes" })];
+    expect(excluded(cands, { diets: ["vegan", "gluten_free"] })).toEqual({ both: null, vegan: "DIET_NOT_KNOWN", gf: "DIET_NOT_KNOWN" });
+  });
+
+  it("a must-have is what the record states: tables outside, wifi (a library's too); unknown is no", () => {
+    const cands = [
+      eat("patio", undefined, { outdoor_seating: fact({ value: "yes" }) }),
+      eat("inside", undefined, { outdoor_seating: fact({ value: "no" }) }),
+      eat("wifi", undefined, { internet_access: fact({ value: "wlan" }) }, "cafe"),
+      eat("wired", undefined, { internet_access: fact({ value: "wired" }) }, "cafe"),
+      { ...venue({ id: "library", category: "library", hours: "Mo-Su 09:00-20:00" }), facts: { ...venue({ id: "l" }).facts, internet_access: fact({ value: "wlan" }) } },
+    ];
+    expect(excluded(cands, { features: ["outdoor_seating"] })).toMatchObject({ patio: null, inside: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
+    expect(excluded(cands, { features: ["wifi"] })).toMatchObject({ wifi: null, wired: "FEATURE_NOT_KNOWN", library: null, patio: "FEATURE_NOT_KNOWN" });
+    expect(excluded(cands, { features: ["outdoor_seating", "wifi"] })).toMatchObject({ patio: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
+  });
+
+  it("offers going without a must-have, never without a diet; a diet search narrows like a cuisine", () => {
+    const cands = [eat("vegan", { vegan: "only" }), eat("plain"), eat("plain2"), venue({ id: "b1", category: "bookshop", hours: "Mo-Su 10:00-21:00" })];
+    const diet = recommend(cands, x({ diets: ["vegan"] }), POLICIES);
+    expect(diet.items.map((e) => e.candidate.id)).toEqual(["vegan"]);
+    expect(diet.relaxations.map((r) => r.code)).toEqual([]);
+    const patio = recommend([...cands, eat("patio", undefined, { outdoor_seating: fact({ value: "yes" }) })], x({ features: ["outdoor_seating", "wifi"] }), POLICIES);
+    expect(patio.relaxations).toEqual([{ code: "without_features", text: "without outdoor seating or Wi-Fi", admits: 5 }]);
+  });
+});
