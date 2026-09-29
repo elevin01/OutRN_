@@ -4,7 +4,7 @@
   {
    "id": "les-sat-morning",
    "title": "LES, Saturday 10am, 3 hours, walking",
-   "eligible": 1984,
+   "eligible": 1983,
    "top": [
     {
      "rank": 1,
@@ -89,7 +89,7 @@
   {
    "id": "les-sat-afternoon",
    "title": "LES, Saturday 2pm, 2 hours",
-   "eligible": 2011,
+   "eligible": 2010,
    "top": [
     {
      "rank": 1,
@@ -175,7 +175,7 @@
   {
    "id": "les-sat-afternoon-free",
    "title": "LES, Saturday 2pm, 2 hours, free only",
-   "eligible": 387,
+   "eligible": 386,
    "top": [
     {
      "rank": 1,
@@ -262,7 +262,7 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 2050,
+   "eligible": 2049,
    "top": [
     {
      "rank": 1,
@@ -342,7 +342,7 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 1522,
+   "eligible": 1521,
    "top": [
     {
      "rank": 1,
@@ -502,7 +502,7 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 2015,
+   "eligible": 2014,
    "top": [
     {
      "rank": 1,
@@ -587,7 +587,7 @@
   {
    "id": "les-tue-breakfast",
    "title": "LES, Tuesday 8am, 1 hour",
-   "eligible": 504,
+   "eligible": 503,
    "top": [
     {
      "rank": 1,
@@ -667,7 +667,7 @@
   {
    "id": "les-tue-afternoon",
    "title": "LES, Tuesday 3pm, 2 hours",
-   "eligible": 1927,
+   "eligible": 1926,
    "top": [
     {
      "rank": 1,
@@ -833,7 +833,7 @@
   {
    "id": "les-fri-date",
    "title": "LES, Friday 7:30pm, 90 minutes, a date",
-   "eligible": 1705,
+   "eligible": 1704,
    "top": [
     {
      "rank": 1,
@@ -992,7 +992,7 @@
   {
    "id": "les-sat-long",
    "title": "LES, Saturday noon, 5 hours",
-   "eligible": 2092,
+   "eligible": 2091,
    "top": [
     {
      "rank": 1,

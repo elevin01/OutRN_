@@ -450,12 +450,20 @@ describe("OSM normalization", () => {
 
 describe("who can go, and what it costs, when the tags don't say", () => {
   it("access=private or members-only: not open to the public", () => {
-    for (const access of ["private", "no", "members", "permit"]) {
+    // Hester Street Park on the LES capture is residents only (way/1077518596).
+    for (const access of ["private", "no", "members", "permit", "residents"]) {
       const a = fact(rec({ name: "Club", amenity: "bar", access }), "admission");
       expect(a, access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published", evidence: `access=${access}` });
     }
     // Customers only is how every café works; permissive is open.
     for (const access of ["customers", "permissive", "yes"]) expect(fact(rec({ name: "Cafe", amenity: "cafe", access }), "admission")?.value, access).toEqual({ requirement: "walk_in" });
+  });
+
+  it("step-free access as OSM documents it: designated (built for wheelchair users) is accessible", () => {
+    const step = (wheelchair: string) => fact(rec({ name: "M", tourism: "museum", wheelchair }), "wheelchair");
+    expect(step("designated")).toMatchObject({ value: { value: "yes" }, evidenceClass: "published", evidence: "wheelchair=designated" });
+    for (const v of ["yes", "limited", "no"]) expect(step(v)?.value, v).toEqual({ value: v });
+    for (const v of ["maybe", "__proto__", "unknown"]) expect(step(v), v).toBeUndefined();
   });
 
   it("a university or school's own library is members only; a public library is free to walk into", () => {
