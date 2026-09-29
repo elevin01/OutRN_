@@ -255,17 +255,23 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const target = second.items[0]!;
     await writeFacts(db, [{ subjectKind: "venue", subjectId: target.placeId, attribute: "business_status", value: { status: "closed_temporarily" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: sign on the door", sourceUpdatedAt: now, fetchedAt: now, confidence: 0.9, lineageGroup: "founder" }]);
     await materializeSubjects(db, "venue", [target.placeId], now);
-    const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
-    expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
-    // A new search sees the change.
-    const fresh = await search({ areaId: "les", windowMinutes: 180 });
-    const all: string[] = [...fresh.items.map((i) => i.id)];
-    let p = fresh;
-    while (p.page.nextCursor) {
-      p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
-      all.push(...p.items.map((i) => i.id));
+    try {
+      const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
+      expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
+      // A new search sees the change.
+      const fresh = await search({ areaId: "les", windowMinutes: 180 });
+      const all: string[] = [...fresh.items.map((i) => i.id)];
+      let p = fresh;
+      while (p.page.nextCursor) {
+        p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+        all.push(...p.items.map((i) => i.id));
+      }
+      expect(all).not.toContain(target.id);
+    } finally {
+      // Reopen it: which place this closes follows the ranking, and later tests expect the fixture as ingested.
+      await db.query(`delete from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'founder' and evidence = 'founder: sign on the door'`, [target.placeId]);
+      await materializeSubjects(db, "venue", [target.placeId], now);
     }
-    expect(all).not.toContain(target.id);
   });
 
   it("expires a search's pages with its plans, and hands back the search to run again", async () => {
