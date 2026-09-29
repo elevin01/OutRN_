@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
-  PanResponder,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
   type ImageSourcePropType,
@@ -56,23 +56,25 @@ export function ActivityProfile({
   onBack?: () => void;
 }) {
   const [photo, setPhoto] = useState(0);
+  const [photoWidth, setPhotoWidth] = useState(0);
+  const pager = useRef<ScrollView>(null);
+  const currentPhoto = useRef(0);
   const inset = useSafeAreaInsets();
-  const gesture = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) =>
-          photos.length > 1 &&
-          Math.abs(g.dx) > 18 &&
-          Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
-        onPanResponderRelease: (_, g) => {
-          if (Math.abs(g.dx) > 55 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5)
-            setPhoto(
-              (p) => (p + (g.dx < 0 ? 1 : photos.length - 1)) % photos.length,
-            );
-        },
-      }),
-    [photos.length],
-  );
+  // Keep the selected page aligned after a resize or a change in photo count.
+  useEffect(() => {
+    const index = Math.min(
+      currentPhoto.current,
+      Math.max(0, photos.length - 1),
+    );
+    currentPhoto.current = index;
+    setPhoto(index);
+    pager.current?.scrollTo({ x: index * photoWidth, animated: false });
+  }, [photoWidth, photos.length]);
+  const selectPhoto = (index: number) => {
+    currentPhoto.current = index;
+    setPhoto(index);
+    pager.current?.scrollTo({ x: index * photoWidth, animated: true });
+  };
   const categoryId = item?.category.id || place?.category.id || "";
   const nature = /park|garden|waterfront|viewpoint/.test(categoryId);
   const artIcon: IconName = nature
@@ -101,15 +103,55 @@ export function ActivityProfile({
     <View
       testID="activity-hero"
       style={[styles.hero, { minHeight: height, paddingTop: inset.top + 16 }]}
-      {...gesture.panHandlers}
     >
-      {photos[photo] ? (
+      {photos.length > 1 ? (
+        <ScrollView
+          ref={pager}
+          testID="activity-photo-pager"
+          horizontal
+          pagingEnabled
+          directionalLockEnabled
+          nestedScrollEnabled
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="never"
+          style={StyleSheet.absoluteFill}
+          contentContainerStyle={styles.photoStrip}
+          onLayout={(e) => setPhotoWidth(e.nativeEvent.layout.width)}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const width = e.nativeEvent.layoutMeasurement.width;
+            // A resize can emit a scroll before the photo widths catch up.
+            if (!width || Math.abs(width - photoWidth) > 1) return;
+            const index = Math.max(
+              0,
+              Math.min(
+                photos.length - 1,
+                Math.round(e.nativeEvent.contentOffset.x / width),
+              ),
+            );
+            currentPhoto.current = index;
+            setPhoto(index);
+          }}
+        >
+          {photos.map((source, index) => (
+            <Image
+              key={index}
+              testID={index === photo ? "activity-photo" : undefined}
+              source={source}
+              style={{ width: photoWidth, height: "100%" }}
+              resizeMode="cover"
+              accessibilityLabel={`Illustrative photo ${index + 1} of ${photos.length}, not this venue`}
+            />
+          ))}
+        </ScrollView>
+      ) : photos[0] ? (
         <Image
           testID="activity-photo"
-          source={photos[photo]}
+          source={photos[0]}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
-          accessibilityLabel={`Illustrative photo ${photo + 1} of ${photos.length}, not this venue`}
+          accessibilityLabel="Illustrative photo 1 of 1, not this venue"
         />
       ) : (
         <View
@@ -132,7 +174,8 @@ export function ActivityProfile({
         locations={[0, 0.27, 0.64, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.header}>
+      {/* Static overlays pass swipes through; buttons keep their hit targets. */}
+      <View pointerEvents="box-none" style={styles.header}>
         {onBack ? (
           <Pressable
             accessibilityRole="button"
@@ -143,13 +186,15 @@ export function ActivityProfile({
             <Icon name="arrow-left" color="white" />
           </Pressable>
         ) : (
-          <Copy style={styles.logo}>
+          <Copy pointerEvents="none" style={styles.logo}>
             OutRN<Copy style={{ color: "#F36B3F" }}>↗</Copy>
           </Copy>
         )}
-        <Copy style={styles.area}>{area}</Copy>
+        <Copy pointerEvents="none" style={styles.area}>
+          {area}
+        </Copy>
       </View>
-      <Copy style={styles.caption}>
+      <Copy pointerEvents="none" style={styles.caption}>
         {demoMode
           ? "Demo places · illustrative photos and posts"
           : photos.length
@@ -157,22 +202,22 @@ export function ActivityProfile({
             : "Category artwork · venue photos not available"}
       </Copy>
       {photos.length > 0 && (
-        <Copy style={styles.counter}>
+        <Copy pointerEvents="none" style={styles.counter}>
           {photo + 1} / {photos.length}
         </Copy>
       )}
-      <View style={styles.spacer} />
-      <View style={styles.bottom}>
-        <View style={styles.copy}>
+      <View pointerEvents="none" style={styles.spacer} />
+      <View pointerEvents="box-none" style={styles.bottom}>
+        <View pointerEvents="box-none" style={styles.copy}>
           {photos.length > 1 && (
-            <View style={styles.dots}>
+            <View pointerEvents="box-none" style={styles.dots}>
               {photos.map((_, i) => (
                 <Pressable
                   key={i}
                   accessibilityRole="button"
                   accessibilityLabel={`Show photo ${i + 1}`}
                   accessibilityState={{ selected: photo === i }}
-                  onPress={() => setPhoto(i)}
+                  onPress={() => selectPhoto(i)}
                   style={styles.dotHit}
                 >
                   <View
@@ -206,7 +251,7 @@ export function ActivityProfile({
           </View>
           {item && <RequiredNotes item={item} light />}
         </View>
-        <View style={styles.rail}>
+        <View pointerEvents="box-none" style={styles.rail}>
           <Rail
             name="bookmark"
             label={saved ? "Saved" : "Save"}
@@ -285,6 +330,7 @@ function Rail({
   );
 }
 const styles = StyleSheet.create({
+  photoStrip: { height: "100%" },
   hero: {
     backgroundColor: "#27392D",
     paddingHorizontal: 24,
@@ -331,16 +377,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   copy: { flex: 1, gap: 12, minWidth: 0 },
-  kind: { color: "#CCD8C8", fontSize: 13, lineHeight: 18, fontWeight: "500" },
+  kind: {
+    pointerEvents: "none",
+    color: "#CCD8C8",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "500",
+  },
   title: {
+    pointerEvents: "none",
     fontSize: 28,
     lineHeight: 32,
     letterSpacing: -0.6,
     fontWeight: "600",
     color: "white",
   },
-  description: { color: "#F2F2E8", fontSize: 15, lineHeight: 22 },
-  facts: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  description: {
+    pointerEvents: "none",
+    color: "#F2F2E8",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  facts: {
+    pointerEvents: "none",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+  },
   fact: {
     fontSize: 13,
     lineHeight: 19,
