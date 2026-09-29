@@ -33,7 +33,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
 ]);
 
 let n = 0;
-function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number; kitchen?: string; takeout?: "yes" | "no" | "only" }): Candidate {
+function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: number; hoursSources?: string[]; hoursVerifiedAt?: Date | null; hoursConflict?: boolean; admission?: string; price?: unknown; wheelchair?: string; lastEntry?: number; kitchen?: string; takeout?: "yes" | "no" | "only"; cuisine?: string[]; subtype?: string }): Candidate {
   const id = over.id ?? `v${++n}`;
   const facts: Candidate["facts"] = {
     name: { value: { value: over.name ?? id }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 },
@@ -46,7 +46,9 @@ function venue(over: Partial<Candidate> & { hours?: string | null; hoursConf?: n
   if (over.takeout) facts.takeout = { value: { value: over.takeout }, confidence: 0.7, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.kitchen) facts.kitchen_hours = { value: { osm: over.kitchen }, confidence: 0.6, evidenceClass: "published", validUntil: null, independentSources: 1 };
   if (over.lastEntry) facts.last_entry_offset = { value: { minutes: over.lastEntry }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
-  return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: 0, excluded: false, hasLandmarkId: false, parentVenueId: null, brand: over.brand ?? null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
+  if (over.cuisine) facts.cuisine = { value: { values: over.cuisine }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+  if (over.subtype) facts.subtype = { value: { value: over.subtype }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+  return { kind: "venue", id, venueId: id, name: over.name ?? id, category: over.category ?? "cafe", point: over.point ?? NEAR, timezone: TZ, facts, boost: over.boost ?? 0, excluded: false, hasLandmarkId: false, parentVenueId: null, brand: over.brand ?? null, ...(over.occurrence ? { occurrence: over.occurrence } : {}), ...(over.kind ? { kind: over.kind } : {}) };
 }
 
 function ctx(date: string, minutes: number, over: Partial<RequestContext> = {}): RequestContext {
@@ -455,6 +457,46 @@ describe("selection: diversity and fewer than three", () => {
     expect(three.items.map((e) => e.candidate.id)).toContain("sweet");
   });
 
+  // Merit is appeal × 0.5 + …, so a boost of 0.04 is 0.02 of merit: less than a repeated cuisine costs (VARIETY).
+  const dinner = (over: { id: string; cuisine?: string[]; boost?: number; hours?: string | null }) => venue({ category: "restaurant", hours: "Mo-Su 11:00-23:00", ...over });
+
+  it("within a narrowed request, cuisines vary: a slightly lower-scored Thai place comes before a second Italian one", () => {
+    const x = ctx("2026-10-02 19:00", 120, { categories: ["restaurant"] });
+    const cands = [dinner({ id: "it1", cuisine: ["italian"], boost: 0.04 }), dinner({ id: "it2", cuisine: ["pizza"], boost: 0.04 }), dinner({ id: "it3", cuisine: ["italian", "pasta"], boost: 0.04 }), dinner({ id: "thai", cuisine: ["thai"] })];
+    const s = recommend(cands, x, POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["it1", "thai", "it2"]);
+    // Nothing is dropped: the third Italian place leads the next page.
+    expect(s.ordered.map((e) => e.candidate.id)).toEqual(["it1", "thai", "it2", "it3"]);
+    // Without cuisines there is nothing to vary: merit order, as before.
+    const plain = recommend(cands.map((c) => ({ ...c, facts: { ...c.facts, cuisine: undefined } })), x, POLICIES);
+    expect(plain.items.map((e) => e.candidate.id)).toEqual(["it1", "it2", "it3"]);
+  });
+
+  it("a much better place keeps its place: variety breaks near-ties, it doesn't bury the best option", () => {
+    const x = ctx("2026-10-02 19:00", 120, { categories: ["restaurant"] });
+    const s = recommend([dinner({ id: "it1", cuisine: ["italian"], boost: 0.2 }), dinner({ id: "it2", cuisine: ["pizza"], boost: 0.2 }), dinner({ id: "thai", cuisine: ["thai"] })], x, POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["it1", "it2", "thai"]);
+  });
+
+  it("kinds of activity vary the same way, by subtype", () => {
+    const fun = (id: string, subtype: string, boost: number) => venue({ id, category: "activity", subtype, boost, hours: "Mo-Su 10:00-23:00" });
+    const s = recommend([fun("esc1", "escape_room", 0.04), fun("esc2", "escape_room", 0.04), fun("golf", "miniature_golf", 0)], ctx("2026-10-03 15:00", 180, { categories: ["activity"] }), POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["esc1", "golf", "esc2"]);
+  });
+
+  it("class still beats variety: a Check-first place with a new cuisine never comes before a Ready one", () => {
+    const x = ctx("2026-10-02 19:00", 120, { categories: ["restaurant"] });
+    const s = recommend([dinner({ id: "it1", cuisine: ["italian"] }), dinner({ id: "it2", cuisine: ["italian"] }), { ...dinner({ id: "thai", cuisine: ["thai"], hours: null }), hasLandmarkId: true }], x, POLICIES);
+    expect(s.items.map((e) => [e.candidate.id, e.class])).toEqual([["it1", "ready"], ["it2", "ready"], ["thai", "check_first"]]);
+  });
+
+  it("once a kind of place is shown, a different one comes before a near-equal repeat", () => {
+    // Friday 4pm is fair for both cafés and restaurants, so only the boost separates them.
+    const x = ctx("2026-10-02 16:00", 180, { categories: ["restaurant", "cafe"] });
+    const s = recommend([dinner({ id: "r1", boost: 0.02 }), dinner({ id: "r2", boost: 0.02 }), venue({ id: "c1", category: "cafe", hours: "Mo-Su 07:00-23:00" })], x, POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["r1", "c1", "r2"]);
+  });
+
   it("More options pages through the same ordering by offset", () => {
     const cands = [
       venue({ id: "bar1", category: "bar", hours: "Mo-Su 16:00-24:00" }),
@@ -534,6 +576,31 @@ describe("appeal signals", () => {
     expect(hour["near"]!).toBeGreaterThan(hour["farther"]!);
     // The gap between near and farther is wider in an hour than in four hours.
     expect(hour["near"]! - hour["farther"]!).toBeGreaterThan(evening["near"]! - evening["farther"]!);
+  });
+
+  it("worth the trip: with hours to spare, the same far walk costs a museum less than a café, and a café less than ice cream", () => {
+    const WALK_15 = { lat: 40.7275, lon: -73.988 }; // ~1 km: a quarter-hour walk
+    const kinds = ["dessert", "cafe", "museum"] as const;
+    const places = kinds.flatMap((category) => [venue({ id: `${category}-near`, category }), venue({ id: `${category}-far`, category, point: WALK_15 })]);
+    // What the extra distance costs each kind of place, in fit.
+    const cost = (minutes: number) => {
+      const by = Object.fromEntries(evaluateAll(places, ctx("2026-10-03 13:00", minutes), POLICIES).map((e) => [e.candidate.id, e]));
+      return Object.fromEntries(
+        kinds.filter((k) => by[`${k}-far`]!.timing).map((k) => {
+          expect(by[`${k}-far`]!.timing!.travel.minutes).toBeGreaterThan(10);
+          return [k, by[`${k}-near`]!.scores.fit - by[`${k}-far`]!.scores.fit];
+        }),
+      );
+    };
+    // Five hours: half an hour of walking is a small share of a two-hour museum, a large one of an ice cream.
+    const long = cost(300);
+    expect(long["museum"]!).toBeLessThan(long["cafe"]!);
+    expect(long["cafe"]!).toBeLessThan(long["dessert"]!);
+    expect(long["museum"]!).toBeGreaterThan(0); // nearer is still better
+    // Up to 90 minutes only the window judges travel: the same distance costs each the same.
+    const short = cost(90);
+    expect(short["museum"]).toBeUndefined(); // a museum doesn't fit in 90 minutes with the walk
+    expect(short["cafe"]!).toBeCloseTo(short["dessert"]!, 3);
   });
 
   const daysBefore = (x: RequestContext, days: number) => new Date(x.now.getTime() - days * 86_400_000);

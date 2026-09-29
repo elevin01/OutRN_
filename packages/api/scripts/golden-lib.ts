@@ -37,6 +37,8 @@ export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   { id: "les-tue-afternoon", title: "LES, Tuesday 3pm, 2 hours", at: "2026-09-29T19:00:00Z", request: { areaId: "les", windowMinutes: 120 } },
   { id: "les-wed-lunch-takeout", title: "LES, Wednesday 12:30pm, 45 minutes, food to go", at: "2026-09-30T16:30:00Z", request: { areaId: "les", windowMinutes: 45, categories: ["restaurant", "cafe"], visitStyle: "takeout" } },
   { id: "les-fri-date", title: "LES, Friday 7:30pm, 90 minutes, a date", at: "2026-10-02T23:30:00Z", request: { areaId: "les", windowMinutes: 90, company: "date" } },
+  { id: "les-fri-dinner", title: "LES, Friday 7pm, 2 hours, dinner", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 120, categories: ["restaurant"] } },
+  { id: "les-sat-long", title: "LES, Saturday noon, 5 hours", at: "2026-10-03T16:00:00Z", request: { areaId: "les", windowMinutes: 300 } },
   { id: "les-fri-movies", title: "LES, Friday 7pm, 3 hours, a movie or a show", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 180, categories: ["cinema", "theatre", "live_music"] } },
   { id: "bronxville-sat-evening", title: "Bronxville, Saturday 7:30pm, 2 hours, driving", at: "2026-10-03T23:30:00Z", request: { areaId: "bronxville", windowMinutes: 120 } },
   { id: "bronxville-sun-family", title: "Bronxville, Sunday noon, 3 hours, family", at: "2026-10-04T16:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, company: "family" } },

@@ -122,10 +122,23 @@ changelog.
     site, or in the morning, it is still not an option.
   - **Travel against the window:** a walk counts against the time the user has, so a 15-minute
     walk weighs more in an hour than in an evening.
+- **Part 2: variety and worth the trip.**
+  - **Cuisine** is stored from OSM (`cuisine=italian;pizza`) for restaurants, cafés, dessert places
+    and bars, shown on the details page ("Cuisine: Italian, pizza"), and settable by the founder.
+  - **Variety within a type.** After one of each activity, each next slot goes to the best place
+    once a repeat of the last three shown is paid for: 0.03 of merit per same category, 0.05 per
+    same cuisine group (Italian and pizza are one; sushi and ramen are one) or activity subtype.
+    A near-tie goes to the different place; a clearly better one keeps its slot. Class still comes
+    first, and a category chip still gets only that category, with its cuisines varied.
+  - **Worth the trip.** From 90 minutes, and fully from four hours, half the travel score is the
+    share of the outing spent getting there and back. The same walk costs a two-hour museum less
+    than a café, and a café less than an ice cream. Up to 90 minutes, ranking is unchanged.
+  - Golden scenarios added: dinner with only restaurants, and a five-hour Saturday.
 - **Still to do:**
-  - **Worth the trip.** Long windows should favour bigger places, not only allow farther ones.
-  - **Diversity within a type.** Avoid three Italian restaurants: store the OSM cuisine, and
-    prefer distinct cuisines and subtypes before repeating one.
+  - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
+    Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
+    outrank a Ready place. Founder checks or the museums' own sites would let them lead.
+  - Show the cuisine on the card itself (a contract addition), so "Thai" is visible before opening.
   - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)

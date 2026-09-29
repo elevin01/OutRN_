@@ -29,6 +29,7 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - takeout            : { value: "yes"|"no"|"only" }  food to go (OSM takeaway); "only" has no seats
  *  - links              : { instagram?, facebook?, menu? }  the venue's own pages, as https URLs
  *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
+ *  - cuisine            : { values: string[] }  what a place serves, as OSM cuisine slugs ("italian", "pizza")
  *  - age_limit          : { minAge: number }  minimum admission age; 0 = no age limit; absent = unknown
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
@@ -54,6 +55,7 @@ export const ATTRIBUTES = [
   "takeout",
   "links",
   "subtype",
+  "cuisine",
   "age_limit",
   "crowd_level",
   "queue",
