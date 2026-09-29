@@ -12,6 +12,19 @@
     "lon": -73.985733
   },
   "address": null,
+  "photos": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
+      "width": 800,
+      "height": 600,
+      "alt": "OutRN synthetic Norfolk Park",
+      "credit": "Unknown author, Public domain, via Wikimedia Commons",
+      "author": "Unknown author",
+      "license": "Public domain",
+      "licenseUrl": null,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg"
+    }
+  ],
   "status": "operating",
   "hoursNow": {
     "state": "open",
@@ -169,6 +182,7 @@
   },
   "asOf": "2026-10-03T22:30:00.000Z",
   "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

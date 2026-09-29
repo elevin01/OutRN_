@@ -6,7 +6,7 @@ import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
-import { ingestExtentFor, ingestOsmArea } from "@outrn/ingest";
+import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -19,6 +19,7 @@ import { runEngine } from "../src/service/recommendations.js";
 const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/outrn";
 const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 const FIXTURE = resolve(__dirname, "../../../fixtures/osm/les-synthetic.json");
+const PHOTOS = resolve(__dirname, "../../../fixtures/wikimedia/les-synthetic.json");
 const SAT_EVENING = new Date("2026-10-03T22:30:00Z");
 const TOKEN = "test-ops-token";
 
@@ -38,6 +39,7 @@ beforeAll(async () => {
   await db.query("create extension if not exists postgis; create extension if not exists pgcrypto;");
   await reset(db);
   await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
+  await ingestPhotos(db, { areaSlug: "les", fromFile: PHOTOS });
 });
 
 afterAll(async () => {
@@ -63,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.4.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.5.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -253,17 +255,23 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const target = second.items[0]!;
     await writeFacts(db, [{ subjectKind: "venue", subjectId: target.placeId, attribute: "business_status", value: { status: "closed_temporarily" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: sign on the door", sourceUpdatedAt: now, fetchedAt: now, confidence: 0.9, lineageGroup: "founder" }]);
     await materializeSubjects(db, "venue", [target.placeId], now);
-    const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
-    expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
-    // A new search sees the change.
-    const fresh = await search({ areaId: "les", windowMinutes: 180 });
-    const all: string[] = [...fresh.items.map((i) => i.id)];
-    let p = fresh;
-    while (p.page.nextCursor) {
-      p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
-      all.push(...p.items.map((i) => i.id));
+    try {
+      const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
+      expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
+      // A new search sees the change.
+      const fresh = await search({ areaId: "les", windowMinutes: 180 });
+      const all: string[] = [...fresh.items.map((i) => i.id)];
+      let p = fresh;
+      while (p.page.nextCursor) {
+        p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+        all.push(...p.items.map((i) => i.id));
+      }
+      expect(all).not.toContain(target.id);
+    } finally {
+      // Reopen it: which place this closes follows the ranking, and later tests expect the fixture as ingested.
+      await db.query(`delete from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'founder' and evidence = 'founder: sign on the door'`, [target.placeId]);
+      await materializeSubjects(db, "venue", [target.placeId], now);
     }
-    expect(all).not.toContain(target.id);
   });
 
   it("expires a search's pages with its plans, and hands back the search to run again", async () => {
@@ -295,7 +303,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
-    // Items a 1.3 API stored name no parking, and a 1.2 API's have no conditions either: that search computed none.
+    // Items a 1.4 API stored have no photos; a 1.3 API's name no parking; a 1.2 API's have no conditions either: that search computed none.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'photos') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    expect((await search(next)).items.map((i) => i.photos)).toEqual(expected.map(() => []));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'parking') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     expect((await search(next)).items.map((i) => i.parking)).toEqual(expected.map(() => null));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'conditions') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
@@ -391,6 +401,29 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     }
   });
 
+  it("shows a place's own free photos with their credits, and credits the source", async () => {
+    // 2pm: at 6:30pm Pitt Park is near sunset, when parks fall out of the three.
+    now = new Date("2026-10-03T18:00:00Z");
+    const page = await search({ areaId: "les", windowMinutes: 180 });
+    const park = page.items.find((i) => i.name === "Pitt Park")!;
+    expect(park.photos.map((p) => [p.license, p.credit])).toEqual([
+      ["CC BY-SA 4.0", "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons"],
+      ["CC0", "CC0, via Wikimedia Commons"],
+    ]);
+    expect(park.photos[0]).toMatchObject({ width: 960, height: 720, sourceUrl: "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0" });
+    expect(park.photos[0]!.url).toBe("https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg");
+    // No photo is ever borrowed: places without their own have none.
+    expect(page.items.filter((i) => i.name !== "Pitt Park").every((i) => i.photos.length === 0)).toBe(true);
+    expect(page.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+
+    const details = PlaceDetails.parse((await call("GET", `/v1/places/${park.placeId}`)).json);
+    expect(details.photos.map((p) => p.credit)).toEqual(park.photos.map((p) => p.credit));
+    expect(details.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+    const kitchen = PlaceDetails.parse((await call("GET", `/v1/places/${page.items.find((i) => i.name === "Forsyth Clinton Kitchen")!.placeId}`)).json);
+    expect(kitchen.photos).toEqual([]);
+    expect(kitchen.attributions).not.toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+  });
+
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {
     now = SAT_EVENING;
     const page = await search({ areaId: "les", windowMinutes: 180 });
@@ -411,7 +444,10 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     now = SAT_EVENING;
     const first = (await search({ areaId: "les", windowMinutes: 180 })).items[0]!;
     const record = (await db.query<{ external_id: string }>(`select se.external_id from entity_links el join source_entities se on se.id = el.source_entity_id where el.venue_id = $1 and el.superseded_by is null`, [first.placeId])).rows[0]!.external_id;
-    await writeFacts(db, [{ subjectKind: "venue", subjectId: first.placeId, attribute: "links", value: { instagram: "https://www.instagram.com/pittpark/", menu: "https://pittpark.example/menu" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "contact:instagram=pittpark; website:menu=https://pittpark.example/menu", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.75 }]);
+    await writeFacts(db, [
+      { subjectKind: "venue", subjectId: first.placeId, attribute: "links", value: { instagram: "https://www.instagram.com/pittpark/", menu: "https://pittpark.example/menu" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "contact:instagram=pittpark; website:menu=https://pittpark.example/menu", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.75 },
+      { subjectKind: "venue", subjectId: first.placeId, attribute: "website", value: { value: "https://www.pittpark.example/" }, evidenceClass: "published", sourceId: "osm", sourceRecord: record, lineageGroup: "osm", evidence: "website=https://www.pittpark.example/", fetchedAt: new Date("2026-09-26T00:00:00Z"), confidence: 0.8 },
+    ]);
     await materializeSubjects(db, "venue", [first.placeId], now);
     const expected = [
       { kind: "menu", label: "Menu", url: "https://pittpark.example/menu" },

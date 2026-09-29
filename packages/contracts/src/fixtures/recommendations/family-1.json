@@ -39,6 +39,7 @@
       "placeId": "00000000-0000-4000-8000-00000000001e",
       "name": "Pitt Street Nightcap",
       "placeName": "Pitt Street Nightcap",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -149,6 +150,7 @@
       "placeId": "00000000-0000-4000-8000-00000000001c",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -259,6 +261,7 @@
       "placeId": "00000000-0000-4000-8000-00000000001f",
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"

@@ -56,6 +56,7 @@
         }
       ],
       "parking": null,
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000015",
       "copy": {
         "action": "Go now",
@@ -183,6 +184,7 @@
         }
       ],
       "parking": null,
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000016",
       "copy": {
         "action": "Go now",
@@ -315,6 +317,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
         "distanceMetres": 54
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000017",
       "copy": {
         "action": "Go now",

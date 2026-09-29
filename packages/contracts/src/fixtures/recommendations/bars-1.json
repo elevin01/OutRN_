@@ -39,6 +39,7 @@
       "placeId": "00000000-0000-4000-8000-000000000004",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -156,6 +157,7 @@
       "placeId": "00000000-0000-4000-8000-00000000001c",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -265,6 +267,7 @@
       "placeId": "00000000-0000-4000-8000-00000000001d",
       "name": "Delancey Tavern",
       "placeName": "Delancey Tavern",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"

@@ -87,6 +87,8 @@ describe("fixtures cover every state a screen must handle", () => {
     ["a stale check, due for recheck", () => facts.some((f) => f.provenance.dueForRecheck)],
     ["sources that disagree", () => facts.some((f) => f.provenance.conflict)],
     ["hours not listed", () => facts.some((f) => f.attribute === "opening_hours" && f.provenance.evidence === "missing")],
+    ["a card with the place's own photos, credited, and one without", () => items.some((i) => i.photos.length > 1 && i.photos.every((p) => p.credit.includes("via Wikimedia Commons"))) && items.some((i) => i.photos.length === 0)],
+    ["place details with photos", () => placeList.some((p) => p.photos.length > 0)],
     ["a place with parking nearby, and one without", () => placeList.some((p) => p.parkingNearby !== null) && placeList.some((p) => p.parkingNearby === null)],
     ["a place open now and one closed now", () => placeList.some((p) => p.hoursNow.state === "open") && placeList.some((p) => p.hoursNow.state === "closed")],
     ["an expired search with a restart", () => errors["cursor-expired"]?.body.error.restart !== undefined],

@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Price, TravelMode, VenueLink } from "./common.js";
+import { AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Photo, Price, TravelMode, VenueLink } from "./common.js";
 
 /** POST /v1/recommendations — a short, ordered list of things that fit the time the user has. */
 
@@ -187,6 +187,8 @@ export const RecommendationItem = z.object({
   name: z.string(),
   /** The place's name (equal to `name` for a venue). */
   placeName: z.string(),
+  /** Up to 3 photos of the place, lead first. Empty when none is known: show the category's artwork. */
+  photos: z.array(Photo).max(3),
   category: Option,
   subtype: Option.nullable(),
   /**

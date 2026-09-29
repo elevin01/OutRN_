@@ -69,6 +69,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 102
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000018",
       "copy": {
         "action": "Go now",
@@ -215,6 +216,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 160
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000019",
       "copy": {
         "action": "Go now",
@@ -341,6 +343,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 74
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-00000000001a",
       "copy": {
         "action": "Check first",

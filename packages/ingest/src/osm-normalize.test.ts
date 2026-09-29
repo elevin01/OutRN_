@@ -269,7 +269,22 @@ describe("OSM normalization", () => {
       expect(venueLinks({ "contact:instagram": "https://instagram.com/essexcoffee?igsh=abc" })?.links).toEqual({ instagram: "https://www.instagram.com/essexcoffee/" });
       expect(venueLinks({ "contact:instagram": "@essex.coffee" })?.links).toEqual({ instagram: "https://www.instagram.com/essex.coffee/" });
       expect(venueLinks({ "contact:facebook": "https://m.facebook.com/EssexCoffeeNYC/" })?.links).toEqual({ facebook: "https://www.facebook.com/EssexCoffeeNYC" });
-      expect(venueLinks({ "website:menu": "https://essex.example/menu.pdf" })?.links).toEqual({ menu: "https://essex.example/menu.pdf" });
+      expect(venueLinks({ website: "https://essex.example/", "website:menu": "https://essex.example/menu.pdf" })?.links).toEqual({ menu: "https://essex.example/menu.pdf" });
+    });
+
+    it("keeps a menu only on the venue's own site or a menu platform: anyone can edit website:menu", () => {
+      expect(venueLinks({ website: "https://www.essexcoffee.com", "website:menu": "https://order.essexcoffee.com/menu" })?.links.menu).toBe("https://order.essexcoffee.com/menu");
+      expect(venueLinks({ "contact:website": "essexcoffee.com", "website:menu": "https://www.essexcoffee.com/menu" })?.links.menu).toBe("https://www.essexcoffee.com/menu");
+      expect(venueLinks({ "website:menu": "https://www.toasttab.com/essex-coffee" })?.links.menu).toBe("https://www.toasttab.com/essex-coffee");
+      for (const tags of [
+        { website: "https://essexcoffee.com", "website:menu": "https://essexcoffee.com.evil.example/menu" }, // a lookalike
+        { website: "https://essexcoffee.com", "website:menu": "https://evil.example/essexcoffee/menu" }, // another site
+        { "website:menu": "https://essexcoffee.com/menu" }, // no website to compare
+        { website: "not a site", "website:menu": "https://essexcoffee.com/menu" },
+        { website: "https://essexcoffee.com", "website:menu": "https://essex-coffee-order.square.site/" }, // a free site builder anyone can sign up to
+        { website: "https://www.facebook.com/essexcoffee", "website:menu": "https://www.facebook.com/SomeoneElsesPage" }, // another tenant of a shared host
+      ]) expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
+      expect(venueLinks({ website: "https://www.facebook.com/essexcoffee", "website:menu": "https://www.facebook.com/essexcoffee/menu" })?.links.menu).toBe("https://www.facebook.com/essexcoffee/menu");
     });
 
     it("drops anything it cannot vouch for", () => {
@@ -287,7 +302,7 @@ describe("OSM normalization", () => {
     });
 
     it("becomes one published links fact with its tags as evidence", () => {
-      expect(fact(rec({ name: "Essex Coffee", amenity: "cafe", "contact:instagram": "essexcoffee", "website:menu": "https://essex.example/menu" }), "links")).toMatchObject({
+      expect(fact(rec({ name: "Essex Coffee", amenity: "cafe", website: "https://essex.example/", "contact:instagram": "essexcoffee", "website:menu": "https://essex.example/menu" }), "links")).toMatchObject({
         evidenceClass: "published",
         value: { instagram: "https://www.instagram.com/essexcoffee/", menu: "https://essex.example/menu" },
         evidence: "contact:instagram=essexcoffee; website:menu=https://essex.example/menu",
@@ -298,9 +313,9 @@ describe("OSM normalization", () => {
   describe("menu links from OSM point at public hosts only", () => {
     it("drops a website:menu on an IP literal or a network-local name", () => {
       for (const menu of ["https://169.254.169.254/latest/meta-data/", "https://192.168.1.1/menu", "https://[::1]/", "https://0x7f.1/", "https://router.local/menu", "https://intranet/menu", "https://router.lan/menu", "https://router.home/menu", "https://nas.corp/menu"]) {
-        expect(venueLinks({ "website:menu": menu }), menu).toBeNull();
+        expect(venueLinks({ website: menu, "website:menu": menu }), menu).toBeNull();
       }
-      expect(venueLinks({ "website:menu": "https://bageldepot.example/menu.pdf" })?.links.menu).toBe("https://bageldepot.example/menu.pdf");
+      expect(venueLinks({ website: "https://bageldepot.example", "website:menu": "https://bageldepot.example/menu.pdf" })?.links.menu).toBe("https://bageldepot.example/menu.pdf");
     });
 
     it("drops handles that are not accounts: a redirect path, or no letters at all", () => {
