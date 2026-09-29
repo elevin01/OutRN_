@@ -1327,6 +1327,167 @@
    "relaxations": []
   },
   {
+   "id": "les-sun-vegetarian",
+   "title": "LES, Sunday 12:30pm, 2 hours, vegetarian",
+   "eligible": 74,
+   "top": [
+    {
+     "rank": 1,
+     "name": "The Grand Daddy",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Sticky Rice",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Butcher's Daughter",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Van Leeuwen Ice Cream",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Pause Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Mr. Taka Ramen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-tue-wifi",
+   "title": "LES, Tuesday 9am, 3 hours, wifi",
+   "eligible": 37,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Georgie's Cafe & Bar",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Chatham Square Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Veselka",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Ost Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "12 Corners",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Mulberry Street Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
    "eligible": 79,

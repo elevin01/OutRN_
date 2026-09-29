@@ -23,6 +23,8 @@
       "bar"
     ],
     "cuisines": [],
+    "diets": [],
+    "features": [],
     "at": "2026-10-04T05:15:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -47,6 +49,8 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "status": "check_first",
       "callToAction": "check",
       "location": {
@@ -159,6 +163,13 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "status": "check_first",
       "callToAction": "check",
       "location": {
@@ -271,6 +282,13 @@
       },
       "subtype": null,
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "status": "check_first",
       "callToAction": "check",
       "location": {

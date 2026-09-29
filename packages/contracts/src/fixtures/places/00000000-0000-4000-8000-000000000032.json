@@ -1,47 +1,51 @@
 {
   "id": "00000000-0000-4000-8000-000000000032",
-  "name": "East River Overlook",
+  "name": "Delancey Playhouse",
   "category": {
-    "id": "viewpoint",
-    "label": "Viewpoint"
+    "id": "theatre",
+    "label": "Theatre"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.7145,
-    "lon": -73.976
+    "lat": 40.714031,
+    "lon": -73.977359
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
+    "state": "closed",
     "closesAt": null,
-    "opensAt": null,
-    "summary": null
+    "opensAt": "2026-10-03T23:00:00.000Z",
+    "summary": "Closed now · opens 7pm today"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Tu-Su 19:00-22:30",
+      "detail": "Closed now · opens 7pm today",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.531,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
       }
     },
     {
@@ -59,41 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.55,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
+      "value": "Ticket required",
       "detail": null,
       "provenance": {
         "sources": [
@@ -105,18 +86,41 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Limited access",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -128,25 +132,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
+    "websiteUrl": "https://delanceyplayhouse.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=driving"
     },
     "links": []
   },

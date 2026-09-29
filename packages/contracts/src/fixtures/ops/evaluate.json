@@ -1,10 +1,10 @@
 {
-  "id": "00000000-0000-4000-8000-000000000035",
+  "id": "00000000-0000-4000-8000-000000000039",
   "areaName": "Lower East Side (test point)",
   "createdAt": "2026-10-03T22:30:00.000Z",
   "candidateCount": 80,
   "durationMs": 42,
-  "engineVersion": "0.5.0",
+  "engineVersion": "0.6.0",
   "weightsVersion": "2026-09-29.3",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
@@ -28,9 +28,9 @@
   },
   "results": [
     {
-      "itemId": "00000000-0000-4000-8000-000000000036",
+      "itemId": "00000000-0000-4000-8000-00000000003a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000036",
+      "placeId": "00000000-0000-4000-8000-00000000003a",
       "name": "Orchard Museum",
       "category": "museum",
       "class": "ineligible",
@@ -48,9 +48,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000037",
+      "itemId": "00000000-0000-4000-8000-00000000003b",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000037",
+      "placeId": "00000000-0000-4000-8000-00000000003b",
       "name": "Ludlow Museum",
       "category": "museum",
       "class": "ineligible",
@@ -68,9 +68,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000038",
+      "itemId": "00000000-0000-4000-8000-00000000003c",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000038",
+      "placeId": "00000000-0000-4000-8000-00000000003c",
       "name": "Essex Garden",
       "category": "garden",
       "class": "ineligible",
@@ -90,9 +90,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000039",
+      "itemId": "00000000-0000-4000-8000-00000000003d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000039",
+      "placeId": "00000000-0000-4000-8000-00000000003d",
       "name": "Broome Garden",
       "category": "garden",
       "class": "ineligible",
@@ -112,9 +112,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003a",
+      "itemId": "00000000-0000-4000-8000-00000000003e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003a",
+      "placeId": "00000000-0000-4000-8000-00000000003e",
       "name": "Tenement Story Museum",
       "category": "museum",
       "class": "ineligible",
@@ -177,9 +177,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003b",
+      "itemId": "00000000-0000-4000-8000-00000000003f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003b",
+      "placeId": "00000000-0000-4000-8000-00000000003f",
       "name": "Allen Grand Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -222,9 +222,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003c",
+      "itemId": "00000000-0000-4000-8000-000000000040",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003c",
+      "placeId": "00000000-0000-4000-8000-000000000040",
       "name": "Eldridge Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -267,9 +267,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003d",
+      "itemId": "00000000-0000-4000-8000-000000000041",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003d",
+      "placeId": "00000000-0000-4000-8000-000000000041",
       "name": "Stanton 2 Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -314,9 +314,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003e",
+      "itemId": "00000000-0000-4000-8000-000000000042",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003e",
+      "placeId": "00000000-0000-4000-8000-000000000042",
       "name": "Attorney Coffee",
       "category": "cafe",
       "class": "check_first",
@@ -338,9 +338,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000003f",
+      "itemId": "00000000-0000-4000-8000-000000000043",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003f",
+      "placeId": "00000000-0000-4000-8000-000000000043",
       "name": "Hester Coffee",
       "category": "cafe",
       "class": "ready",
@@ -360,9 +360,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000040",
+      "itemId": "00000000-0000-4000-8000-000000000044",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000040",
+      "placeId": "00000000-0000-4000-8000-000000000044",
       "name": "Allen Hester Coffee",
       "category": "cafe",
       "class": "ineligible",
@@ -380,9 +380,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000041",
+      "itemId": "00000000-0000-4000-8000-000000000045",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000041",
+      "placeId": "00000000-0000-4000-8000-000000000045",
       "name": "Forsyth Coffee",
       "category": "cafe",
       "class": "ineligible",
@@ -400,9 +400,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000042",
+      "itemId": "00000000-0000-4000-8000-000000000046",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000042",
+      "placeId": "00000000-0000-4000-8000-000000000046",
       "name": "Ludlow Orchard Coffee",
       "category": "cafe",
       "class": "check_first",
@@ -516,9 +516,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000043",
+      "itemId": "00000000-0000-4000-8000-000000000047",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000043",
+      "placeId": "00000000-0000-4000-8000-000000000047",
       "name": "Eldridge Scoops",
       "category": "dessert",
       "class": "ready",
@@ -539,9 +539,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000044",
+      "itemId": "00000000-0000-4000-8000-000000000048",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000044",
+      "placeId": "00000000-0000-4000-8000-000000000048",
       "name": "Rivington Stanton Gallery",
       "category": "gallery",
       "class": "check_first",
@@ -564,9 +564,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000045",
+      "itemId": "00000000-0000-4000-8000-000000000049",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000045",
+      "placeId": "00000000-0000-4000-8000-000000000049",
       "name": "Eldridge Gallery",
       "category": "gallery",
       "class": "ineligible",
@@ -586,9 +586,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000046",
+      "itemId": "00000000-0000-4000-8000-00000000004a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000046",
+      "placeId": "00000000-0000-4000-8000-00000000004a",
       "name": "Stanton Gallery",
       "category": "gallery",
       "class": "ineligible",
@@ -608,9 +608,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000047",
+      "itemId": "00000000-0000-4000-8000-00000000004b",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000047",
+      "placeId": "00000000-0000-4000-8000-00000000004b",
       "name": "Allen Gallery",
       "category": "gallery",
       "class": "ineligible",
@@ -630,9 +630,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000048",
+      "itemId": "00000000-0000-4000-8000-00000000004c",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000048",
+      "placeId": "00000000-0000-4000-8000-00000000004c",
       "name": "Ridge Cinema",
       "category": "cinema",
       "class": "ineligible",
@@ -650,9 +650,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000049",
+      "itemId": "00000000-0000-4000-8000-00000000004d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000049",
+      "placeId": "00000000-0000-4000-8000-00000000004d",
       "name": "Suffolk Library",
       "category": "library",
       "class": "ineligible",
@@ -670,9 +670,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004a",
+      "itemId": "00000000-0000-4000-8000-00000000004e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004a",
+      "placeId": "00000000-0000-4000-8000-00000000004e",
       "name": "Ridge Hall",
       "category": "attraction",
       "class": "check_first",
@@ -718,9 +718,9 @@
       "shortlisted": true
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000032",
+      "itemId": "00000000-0000-4000-8000-000000000036",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000032",
+      "placeId": "00000000-0000-4000-8000-000000000036",
       "name": "East River Overlook",
       "category": "viewpoint",
       "class": "check_first",
@@ -768,9 +768,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004b",
+      "itemId": "00000000-0000-4000-8000-00000000004f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004b",
+      "placeId": "00000000-0000-4000-8000-00000000004f",
       "name": "Rivington Museum",
       "category": "museum",
       "class": "ineligible",
@@ -788,9 +788,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004c",
+      "itemId": "00000000-0000-4000-8000-000000000050",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004c",
+      "placeId": "00000000-0000-4000-8000-000000000050",
       "name": "Allen Park",
       "category": "park",
       "class": "check_first",
@@ -814,9 +814,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004d",
+      "itemId": "00000000-0000-4000-8000-000000000051",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004d",
+      "placeId": "00000000-0000-4000-8000-000000000051",
       "name": "Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -840,9 +840,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000031",
+      "itemId": "00000000-0000-4000-8000-000000000035",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000031",
+      "placeId": "00000000-0000-4000-8000-000000000035",
       "name": "Stanton Park",
       "category": "park",
       "class": "check_first",
@@ -867,9 +867,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004e",
+      "itemId": "00000000-0000-4000-8000-000000000052",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004e",
+      "placeId": "00000000-0000-4000-8000-000000000052",
       "name": "Rivington Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -892,9 +892,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004f",
+      "itemId": "00000000-0000-4000-8000-000000000053",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004f",
+      "placeId": "00000000-0000-4000-8000-000000000053",
       "name": "Orchard St. Coffee",
       "category": "cafe",
       "class": "ineligible",
@@ -912,9 +912,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000050",
+      "itemId": "00000000-0000-4000-8000-00000000002f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000050",
+      "placeId": "00000000-0000-4000-8000-00000000002f",
       "name": "Grand Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -937,9 +937,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000051",
+      "itemId": "00000000-0000-4000-8000-000000000054",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000051",
+      "placeId": "00000000-0000-4000-8000-000000000054",
       "name": "Rivington Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -962,9 +962,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000052",
+      "itemId": "00000000-0000-4000-8000-00000000002d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000052",
+      "placeId": "00000000-0000-4000-8000-00000000002d",
       "name": "Ridge Kitchen",
       "category": "restaurant",
       "class": "ready",
@@ -985,9 +985,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000053",
+      "itemId": "00000000-0000-4000-8000-000000000055",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000053",
+      "placeId": "00000000-0000-4000-8000-000000000055",
       "name": "Broome Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1102,9 +1102,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000054",
+      "itemId": "00000000-0000-4000-8000-000000000056",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000054",
+      "placeId": "00000000-0000-4000-8000-000000000056",
       "name": "Suffolk Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1150,9 +1150,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000055",
+      "itemId": "00000000-0000-4000-8000-000000000057",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000055",
+      "placeId": "00000000-0000-4000-8000-000000000057",
       "name": "Essex Allen Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1174,9 +1174,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000056",
+      "itemId": "00000000-0000-4000-8000-000000000058",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000056",
+      "placeId": "00000000-0000-4000-8000-000000000058",
       "name": "Delancey Coffee",
       "category": "cafe",
       "class": "ready",
@@ -1196,50 +1196,10 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000057",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000057",
-      "name": "Essex Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000058",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000058",
-      "name": "Pitt 2 Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
       "itemId": "00000000-0000-4000-8000-000000000059",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000059",
-      "name": "Stanton Coffee",
+      "name": "Essex Coffee",
       "category": "cafe",
       "class": "ineligible",
       "excludedBy": "CLOSED_ON_ARRIVAL",
@@ -1259,6 +1219,46 @@
       "itemId": "00000000-0000-4000-8000-00000000005a",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-00000000005a",
+      "name": "Pitt 2 Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005b",
+      "name": "Stanton Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005c",
       "name": "Eldridge Coffee",
       "category": "cafe",
       "class": "ready",
@@ -1279,9 +1279,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005b",
+      "itemId": "00000000-0000-4000-8000-00000000002e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005b",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "name": "Ridge Coffee",
       "category": "cafe",
       "class": "ready",
@@ -1301,9 +1301,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005c",
+      "itemId": "00000000-0000-4000-8000-00000000005d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005c",
+      "placeId": "00000000-0000-4000-8000-00000000005d",
       "name": "Allen Ludlow Coffee",
       "category": "cafe",
       "class": "ineligible",
@@ -1459,9 +1459,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005d",
+      "itemId": "00000000-0000-4000-8000-00000000005e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005d",
+      "placeId": "00000000-0000-4000-8000-00000000005e",
       "name": "Ridge Gallery",
       "category": "gallery",
       "class": "ineligible",
@@ -1481,9 +1481,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005e",
+      "itemId": "00000000-0000-4000-8000-00000000005f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005e",
+      "placeId": "00000000-0000-4000-8000-00000000005f",
       "name": "Orchard Gallery",
       "category": "gallery",
       "class": "ineligible",
@@ -1501,9 +1501,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000002f",
+      "itemId": "00000000-0000-4000-8000-000000000033",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000002f",
+      "placeId": "00000000-0000-4000-8000-000000000033",
       "name": "Broome Playhouse",
       "category": "theatre",
       "class": "check_first",
@@ -1525,9 +1525,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000005f",
+      "itemId": "00000000-0000-4000-8000-000000000060",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005f",
+      "placeId": "00000000-0000-4000-8000-000000000060",
       "name": "Broome Cinema",
       "category": "cinema",
       "class": "ineligible",
@@ -1545,9 +1545,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000060",
+      "itemId": "00000000-0000-4000-8000-000000000061",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000060",
+      "placeId": "00000000-0000-4000-8000-000000000061",
       "name": "Attorney Arts Center",
       "category": "arts_centre",
       "class": "check_first",
@@ -1569,9 +1569,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000061",
+      "itemId": "00000000-0000-4000-8000-000000000062",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000061",
+      "placeId": "00000000-0000-4000-8000-000000000062",
       "name": "Hester Community House",
       "category": "community",
       "class": "ineligible",
@@ -1616,9 +1616,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000062",
+      "itemId": "00000000-0000-4000-8000-000000000063",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000062",
+      "placeId": "00000000-0000-4000-8000-000000000063",
       "name": "Clinton Hall",
       "category": "attraction",
       "class": "check_first",
@@ -1640,9 +1640,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000063",
+      "itemId": "00000000-0000-4000-8000-000000000064",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000063",
+      "placeId": "00000000-0000-4000-8000-000000000064",
       "name": "Eldridge Books",
       "category": "bookshop",
       "class": "check_first",
@@ -1660,26 +1660,6 @@
         "fit": 0.52,
         "appeal": 0.583,
         "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000064",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000064",
-      "name": "Bagel Depot",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
       },
       "shortlisted": false
     },
@@ -1707,7 +1687,7 @@
       "itemId": "00000000-0000-4000-8000-000000000066",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000066",
-      "name": "Tenement Story Museum Café",
+      "name": "Bagel Depot",
       "category": "cafe",
       "class": "ineligible",
       "excludedBy": "CLOSED_ON_ARRIVAL",
@@ -1727,6 +1707,26 @@
       "itemId": "00000000-0000-4000-8000-000000000067",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000067",
+      "name": "Tenement Story Museum Café",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000068",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000068",
       "name": "Hester Lane Kitchen",
       "category": "restaurant",
       "class": "check_first",
@@ -1820,9 +1820,9 @@
       "shortlisted": true
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000002d",
+      "itemId": "00000000-0000-4000-8000-000000000031",
       "kind": "event",
-      "placeId": "00000000-0000-4000-8000-00000000002e",
+      "placeId": "00000000-0000-4000-8000-000000000032",
       "name": "The Tenement Follies",
       "category": "theatre",
       "class": "check_first",

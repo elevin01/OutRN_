@@ -1,6 +1,6 @@
 {
-  "id": "00000000-0000-4000-8000-00000000002f",
-  "name": "Grand Kitchen",
+  "id": "00000000-0000-4000-8000-00000000002d",
+  "name": "Ridge Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.726906,
-    "lon": -73.992709
+    "lat": 40.72504,
+    "lon": -73.997603
   },
   "address": null,
   "photos": [],
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.593,
+        "confidence": 0.544,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -63,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     },
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Korean",
+      "value": "Vietnamese",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,18 +86,18 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Reservation required",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -106,15 +106,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
-        "confidence": 0.7,
+        "evidence": "estimate",
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     },
     {
@@ -132,12 +132,35 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -155,25 +178,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 5266"
+    "websiteUrl": "https://ridgekitchen.example/",
+    "phone": "+1 212 555 9547"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=driving"
     },
     "links": []
   },

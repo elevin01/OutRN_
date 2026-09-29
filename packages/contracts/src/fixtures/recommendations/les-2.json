@@ -11,6 +11,7 @@
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
+    "diets": [],
     "areaId": "les",
     "backBy": null,
     "budget": {
@@ -22,6 +23,7 @@
     },
     "company": null,
     "cuisines": [],
+    "features": [],
     "categories": [],
     "travelMode": "walk",
     "visitStyle": "dine_in",
@@ -70,6 +72,8 @@
         }
       ],
       "cuisines": [],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-000000000005",
       "copy": {
         "action": "Go now",
@@ -223,6 +227,8 @@
           "label": "Chinese"
         }
       ],
+      "diets": [],
+      "features": [],
       "id": "00000000-0000-4000-8000-000000000006",
       "copy": {
         "action": "Go now",
@@ -332,6 +338,13 @@
       "parking": null,
       "photos": [],
       "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000007",
       "copy": {
         "action": "Go now",
