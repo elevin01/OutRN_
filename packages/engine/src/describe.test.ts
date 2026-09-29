@@ -59,6 +59,7 @@ describe("detail page facts", () => {
     expect(formatFactValue("restroom", { wheelchair: "no" })).toBe("Not wheelchair accessible");
     expect(formatFactValue("restroom", { available: "no" })).toBe("None for visitors");
     expect(formatFactValue("kid_facilities", { kids_area: "yes", highchair: "yes", changing_table: "no" })).toBe("High chairs; no changing table; kids' area");
+    expect(formatFactValue("kid_facilities", { changing_table: "limited", kids_area: "limited" })).toBe("Somewhere to change a diaper, not a changing table; limited kids' area");
     const rows = describeFacts({ restroom: rec({ value: { available: "yes", wheelchair: "yes" } }), kid_facilities: rec({ value: { highchair: "yes" } }), wheelchair: rec({ value: { value: "yes" } }) }, { tz: TZ, point: P, now: NOW });
     const at = (a: string) => rows.findIndex((r) => r.attribute === a);
     expect(rows[at("restroom")]).toMatchObject({ label: "Restroom", value: "Yes, wheelchair accessible", evidence: "published" });

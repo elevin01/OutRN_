@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.14";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.15";
 
 export interface OsmRecord {
   externalId: string;
@@ -259,7 +259,8 @@ export function seatingOf(t: Readonly<Record<string, string>>): { outside: "yes"
 /** toilets:access values a visitor may use (a customer is a visitor), and ones they may not (staff only, none). */
 const RESTROOM_OPEN: ReadonlySet<string> = new Set(["yes", "customers", "permissive", "public", "key"]);
 const RESTROOM_CLOSED: ReadonlySet<string> = new Set(["no", "private"]);
-const RESTROOM_WHEELCHAIR: ReadonlySet<string> = new Set(["yes", "limited", "no"]);
+/** toilets:wheelchair values; "designated" (built for wheelchair users) is accessible. */
+const RESTROOM_WHEELCHAIR: Readonly<Record<string, NonNullable<Restroom["wheelchair"]>>> = { yes: "yes", designated: "yes", limited: "limited", no: "no" };
 
 /**
  * A restroom visitors may use, and its step-free access, from toilets, toilets:access and
@@ -285,8 +286,8 @@ export function restroomOf(t: Readonly<Record<string, string>>): { value: Restro
     used.push(`toilets:access=${access}`);
   }
   let wheelchairAccess: Restroom["wheelchair"];
-  if (available !== "no" && wheelchair && RESTROOM_WHEELCHAIR.has(wheelchair)) {
-    wheelchairAccess = wheelchair as Restroom["wheelchair"];
+  if (available !== "no" && wheelchair && ownValue(RESTROOM_WHEELCHAIR, wheelchair)) {
+    wheelchairAccess = ownValue(RESTROOM_WHEELCHAIR, wheelchair);
     used.push(`toilets:wheelchair=${wheelchair}`);
     if (wheelchairAccess !== "no") available ??= "yes";
   }
@@ -295,25 +296,37 @@ export function restroomOf(t: Readonly<Record<string, string>>): { value: Restro
 }
 
 /**
- * What a place has for children: high chairs (a count of them is yes), a changing table, a kids'
- * area (indoors or out). Each is "yes" or "no" as tagged; other values say nothing. Null when none is.
+ * What a place has for children, read as OSM documents each key:
+ *  - highchair: yes (or how many), no.
+ *  - changing_table: yes, limited (somewhere to change a diaper that isn't a purpose-built table), no.
+ *  - kids_area: yes or designated, limited, no; kids_area:indoor=yes or kids_area:outdoor=yes say
+ *    where one is. kids_area=indoor|outdoor, a documented mistake for those subtags, still counts,
+ *    but only when no documented tag says anything. A kids' area both denied and present says nothing.
+ * Other values say nothing. Null when none is stated.
  */
 export function kidFacilitiesOf(t: Readonly<Record<string, string>>): { value: KidFacilities; evidence: string } | null {
   const tag = (k: string) => t[k]?.trim().toLowerCase().slice(0, 50);
-  const read: Record<keyof KidFacilities, (v: string) => "yes" | "no" | null> = {
-    highchair: (v) => (v === "yes" || /^[1-9]\d{0,2}$/.test(v) ? "yes" : v === "no" || v === "0" ? "no" : null),
-    changing_table: (v) => (v === "yes" ? "yes" : v === "no" ? "no" : null),
-    kids_area: (v) => (v === "yes" || v === "indoor" || v === "outdoor" ? "yes" : v === "no" ? "no" : null),
-  };
   const value: KidFacilities = {};
   const used: string[] = [];
-  for (const k of ["highchair", "changing_table", "kids_area"] as const) {
-    const raw = tag(k);
-    const v = raw === undefined ? null : read[k](raw);
-    if (v) {
-      value[k] = v;
-      used.push(`${k}=${raw}`);
-    }
+  const chairs = tag("highchair");
+  const highchair = chairs === undefined ? null : chairs === "yes" || /^[1-9]\d{0,2}$/.test(chairs) ? "yes" : chairs === "no" || chairs === "0" ? "no" : null;
+  if (highchair) {
+    value.highchair = highchair;
+    used.push(`highchair=${chairs}`);
+  }
+  const table = tag("changing_table");
+  if (table === "yes" || table === "limited" || table === "no") {
+    value.changing_table = table;
+    used.push(`changing_table=${table}`);
+  }
+  const area = tag("kids_area");
+  const documented = area === "yes" || area === "designated" ? "yes" : area === "limited" || area === "no" ? area : null;
+  const where = ["kids_area:indoor", "kids_area:outdoor"].filter((k) => tag(k) === "yes");
+  const legacy = area === "indoor" || area === "outdoor";
+  const kids = documented === "no" ? (where.length ? null : "no") : (documented ?? (where.length || legacy ? "yes" : null));
+  if (kids) {
+    value.kids_area = kids;
+    used.push(...(documented || legacy ? [`kids_area=${area}`] : []), ...where.map((k) => `${k}=yes`));
   }
   return used.length ? { value, evidence: used.join("; ") } : null;
 }

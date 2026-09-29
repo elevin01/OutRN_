@@ -1,4 +1,4 @@
-import { KID_FACILITIES, type KidFacilities, type KidFacility, type Restroom } from "@outrn/core";
+import { KID_FACILITIES, type KidFacilities, type KidFacility, type KidFacilityLevel, type Restroom } from "@outrn/core";
 import { partyYoungest } from "./feasibility.js";
 import type { Candidate, ReasonCode, RequestContext } from "./types.js";
 
@@ -33,8 +33,17 @@ export function youngestUnder(ctx: RequestContext, age: number): boolean {
   return youngest === "minor" || (typeof youngest === "number" && youngest < age);
 }
 
-/** What its record says it has for children that matters to this party, in card order. */
-export function kidFacilitiesFor(c: Candidate, ctx: RequestContext): KidFacility[] {
-  const has = record<KidFacilities>(c, "kid_facilities");
-  return (Object.keys(KID_FACILITIES) as KidFacility[]).filter((f) => has[f] === "yes" && youngestUnder(ctx, AMENITIES.kidFacilityUnder[f]));
+/** What its record says it has for children; empty when unknown. */
+export const kidFacilityLevels = (c: Candidate): KidFacilities => record<KidFacilities>(c, "kid_facilities");
+
+/**
+ * What its record says it has for children that matters to this party, in card order, and how much:
+ * "limited" is somewhere to change a diaper that isn't a table, or a limited kids' area.
+ */
+export function kidFacilitiesFor(c: Candidate, ctx: RequestContext): { facility: KidFacility; level: KidFacilityLevel }[] {
+  const has = kidFacilityLevels(c);
+  return (Object.keys(KID_FACILITIES) as KidFacility[]).flatMap((facility) => {
+    const level = has[facility];
+    return (level === "yes" || level === "limited") && youngestUnder(ctx, AMENITIES.kidFacilityUnder[facility]) ? [{ facility, level }] : [];
+  });
 }

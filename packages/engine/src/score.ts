@@ -136,7 +136,7 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   const kids = kidFacilitiesFor(c, ctx);
   if (kids.length) {
     appeal += AMENITIES.appeal;
-    extra.push(...kids.map((k) => KID_FACILITY_REASON[k]));
+    extra.push(...kids.map((k) => KID_FACILITY_REASON[k.facility]));
   }
   if (restroom.available === "no" && youngestUnder(ctx, AMENITIES.restroomNeededUnder)) appeal -= AMENITIES.appeal;
   if (outdoor) appeal += (rainy ? WEATHER_APPEAL.rainOutdoor : 0) + (cold ? WEATHER_APPEAL.coldOutdoor : 0);

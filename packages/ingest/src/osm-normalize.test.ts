@@ -252,17 +252,35 @@ describe("OSM normalization", () => {
       // None for visitors has no access to describe, whatever else is tagged.
       expect(rest({ toilets: "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
       expect(rest({ toilets: "yes", "toilets:access": "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
+      // Built for wheelchair users is accessible.
+      expect(rest({ toilets: "yes", "toilets:wheelchair": "designated" })).toEqual({ value: { available: "yes", wheelchair: "yes" }, evidence: "toilets=yes; toilets:wheelchair=designated" });
       // Values we don't know say nothing.
-      expect(rest({ toilets: "maybe", "toilets:wheelchair": "designated" })).toBeNull();
+      expect(rest({ toilets: "maybe", "toilets:wheelchair": "maybe" })).toBeNull();
+      expect(rest({ "toilets:wheelchair": "__proto__" })).toBeNull();
       expect(rest({ "toilets:unisex": "yes" })).toBeNull();
       expect(rest({})).toBeNull();
     });
-    it("high chairs, a changing table, a kids' area: yes or no as tagged", () => {
+    it("high chairs, a changing table, a kids' area: as OSM documents each", () => {
       expect(kidFacilitiesOf({ highchair: "yes", changing_table: "no" })).toEqual({ value: { highchair: "yes", changing_table: "no" }, evidence: "highchair=yes; changing_table=no" });
       expect(kidFacilitiesOf({ highchair: "4" })?.value).toEqual({ highchair: "yes" });
       expect(kidFacilitiesOf({ highchair: "0" })?.value).toEqual({ highchair: "no" });
-      expect(kidFacilitiesOf({ kids_area: "indoor" })?.value).toEqual({ kids_area: "yes" });
-      expect(kidFacilitiesOf({ changing_table: "limited", highchair: "some" })).toBeNull();
+      // Limited is partial, not absent: somewhere to change a diaper that isn't a table; a limited kids' area.
+      expect(kidFacilitiesOf({ changing_table: "limited" })).toEqual({ value: { changing_table: "limited" }, evidence: "changing_table=limited" });
+      expect(kidFacilitiesOf({ kids_area: "limited" })).toEqual({ value: { kids_area: "limited" }, evidence: "kids_area=limited" });
+      // kids_area's documented forms: yes, designated, and where one is (kids_area:indoor / :outdoor).
+      expect(kidFacilitiesOf({ kids_area: "designated" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area=designated" });
+      expect(kidFacilitiesOf({ "kids_area:indoor": "yes" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area:indoor=yes" });
+      expect(kidFacilitiesOf({ "kids_area:outdoor": "yes" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area:outdoor=yes" });
+      expect(kidFacilitiesOf({ kids_area: "yes", "kids_area:indoor": "yes" })?.value).toEqual({ kids_area: "yes" });
+      // The documented tag says how much; the subtag only where.
+      expect(kidFacilitiesOf({ kids_area: "limited", "kids_area:outdoor": "yes" })).toEqual({ value: { kids_area: "limited" }, evidence: "kids_area=limited; kids_area:outdoor=yes" });
+      // kids_area=indoor|outdoor is a documented mistake for the subtags: it counts only when nothing documented says.
+      expect(kidFacilitiesOf({ kids_area: "indoor" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area=indoor" });
+      expect(kidFacilitiesOf({ kids_area: "outdoor", "kids_area:indoor": "yes" })?.value).toEqual({ kids_area: "yes" });
+      // Denied and present at once is a contradiction: it says nothing.
+      expect(kidFacilitiesOf({ kids_area: "no", "kids_area:indoor": "yes" })).toBeNull();
+      expect(kidFacilitiesOf({ kids_area: "no" })?.value).toEqual({ kids_area: "no" });
+      expect(kidFacilitiesOf({ highchair: "some", changing_table: "room", "kids_area:indoor": "no" })).toBeNull();
       expect(kidFacilitiesOf({ "changing_table:location": "wheelchair_toilet" })).toBeNull();
     });
     it("become published facts where the place is one we list, and validate", () => {

@@ -65,6 +65,7 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
+const KID_FACILITY_LIMITED: Readonly<Record<string, string>> = { changing_table: "somewhere to change a diaper, not a changing table", kids_area: "limited kids' area" };
 const NET_LABEL: Readonly<Record<string, string>> = { wlan: "Wi-Fi", yes: "Yes", wired: "Wired", terminal: "Computers to use", no: "None" };
 const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "restroom", "kid_facilities", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
@@ -167,9 +168,11 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
       break;
     }
     case "kid_facilities": {
-      // "High chairs; no changing table": each facility the record names, in card order.
+      // "High chairs; no changing table": each facility the record names, in card order. A limited
+      // one reads as what OSM means by it.
       const parts = (Object.keys(KID_FACILITIES) as KidFacility[]).flatMap((k) => {
         const name = KID_FACILITIES[k].toLowerCase();
+        if (v[k] === "limited") return [ownValue(KID_FACILITY_LIMITED, k) ?? `limited ${name}`];
         return v[k] === "yes" ? [name] : v[k] === "no" ? [`no ${name}`] : [];
       });
       if (parts.length) return sentenceCase(parts.join("; "));

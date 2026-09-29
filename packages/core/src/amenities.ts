@@ -13,4 +13,14 @@ export interface Restroom {
 /** In the order a card or a details row names them. */
 export const KID_FACILITIES = { highchair: "High chairs", changing_table: "Changing table", kids_area: "Kids' area" } as const;
 export type KidFacility = keyof typeof KID_FACILITIES;
-export type KidFacilities = Partial<Record<KidFacility, "yes" | "no">>;
+/**
+ * As OSM defines each: high chairs are there or not; a changing table may be "limited" (somewhere to
+ * change a diaper that isn't a purpose-built table), and so may a kids' area (OSM kids_area=limited).
+ */
+export interface KidFacilities {
+  highchair?: "yes" | "no";
+  changing_table?: "yes" | "limited" | "no";
+  kids_area?: "yes" | "limited" | "no";
+}
+/** How much of a facility a place has, when it has any. */
+export type KidFacilityLevel = "yes" | "limited";

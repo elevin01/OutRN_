@@ -52,6 +52,8 @@ describe("fact value schemas", () => {
     expect(validateFactValue("restroom", { available: "customers" })).not.toBeNull(); // normalized to "yes" before a write
     expect(validateFactValue("kid_facilities", { highchair: "yes", changing_table: "no" })).toBeNull();
     expect(validateFactValue("kid_facilities", {})).toMatch(/at least one/);
+    expect(validateFactValue("kid_facilities", { changing_table: "limited", kids_area: "limited" })).toBeNull();
+    expect(validateFactValue("kid_facilities", { highchair: "limited" })).not.toBeNull(); // OSM has no partial high chair
     expect(validateFactValue("kid_facilities", { highchair: "2" })).not.toBeNull();
     expect(validateFactValue("kid_facilities", { playground: "yes" })).not.toBeNull();
   });

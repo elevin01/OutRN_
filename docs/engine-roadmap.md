@@ -206,9 +206,13 @@ changelog.
 - **Part 6 (this PR): restrooms and what a place has for children.** No contract change: reason
   and caveat codes are open-ended.
   - **Facts** from OSM, where mappers tag them:
-    - `restroom` from `toilets`, `toilets:access` and `toilets:wheelchair`. On the LES capture,
-      95 places say whether they have one, and 37 say whether it is step-free (20 yes, 17 no).
-    - `kid_facilities` from `highchair`, `changing_table` and `kids_area` (only a handful so far).
+    - `restroom` from `toilets`, `toilets:access` and `toilets:wheelchair` (`designated` is
+      accessible). On the LES capture, 95 places say whether they have one, and 37 say whether it
+      is step-free (20 yes, 17 no).
+    - `kid_facilities` from `highchair`, `changing_table` and `kids_area`, as OSM documents them
+      (only a handful so far). "Limited" is kept, not dropped: somewhere to change a diaper that
+      isn't a table, a limited kids' area. `kids_area=designated` and `kids_area:indoor|outdoor=yes`
+      count; the documented mistake `kids_area=indoor|outdoor` counts only when nothing else says.
   - **Who it matters to decides what the card says:**
     - **A wheelchair user** (`features: ["wheelchair"]`): an inaccessible restroom is Check first
       ("its restroom isn't wheelchair accessible", `RESTROOM_NOT_ACCESSIBLE`; limited access is
@@ -216,7 +220,8 @@ changelog.
       restroom") and lifts appeal 0.05.
     - **Children:** high chairs when the youngest is under 5, a changing table under 3, a kids' area
       under 12, all of them for a family whose ages we don't know (`HIGH_CHAIRS`, `CHANGING_TABLE`,
-      `KIDS_AREA`). One lift of 0.05 however many. No restroom sinks a place 0.05 when the youngest
+      `KIDS_AREA`, param `level`). A limited one reads as what it is ("somewhere to change a
+      diaper", "a limited kids' area"). One lift of 0.05 however many. No restroom sinks a place 0.05 when the youngest
       is under 10, with nothing on the card: it is on the place's details.
   - Place details read "Restroom: Yes, not wheelchair accessible" and "For kids: High chairs; no
     changing table".

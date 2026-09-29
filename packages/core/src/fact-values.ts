@@ -51,6 +51,7 @@ const price = z
 
 const dietLevel = z.enum(DIET_LEVELS).optional();
 const yesNo = z.enum(["yes", "no"]).optional();
+const yesLimitedNo = z.enum(["yes", "limited", "no"]).optional();
 
 const hours = z.union([
   z.object({ osm: z.string().trim().min(1).max(1000) }).strict(),
@@ -94,7 +95,7 @@ export const FACT_VALUE_SCHEMAS = {
     .refine((r) => r.available !== undefined || r.wheelchair !== undefined, "restroom needs available or wheelchair")
     .refine((r) => !(r.available === "no" && r.wheelchair !== undefined), "a place with no restroom has no restroom access to describe"),
   kid_facilities: z
-    .object({ highchair: yesNo, changing_table: yesNo, kids_area: yesNo } satisfies Record<KidFacility, unknown>)
+    .object({ highchair: yesNo, changing_table: yesLimitedNo, kids_area: yesLimitedNo } satisfies Record<KidFacility, unknown>)
     .strict()
     .refine((k) => Object.keys(k).length > 0, "kid_facilities needs at least one facility"),
   subtype: z.object({ value: z.string().regex(/^[a-z0-9_]{2,40}$/, "subtype is a lowercase slug, e.g. miniature_golf") }).strict(),

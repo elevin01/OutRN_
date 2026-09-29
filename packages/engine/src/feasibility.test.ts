@@ -3,7 +3,7 @@ import { fromLocal } from "@outrn/core";
 import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
-import { caveatNotes, explain, planSteps } from "./explain.js";
+import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { APPEAL_WEIGHTS } from "./score.js";
 import { parkingText, parkStepText } from "./parking.js";
@@ -1548,6 +1548,22 @@ describe("restrooms and what a place has for children, for who is going", () => 
     expect(lift(all, friday({ youngestAge: 1 }))).toBeCloseTo(0.05, 5);
     expect(lift(all, friday({ youngestAge: 12 }))).toBeCloseTo(0, 5);
     expect(one(cafe("none", { kid_facilities: published({ highchair: "no", kids_area: "no" }) }), friday({ youngestAge: 1 })).reasons.filter((r) => r === "HIGH_CHAIRS" || r === "KIDS_AREA")).toEqual([]);
+  });
+
+  it("a limited changing table or kids' area is a reason too, worded as what it is", () => {
+    const some = cafe("some", { kid_facilities: published({ changing_table: "limited", kids_area: "limited" }) });
+    const toddler = friday({ youngestAge: 1 });
+    expect(one(some, toddler).reasons.filter((r) => r === "CHANGING_TABLE" || r === "KIDS_AREA")).toEqual(["CHANGING_TABLE", "KIDS_AREA"]);
+    const notes = reasonNotes(one(some, toddler), TZ).filter((n) => n.code === "CHANGING_TABLE" || n.code === "KIDS_AREA");
+    expect(notes).toEqual([
+      { code: "CHANGING_TABLE", text: "somewhere to change a diaper", params: { level: "limited" } },
+      { code: "KIDS_AREA", text: "a limited kids' area", params: { level: "limited" } },
+    ]);
+    expect(explain(one(some, toddler), TZ).sentence).toContain("somewhere to change a diaper, a limited kids' area");
+    expect(lift(some, toddler)).toBeCloseTo(0.05, 5);
+    // A full one keeps its plain words.
+    const full = cafe("full", { kid_facilities: published({ changing_table: "yes" }) });
+    expect(reasonNotes(one(full, toddler), TZ).find((n) => n.code === "CHANGING_TABLE")).toEqual({ code: "CHANGING_TABLE", text: "a changing table", params: { level: "yes" } });
   });
 
   it("no restroom sinks a place a little for young children, and says nothing else", () => {
