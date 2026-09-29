@@ -2,7 +2,7 @@ import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween }
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { dayPart, type DayPart } from "./daypart.js";
-import { ageLimitOf, deadlineOf, partyYoungest, type FeasibilityOutcome } from "./feasibility.js";
+import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -45,8 +45,7 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
     // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
     // gets the family bonus its category would otherwise earn when a minor is in the party. Feasibility
     // has already excluded published limits; this sinks estimated ones.
-    const youngest = partyYoungest(ctx);
-    const minorPresent = youngest === "minor" || (typeof youngest === "number" && youngest < 18);
+    const minorPresent = minorInParty(ctx);
     const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
     // A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
     if (minorPresent && (adultLimit || c.category === "bar" || c.category === "nightclub")) chips -= 0.25;

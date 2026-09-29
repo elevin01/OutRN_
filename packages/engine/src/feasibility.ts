@@ -1,5 +1,5 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
@@ -29,6 +29,19 @@ export function partyYoungest(ctx: RequestContext): number | "minor" | undefined
   if (typeof ctx.youngestAge === "number") return ctx.youngestAge;
   return ctx.company === "family" ? "minor" : undefined;
 }
+
+/** Whether anyone under 18 is going: a family of unknown ages, or a youngest age under 18, whatever the company. */
+export function minorInParty(ctx: RequestContext): boolean {
+  const youngest = partyYoungest(ctx);
+  return youngest === "minor" || (typeof youngest === "number" && youngest < 18);
+}
+
+/**
+ * How long a cinema, theatre or music venue with nothing listed needs, when all we know is its own
+ * site lists what's on: a feature and its trailers, a play, a set. Their category policies have no
+ * minimum (a listed occurrence brings its own duration), and a bare venue must not borrow that zero.
+ */
+export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, number>>> = { cinema: 120, theatre: 120, live_music: 90 };
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
@@ -136,7 +149,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     } else if (youngest === "minor") {
       unresolved.push("AGE_LIMIT_UNCERTAIN"); // e.g. 16+ with children whose ages we do not know
     }
-  } else if (!limit && youngest === "minor" && (c.category === "bar" || c.category === "nightclub")) {
+  } else if (!limit && minorInParty(ctx) && (c.category === "bar" || c.category === "nightclub")) {
     // A bar that serves food has no age limit we know of, but children may not be welcome, least of all late.
     unresolved.push("KIDS_UNCERTAIN");
   }
@@ -150,8 +163,11 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // A cinema, theatre or music venue qualifies through an occurrence in the window. The loader emits
   // the venue row itself only when none was loaded, so this reads "nothing listed here". Its own site
   // still lists what's on: at its time of day (an evening, not a morning) it's worth a look, Check first.
-  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) {
-    if (!c.facts.website || dayPart(c.category, ctx.now, c.timezone) !== "prime") return out("NO_PROGRAMME");
+  // Only a site a user can open counts (the same rule the API applies before it shows the link).
+  const unlistedProgramme = c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category);
+  if (unlistedProgramme) {
+    const site = (c.facts.website?.value as { value?: unknown } | undefined)?.value;
+    if (typeof site !== "string" || !websiteUrl(site) || dayPart(c.category, ctx.now, c.timezone) !== "prime") return out("NO_PROGRAMME");
     unresolved.push("PROGRAMME_UNLISTED");
   }
 
@@ -189,7 +205,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // Food to go needs only the time to order and collect it.
   const minPub = fact<{ minutes: number }>(c, "min_useful_minutes");
   const takingOut = isTakeout(c, ctx);
-  const minUsefulMinutes = takingOut ? TAKEOUT_MINUTES : minPub && !minPub.isEstimate ? minPub.value.minutes : policy.minUsefulMinutes;
+  const categoryMinutes = unlistedProgramme ? Math.max(policy.minUsefulMinutes, ownValue(UNLISTED_PROGRAMME_MINUTES, c.category) ?? 0) : policy.minUsefulMinutes;
+  const minUsefulMinutes = takingOut ? TAKEOUT_MINUTES : minPub && !minPub.isEstimate ? minPub.value.minutes : categoryMinutes;
   const minUsefulIsEstimate = takingOut || !(minPub && !minPub.isEstimate);
 
   let closesAt: Date | null = null;

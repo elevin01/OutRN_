@@ -89,7 +89,7 @@
   {
    "id": "les-sat-afternoon",
    "title": "LES, Saturday 2pm, 2 hours",
-   "eligible": 1414,
+   "eligible": 1387,
    "top": [
     {
      "rank": 1,
@@ -341,7 +341,7 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 891,
+   "eligible": 888,
    "top": [
     {
      "rank": 1,
@@ -501,7 +501,7 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 1417,
+   "eligible": 1416,
    "top": [
     {
      "rank": 1,
@@ -831,7 +831,7 @@
   {
    "id": "les-fri-date",
    "title": "LES, Friday 7:30pm, 90 minutes, a date",
-   "eligible": 1193,
+   "eligible": 1164,
    "top": [
     {
      "rank": 1,
@@ -918,7 +918,6 @@
      "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
       "LANDMARK"
      ],
      "caveats": [
@@ -934,7 +933,6 @@
      "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
       "LANDMARK"
      ],
      "caveats": [
@@ -949,8 +947,7 @@
      "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -965,7 +962,6 @@
      "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": [
@@ -979,8 +975,7 @@
      "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -990,12 +985,11 @@
     },
     {
      "rank": 6,
-     "name": "New York Theatre Workshop",
-     "category": "theatre",
+     "name": "The Metrograph",
+     "category": "cinema",
      "status": "check_first",
      "reasons": [
-      "ENOUGH_TIME",
-      "LANDMARK"
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -1009,7 +1003,7 @@
   {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 49,
+   "eligible": 48,
    "top": [
     {
      "rank": 1,
@@ -1172,7 +1166,7 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 46,
+   "eligible": 45,
    "top": [
     {
      "rank": 1,

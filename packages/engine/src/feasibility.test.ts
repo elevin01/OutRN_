@@ -29,6 +29,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
   ["gallery", { category: "gallery", minUsefulMinutes: 40, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: 30, activityType: "culture" }],
   ["activity", { category: "activity", minUsefulMinutes: 60, admissionBufferMinutes: 10, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["cinema", { category: "cinema", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
+  ["theatre", { category: "theatre", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
 ]);
 
 let n = 0;
@@ -243,6 +244,39 @@ describe("feasibility: programme venues", () => {
     expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-09-29 09:30", 180)).excludedBy).toBe("NO_PROGRAMME");
     // A weekend afternoon is (matinees).
     expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-10-03 13:00", 180)).class).toBe("check_first");
+  });
+
+  const withSite = (c: Candidate, url: string): Candidate => ({ ...c, facts: { ...c.facts, website: { value: { value: url }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+
+  it("only a site a user can open counts: not free text, a blank, another scheme, or a local or IP host", () => {
+    const at = ctx("2026-09-29 19:30", 180);
+    for (const bad of ["see our facebook", "   ", "javascript:alert(1)", "ftp://cinema.example.com/", "mailto:box@cinema.example.com", "http://192.168.0.10/", "https://localhost/", "http://cinema.local/showtimes"]) {
+      expect(one(withSite(venue({ category: "cinema", hours: null, admission: "ticket" }), bad), at).excludedBy, bad).toBe("NO_PROGRAMME");
+    }
+    for (const good of ["angelikafilmcenter.com", "https://www.filmforum.org/now_playing", "http://metrograph.com"]) {
+      expect(one(withSite(venue({ category: "cinema", hours: null, admission: "ticket" }), good), at).unresolved, good).toContain("PROGRAMME_UNLISTED");
+    }
+  });
+
+  it("a bare venue needs the time a show takes (cinema 120, theatre 120, music 90 min), not the zero its listed occurrences replace", () => {
+    const need = { cinema: 120, theatre: 120, live_music: 90 } as const;
+    for (const category of ["cinema", "theatre", "live_music"] as const) {
+      const v = withSite(venue({ category, hours: "24/7", admission: "ticket" }), "https://venue.example.com/");
+      // 30 minutes: 3 min walk + 15 min to get in leaves 12. The reviewer's case.
+      const short = one(v, ctx("2026-09-29 19:30", 30));
+      expect(short.excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      expect(short.reasons, category).not.toContain("ENOUGH_TIME");
+      // Closing soon: in at 19:48, closed at 20:30.
+      expect(one(withSite(venue({ category, hours: "Mo-Su 10:00-20:30", admission: "ticket" }), "https://venue.example.com/"), ctx("2026-09-29 19:30", 240)).excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      // Back by 21:00, with the walk home.
+      expect(one(v, ctx("2026-09-29 19:30", 240, { backBy: fromLocal("2026-09-29", 21 * 60, TZ) })).excludedBy, category).toBe("NOT_ENOUGH_TIME");
+      // Enough for it: Check first (see what's on), with the show's length as the minimum.
+      const long = one(v, ctx("2026-09-29 19:30", need[category] + 30));
+      expect(long.class, category).toBe("check_first");
+      expect(long.timing?.minUsefulMinutes, category).toBe(need[category]);
+      expect(long.reasons, category).not.toContain("ENOUGH_TIME");
+      expect(one(v, ctx("2026-09-29 19:30", 300)).reasons, category).toContain("ENOUGH_TIME");
+    }
   });
 
   it("a screening that fits the window is still a candidate, and NO_PROGRAMME is never offered as a relaxation", () => {
@@ -1059,6 +1093,21 @@ describe("feasibility: who can go", () => {
     expect(order).toEqual(["park", "pub"]);
     // Adults only: no flag.
     expect(one(pub, ctx("2026-10-04 13:00", 180, { company: "friends" })).unresolved).not.toContain("KIDS_UNCERTAIN");
+  });
+
+  it("a child's age, when given, flags such a bar just the same, whoever the child is with; an adult's never does", () => {
+    const pub = venue({ category: "bar", hours: "Mo-Su 12:00-02:00" });
+    for (const youngestAge of [0, 5, 17]) {
+      for (const company of ["family", "friends", undefined] as const) {
+        const e = one(pub, ctx("2026-10-04 13:00", 180, { youngestAge, ...(company ? { company } : {}) }));
+        expect(e.class, `${youngestAge} ${company}`).toBe("check_first");
+        expect(e.unresolved, `${youngestAge} ${company}`).toContain("KIDS_UNCERTAIN");
+      }
+    }
+    for (const youngestAge of [18, 35]) expect(one(pub, ctx("2026-10-04 13:00", 180, { company: "family", youngestAge })).unresolved).not.toContain("KIDS_UNCERTAIN");
+    // A bar published as all ages is one children may go to.
+    const allAges: Candidate = { ...pub, facts: { ...pub.facts, age_limit: { value: { minAge: 0 }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } };
+    expect(one(allAges, ctx("2026-10-04 13:00", 180, { youngestAge: 5 })).unresolved).not.toContain("KIDS_UNCERTAIN");
   });
 });
 

@@ -319,6 +319,15 @@ describe("who can go, and what it costs, when the tags don't say", () => {
     for (const tags of [{ library: "academic" }, { operator: "Sarah Lawrence College" }, { operator: "Bronx High School of Science" }]) {
       expect(fact(rec({ name: "L", amenity: "library", ...tags }), "admission")?.value, JSON.stringify(tags)).toEqual({ requirement: "members_only" });
     }
+    // The record's own access tag outweighs the guess: open to the public, or explicitly restricted.
+    for (const access of ["yes", "permissive", "public"]) {
+      const open = rec({ ...{ name: "Bobst", amenity: "library", building: "university", operator: "New York University" }, access });
+      expect(fact(open, "admission")?.value, access).toEqual({ requirement: "walk_in" });
+      expect(fact(open, "price")?.value, access).toMatchObject({ free: true });
+    }
+    for (const access of ["private", "no", "members", "permit"]) {
+      expect(fact(rec({ name: "Bobst", amenity: "library", operator: "New York University", access }), "admission"), access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published" });
+    }
     const nypl = rec({ name: "Seward Park Library", amenity: "library", operator: "New York Public Library" });
     expect(fact(nypl, "admission")?.value).toEqual({ requirement: "walk_in" });
     expect(fact(nypl, "price")).toMatchObject({ value: { free: true }, evidenceClass: "estimate" });

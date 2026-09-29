@@ -40,20 +40,8 @@ export function textFrom(value: unknown): string | null {
   return typeof t === "string" && t.trim() ? t.trim() : null;
 }
 
-/** A website as an absolute http(s) URL, or null. OSM often omits the scheme ("example.com"). */
-export function websiteUrl(raw: string | null | undefined): string | null {
-  if (!raw) return null;
-  const s = raw.trim();
-  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(s) ? s : /^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(s) ? `https://${s}` : null;
-  if (!withScheme) return null;
-  try {
-    const u = new URL(withScheme);
-    // Anyone can edit an OSM website tag: never point a user at an IP literal or a local name.
-    return (u.protocol === "http:" || u.protocol === "https:") && isPublicWebHost(u.hostname) ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
+/** A website as an absolute http(s) URL, or null: the same rule the engine applies before it counts a site. */
+export { websiteUrl } from "@outrn/core";
 
 const MAPS_MODE: Record<TravelMode, string> = { walk: "walking", drive: "driving", transit: "transit" };
 
