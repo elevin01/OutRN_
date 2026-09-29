@@ -1,4 +1,4 @@
-import { addMinutes, localClock, type Category } from "@outrn/core";
+import { addMinutes, localClock, ownValue, type Category } from "@outrn/core";
 
 /**
  * Time-of-day fit: open isn't the same as a good idea. A café at 8am, a bar at 11pm or a museum at
@@ -79,7 +79,7 @@ const inSpan = (minutes: number, s: Span) => (minutes >= s.from && minutes < s.t
 
 /** How good an idea this kind of place is at `at`, or null when there is no rule for it. */
 export function dayPart(category: Category, at: Date, timeZone: string, sunset?: Date | null): DayPart | null {
-  const hours = HOURS[category];
+  const hours = ownValue(HOURS, category);
   if (!hours) return null;
   const { minutes, weekday } = clockAt(at, timeZone);
   // After dark until the morning: the sunset given is today's, so a pre-dawn arrival still reads from the table.

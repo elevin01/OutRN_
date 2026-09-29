@@ -54,3 +54,12 @@ describe("time of day for a cinema, theatre or music venue with nothing listed",
     expect(dayPart("live_music", at("2026-10-03", "11:00"), "America/New_York")).toBe("off");
   });
 });
+
+describe("time of day for a category that has no rule", () => {
+  it("is none, even for a name inherited by every object", () => {
+    const at = fromLocal("2026-09-29", 20 * 60, "America/New_York");
+    for (const key of ["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"]) {
+      expect(dayPart(key as Parameters<typeof dayPart>[0], at, "America/New_York"), key).toBeNull();
+    }
+  });
+});

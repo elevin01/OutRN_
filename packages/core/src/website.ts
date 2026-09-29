@@ -12,6 +12,8 @@ export function websiteUrl(raw: string | null | undefined): string | null {
   if (!withScheme) return null;
   try {
     const u = new URL(withScheme);
+    // A user name or password before the host hides where the link goes (https://google.com@evil.example/).
+    if (u.username || u.password) return null;
     return (u.protocol === "http:" || u.protocol === "https:") && isPublicWebHost(u.hostname) ? u.toString() : null;
   } catch {
     return null;

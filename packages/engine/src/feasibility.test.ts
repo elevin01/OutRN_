@@ -258,6 +258,32 @@ describe("feasibility: programme venues", () => {
     }
   });
 
+  it("its time of day is judged at the arrival, the instant the score reads, at both ends of prime time", () => {
+    // 3 minutes' walk and 15 to get in: leaving at :50 arrives at :08 past the next hour.
+    const bare = (category: "cinema" | "theatre" | "live_music") => withSite(venue({ category, hours: "24/7", admission: "ticket" }), "https://venue.example.com/");
+    const at = (category: "cinema" | "theatre" | "live_music", when: string) => one(bare(category), ctx(when, 300));
+    // Cinema prime 17:00-23:00, theatre 18:00-22:00, live music 19:00-01:00 (a Tuesday).
+    for (const [category, before, after] of [["cinema", "2026-09-29 16:50", "2026-09-29 22:50"], ["theatre", "2026-09-29 17:50", "2026-09-29 21:50"], ["live_music", "2026-09-29 18:50", "2026-09-29 00:50"]] as const) {
+      const starts = at(category, before);
+      expect(starts.class, `${category} leaving ${before}`).toBe("check_first");
+      expect(starts.unresolved, category).toContain("PROGRAMME_UNLISTED");
+      expect(at(category, after).excludedBy, `${category} leaving ${after}`).toBe("NO_PROGRAMME");
+    }
+  });
+
+  it("with anyone under 18 going, nothing listed means nothing to judge: the bare venue stays out (many are 21+ with no min_age tag)", () => {
+    const at = ctx("2026-10-02 19:00", 300);
+    for (const category of ["cinema", "theatre", "live_music"] as const) {
+      const bare = withSite(venue({ category, hours: null, admission: "ticket" }), "https://venue.example.com/");
+      for (const party of [{ company: "family" }, { youngestAge: 10 }, { youngestAge: 17 }, { company: "friends", youngestAge: 5 }] as const) {
+        expect(one(bare, { ...at, ...party }).excludedBy, `${category} ${JSON.stringify(party)}`).toBe("NO_PROGRAMME");
+      }
+      for (const party of [{}, { company: "friends" }, { youngestAge: 18 }, { youngestAge: 35 }] as const) {
+        expect(one(bare, { ...at, ...party }).unresolved, `${category} ${JSON.stringify(party)}`).toContain("PROGRAMME_UNLISTED");
+      }
+    }
+  });
+
   it("a bare venue needs the time a show takes (cinema 120, theatre 120, music 90 min), not the zero its listed occurrences replace", () => {
     const need = { cinema: 120, theatre: 120, live_music: 90 } as const;
     for (const category of ["cinema", "theatre", "live_music"] as const) {
