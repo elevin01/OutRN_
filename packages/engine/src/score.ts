@@ -48,7 +48,8 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
     const youngest = partyYoungest(ctx);
     const minorPresent = youngest === "minor" || (typeof youngest === "number" && youngest < 18);
     const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
-    if (minorPresent && adultLimit) chips -= 0.25;
+    // A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
+    if (minorPresent && (adultLimit || c.category === "bar" || c.category === "nightclub")) chips -= 0.25;
     else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
   }
   chips = Math.max(0, Math.min(1, chips));
@@ -118,5 +119,12 @@ export function compareEvaluations(a: Evaluation, b: Evaluation): number {
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
   const wa = a.scores.appeal * 0.5 + a.scores.fit * 0.35 + a.scores.novelty * 0.15;
   const wb = b.scores.appeal * 0.5 + b.scores.fit * 0.35 + b.scores.novelty * 0.15;
-  return wb - wa;
+  if (wb !== wa) return wb - wa;
+  // Equal on merit: the better evidenced, then the nearer, then by name. The same search always gives
+  // the same order, whatever order the places were loaded in (ids are random).
+  if (b.scores.evidence !== a.scores.evidence) return b.scores.evidence - a.scores.evidence;
+  const ta = a.timing?.travel.minutes ?? Number.POSITIVE_INFINITY;
+  const tb = b.timing?.travel.minutes ?? Number.POSITIVE_INFINITY;
+  if (ta !== tb) return ta - tb;
+  return a.candidate.name.localeCompare(b.candidate.name, "en") || (a.candidate.id < b.candidate.id ? -1 : a.candidate.id > b.candidate.id ? 1 : 0);
 }

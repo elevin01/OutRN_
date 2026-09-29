@@ -28,7 +28,10 @@ interface Hours {
   weekendPrime?: Span[];
 }
 
-/** When each kind of place is a good idea. Outside prime and fair it is off. Programme venues have none: the event is the time. */
+/**
+ * When each kind of place is a good idea. Outside prime and fair it is off. For a cinema, theatre or
+ * music venue a listed event is its own time; these hours apply only when nothing is listed.
+ */
 const HOURS: Partial<Record<Category, Hours>> = {
   cafe: { prime: [span("07:00", "11:30")], weekendPrime: [span("08:00", "14:00")], fair: [span("11:30", "18:30")] },
   dessert: { prime: [span("13:00", "22:30")], fair: [span("11:00", "13:00"), span("22:30", "23:30")] },
@@ -41,6 +44,9 @@ const HOURS: Partial<Record<Category, Hours>> = {
   attraction: { prime: [span("10:00", "17:00")], fair: [span("09:00", "10:00"), span("17:00", "21:00")] },
   library: { prime: [span("10:00", "18:00")], fair: [span("08:00", "10:00"), span("18:00", "21:00")] },
   bookshop: { prime: [span("10:00", "19:00")], fair: [span("19:00", "22:00")] },
+  cinema: { prime: [span("17:00", "23:00")], weekendPrime: [span("12:00", "23:00")], fair: [span("12:00", "17:00")] },
+  theatre: { prime: [span("18:00", "22:00")], weekendPrime: [span("13:00", "15:00")], fair: [span("13:00", "18:00")] },
+  live_music: { prime: [span("19:00", "01:00")], fair: [span("17:00", "19:00")] },
   market: { prime: [span("08:00", "15:00")], fair: [span("15:00", "19:00")] },
   bowling: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },
   arcade: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },
@@ -52,7 +58,7 @@ const HOURS: Partial<Record<Category, Hours>> = {
   viewpoint: { prime: [span("09:00", "20:30")], fair: [span("07:00", "09:00"), span("20:30", "23:00")] },
 };
 
-/** Places whose appeal ends with the light: an hour after sunset they are off, whatever the clock table says. */
+/** Places whose appeal ends with the light: fair in the last 45 minutes before sunset, off after it, whatever the clock table says. */
 const OUTDOOR_AFTER_DARK: ReadonlySet<Category> = new Set(["park", "garden"]);
 
 /** Candidates share arrival minutes, so each local minute's clock is read once. */
@@ -77,7 +83,10 @@ export function dayPart(category: Category, at: Date, timeZone: string, sunset?:
   if (!hours) return null;
   const { minutes, weekday } = clockAt(at, timeZone);
   // After dark until the morning: the sunset given is today's, so a pre-dawn arrival still reads from the table.
-  if (sunset && OUTDOOR_AFTER_DARK.has(category) && at > addMinutes(sunset, 60) && minutes >= 12 * 60) return "off";
+  if (sunset && OUTDOOR_AFTER_DARK.has(category) && minutes >= 12 * 60) {
+    if (at > sunset) return "off";
+    if (at > addMinutes(sunset, -45)) return "fair";
+  }
   const weekend = weekday === 0 || weekday === 6;
   if (hours.prime.some((s) => inSpan(minutes, s)) || (weekend && hours.weekendPrime?.some((s) => inSpan(minutes, s)))) return "prime";
   if (hours.fair.some((s) => inSpan(minutes, s))) return "fair";

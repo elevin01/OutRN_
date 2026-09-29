@@ -58,7 +58,7 @@ export const FACT_VALUE_SCHEMAS = {
   opening_hours: hours,
   kitchen_hours: hours,
   last_entry_offset: minutes,
-  admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "unknown"]) }).strict(),
+  admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "members_only", "unknown"]) }).strict(),
   admission_status: z.object({ status: z.enum(["confirmed", "unconfirmed", "sold_out", "cancelled"]) }).strict(),
   price,
   min_useful_minutes: minutes,

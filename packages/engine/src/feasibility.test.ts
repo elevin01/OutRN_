@@ -233,6 +233,18 @@ describe("feasibility: programme venues", () => {
     expect(noHours.excludedBy).toBe("NO_PROGRAMME");
   });
 
+  it("with nothing listed but its own site, it's worth a look in the evening (Check first: see what's on), never in the morning", () => {
+    const site = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, website: { value: { value: "https://angelika.example/" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const evening = one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-09-29 19:30", 180));
+    expect(evening.class).toBe("check_first");
+    expect(evening.unresolved).toContain("PROGRAMME_UNLISTED");
+    expect(caveatNotes(evening).map((n) => n.text)).toContain("check what's on");
+    // A Tuesday morning is not a cinema's time, listed site or not.
+    expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-09-29 09:30", 180)).excludedBy).toBe("NO_PROGRAMME");
+    // A weekend afternoon is (matinees).
+    expect(one(site(venue({ category: "cinema", hours: null, admission: "ticket" })), ctx("2026-10-03 13:00", 180)).class).toBe("check_first");
+  });
+
   it("a screening that fits the window is still a candidate, and NO_PROGRAMME is never offered as a relaxation", () => {
     const start = fromLocal("2026-09-26", 22 * 60, TZ);
     const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);
@@ -1028,3 +1040,36 @@ describe("parking on a drive", () => {
   });
 });
 
+describe("feasibility: who can go", () => {
+  it("a place that isn't open to the public (members only) is never an option", () => {
+    const e = one(venue({ category: "cafe", admission: "members_only" }), ctx("2026-09-29 15:00", 120));
+    expect(e.class).toBe("ineligible");
+    expect(e.excludedBy).toBe("MEMBERS_ONLY");
+  });
+
+  it("with children, a bar that serves food and names no age limit is shown, flagged, and ranked below family places", () => {
+    const pub = venue({ id: "pub", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const park = venue({ id: "park", category: "park", hours: "Mo-Su 06:00-22:00" });
+    const x = ctx("2026-10-04 13:00", 180, { company: "family" });
+    const e = one(pub, x);
+    expect(e.class).toBe("check_first");
+    expect(e.unresolved).toContain("KIDS_UNCERTAIN");
+    expect(caveatNotes(e).map((n) => n.text)).toContain("a bar: check children are welcome");
+    const order = recommend([pub, park], x, POLICIES).items.map((i) => i.candidate.id);
+    expect(order).toEqual(["park", "pub"]);
+    // Adults only: no flag.
+    expect(one(pub, ctx("2026-10-04 13:00", 180, { company: "friends" })).unresolved).not.toContain("KIDS_UNCERTAIN");
+  });
+});
+
+describe("ranking order", () => {
+  it("places equal on merit come in the same order however they were loaded: nearer first, then by name", () => {
+    const x = ctx("2026-10-03 10:00", 120);
+    const a = venue({ id: "id-z", name: "Alpha Cafe" });
+    const b = venue({ id: "id-a", name: "Beta Cafe" });
+    const far = venue({ id: "id-m", name: "Aardvark Cafe", point: { lat: 40.7215, lon: -73.985 } });
+    const order = (cs: Candidate[]) => recommend(cs, x, POLICIES, { size: 3 }).items.map((i) => i.candidate.name);
+    expect(order([a, b, far])).toEqual(order([far, b, a]));
+    expect(order([b, a, far]).slice(0, 2)).toEqual(["Alpha Cafe", "Beta Cafe"]);
+  });
+});

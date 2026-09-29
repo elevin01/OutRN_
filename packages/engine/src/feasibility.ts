@@ -1,3 +1,4 @@
+import { dayPart } from "./daypart.js";
 import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
@@ -120,6 +121,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const closureFact = fact<{ at: string }>(c, "scheduled_closure");
   const closureAt = closureFact && !closureFact.isEstimate ? new Date(closureFact.value.at) : null;
   if (closureAt && closureAt.getTime() <= ctx.now.getTime()) return out("CLOSED_PERMANENTLY");
+  // Not open to the public (a private club, a university's own library): not a place anyone can go.
+  if (fact<{ requirement: string }>(c, "admission")?.value.requirement === "members_only") return out("MEMBERS_ONLY");
 
   // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
   // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
@@ -133,6 +136,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     } else if (youngest === "minor") {
       unresolved.push("AGE_LIMIT_UNCERTAIN"); // e.g. 16+ with children whose ages we do not know
     }
+  } else if (!limit && youngest === "minor" && (c.category === "bar" || c.category === "nightclub")) {
+    // A bar that serves food has no age limit we know of, but children may not be welcome, least of all late.
+    unresolved.push("KIDS_UNCERTAIN");
   }
 
   // How the food is had: a place that does not do takeout cannot serve a takeout request, and a
@@ -141,9 +147,13 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (ctx.visitStyle === "takeout" && FOOD_CATEGORIES.has(c.category) && takeout === "no") return out("NO_TAKEOUT");
   if (ctx.visitStyle !== "takeout" && c.category === "restaurant" && takeout === "only") return out("TAKEOUT_ONLY");
 
-  // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
-  // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".
-  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) return out("NO_PROGRAMME");
+  // A cinema, theatre or music venue qualifies through an occurrence in the window. The loader emits
+  // the venue row itself only when none was loaded, so this reads "nothing listed here". Its own site
+  // still lists what's on: at its time of day (an evening, not a morning) it's worth a look, Check first.
+  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) {
+    if (!c.facts.website || dayPart(c.category, ctx.now, c.timezone) !== "prime") return out("NO_PROGRAMME");
+    unresolved.push("PROGRAMME_UNLISTED");
+  }
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;

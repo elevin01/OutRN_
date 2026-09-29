@@ -23,6 +23,8 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   LATE_ENTRY_UNCERTAIN: "may be past last entry",
   ACCESS_LIMITED: "limited accessibility",
   WAIT_MAY_NOT_FIT: "a wait could leave too little time",
+  KIDS_UNCERTAIN: "a bar: check children are welcome",
+  PROGRAMME_UNLISTED: "check what's on",
 };
 
 /** One reason or caveat as data: a stable code, its inputs, and default wording. */
