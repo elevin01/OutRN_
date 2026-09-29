@@ -43,6 +43,19 @@ describe("fact value schemas", () => {
     expect(validateFactValue("age_limit", {})).not.toBeNull();
   });
 
+  it("restroom and kid facilities: what a record states, never a contradiction", () => {
+    for (const value of [{ available: "yes" }, { available: "yes", wheelchair: "no" }, { wheelchair: "limited" }, { available: "no" }]) {
+      expect(validateFactValue("restroom", value), JSON.stringify(value)).toBeNull();
+    }
+    expect(validateFactValue("restroom", {})).toMatch(/available or wheelchair/);
+    expect(validateFactValue("restroom", { available: "no", wheelchair: "yes" })).toMatch(/no restroom/);
+    expect(validateFactValue("restroom", { available: "customers" })).not.toBeNull(); // normalized to "yes" before a write
+    expect(validateFactValue("kid_facilities", { highchair: "yes", changing_table: "no" })).toBeNull();
+    expect(validateFactValue("kid_facilities", {})).toMatch(/at least one/);
+    expect(validateFactValue("kid_facilities", { highchair: "2" })).not.toBeNull();
+    expect(validateFactValue("kid_facilities", { playground: "yes" })).not.toBeNull();
+  });
+
   it("links: https on a public host only, at the write boundary too", () => {
     expect(validateFactValue("links", { menu: "https://bageldepot.example/menu" })).toBeNull();
     for (const menu of ["https://169.254.169.254/", "https://[::1]/", "https://router.local/menu", "https://router.lan/menu", "https://router.home/menu", "https://nas.corp/menu", "http://bageldepot.example/menu"]) {

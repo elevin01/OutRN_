@@ -29,6 +29,8 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   PROGRAMME_UNLISTED: "check what's on",
   RAIN_LIKELY: "rain likely",
   DIET_FROM_NAME: "only its name says it serves this diet: check with them",
+  RESTROOM_NOT_ACCESSIBLE: "its restroom isn't wheelchair accessible",
+  RESTROOM_ACCESS_LIMITED: "its restroom has limited wheelchair access",
 };
 
 /** One reason or caveat as data: a stable code, its inputs, and default wording. */
@@ -72,6 +74,10 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   if (has("SUNSET_WINDOW")) add("SUNSET_WINDOW", "sunset window");
   if (has("WEATHER_SUITABLE")) add("WEATHER_SUITABLE", "good weather for it");
   if (has("OUTDOOR_SEATING")) add("OUTDOOR_SEATING", "good weather to sit outside");
+  if (has("ACCESSIBLE_RESTROOM")) add("ACCESSIBLE_RESTROOM", "an accessible restroom");
+  if (has("HIGH_CHAIRS")) add("HIGH_CHAIRS", "high chairs");
+  if (has("CHANGING_TABLE")) add("CHANGING_TABLE", "a changing table");
+  if (has("KIDS_AREA")) add("KIDS_AREA", "a kids' area");
   if (has("FRESH_REPORT")) add("FRESH_REPORT", "recent report");
   if (has("LANDMARK")) add("LANDMARK", "a landmark");
   return out;

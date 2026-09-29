@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parkingKind, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
+import { categoryFromTags, hoursConfidence, kidFacilitiesOf, normalizeOsm, osmDate, parkingKind, parseCharge, restroomOf, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
 const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
@@ -232,6 +232,46 @@ describe("OSM normalization", () => {
   it("opening_hours:kitchen becomes kitchen hours; an unparseable rule is dropped", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant", opening_hours: "Mo-Su 12:00-23:00", "opening_hours:kitchen": "Mo-Su 12:00-22:00" }), "kitchen_hours")).toMatchObject({ evidenceClass: "published", value: { osm: "Mo-Su 12:00-22:00" }, evidence: "opening_hours:kitchen=Mo-Su 12:00-22:00" });
     expect(fact(rec({ name: "R", amenity: "restaurant", "opening_hours:kitchen": "until the chef leaves" }), "kitchen_hours")).toBeUndefined();
+  });
+
+  describe("restrooms and what a place has for children", () => {
+    const rest = (tags: Record<string, string>) => restroomOf(tags);
+    it("a restroom visitors may use, and its step-free access, as tagged", () => {
+      expect(rest({ toilets: "yes" })).toEqual({ value: { available: "yes" }, evidence: "toilets=yes" });
+      expect(rest({ toilets: "customers" })).toEqual({ value: { available: "yes" }, evidence: "toilets=customers" });
+      expect(rest({ toilets: "no" })).toEqual({ value: { available: "no" }, evidence: "toilets=no" });
+      expect(rest({ toilets: "yes", "toilets:wheelchair": "no" })).toEqual({ value: { available: "yes", wheelchair: "no" }, evidence: "toilets=yes; toilets:wheelchair=no" });
+      // An accessible restroom is a restroom; an inaccessible one says nothing about whether there is another.
+      expect(rest({ "toilets:wheelchair": "yes" })?.value).toEqual({ available: "yes", wheelchair: "yes" });
+      expect(rest({ "toilets:wheelchair": "limited" })?.value).toEqual({ available: "yes", wheelchair: "limited" });
+      expect(rest({ "toilets:wheelchair": "no" })?.value).toEqual({ wheelchair: "no" });
+      // toilets:access decides who may use it: staff only is none for visitors.
+      expect(rest({ toilets: "yes", "toilets:access": "private" })).toEqual({ value: { available: "no" }, evidence: "toilets=yes; toilets:access=private" });
+      expect(rest({ "toilets:access": "customers" })?.value).toEqual({ available: "yes" });
+      expect(rest({ toilets: "yes", "toilets:access": "customers" })?.evidence).toBe("toilets=yes");
+      // None for visitors has no access to describe, whatever else is tagged.
+      expect(rest({ toilets: "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
+      expect(rest({ toilets: "yes", "toilets:access": "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
+      // Values we don't know say nothing.
+      expect(rest({ toilets: "maybe", "toilets:wheelchair": "designated" })).toBeNull();
+      expect(rest({ "toilets:unisex": "yes" })).toBeNull();
+      expect(rest({})).toBeNull();
+    });
+    it("high chairs, a changing table, a kids' area: yes or no as tagged", () => {
+      expect(kidFacilitiesOf({ highchair: "yes", changing_table: "no" })).toEqual({ value: { highchair: "yes", changing_table: "no" }, evidence: "highchair=yes; changing_table=no" });
+      expect(kidFacilitiesOf({ highchair: "4" })?.value).toEqual({ highchair: "yes" });
+      expect(kidFacilitiesOf({ highchair: "0" })?.value).toEqual({ highchair: "no" });
+      expect(kidFacilitiesOf({ kids_area: "indoor" })?.value).toEqual({ kids_area: "yes" });
+      expect(kidFacilitiesOf({ changing_table: "limited", highchair: "some" })).toBeNull();
+      expect(kidFacilitiesOf({ "changing_table:location": "wheelchair_toilet" })).toBeNull();
+    });
+    it("become published facts where the place is one we list, and validate", () => {
+      const n = rec({ name: "Pies", amenity: "cafe", toilets: "yes", "toilets:wheelchair": "no", highchair: "yes" });
+      expect(fact(n, "restroom")).toMatchObject({ evidenceClass: "published", value: { available: "yes", wheelchair: "no" }, evidence: "toilets=yes; toilets:wheelchair=no", confidence: 0.7 });
+      expect(fact(n, "kid_facilities")).toMatchObject({ evidenceClass: "published", value: { highchair: "yes" }, evidence: "highchair=yes" });
+      expect(fact(rec({ name: "Pies", amenity: "cafe" }), "restroom")).toBeUndefined();
+      expect(fact(rec({ name: "Shoes", shop: "shoes", toilets: "yes" }), "restroom")).toBeUndefined();
+    });
   });
 
   describe("charge", () => {
