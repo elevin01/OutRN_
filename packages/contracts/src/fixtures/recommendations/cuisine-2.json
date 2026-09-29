@@ -1,17 +1,17 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000001",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
   "area": {
-    "id": "les",
-    "name": "Lower East Side (test point)",
+    "id": "mock-cuisine",
+    "name": "Mock · a cuisine",
     "timezone": "America/New_York"
   },
   "request": {
     "at": "2026-10-03T22:30:00.000Z",
     "mood": null,
-    "areaId": "les",
+    "areaId": "mock-cuisine",
     "backBy": null,
     "budget": {
       "kind": "any"
@@ -21,13 +21,15 @@
       "lon": -73.988
     },
     "company": null,
-    "cuisines": [],
+    "cuisines": [
+      "italian"
+    ],
     "categories": [],
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
-    "windowMinutes": 180,
+    "windowMinutes": 120,
     "originIsDefault": true,
     "travelModeIsDefault": true
   },
@@ -60,19 +62,269 @@
       "photos": [],
       "cuisines": [
         {
+          "id": "italian",
+          "label": "Italian"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-000000000029",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: hours not listed",
+        "summary": "Italian · ~17 min walk · takes about 1h20 · ~15–30 min wait · price unknown",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Hester Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:57:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:57pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 17,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:57:00.000Z",
+        "closesAt": null,
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 93
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000029",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 93
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.726295,
+        "lon": -73.981623
+      },
+      "placeName": "Hester Kitchen",
+      "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "italian",
+          "label": "Italian"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-00000000002a",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: a wait could leave too little time",
+        "summary": "Italian · ~22 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "sentence": "Open late."
+      },
+      "kind": "venue",
+      "name": "Orchard Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:02:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:02pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 22,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T23:02:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 88
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://orchardkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.706748%2C-73.984412&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "WAIT_MAY_NOT_FIT",
+          "text": "a wait could leave too little time",
+          "params": {
+            "waitMinutes": 30
+          },
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-00000000002a",
+      "reasons": [
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T02:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.706748,
+        "lon": -73.984412
+      },
+      "placeName": "Orchard Kitchen",
+      "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
           "id": "pizza",
           "label": "Pizza"
         }
       ],
-      "id": "00000000-0000-4000-8000-000000000008",
+      "id": "00000000-0000-4000-8000-00000000002b",
       "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Pizza · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
-        "sentence": "Plenty of time, open late."
+        "action": "Check first",
+        "caveat": "Check first: a wait could leave too little time",
+        "summary": "Pizza · ~23 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "sentence": "Open late."
       },
       "kind": "venue",
-      "name": "Ridge Ludlow Kitchen",
+      "name": "Forsyth Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -81,15 +333,15 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:52:00.000Z",
+          "at": "2026-10-03T23:03:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:52pm",
+          "text": "Arrive around 7:03pm",
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:30:00.000Z",
+          "at": "2026-10-04T00:30:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
+          "text": "Wrap up by 8:30pm",
           "isEstimate": false
         }
       ],
@@ -97,7 +349,7 @@
       "price": {
         "kind": "unknown"
       },
-      "status": "ready",
+      "status": "check_first",
       "timing": {
         "visit": {
           "label": "Sit-down meal",
@@ -108,280 +360,39 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 12,
+          "minutes": 23,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:52:00.000Z",
-        "closesAt": "2026-10-04T03:30:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 158
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7135",
-        "websiteUrl": "https://ridgeludlowkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000008",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 158
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T03:30:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.718864,
-        "lon": -73.979899
-      },
-      "placeName": "Ridge Ludlow Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "korean",
-          "label": "Korean"
-        }
-      ],
-      "id": "00000000-0000-4000-8000-000000000009",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Korean · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Ludlow Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:52:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:52pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:20:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 12,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:52:00.000Z",
+        "arriveAt": "2026-10-03T23:03:00.000Z",
         "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 148
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 87
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 6594",
-        "websiteUrl": "https://ludlowkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=walking"
+        "phone": null,
+        "websiteUrl": "https://forsythkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=walking"
       },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000009",
-      "reasons": [
+      "caveats": [
         {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
+          "code": "WAIT_MAY_NOT_FIT",
+          "text": "a wait could leave too little time",
           "params": {
-            "usefulMinutes": 148
+            "waitMinutes": 30
           },
-          "required": false
+          "required": true
         }
       ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.712607,
-        "lon": -73.984996
-      },
-      "placeName": "Ludlow Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "mexican",
-          "label": "Mexican"
-        }
-      ],
-      "id": "00000000-0000-4000-8000-00000000000a",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Mexican · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
-        "sentence": "Plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Stanton Allen Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:53:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:53pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 157
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7512",
-        "websiteUrl": "https://stantonallenkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "placeId": "00000000-0000-4000-8000-00000000002b",
       "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 157
-          },
-          "required": false
-        },
         {
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
+            "closesAt": "2026-10-04T02:00:00.000Z"
           },
           "required": false
         }
@@ -393,22 +404,21 @@
         "label": "Restaurant"
       },
       "location": {
-        "lat": 40.725116,
-        "lon": -73.989173
+        "lat": 40.70705,
+        "lon": -73.993872
       },
-      "placeName": "Stanton Allen Kitchen",
-      "callToAction": "go"
+      "placeName": "Forsyth Kitchen",
+      "callToAction": "check"
     }
   ],
   "page": {
-    "offset": 6,
+    "offset": 3,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwibyI6M30"
+    "nextCursor": null,
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [
-    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

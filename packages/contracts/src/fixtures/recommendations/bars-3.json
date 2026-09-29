@@ -21,6 +21,7 @@
       "lon": -73.988
     },
     "company": "date",
+    "cuisines": [],
     "categories": [
       "bar"
     ],
@@ -47,7 +48,8 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000021",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-00000000001f",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -108,7 +110,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000021",
+      "placeId": "00000000-0000-4000-8000-00000000001f",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -157,7 +159,8 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000022",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-000000000020",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -218,7 +221,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000022",
+      "placeId": "00000000-0000-4000-8000-000000000020",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -267,7 +270,8 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000023",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-000000000021",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -328,7 +332,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000023",
+      "placeId": "00000000-0000-4000-8000-000000000021",
       "reasons": [
         {
           "code": "ENOUGH_TIME",

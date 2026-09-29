@@ -72,6 +72,29 @@
       }
     },
     {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Mexican",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+      }
+    },
+    {
       "attribute": "admission",
       "label": "Admission",
       "value": "Walk in",

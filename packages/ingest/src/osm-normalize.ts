@@ -1,4 +1,4 @@
-import { cuisineSlugs, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { CUISINE_CATEGORIES, cuisineFromName, cuisineSlugs, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.5";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.8";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,8 +225,6 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
-/** Where a cuisine tag says what is served (a bar's cuisine is its kitchen). */
-const SERVES_FOOD: ReadonlySet<Category> = new Set(["restaurant", "cafe", "dessert", "bar"]);
 /** Kinds with an age limit by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
 const DEFAULT_AGE_LIMIT: Readonly<Record<string, number>> = { casino: 21, nightclub: 21 };
 
@@ -260,15 +258,21 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
   const subtype = subtypeFromOsmTags(t);
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
-  const cuisines = category && SERVES_FOOD.has(category) ? cuisineSlugs(t["cuisine"]) : [];
+  const cuisines = category && CUISINE_CATEGORIES.has(category) ? cuisineSlugs(t["cuisine"]) : [];
   if (cuisines.length) pub("cuisine", { values: cuisines }, `cuisine=${t["cuisine"]!.trim().slice(0, 200)}`, 0.8);
+  // No cuisine tag: what the name says it serves ("Joe's Pizza", "Taqueria Diana"), as an estimate.
+  else if (category && CUISINE_CATEGORIES.has(category) && name) {
+    const named = cuisineFromName(name);
+    if (named.length) facts.push({ ...base, attribute: "cuisine", value: { values: named }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
+  }
 
   // Age limit: a published min_age wins (0 = none); otherwise kinds with a default limit get an estimate. Everything else stays unknown.
   const minAge = t["min_age"] && /^\d{1,2}$/.test(t["min_age"].trim()) ? Number(t["min_age"].trim()) : null;
   if (minAge !== null && minAge <= 25) pub("age_limit", { minAge }, `min_age=${t["min_age"]}`, 0.75);
   else if (subtype && ownValue(DEFAULT_AGE_LIMIT, subtype)) est("age_limit", { minAge: ownValue(DEFAULT_AGE_LIMIT, subtype)! }, 0.7);
-  // A bar that serves no food is usually 21+ in practice. Low confidence: a family sees Check first, never an exclusion.
-  else if (category === "bar" && !servesFood(t)) est("age_limit", { minAge: 21 }, 0.5);
+  // A bar that serves no food is usually 21+ in practice, and so is a karaoke box, food or not (a bar with
+  // private rooms, most of them 21+ at night). Low confidence: a family sees Check first, never an exclusion.
+  else if ((category === "bar" && !servesFood(t)) || t["amenity"] === "karaoke_box") est("age_limit", { minAge: 21 }, 0.5);
 
   // Surveys: when a mapper last checked the hours, and when anyone last checked the place at all.
   const hoursCheckedAt = surveyDate(t["check_date:opening_hours"], rec.sourceUpdatedAt, now);

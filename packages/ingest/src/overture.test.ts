@@ -36,6 +36,14 @@ describe("matching venues to Overture places", () => {
     expect(match(venue("Parque de Tranquilidad", "garden"), place({ name: "Parque de Tranquilidad", category: "arts_and_entertainment" }))).toHaveLength(1);
   });
 
+  it("numbers match however they are written: Hunan III is Hunan 3", () => {
+    expect(match(venue("Hunan III"), place({ name: "Hunan 3", ...north(30) })).map((x) => x.name)).toEqual(["same"]);
+    expect(match(venue("Pizza Number One"), place({ name: "Pizza Number 1", ...north(10) })).map((x) => x.name)).toEqual(["same"]);
+    // Only whole words: "Vinyl" is not "5inyl".
+    expect(match(venue("Vinyl Bar"), place({ name: "Vinyl Bar", ...north(10) })).map((x) => x.name)).toEqual(["same"]);
+    expect(match(venue("Hunan III"), place({ name: "Hunan 4", ...north(30) }))).toEqual([]);
+  });
+
   it("a name that starts with or contains the other's: within 40 m, whole words, and a kind that fits", () => {
     expect(match(venue("Rong Hang"), place({ name: "Rong Hang Restaurant" }))[0]?.name).toBe("prefix");
     expect(match(venue("Ballato"), place({ name: "Emilio's Ballato" }))[0]?.name).toBe("within");
@@ -280,6 +288,13 @@ describe("places OSM lacks", () => {
     expect(newPlaceGate(np({ name: "Eileen's Special Cheesecake" }))).toEqual({ category: "dessert" });
     expect(newPlaceGate(np({ name: "Topps Bakery" }))).toEqual({ category: "cafe" });
     expect(newPlaceGate(np({ name: "Voyager Espresso", category: "casual_eatery" }))).toEqual({ category: "cafe" });
+    // Karaoke is something to book and do (OSM's karaoke_box), not a show: an activity, whatever Overture files it under.
+    expect(newPlaceGate(np({ name: "Boho Karaoke Orchard", category: "music_venue" }))).toEqual({ category: "activity" });
+    expect(newPlaceGate(np({ name: "Karaoke Boho", category: "bar" }))).toEqual({ category: "activity" });
+    expect(kindEstimates("activity").find((e) => e.attribute === "admission")?.value).toEqual({ requirement: "reservation_available" });
+    // And keeps a bar's care for children: probably 21+, so a family sees Check first, as it would at the bar.
+    expect(kindEstimates("activity").find((e) => e.attribute === "age_limit")?.value).toEqual({ minAge: 21 });
+    expect(kindEstimates("bar").find((e) => e.attribute === "age_limit")?.value).toEqual({ minAge: 21 });
     // Only for a restaurant: a bar named for its coffee is still a bar.
     expect(newPlaceGate(np({ name: "Coffee Bar Nights", category: "bar" }))).toEqual({ category: "bar" });
   });
@@ -324,5 +339,13 @@ describe("places OSM lacks", () => {
     expect(new Set(f.map((x) => x.attribute)).size).toBe(f.length);
     // Without Overture's signal or a confident record, no status at all: still no estimate in its place.
     expect(placeFacts("venue-1", { ...p, confidence: 0.5 }, "cafe", null, now).some((x) => x.attribute === "business_status")).toBe(false);
+  });
+
+  it("a new food place's name gives its cuisine, as an estimate; a gallery's never does", () => {
+    const now = new Date("2026-09-29T00:00:00Z");
+    const taqueria = placeFacts("venue-2", place({ id: "ovt-t", name: "Taqueria Diana", category: "restaurant" }), "restaurant", "run-1", now);
+    expect(taqueria.find((x) => x.attribute === "cuisine")).toMatchObject({ value: { values: ["mexican"] }, evidenceClass: "estimate", evidence: "Overture place ovt-t: name", confidence: 0.5 });
+    expect(placeFacts("venue-3", place({ id: "ovt-g", name: "Pizza Gallery", category: "art_gallery" }), "gallery", "run-1", now).some((x) => x.attribute === "cuisine")).toBe(false);
+    expect(placeFacts("venue-4", place({ id: "ovt-r", name: "Rebelle", category: "restaurant" }), "restaurant", "run-1", now).some((x) => x.attribute === "cuisine")).toBe(false);
   });
 });

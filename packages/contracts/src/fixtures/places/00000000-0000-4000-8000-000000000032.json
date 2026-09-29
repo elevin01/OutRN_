@@ -1,15 +1,15 @@
 {
-  "id": "00000000-0000-4000-8000-00000000002d",
-  "name": "Stanton Park",
+  "id": "00000000-0000-4000-8000-000000000032",
+  "name": "East River Overlook",
   "category": {
-    "id": "park",
-    "label": "Park"
+    "id": "viewpoint",
+    "label": "Viewpoint"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.719677,
-    "lon": -73.981504
+    "lat": 40.7145,
+    "lon": -73.976
   },
   "address": null,
   "photos": [],
@@ -59,12 +59,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     },
     {
@@ -82,12 +82,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     },
     {
@@ -105,12 +105,12 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     },
     {
@@ -128,25 +128,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://stantonpark.example/",
-    "phone": "+1 212 555 6468"
+    "websiteUrl": null,
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=driving"
     },
     "links": []
   },

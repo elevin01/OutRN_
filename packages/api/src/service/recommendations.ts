@@ -146,9 +146,10 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
 
 /**
  * Fields later versions added to items, with what an older search computed for them: none. A 1.2
- * item has no conditions; a 1.3 item names no parking; a 1.4 item has no photos.
+ * item has no conditions; a 1.3 item names no parking; a 1.4 item has no photos; a 1.5 item lists no
+ * cuisines.
  */
-const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [] };
+const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [], cuisines: [] };
 function upgradeItems(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
   return items.map((i: unknown) => (i && typeof i === "object" ? { ...ITEM_DEFAULTS, ...i } : i));
@@ -164,6 +165,8 @@ async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> 
   }
   // Before 1.2 there was no visitStyle: every search was a sit-down one.
   if (!("visitStyle" in r)) r = { ...r, visitStyle: "dine_in" };
+  // Before 1.6 a search could not ask for a cuisine.
+  if (!("cuisines" in r)) r = { ...r, cuisines: [] };
   return r;
 }
 

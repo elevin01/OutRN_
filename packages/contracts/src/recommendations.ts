@@ -20,6 +20,11 @@ export const RecommendationRequest = z.strictObject({
   youngestAge: z.int().min(0).max(120).optional(),
   /** Narrow to these AreasResponse.filters.categories ids. */
   categories: z.array(z.string().min(1)).max(5).optional(),
+  /**
+   * Only food places serving one of these (AreasResponse.filters.cuisines ids): "japanese" finds
+   * sushi bars and ramen shops too. With `categories`, only those of them that serve food.
+   */
+  cuisines: z.array(z.string().min(1)).max(5).optional(),
   /** Plan for this instant instead of now. */
   at: IsoDateTime.optional(),
   /**
@@ -60,6 +65,8 @@ export const ResolvedRequest = z.object({
   company: z.string().nullable(),
   youngestAge: z.int().nullable(),
   categories: z.array(z.string()),
+  /** The request's `cuisines`, or none. */
+  cuisines: z.array(z.string()),
   /** The instant planned for (the request's `at`, or when it arrived). */
   at: IsoDateTime,
   /** True when the request gave `at` explicitly. */
@@ -191,6 +198,12 @@ export const RecommendationItem = z.object({
   photos: z.array(Photo).max(3),
   category: Option,
   subtype: Option.nullable(),
+  /**
+   * What a food place serves, as its map entry lists it (or, without one, as its name says: "Joe's
+   * Pizza"), lead first, at most 3: `{ id: "thai", label: "Thai" }`. Empty when unknown, and for
+   * places that are not about food.
+   */
+  cuisines: z.array(Option).max(3),
   /**
    * `ready`: everything that matters checks out. `check_first`: worth going, but something in
    * `caveats` needs checking. Never recompute or upgrade this in the UI.

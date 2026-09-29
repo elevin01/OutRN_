@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import type { RecommendationRequest } from "@outrn/contracts";
 import { reset, type Db } from "@outrn/db";
 import { caveatNotes, reasonNotes } from "@outrn/engine";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestOsmArea, ingestOverture } from "@outrn/ingest";
 import { runEngine } from "../src/service/recommendations.js";
 
 /**
@@ -40,6 +40,8 @@ export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   { id: "les-fri-dinner", title: "LES, Friday 7pm, 2 hours, dinner", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 120, categories: ["restaurant"] } },
   { id: "les-sat-long", title: "LES, Saturday noon, 5 hours", at: "2026-10-03T16:00:00Z", request: { areaId: "les", windowMinutes: 300 } },
   { id: "les-fri-movies", title: "LES, Friday 7pm, 3 hours, a movie or a show", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 180, categories: ["cinema", "theatre", "live_music"] } },
+  { id: "les-fri-japanese", title: "LES, Friday 7pm, 2 hours, Japanese", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 120, cuisines: ["japanese"] } },
+  { id: "les-sat-pizza", title: "LES, Saturday 1pm, 2 hours, pizza", at: "2026-10-03T17:00:00Z", request: { areaId: "les", windowMinutes: 120, cuisines: ["pizza"] } },
   { id: "bronxville-sat-evening", title: "Bronxville, Saturday 7:30pm, 2 hours, driving", at: "2026-10-03T23:30:00Z", request: { areaId: "bronxville", windowMinutes: 120 } },
   { id: "bronxville-sun-family", title: "Bronxville, Sunday noon, 3 hours, family", at: "2026-10-04T16:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, company: "family" } },
   { id: "bronxville-mon-after-work", title: "Bronxville, Monday 5:30pm, 90 minutes", at: "2026-09-28T21:30:00Z", request: { areaId: "bronxville", windowMinutes: 90 } },
@@ -69,6 +71,8 @@ export async function seedGolden(db: Db, root: string): Promise<void> {
   await reset(db);
   // Just after the captures were made (OSM base 2026-09-27), so their survey dates all count.
   for (const area of ["les", "bronxville"]) await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}.json`), clock: () => new Date("2026-09-28T12:00:00Z") });
+  // Then Overture's read of each (taken 29 Sep): whether places still operate, and the places OSM lacks.
+  for (const area of ["les", "bronxville"]) await ingestOverture(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}-overture.json`), clock: () => new Date("2026-09-29T12:00:00Z") });
 }
 
 export async function runGolden(db: Db): Promise<GoldenResult[]> {

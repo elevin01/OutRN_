@@ -16,6 +16,8 @@ import fx_recommendations_bars_3 from "./recommendations/bars-3.json" with { typ
 import fx_recommendations_bars_4 from "./recommendations/bars-4.json" with { type: "json" };
 import fx_recommendations_family_1 from "./recommendations/family-1.json" with { type: "json" };
 import fx_recommendations_family_2 from "./recommendations/family-2.json" with { type: "json" };
+import fx_recommendations_cuisine_1 from "./recommendations/cuisine-1.json" with { type: "json" };
+import fx_recommendations_cuisine_2 from "./recommendations/cuisine-2.json" with { type: "json" };
 import fx_recommendations_events_1 from "./recommendations/events-1.json" with { type: "json" };
 import fx_recommendations_fewer_1 from "./recommendations/fewer-1.json" with { type: "json" };
 import fx_recommendations_none_1 from "./recommendations/none-1.json" with { type: "json" };
@@ -53,12 +55,15 @@ import fx_places_00000000_0000_4000_8000_000000000021 from "./places/00000000-00
 import fx_places_00000000_0000_4000_8000_000000000022 from "./places/00000000-0000-4000-8000-000000000022.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000023 from "./places/00000000-0000-4000-8000-000000000023.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000024 from "./places/00000000-0000-4000-8000-000000000024.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_000000000025 from "./places/00000000-0000-4000-8000-000000000025.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000026 from "./places/00000000-0000-4000-8000-000000000026.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000028 from "./places/00000000-0000-4000-8000-000000000028.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000029 from "./places/00000000-0000-4000-8000-000000000029.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000002a from "./places/00000000-0000-4000-8000-00000000002a.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002b from "./places/00000000-0000-4000-8000-00000000002b.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_00000000002d from "./places/00000000-0000-4000-8000-00000000002d.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002e from "./places/00000000-0000-4000-8000-00000000002e.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000002f from "./places/00000000-0000-4000-8000-00000000002f.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000031 from "./places/00000000-0000-4000-8000-000000000031.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000032 from "./places/00000000-0000-4000-8000-000000000032.json" with { type: "json" };
 import fx_ops_evaluate from "./ops/evaluate.json" with { type: "json" };
 import fx_ops_runs from "./ops/runs.json" with { type: "json" };
 import fx_errors_cursor_expired from "./errors/cursor-expired.json" with { type: "json" };
@@ -97,8 +102,9 @@ export const scenarios: Scenario[] = [
   { id: "bronxville", area: {"id":"bronxville","name":"Bronxville (test point)","timezone":"America/New_York","defaultTravelMode":"drive","center":{"lat":40.941,"lon":-73.835}}, title: "Bronxville, Saturday 7:30pm", description: "Driving (the area default), 2 hours free; travel includes parking.", request: {"areaId":"bronxville","windowMinutes":120}, pages: [fx_recommendations_bronxville_1, fx_recommendations_bronxville_2, fx_recommendations_bronxville_3, fx_recommendations_bronxville_4] as unknown as RecommendationResponse[] },
   { id: "bars", area: {"id":"mock-bars","name":"Mock · bars, date night","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Bars on a date", description: "Narrowed to bars. One has hours confirmed by a call; another's place page shows a stale check and disagreeing sources.", request: {"areaId":"mock-bars","windowMinutes":180,"company":"date","categories":["bar"]}, pages: [fx_recommendations_bars_1, fx_recommendations_bars_2, fx_recommendations_bars_3, fx_recommendations_bars_4] as unknown as RecommendationResponse[] },
   { id: "family", area: {"id":"mock-family","name":"Mock · family, age limits","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Family, late, bars", description: "A family with no ages given: a bar that is usually 21+ is Check first with a required age caveat.", request: {"areaId":"mock-family","windowMinutes":120,"company":"family","categories":["bar"]}, pages: [fx_recommendations_family_1, fx_recommendations_family_2] as unknown as RecommendationResponse[] },
+  { id: "cuisine", area: {"id":"mock-cuisine","name":"Mock · a cuisine","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Italian tonight", description: "Asking for a cuisine: only food places serving it, pizza included in Italian. Each card lists `cuisines` and its summary leads with one.", request: {"areaId":"mock-cuisine","windowMinutes":120,"cuisines":["italian"]}, pages: [fx_recommendations_cuisine_1, fx_recommendations_cuisine_2] as unknown as RecommendationResponse[] },
   { id: "events", area: {"id":"mock-events","name":"Mock · a scheduled event","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Theatre tonight", description: "A scheduled performance: kind \"event\" with start and end times.", request: {"areaId":"mock-events","windowMinutes":240,"categories":["theatre"]}, pages: [fx_recommendations_events_1] as unknown as RecommendationResponse[] },
-  { id: "fewer", area: {"id":"mock-fewer","name":"Mock · fewer than three","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Free, 1 hour, 2:30am", description: "Fewer than three qualify: `insufficient` explains and offers relaxations. Never pad.", request: {"areaId":"mock-fewer","windowMinutes":60,"budget":{"kind":"free"}}, pages: [fx_recommendations_fewer_1] as unknown as RecommendationResponse[] },
+  { id: "fewer", area: {"id":"mock-fewer","name":"Mock · fewer than three","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Free outdoors, 1 hour, 2:30am", description: "Fewer than three qualify: `insufficient` explains and offers relaxations. Never pad.", request: {"areaId":"mock-fewer","windowMinutes":60,"budget":{"kind":"free"},"categories":["park","viewpoint","waterfront"]}, pages: [fx_recommendations_fewer_1] as unknown as RecommendationResponse[] },
   { id: "none", area: {"id":"mock-none","name":"Mock · nothing fits","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Nothing fits", description: "Zero items, with relaxations.", request: {"areaId":"mock-none","windowMinutes":30,"budget":{"kind":"free"},"categories":["museum"]}, pages: [fx_recommendations_none_1] as unknown as RecommendationResponse[] },
   { id: "expired", area: {"id":"mock-expired","name":"Mock · expired pages","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Pages expired", description: "Page 1 is fine; asking for page 2 returns CURSOR_EXPIRED with `restart`.", request: {"areaId":"mock-expired","windowMinutes":120}, pages: [fx_recommendations_expired_1] as unknown as RecommendationResponse[], expiresAfterFirstPage: true },
   { id: "error", area: {"id":"mock-error","name":"Mock · service unavailable","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Backend down", description: "The search fails with UNAVAILABLE (503, retryable).", request: {"areaId":"mock-error","windowMinutes":180}, pages: [] as unknown as RecommendationResponse[], error: "unavailable" },
@@ -139,12 +145,15 @@ export const places: Record<string, PlaceDetails> = {
   "00000000-0000-4000-8000-000000000022": fx_places_00000000_0000_4000_8000_000000000022 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000023": fx_places_00000000_0000_4000_8000_000000000023 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000024": fx_places_00000000_0000_4000_8000_000000000024 as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-000000000025": fx_places_00000000_0000_4000_8000_000000000025 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000026": fx_places_00000000_0000_4000_8000_000000000026 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000028": fx_places_00000000_0000_4000_8000_000000000028 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000029": fx_places_00000000_0000_4000_8000_000000000029 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000002a": fx_places_00000000_0000_4000_8000_00000000002a as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002b": fx_places_00000000_0000_4000_8000_00000000002b as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-00000000002d": fx_places_00000000_0000_4000_8000_00000000002d as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002e": fx_places_00000000_0000_4000_8000_00000000002e as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000002f": fx_places_00000000_0000_4000_8000_00000000002f as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000031": fx_places_00000000_0000_4000_8000_000000000031 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000032": fx_places_00000000_0000_4000_8000_000000000032 as unknown as PlaceDetails,
 };
 
 export const ops = { evaluate: fx_ops_evaluate as unknown as OpsRunDetail, runs: fx_ops_runs as unknown as OpsRunList };

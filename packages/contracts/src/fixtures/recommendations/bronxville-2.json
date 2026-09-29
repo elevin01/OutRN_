@@ -21,6 +21,7 @@
       "lon": -73.835
     },
     "company": null,
+    "cuisines": [],
     "categories": [],
     "travelMode": "drive",
     "visitStyle": "dine_in",
@@ -35,6 +36,293 @@
       "conditions": [
         {
           "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "korean",
+          "label": "Korean"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-000000000012",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Korean · ~9 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Stanton Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:49:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:49pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "drive",
+          "minutes": 9,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:49:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 101
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000012",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 9
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 101
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.93814,
+        "lon": -73.82182
+      },
+      "placeName": "Stanton Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": {
+        "fee": "unknown",
+        "kind": "lot",
+        "name": "Hester Lot",
+        "text": "Hester Lot, ~1 min walk",
+        "location": {
+          "lat": 40.9287,
+          "lon": -73.8491
+        },
+        "walkMinutes": 1,
+        "openingHours": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
+        "distanceMetres": 54
+      },
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "vietnamese",
+          "label": "Vietnamese"
+        }
+      ],
+      "id": "00000000-0000-4000-8000-000000000013",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Vietnamese · ~12 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Attorney Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:41:00.000Z",
+          "kind": "park",
+          "text": "Park at Hester Lot, then walk ~1 min",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T23:52:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:52pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "drive",
+          "minutes": 12,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:52:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 98
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://attorneykitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000013",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 12
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 98
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.92844,
+        "lon": -73.849641
+      },
+      "placeName": "Attorney Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
           "text": "Places like this are usually quiet on Saturday evenings",
           "basis": "typical",
           "level": "quiet",
@@ -45,15 +333,16 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000012",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-000000000014",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~8 min drive incl. parking · takes about 1h · until 1am · usually free",
-        "sentence": "A short drive, plenty of time, open late, free."
+        "summary": "~8 min drive incl. parking · takes about 1h · until 10pm · usually free",
+        "sentence": "A short drive, plenty of time, usually free."
       },
       "kind": "venue",
-      "name": "Pitt Park",
+      "name": "Suffolk Park",
       "plan": [
         {
           "at": "2026-10-03T23:30:00.000Z",
@@ -96,18 +385,18 @@
         },
         "leaveAt": "2026-10-03T23:30:00.000Z",
         "arriveAt": "2026-10-03T23:43:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
         "usefulMinutes": 107
       },
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934679%2C-73.840902&travelmode=driving"
+        "websiteUrl": "https://suffolkpark.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=driving"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000012",
+      "placeId": "00000000-0000-4000-8000-000000000014",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -127,16 +416,8 @@
           "required": false
         },
         {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
-          },
-          "required": false
-        },
-        {
           "code": "FREE",
-          "text": "free",
+          "text": "usually free",
           "params": {},
           "required": false
         }
@@ -148,304 +429,10 @@
         "label": "Park"
       },
       "location": {
-        "lat": 40.934679,
-        "lon": -73.840902
+        "lat": 40.935386,
+        "lon": -73.836374
       },
-      "placeName": "Pitt Park",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": {
-        "fee": "paid",
-        "kind": "garage",
-        "name": "Rivington Garage",
-        "text": "Rivington Garage (paid), ~2 min walk",
-        "location": {
-          "lat": 40.9325,
-          "lon": -73.8458
-        },
-        "walkMinutes": 2,
-        "openingHours": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
-        "distanceMetres": 62
-      },
-      "photos": [],
-      "id": "00000000-0000-4000-8000-000000000013",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~10 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
-        "sentence": "A short drive, plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Broome Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T23:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 7:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T23:38:00.000Z",
-          "kind": "park",
-          "text": "Park at Rivington Garage (paid), then walk ~2 min",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T23:50:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 7:50pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "drive",
-          "minutes": 10,
-          "isEstimate": true,
-          "parkingMinutes": 5
-        },
-        "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:50:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 100
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7228",
-        "websiteUrl": "https://broomekitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000013",
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short drive",
-          "params": {
-            "mode": "drive",
-            "minutes": 10
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 100
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.932019,
-        "lon": -73.846175
-      },
-      "placeName": "Broome Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": {
-        "fee": "paid",
-        "kind": "lot",
-        "name": "Orchard Street Lot",
-        "text": "Orchard Street Lot (paid), ~2 min walk",
-        "location": {
-          "lat": 40.9296,
-          "lon": -73.8434
-        },
-        "walkMinutes": 2,
-        "openingHours": "Mo-Su 06:00-24:00",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-        "distanceMetres": 62
-      },
-      "photos": [],
-      "id": "00000000-0000-4000-8000-000000000014",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~10 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
-        "sentence": "A short drive, plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Clinton Norfolk Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T23:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 7:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T23:38:00.000Z",
-          "kind": "park",
-          "text": "Park at Orchard Street Lot (paid), then walk ~2 min",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T23:50:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 7:50pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "drive",
-          "minutes": 10,
-          "isEstimate": true,
-          "parkingMinutes": 5
-        },
-        "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:50:00.000Z",
-        "closesAt": "2026-10-04T03:30:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 100
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 6566",
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000014",
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short drive",
-          "params": {
-            "mode": "drive",
-            "minutes": 10
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 100
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T03:30:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.929098,
-        "lon": -73.843087
-      },
-      "placeName": "Clinton Norfolk Kitchen",
+      "placeName": "Suffolk Park",
       "callToAction": "go"
     }
   ],

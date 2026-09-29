@@ -1,24 +1,24 @@
 {
   "id": "00000000-0000-4000-8000-00000000000c",
-  "name": "Eldridge Coffee",
+  "name": "Stanton Kitchen",
   "category": {
-    "id": "cafe",
-    "label": "Cafe"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.722789,
-    "lon": -73.98462
+    "lat": 40.721023,
+    "lon": -73.979262
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T00:00:00.000Z",
+    "closesAt": "2026-10-04T02:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 8pm"
+    "summary": "Open now until 10pm"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 08:00-20:00",
-      "detail": "Open now until 8pm",
+      "value": "Mo-Su 11:30-15:00,17:00-22:00",
+      "detail": "Open now until 10pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.52,
+        "confidence": 0.541,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -63,12 +63,35 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Japanese",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -84,20 +107,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -109,38 +132,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-27T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     }
   ],
-  "parkingNearby": {
-    "name": "Rivington Garage",
-    "kind": "garage",
-    "fee": "paid",
-    "openingHours": null,
-    "location": {
-      "lat": 40.72101,
-      "lon": -73.98795
-    },
-    "distanceMetres": 344,
-    "walkMinutes": 6,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
-    "text": "Rivington Garage (paid), ~6 min walk"
-  },
+  "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://eldridgecoffee.example/",
-    "phone": null
+    "websiteUrl": "https://stantonkitchen.example/",
+    "phone": "+1 212 555 7138"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722789%2C-73.98462&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=driving"
     },
     "links": []
   },

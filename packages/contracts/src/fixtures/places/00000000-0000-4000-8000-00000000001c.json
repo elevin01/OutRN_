@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-00000000001c",
-  "name": "Broome Bar",
+  "name": "Ridge Bar",
   "category": {
     "id": "bar",
     "label": "Bar"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.727149,
-    "lon": -73.992962
+    "lat": 40.713276,
+    "lon": -74.00022
   },
   "address": null,
   "photos": [],
@@ -41,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.615,
+        "confidence": 0.59,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Mar 2026",
+        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · published"
       }
     },
     {
@@ -66,12 +66,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Mar 2026",
+        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
       }
     },
     {
@@ -89,12 +89,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Mar 2026",
+        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
       }
     },
     {
@@ -112,35 +112,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Not accessible",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Mar 2026",
+        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
       }
     },
     {
@@ -158,25 +135,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-03-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Mar 2026",
+        "summary": "OpenStreetMap · last edited in OSM Mar 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://broomebar.example/",
-    "phone": "+1 212 555 3125"
+    "websiteUrl": "https://ridgebar.example/",
+    "phone": "+1 212 555 6471"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=driving"
     },
     "links": []
   },

@@ -20,6 +20,7 @@
     "company": null,
     "youngestAge": null,
     "categories": [],
+    "cuisines": [],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -35,56 +36,34 @@
       "id": "00000000-0000-4000-8000-000000000002",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000002",
-      "name": "Pitt Park",
-      "placeName": "Pitt Park",
-      "photos": [
-        {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg",
-          "width": 960,
-          "height": 720,
-          "alt": "The lawn at Pitt Park on a summer evening (synthetic fixture: this file does not exist)",
-          "credit": "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons",
-          "author": "Synthetic Photographer",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg"
-        },
-        {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg/960px-OutRN_synthetic_Pitt_Park_fountain.jpg",
-          "width": 960,
-          "height": 1280,
-          "alt": "Fountain in Pitt Park & its benches (synthetic fixture)",
-          "credit": "CC0, via Wikimedia Commons",
-          "author": null,
-          "license": "CC0",
-          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg"
-        }
-      ],
+      "name": "Clinton Bar",
+      "placeName": "Clinton Bar",
+      "photos": [],
       "category": {
-        "id": "park",
-        "label": "Park"
+        "id": "bar",
+        "label": "Bar"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.722592,
-        "lon": -73.986782
+        "lat": 40.723404,
+        "lon": -73.980264
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 8,
+          "minutes": 14,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:43:00.000Z",
-        "usefulMinutes": 167,
+        "arriveAt": "2026-10-03T22:49:00.000Z",
+        "usefulMinutes": 161,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
         "visit": {
           "style": "visit",
           "label": "Visit",
@@ -102,9 +81,9 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:43:00.000Z",
+          "at": "2026-10-03T22:49:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:43pm"
+          "text": "Arrive around 6:49pm"
         },
         {
           "kind": "wrap_up",
@@ -126,25 +105,18 @@
         }
       ],
       "price": {
-        "kind": "free",
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
         "evidence": "estimate"
       },
-      "ageLimit": null,
       "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 8
-          },
-          "required": false
-        },
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 167
+            "usefulMinutes": 161
           },
           "required": false
         },
@@ -152,40 +124,30 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
+            "closesAt": "2026-10-04T06:00:00.000Z"
           },
           "required": false
         },
         {
-          "code": "FREE",
-          "text": "free",
-          "params": {},
-          "required": false
-        },
-        {
-          "code": "SUNSET_WINDOW",
-          "text": "sunset window",
-          "params": {},
-          "required": false
-        },
-        {
-          "code": "LANDMARK",
-          "text": "a landmark",
-          "params": {},
+          "code": "HOURS_CONFIRMED",
+          "text": "hours confirmed",
+          "params": {
+            "verifiedAt": "2026-09-29T16:00:00.000Z"
+          },
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~8 min walk · takes about 1h · until 1am · usually free",
-        "sentence": "A short walk, plenty of time, open late, free, sunset window, a landmark.",
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking",
-        "websiteUrl": "https://pittpark.example/",
-        "phone": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+        "websiteUrl": null,
+        "phone": "+1 212 555 8297",
         "links": []
       }
     },
@@ -201,6 +163,12 @@
         "label": "Restaurant"
       },
       "subtype": null,
+      "cuisines": [
+        {
+          "id": "mexican",
+          "label": "Mexican"
+        }
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -308,7 +276,7 @@
       ],
       "caveats": [],
       "copy": {
-        "summary": "~5 min walk · takes about 1h20 · short line reported · until 11pm · price unknown",
+        "summary": "Mexican · ~5 min walk · takes about 1h20 · short line reported · until 11pm · price unknown",
         "sentence": "A short walk, plenty of time, open late, recent report.",
         "caveat": null,
         "action": "Go now"
@@ -324,38 +292,39 @@
       "id": "00000000-0000-4000-8000-000000000004",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000004",
-      "name": "Clinton Bar",
-      "placeName": "Clinton Bar",
+      "name": "Delancey Books",
+      "placeName": "Delancey Books",
       "photos": [],
       "category": {
-        "id": "bar",
-        "label": "Bar"
+        "id": "bookshop",
+        "label": "Bookshop"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.723404,
-        "lon": -73.980264
+        "lat": 40.715671,
+        "lon": -73.989625
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 14,
+          "minutes": 6,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:49:00.000Z",
-        "usefulMinutes": 161,
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
+        "arriveAt": "2026-10-03T22:41:00.000Z",
+        "usefulMinutes": 139,
+        "finishBy": "2026-10-04T01:00:00.000Z",
+        "closesAt": "2026-10-04T01:00:00.000Z",
         "visit": {
           "style": "visit",
           "label": "Visit",
-          "minMinutes": 45,
-          "typicalMinutes": 60,
+          "minMinutes": 30,
+          "typicalMinutes": 30,
           "isEstimate": true
         }
       },
@@ -368,73 +337,63 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:49:00.000Z",
+          "at": "2026-10-03T22:41:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:49pm"
+          "text": "Arrive around 6:41pm"
         },
         {
           "kind": "wrap_up",
-          "at": "2026-10-04T01:30:00.000Z",
+          "at": "2026-10-04T01:00:00.000Z",
           "isEstimate": false,
-          "text": "Wrap up by 9:30pm"
+          "text": "Wrap up by 9pm, when it closes"
         }
       ],
       "parking": null,
       "conditions": [
         {
           "kind": "crowd",
-          "level": "moderate",
+          "level": "quiet",
           "basis": "typical",
           "isEstimate": true,
           "minutes": null,
           "reportedAt": null,
-          "text": "Places like this are usually fairly busy on Saturday evenings"
+          "text": "Places like this are usually quiet on Saturday evenings"
         }
       ],
       "price": {
         "kind": "unknown"
       },
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
+      "ageLimit": null,
       "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 6
+          },
+          "required": false
+        },
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 161
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "HOURS_CONFIRMED",
-          "text": "hours confirmed",
-          "params": {
-            "verifiedAt": "2026-09-29T16:00:00.000Z"
+            "usefulMinutes": 139
           },
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late, hours confirmed.",
+        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
+        "sentence": "A short walk, plenty of time.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
-        "websiteUrl": null,
-        "phone": "+1 212 555 8297",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
+        "websiteUrl": "https://delanceybooks.example/",
+        "phone": null,
         "links": []
       }
     }

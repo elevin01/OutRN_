@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000029",
+  "requestId": "00000000-0000-4000-8000-00000000002c",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -22,6 +22,7 @@
     "categories": [
       "theatre"
     ],
+    "cuisines": [],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -34,9 +35,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-00000000002a",
+      "id": "00000000-0000-4000-8000-00000000002d",
       "kind": "event",
-      "placeId": "00000000-0000-4000-8000-00000000002b",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "name": "The Tenement Follies",
       "placeName": "Delancey Playhouse",
       "photos": [],
@@ -45,6 +46,7 @@
         "label": "Theatre"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "check_first",
       "callToAction": "book",
       "location": {
@@ -153,6 +155,115 @@
         "phone": null,
         "links": []
       }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000002f",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000002f",
+      "name": "Broome Playhouse",
+      "placeName": "Broome Playhouse",
+      "photos": [],
+      "category": {
+        "id": "theatre",
+        "label": "Theatre"
+      },
+      "subtype": null,
+      "cuisines": [],
+      "status": "check_first",
+      "callToAction": "book",
+      "location": {
+        "lat": 40.727811,
+        "lon": -73.986647
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 17,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T23:02:00.000Z",
+        "usefulMinutes": 208,
+        "finishBy": "2026-10-04T02:30:00.000Z",
+        "closesAt": null,
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 120,
+          "typicalMinutes": 120,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T23:02:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 7:02pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T02:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 10:30pm"
+        }
+      ],
+      "parking": null,
+      "conditions": [],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 208
+          },
+          "required": false
+        }
+      ],
+      "caveats": [
+        {
+          "code": "PROGRAMME_UNLISTED",
+          "text": "check what's on",
+          "params": {},
+          "required": true
+        },
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        },
+        {
+          "code": "ADMISSION_UNCONFIRMED",
+          "text": "admission not confirmed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "copy": {
+        "summary": "~17 min walk · takes about 2h · price unknown",
+        "sentence": "Plenty of time.",
+        "caveat": "Check first: check what's on; hours not listed; admission not confirmed",
+        "action": "Book"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=walking",
+        "websiteUrl": "https://broomeplayhouse.example/",
+        "phone": null,
+        "links": []
+      }
     }
   ],
   "page": {
@@ -162,7 +273,7 @@
     "prevCursor": null
   },
   "insufficient": {
-    "found": 1,
+    "found": 2,
     "wanted": 3,
     "relaxations": [
       {

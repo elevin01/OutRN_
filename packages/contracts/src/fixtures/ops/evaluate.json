@@ -1,11 +1,11 @@
 {
-  "id": "00000000-0000-4000-8000-000000000031",
+  "id": "00000000-0000-4000-8000-000000000035",
   "areaName": "Lower East Side (test point)",
   "createdAt": "2026-10-03T22:30:00.000Z",
   "candidateCount": 80,
   "durationMs": 42,
-  "engineVersion": "0.4.0",
-  "weightsVersion": "2026-09-28.1",
+  "engineVersion": "0.5.0",
+  "weightsVersion": "2026-09-29.2",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
     "mode": "walk",
@@ -23,437 +23,16 @@
   "counts": {
     "total": 80,
     "ready": 35,
-    "check_first": 19,
-    "ineligible": 26
+    "check_first": 20,
+    "ineligible": 25
   },
   "results": [
-    {
-      "itemId": "00000000-0000-4000-8000-000000000032",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000032",
-      "name": "Attorney Arts Center",
-      "category": "arts_centre",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNKNOWN"
-      ],
-      "travelMinutes": 19,
-      "usefulMinutes": 151,
-      "scores": {
-        "evidence": 0.46,
-        "fit": 0.546,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000033",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000033",
-      "name": "Ridge Hall",
-      "category": "attraction",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN",
-        "ADMISSION_UNKNOWN"
-      ],
-      "travelMinutes": 21,
-      "usefulMinutes": 149,
-      "scores": {
-        "evidence": 0.19,
-        "fit": 0.514,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000034",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000034",
-      "name": "Clinton Hall",
-      "category": "attraction",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 24,
-      "usefulMinutes": 116,
-      "scores": {
-        "evidence": 0.534,
-        "fit": 0.446,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000021",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000021",
-      "name": "Norfolk Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 18,
-      "usefulMinutes": 157,
-      "scores": {
-        "evidence": 0.565,
-        "fit": 0.562,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000001f",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001f",
-      "name": "Ridge Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 20,
-      "usefulMinutes": 155,
-      "scores": {
-        "evidence": 0.555,
-        "fit": 0.53,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000004",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000004",
-      "name": "Clinton Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME",
-        "HOURS_CONFIRMED"
-      ],
-      "unresolved": [],
-      "travelMinutes": 14,
-      "usefulMinutes": 161,
-      "scores": {
-        "evidence": 0.71,
-        "fit": 0.626,
-        "appeal": 0.667,
-        "novelty": 1
-      },
-      "shortlisted": true
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000020",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000020",
-      "name": "Hester Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 17,
-      "usefulMinutes": 158,
-      "scores": {
-        "evidence": 0.575,
-        "fit": 0.578,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000028",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000028",
-      "name": "Delancey Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.538,
-        "fit": 0.482,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000023",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000023",
-      "name": "Eldridge Norfolk Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 22,
-      "usefulMinutes": 153,
-      "scores": {
-        "evidence": 0.561,
-        "fit": 0.498,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000026",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000026",
-      "name": "Essex Hester Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 25,
-      "usefulMinutes": 150,
-      "scores": {
-        "evidence": 0.535,
-        "fit": 0.45,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000025",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000025",
-      "name": "Stanton Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.456,
-        "fit": 0.482,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000001c",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001c",
-      "name": "Broome Bar",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 18,
-      "usefulMinutes": 157,
-      "scores": {
-        "evidence": 0.568,
-        "fit": 0.562,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000024",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000024",
-      "name": "Ludlow Tavern",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 22,
-      "usefulMinutes": 153,
-      "scores": {
-        "evidence": 0.542,
-        "fit": 0.498,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000001d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001d",
-      "name": "Delancey Tavern",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 16,
-      "usefulMinutes": 159,
-      "scores": {
-        "evidence": 0.516,
-        "fit": 0.594,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000022",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000022",
-      "name": "Ridge Tavern",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 15,
-      "usefulMinutes": 160,
-      "scores": {
-        "evidence": 0.537,
-        "fit": 0.61,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000001e",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001e",
-      "name": "Pitt Street Nightcap",
-      "category": "bar",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "WAIT_FOR_OPENING",
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 13,
-      "usefulMinutes": 90,
-      "scores": {
-        "evidence": 0.513,
-        "fit": 0.642,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000035",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000035",
-      "name": "Eldridge Books",
-      "category": "bookshop",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 23,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.26,
-        "fit": 0.482,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000005",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000005",
-      "name": "Delancey Books",
-      "category": "bookshop",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "SHORT_TRAVEL",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 6,
-      "usefulMinutes": 139,
-      "scores": {
-        "evidence": 0.525,
-        "fit": 0.754,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
     {
       "itemId": "00000000-0000-4000-8000-000000000036",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000036",
-      "name": "Orchard St. Coffee",
-      "category": "cafe",
+      "name": "Orchard Museum",
+      "category": "museum",
       "class": "ineligible",
       "excludedBy": "CLOSED_ON_ARRIVAL",
       "reasons": [],
@@ -465,28 +44,6 @@
         "fit": 0,
         "appeal": 0,
         "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000009",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000009",
-      "name": "Delancey Coffee",
-      "category": "cafe",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 11,
-      "usefulMinutes": 74,
-      "scores": {
-        "evidence": 0.568,
-        "fit": 0.674,
-        "appeal": 0.6,
-        "novelty": 1
       },
       "shortlisted": false
     },
@@ -494,23 +51,19 @@
       "itemId": "00000000-0000-4000-8000-000000000037",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000037",
-      "name": "Attorney Coffee",
-      "category": "cafe",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 25,
-      "usefulMinutes": 150,
+      "name": "Ludlow Museum",
+      "category": "museum",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
       "scores": {
-        "evidence": 0.26,
-        "fit": 0.45,
-        "appeal": 0.567,
-        "novelty": 1
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
       },
       "shortlisted": false
     },
@@ -518,493 +71,6 @@
       "itemId": "00000000-0000-4000-8000-000000000038",
       "kind": "venue",
       "placeId": "00000000-0000-4000-8000-000000000038",
-      "name": "Essex Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000039",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000039",
-      "name": "Pitt 2 Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003a",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003a",
-      "name": "Hester Coffee",
-      "category": "cafe",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 18,
-      "usefulMinutes": 67,
-      "scores": {
-        "evidence": 0.534,
-        "fit": 0.562,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003b",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003b",
-      "name": "Stanton Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003c",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003c",
-      "name": "Allen Hester Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003d",
-      "name": "Forsyth Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003e",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003e",
-      "name": "Ludlow Orchard Coffee",
-      "category": "cafe",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 19,
-      "usefulMinutes": 156,
-      "scores": {
-        "evidence": 0.26,
-        "fit": 0.546,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000000c",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000c",
-      "name": "Eldridge Coffee",
-      "category": "cafe",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "SHORT_TRAVEL",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 10,
-      "usefulMinutes": 75,
-      "scores": {
-        "evidence": 0.52,
-        "fit": 0.69,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000003f",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000003f",
-      "name": "Ridge Coffee",
-      "category": "cafe",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 22,
-      "usefulMinutes": 63,
-      "scores": {
-        "evidence": 0.534,
-        "fit": 0.498,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000040",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000040",
-      "name": "Allen Ludlow Coffee",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000041",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000041",
-      "name": "Bagel Depot",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000042",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000042",
-      "name": "Bagel Depot",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000043",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000043",
-      "name": "Tenement Story Museum Café",
-      "category": "cafe",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000044",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000044",
-      "name": "Broome Cinema",
-      "category": "cinema",
-      "class": "ineligible",
-      "excludedBy": "NO_PROGRAMME",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000045",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000045",
-      "name": "Ridge Cinema",
-      "category": "cinema",
-      "class": "ineligible",
-      "excludedBy": "NO_PROGRAMME",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000046",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000046",
-      "name": "Hester Community House",
-      "category": "community",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000047",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000047",
-      "name": "Eldridge Scoops",
-      "category": "dessert",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.462,
-        "fit": 0.482,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000048",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000048",
-      "name": "Ridge Gallery",
-      "category": "gallery",
-      "class": "ineligible",
-      "excludedBy": "NOT_ENOUGH_TIME",
-      "reasons": [],
-      "unresolved": [
-        "LATE_ENTRY_UNCERTAIN"
-      ],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000049",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000049",
-      "name": "Rivington Stanton Gallery",
-      "category": "gallery",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN",
-        "ADMISSION_UNKNOWN"
-      ],
-      "travelMinutes": 15,
-      "usefulMinutes": 160,
-      "scores": {
-        "evidence": 0.19,
-        "fit": 0.61,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000004a",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004a",
-      "name": "Eldridge Gallery",
-      "category": "gallery",
-      "class": "ineligible",
-      "excludedBy": "NOT_ENOUGH_TIME",
-      "reasons": [],
-      "unresolved": [
-        "LATE_ENTRY_UNCERTAIN"
-      ],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000004b",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004b",
-      "name": "Orchard Gallery",
-      "category": "gallery",
-      "class": "ineligible",
-      "excludedBy": "TOO_FAR",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000004c",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004c",
-      "name": "Stanton Gallery",
-      "category": "gallery",
-      "class": "ineligible",
-      "excludedBy": "NOT_ENOUGH_TIME",
-      "reasons": [],
-      "unresolved": [
-        "LATE_ENTRY_UNCERTAIN"
-      ],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000004d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004d",
-      "name": "Allen Gallery",
-      "category": "gallery",
-      "class": "ineligible",
-      "excludedBy": "NOT_ENOUGH_TIME",
-      "reasons": [],
-      "unresolved": [
-        "LATE_ENTRY_UNCERTAIN"
-      ],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000004e",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004e",
       "name": "Essex Garden",
       "category": "garden",
       "class": "ineligible",
@@ -1024,9 +90,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000004f",
+      "itemId": "00000000-0000-4000-8000-000000000039",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000004f",
+      "placeId": "00000000-0000-4000-8000-000000000039",
       "name": "Broome Garden",
       "category": "garden",
       "class": "ineligible",
@@ -1046,89 +112,9 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000050",
+      "itemId": "00000000-0000-4000-8000-00000000003a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000050",
-      "name": "Suffolk Library",
-      "category": "library",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000051",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000051",
-      "name": "Orchard Museum",
-      "category": "museum",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000052",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000052",
-      "name": "Ludlow Museum",
-      "category": "museum",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000053",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000053",
-      "name": "Rivington Museum",
-      "category": "museum",
-      "class": "ineligible",
-      "excludedBy": "CLOSED_ON_ARRIVAL",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000054",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000054",
+      "placeId": "00000000-0000-4000-8000-00000000003a",
       "name": "Tenement Story Museum",
       "category": "museum",
       "class": "ineligible",
@@ -1146,9 +132,665 @@
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000055",
+      "itemId": "00000000-0000-4000-8000-000000000009",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000055",
+      "placeId": "00000000-0000-4000-8000-000000000009",
+      "name": "Ludlow Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 12,
+      "usefulMinutes": 148,
+      "scores": {
+        "evidence": 0.523,
+        "fit": 0.688,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000006",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000006",
+      "name": "Allen Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "SHORT_TRAVEL",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 8,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.542,
+        "fit": 0.74,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000003b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000003b",
+      "name": "Allen Grand Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 20,
+      "usefulMinutes": 150,
+      "scores": {
+        "evidence": 0.538,
+        "fit": 0.586,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000000d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
+      "name": "Ridge Suffolk Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 13,
+      "usefulMinutes": 147,
+      "scores": {
+        "evidence": 0.435,
+        "fit": 0.675,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000003c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000003c",
+      "name": "Eldridge Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 147,
+      "scores": {
+        "evidence": 0.444,
+        "fit": 0.549,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000002a",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000002a",
+      "name": "Orchard Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 22,
+      "usefulMinutes": 138,
+      "scores": {
+        "evidence": 0.441,
+        "fit": 0.561,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000003d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000003d",
+      "name": "Stanton 2 Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 20,
+      "usefulMinutes": 150,
+      "scores": {
+        "evidence": 0.565,
+        "fit": 0.586,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000002b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000002b",
+      "name": "Forsyth Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 137,
+      "scores": {
+        "evidence": 0.531,
+        "fit": 0.549,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000003e",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000003e",
+      "name": "Attorney Coffee",
+      "category": "cafe",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 25,
+      "usefulMinutes": 150,
+      "scores": {
+        "evidence": 0.26,
+        "fit": 0.499,
+        "appeal": 0.317,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000003f",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000003f",
+      "name": "Hester Coffee",
+      "category": "cafe",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 18,
+      "usefulMinutes": 67,
+      "scores": {
+        "evidence": 0.534,
+        "fit": 0.588,
+        "appeal": 0.35,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000040",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000040",
+      "name": "Allen Hester Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000041",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000041",
+      "name": "Forsyth Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000042",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000042",
+      "name": "Ludlow Orchard Coffee",
+      "category": "cafe",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 19,
+      "usefulMinutes": 156,
+      "scores": {
+        "evidence": 0.26,
+        "fit": 0.575,
+        "appeal": 0.283,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000001c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001c",
+      "name": "Ridge Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 20,
+      "usefulMinutes": 155,
+      "scores": {
+        "evidence": 0.555,
+        "fit": 0.578,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000024",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000024",
+      "name": "Essex Hester Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 25,
+      "usefulMinutes": 150,
+      "scores": {
+        "evidence": 0.535,
+        "fit": 0.515,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000000b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000b",
+      "name": "Delancey Tavern",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 16,
+      "usefulMinutes": 159,
+      "scores": {
+        "evidence": 0.516,
+        "fit": 0.629,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000020",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000020",
+      "name": "Ridge Tavern",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 15,
+      "usefulMinutes": 160,
+      "scores": {
+        "evidence": 0.536,
+        "fit": 0.642,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000043",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000043",
+      "name": "Eldridge Scoops",
+      "category": "dessert",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.462,
+        "fit": 0.515,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000044",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000044",
+      "name": "Rivington Stanton Gallery",
+      "category": "gallery",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "FREE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 15,
+      "usefulMinutes": 160,
+      "scores": {
+        "evidence": 0.25,
+        "fit": 0.634,
+        "appeal": 0.533,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000045",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000045",
+      "name": "Eldridge Gallery",
+      "category": "gallery",
+      "class": "ineligible",
+      "excludedBy": "NOT_ENOUGH_TIME",
+      "reasons": [],
+      "unresolved": [
+        "LATE_ENTRY_UNCERTAIN"
+      ],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000046",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000046",
+      "name": "Stanton Gallery",
+      "category": "gallery",
+      "class": "ineligible",
+      "excludedBy": "NOT_ENOUGH_TIME",
+      "reasons": [],
+      "unresolved": [
+        "LATE_ENTRY_UNCERTAIN"
+      ],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000047",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000047",
+      "name": "Allen Gallery",
+      "category": "gallery",
+      "class": "ineligible",
+      "excludedBy": "NOT_ENOUGH_TIME",
+      "reasons": [],
+      "unresolved": [
+        "LATE_ENTRY_UNCERTAIN"
+      ],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000048",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000048",
+      "name": "Ridge Cinema",
+      "category": "cinema",
+      "class": "ineligible",
+      "excludedBy": "NO_PROGRAMME",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000049",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000049",
+      "name": "Suffolk Library",
+      "category": "library",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000004a",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000004a",
+      "name": "Ridge Hall",
+      "category": "attraction",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN",
+        "ADMISSION_UNKNOWN"
+      ],
+      "travelMinutes": 21,
+      "usefulMinutes": 149,
+      "scores": {
+        "evidence": 0.19,
+        "fit": 0.577,
+        "appeal": 0.567,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000004",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000004",
+      "name": "Delancey Books",
+      "category": "bookshop",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "SHORT_TRAVEL",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 6,
+      "usefulMinutes": 139,
+      "scores": {
+        "evidence": 0.525,
+        "fit": 0.749,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": true
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000032",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000032",
+      "name": "East River Overlook",
+      "category": "viewpoint",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "FREE",
+        "ENOUGH_TIME",
+        "SUNSET_WINDOW"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 18,
+      "usefulMinutes": 157,
+      "scores": {
+        "evidence": 0.26,
+        "fit": 0.578,
+        "appeal": 0.7,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000001d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001d",
+      "name": "Pitt Street Nightcap",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "WAIT_FOR_OPENING",
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 13,
+      "usefulMinutes": 90,
+      "scores": {
+        "evidence": 0.513,
+        "fit": 0.668,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000004b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000004b",
+      "name": "Rivington Museum",
+      "category": "museum",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000004c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000004c",
       "name": "Allen Park",
       "category": "park",
       "class": "check_first",
@@ -1165,16 +807,16 @@
       "usefulMinutes": 157,
       "scores": {
         "evidence": 0.215,
-        "fit": 0.562,
-        "appeal": 0.683,
+        "fit": 0.603,
+        "appeal": 0.433,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000006",
+      "itemId": "00000000-0000-4000-8000-00000000004d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000006",
+      "placeId": "00000000-0000-4000-8000-00000000004d",
       "name": "Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -1191,16 +833,16 @@
       "usefulMinutes": 166,
       "scores": {
         "evidence": 0.56,
-        "fit": 0.706,
-        "appeal": 0.717,
+        "fit": 0.722,
+        "appeal": 0.467,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000002d",
+      "itemId": "00000000-0000-4000-8000-000000000031",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000002d",
+      "placeId": "00000000-0000-4000-8000-000000000031",
       "name": "Stanton Park",
       "category": "park",
       "class": "check_first",
@@ -1218,16 +860,16 @@
       "usefulMinutes": 165,
       "scores": {
         "evidence": 0.26,
-        "fit": 0.69,
-        "appeal": 0.717,
+        "fit": 0.708,
+        "appeal": 0.467,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000007",
+      "itemId": "00000000-0000-4000-8000-00000000004e",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000007",
+      "placeId": "00000000-0000-4000-8000-00000000004e",
       "name": "Rivington Norfolk Park",
       "category": "park",
       "class": "ready",
@@ -1243,16 +885,713 @@
       "usefulMinutes": 161,
       "scores": {
         "evidence": 0.462,
-        "fit": 0.626,
-        "appeal": 0.75,
+        "fit": 0.655,
+        "appeal": 0.5,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000002",
+      "itemId": "00000000-0000-4000-8000-00000000004f",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000002",
+      "placeId": "00000000-0000-4000-8000-00000000004f",
+      "name": "Orchard St. Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000050",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000050",
+      "name": "Grand Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 17,
+      "usefulMinutes": 153,
+      "scores": {
+        "evidence": 0.587,
+        "fit": 0.624,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000051",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000051",
+      "name": "Rivington Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 15,
+      "usefulMinutes": 155,
+      "scores": {
+        "evidence": 0.564,
+        "fit": 0.649,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000052",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000052",
+      "name": "Ridge Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 18,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.512,
+        "fit": 0.611,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000053",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000053",
+      "name": "Broome Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN",
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 15,
+      "usefulMinutes": 155,
+      "scores": {
+        "evidence": 0.245,
+        "fit": 0.649,
+        "appeal": 0.55,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000028",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000028",
+      "name": "Attorney Pitt Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 147,
+      "scores": {
+        "evidence": 0.535,
+        "fit": 0.549,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000000c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000c",
+      "name": "Stanton Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 13,
+      "usefulMinutes": 147,
+      "scores": {
+        "evidence": 0.51,
+        "fit": 0.675,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000008",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000008",
+      "name": "Ridge Ludlow Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 12,
+      "usefulMinutes": 158,
+      "scores": {
+        "evidence": 0.528,
+        "fit": 0.688,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000029",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000029",
+      "name": "Hester Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 17,
+      "usefulMinutes": 153,
+      "scores": {
+        "evidence": 0.24,
+        "fit": 0.624,
+        "appeal": 0.55,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000054",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000054",
+      "name": "Suffolk Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 19,
+      "usefulMinutes": 151,
+      "scores": {
+        "evidence": 0.564,
+        "fit": 0.599,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000000a",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "name": "Stanton Allen Kitchen",
+      "category": "restaurant",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 13,
+      "usefulMinutes": 157,
+      "scores": {
+        "evidence": 0.519,
+        "fit": 0.675,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000055",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000055",
+      "name": "Essex Allen Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 21,
+      "usefulMinutes": 149,
+      "scores": {
+        "evidence": 0.195,
+        "fit": 0.573,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000056",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000056",
+      "name": "Delancey Coffee",
+      "category": "cafe",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 11,
+      "usefulMinutes": 74,
+      "scores": {
+        "evidence": 0.568,
+        "fit": 0.68,
+        "appeal": 0.35,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000057",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000057",
+      "name": "Essex Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000058",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000058",
+      "name": "Pitt 2 Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000059",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000059",
+      "name": "Stanton Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005a",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005a",
+      "name": "Eldridge Coffee",
+      "category": "cafe",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "SHORT_TRAVEL",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 10,
+      "usefulMinutes": 75,
+      "scores": {
+        "evidence": 0.52,
+        "fit": 0.694,
+        "appeal": 0.317,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005b",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005b",
+      "name": "Ridge Coffee",
+      "category": "cafe",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 22,
+      "usefulMinutes": 63,
+      "scores": {
+        "evidence": 0.534,
+        "fit": 0.537,
+        "appeal": 0.35,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005c",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005c",
+      "name": "Allen Ludlow Coffee",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000001f",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001f",
+      "name": "Norfolk Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 18,
+      "usefulMinutes": 157,
+      "scores": {
+        "evidence": 0.565,
+        "fit": 0.603,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000026",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000026",
+      "name": "Delancey Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.538,
+        "fit": 0.54,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000021",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000021",
+      "name": "Eldridge Norfolk Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 22,
+      "usefulMinutes": 153,
+      "scores": {
+        "evidence": 0.561,
+        "fit": 0.553,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000023",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000023",
+      "name": "Stanton Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 23,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.456,
+        "fit": 0.54,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000007",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000007",
+      "name": "Broome Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 18,
+      "usefulMinutes": 157,
+      "scores": {
+        "evidence": 0.568,
+        "fit": 0.603,
+        "appeal": 0.65,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000022",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000022",
+      "name": "Ludlow Tavern",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 22,
+      "usefulMinutes": 153,
+      "scores": {
+        "evidence": 0.541,
+        "fit": 0.553,
+        "appeal": 0.617,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005d",
+      "name": "Ridge Gallery",
+      "category": "gallery",
+      "class": "ineligible",
+      "excludedBy": "NOT_ENOUGH_TIME",
+      "reasons": [],
+      "unresolved": [
+        "LATE_ENTRY_UNCERTAIN"
+      ],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005e",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005e",
+      "name": "Orchard Gallery",
+      "category": "gallery",
+      "class": "ineligible",
+      "excludedBy": "TOO_FAR",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000002f",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000002f",
+      "name": "Broome Playhouse",
+      "category": "theatre",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [],
+      "unresolved": [
+        "PROGRAMME_UNLISTED",
+        "HOURS_UNKNOWN",
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 17,
+      "usefulMinutes": 148,
+      "scores": {
+        "evidence": 0.225,
+        "fit": 0.403,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000005f",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000005f",
+      "name": "Broome Cinema",
+      "category": "cinema",
+      "class": "ineligible",
+      "excludedBy": "NO_PROGRAMME",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000060",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000060",
+      "name": "Attorney Arts Center",
+      "category": "arts_centre",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "ADMISSION_UNKNOWN"
+      ],
+      "travelMinutes": 19,
+      "usefulMinutes": 151,
+      "scores": {
+        "evidence": 0.46,
+        "fit": 0.597,
+        "appeal": 0.6,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000061",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000061",
+      "name": "Hester Community House",
+      "category": "community",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000005",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000005",
       "name": "Pitt Park",
       "category": "park",
       "class": "ready",
@@ -1270,55 +1609,187 @@
       "usefulMinutes": 167,
       "scores": {
         "evidence": 0.538,
-        "fit": 0.722,
-        "appeal": 0.817,
-        "novelty": 1
-      },
-      "shortlisted": true
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000056",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000056",
-      "name": "Grand Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 17,
-      "usefulMinutes": 153,
-      "scores": {
-        "evidence": 0.587,
-        "fit": 0.578,
+        "fit": 0.735,
         "appeal": 0.567,
         "novelty": 1
       },
       "shortlisted": false
     },
     {
-      "itemId": "00000000-0000-4000-8000-00000000000a",
+      "itemId": "00000000-0000-4000-8000-000000000062",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000a",
-      "name": "Ludlow Kitchen",
-      "category": "restaurant",
-      "class": "ready",
+      "placeId": "00000000-0000-4000-8000-000000000062",
+      "name": "Clinton Hall",
+      "category": "attraction",
+      "class": "check_first",
       "excludedBy": null,
       "reasons": [
         "ENOUGH_TIME"
       ],
-      "unresolved": [],
-      "travelMinutes": 12,
-      "usefulMinutes": 148,
+      "unresolved": [
+        "ADMISSION_UNCONFIRMED"
+      ],
+      "travelMinutes": 24,
+      "usefulMinutes": 116,
       "scores": {
-        "evidence": 0.524,
-        "fit": 0.658,
+        "evidence": 0.534,
+        "fit": 0.519,
         "appeal": 0.6,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000063",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000063",
+      "name": "Eldridge Books",
+      "category": "bookshop",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNKNOWN"
+      ],
+      "travelMinutes": 23,
+      "usefulMinutes": 152,
+      "scores": {
+        "evidence": 0.26,
+        "fit": 0.52,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000064",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000064",
+      "name": "Bagel Depot",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000065",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000065",
+      "name": "Bagel Depot",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000066",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000066",
+      "name": "Tenement Story Museum Café",
+      "category": "cafe",
+      "class": "ineligible",
+      "excludedBy": "CLOSED_ON_ARRIVAL",
+      "reasons": [],
+      "unresolved": [],
+      "travelMinutes": null,
+      "usefulMinutes": null,
+      "scores": {
+        "evidence": 0,
+        "fit": 0,
+        "appeal": 0,
+        "novelty": 0
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000067",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000067",
+      "name": "Hester Lane Kitchen",
+      "category": "restaurant",
+      "class": "check_first",
+      "excludedBy": null,
+      "reasons": [
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [
+        "HOURS_UNVERIFIED"
+      ],
+      "travelMinutes": 20,
+      "usefulMinutes": 140,
+      "scores": {
+        "evidence": 0.345,
+        "fit": 0.586,
+        "appeal": 0.583,
+        "novelty": 1
+      },
+      "shortlisted": false
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-000000000002",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000002",
+      "name": "Clinton Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME",
+        "HOURS_CONFIRMED"
+      ],
+      "unresolved": [],
+      "travelMinutes": 14,
+      "usefulMinutes": 161,
+      "scores": {
+        "evidence": 0.71,
+        "fit": 0.655,
+        "appeal": 0.717,
+        "novelty": 1
+      },
+      "shortlisted": true
+    },
+    {
+      "itemId": "00000000-0000-4000-8000-00000000001e",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000001e",
+      "name": "Hester Bar",
+      "category": "bar",
+      "class": "ready",
+      "excludedBy": null,
+      "reasons": [
+        "OPEN_LATE",
+        "ENOUGH_TIME"
+      ],
+      "unresolved": [],
+      "travelMinutes": 17,
+      "usefulMinutes": 158,
+      "scores": {
+        "evidence": 0.575,
+        "fit": 0.616,
+        "appeal": 0.617,
         "novelty": 1
       },
       "shortlisted": false
@@ -1342,483 +1813,16 @@
       "usefulMinutes": 165,
       "scores": {
         "evidence": 0.537,
-        "fit": 0.77,
-        "appeal": 0.567,
+        "fit": 0.781,
+        "appeal": 0.617,
         "novelty": 1
       },
       "shortlisted": true
     },
     {
-      "itemId": "00000000-0000-4000-8000-000000000057",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000057",
-      "name": "Rivington Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 15,
-      "usefulMinutes": 155,
-      "scores": {
-        "evidence": 0.564,
-        "fit": 0.61,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000058",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000058",
-      "name": "Ridge Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 18,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.512,
-        "fit": 0.562,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000008",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000008",
-      "name": "Allen Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "SHORT_TRAVEL",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 8,
-      "usefulMinutes": 152,
-      "scores": {
-        "evidence": 0.542,
-        "fit": 0.722,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000059",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000059",
-      "name": "Broome Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN",
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 15,
-      "usefulMinutes": 155,
-      "scores": {
-        "evidence": 0.245,
-        "fit": 0.61,
-        "appeal": 0.5,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005a",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005a",
-      "name": "Attorney Pitt Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 147,
-      "scores": {
-        "evidence": 0.536,
-        "fit": 0.482,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005b",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005b",
-      "name": "Allen Grand Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 20,
-      "usefulMinutes": 150,
-      "scores": {
-        "evidence": 0.538,
-        "fit": 0.53,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000000d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "name": "Stanton Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 13,
-      "usefulMinutes": 147,
-      "scores": {
-        "evidence": 0.51,
-        "fit": 0.642,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005c",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005c",
-      "name": "Ridge Suffolk Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 13,
-      "usefulMinutes": 147,
-      "scores": {
-        "evidence": 0.435,
-        "fit": 0.642,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000000b",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000b",
-      "name": "Ridge Ludlow Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 12,
-      "usefulMinutes": 158,
-      "scores": {
-        "evidence": 0.528,
-        "fit": 0.658,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005d",
-      "name": "Hester Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 17,
-      "usefulMinutes": 153,
-      "scores": {
-        "evidence": 0.24,
-        "fit": 0.578,
-        "appeal": 0.5,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005e",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005e",
-      "name": "Eldridge Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 147,
-      "scores": {
-        "evidence": 0.444,
-        "fit": 0.482,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000005f",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000005f",
-      "name": "Suffolk Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 19,
-      "usefulMinutes": 151,
-      "scores": {
-        "evidence": 0.564,
-        "fit": 0.546,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000060",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000060",
-      "name": "Stanton Allen Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 13,
-      "usefulMinutes": 157,
-      "scores": {
-        "evidence": 0.519,
-        "fit": 0.642,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000061",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000061",
-      "name": "Orchard Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 22,
-      "usefulMinutes": 138,
-      "scores": {
-        "evidence": 0.441,
-        "fit": 0.498,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000062",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000062",
-      "name": "Stanton 2 Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "OPEN_LATE",
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "ADMISSION_UNCONFIRMED"
-      ],
-      "travelMinutes": 20,
-      "usefulMinutes": 150,
-      "scores": {
-        "evidence": 0.565,
-        "fit": 0.53,
-        "appeal": 0.6,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000063",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000063",
-      "name": "Essex Allen Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 21,
-      "usefulMinutes": 149,
-      "scores": {
-        "evidence": 0.195,
-        "fit": 0.514,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000064",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000064",
-      "name": "Forsyth Kitchen",
-      "category": "restaurant",
-      "class": "ready",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [],
-      "travelMinutes": 23,
-      "usefulMinutes": 137,
-      "scores": {
-        "evidence": 0.531,
-        "fit": 0.482,
-        "appeal": 0.567,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000065",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000065",
-      "name": "Hester Lane Kitchen",
-      "category": "restaurant",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "ENOUGH_TIME"
-      ],
-      "unresolved": [
-        "HOURS_UNVERIFIED"
-      ],
-      "travelMinutes": 20,
-      "usefulMinutes": 140,
-      "scores": {
-        "evidence": 0.345,
-        "fit": 0.53,
-        "appeal": 0.533,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-000000000066",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000066",
-      "name": "Broome Playhouse",
-      "category": "theatre",
-      "class": "ineligible",
-      "excludedBy": "NO_PROGRAMME",
-      "reasons": [],
-      "unresolved": [],
-      "travelMinutes": null,
-      "usefulMinutes": null,
-      "scores": {
-        "evidence": 0,
-        "fit": 0,
-        "appeal": 0,
-        "novelty": 0
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000002e",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000002e",
-      "name": "East River Overlook",
-      "category": "viewpoint",
-      "class": "check_first",
-      "excludedBy": null,
-      "reasons": [
-        "FREE",
-        "ENOUGH_TIME",
-        "SUNSET_WINDOW"
-      ],
-      "unresolved": [
-        "HOURS_UNKNOWN"
-      ],
-      "travelMinutes": 18,
-      "usefulMinutes": 157,
-      "scores": {
-        "evidence": 0.26,
-        "fit": 0.562,
-        "appeal": 0.65,
-        "novelty": 1
-      },
-      "shortlisted": false
-    },
-    {
-      "itemId": "00000000-0000-4000-8000-00000000002a",
+      "itemId": "00000000-0000-4000-8000-00000000002d",
       "kind": "event",
-      "placeId": "00000000-0000-4000-8000-00000000002b",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "name": "The Tenement Follies",
       "category": "theatre",
       "class": "check_first",
@@ -1834,7 +1838,7 @@
       "usefulMinutes": 120,
       "scores": {
         "evidence": 0.72,
-        "fit": 0.578,
+        "fit": 0.633,
         "appeal": 0.683,
         "novelty": 1
       },

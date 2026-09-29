@@ -1,6 +1,6 @@
 {
-  "id": "00000000-0000-4000-8000-00000000000d",
-  "name": "Ridge Suffolk Kitchen",
+  "id": "00000000-0000-4000-8000-000000000029",
+  "name": "Hester Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.712091,
-    "lon": -73.990301
+    "lat": 40.726295,
+    "lon": -73.981623
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T02:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 10pm"
+    "summary": null
   },
   "price": {
     "kind": "unknown"
@@ -28,24 +28,19 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:30-15:00,17:00-22:00",
-      "detail": "Open now until 10pm",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.481,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-06-06T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2024",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -61,20 +56,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.35,
+        "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2024",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
       }
     },
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Pizza",
+      "value": "Italian",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,12 +81,12 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2024",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · published"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
       }
     },
     {
@@ -109,18 +104,41 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2024",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -132,25 +150,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2024",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://ridgesuffolkkitchen.example/",
-    "phone": "+1 212 555 5718"
+    "websiteUrl": null,
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=driving"
     },
     "links": []
   },

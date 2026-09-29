@@ -22,6 +22,7 @@
     "categories": [
       "bar"
     ],
+    "cuisines": [],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -34,9 +35,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000004",
+      "id": "00000000-0000-4000-8000-000000000002",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000004",
+      "placeId": "00000000-0000-4000-8000-000000000002",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
       "photos": [],
@@ -45,6 +46,7 @@
         "label": "Bar"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -152,9 +154,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000001c",
+      "id": "00000000-0000-4000-8000-000000000007",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001c",
+      "placeId": "00000000-0000-4000-8000-000000000007",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
       "photos": [],
@@ -163,6 +165,7 @@
         "label": "Bar"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -262,9 +265,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000001d",
+      "id": "00000000-0000-4000-8000-00000000000b",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001d",
+      "placeId": "00000000-0000-4000-8000-00000000000b",
       "name": "Delancey Tavern",
       "placeName": "Delancey Tavern",
       "photos": [],
@@ -273,6 +276,7 @@
         "label": "Bar"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "ready",
       "callToAction": "go",
       "location": {

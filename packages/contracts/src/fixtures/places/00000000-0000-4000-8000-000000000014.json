@@ -1,35 +1,36 @@
 {
   "id": "00000000-0000-4000-8000-000000000014",
-  "name": "Clinton Norfolk Kitchen",
+  "name": "Suffolk Park",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "park",
+    "label": "Park"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.929098,
-    "lon": -73.843087
+    "lat": 40.935386,
+    "lon": -73.836374
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:30:00.000Z",
+    "closesAt": "2026-10-04T02:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11:30pm"
+    "summary": "Open now until 10pm"
   },
   "price": {
-    "kind": "unknown"
+    "kind": "free",
+    "evidence": "estimate"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
-      "detail": "Open now until 11:30pm",
+      "value": "Mo-Su 06:00-22:00",
+      "detail": "Open now until 10pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +39,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.565,
+        "confidence": 0.473,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · published"
       }
     },
     {
@@ -61,14 +62,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
       }
     },
     {
@@ -84,43 +85,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
       }
     },
     {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Not accessible",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
-      }
-    },
-    {
-      "attribute": "indoor_outdoor",
-      "label": "Setting",
-      "value": "Mixed",
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
       "detail": null,
       "provenance": {
         "sources": [
@@ -132,38 +110,48 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Outdoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-04-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2024",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2024 · estimate"
       }
     }
   ],
-  "parkingNearby": {
-    "name": "Orchard Street Lot",
-    "kind": "lot",
-    "fee": "paid",
-    "openingHours": "Mo-Su 06:00-24:00",
-    "location": {
-      "lat": 40.9296,
-      "lon": -73.8434
-    },
-    "distanceMetres": 62,
-    "walkMinutes": 2,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-    "text": "Orchard Street Lot (paid), ~2 min walk"
-  },
+  "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 6566"
+    "websiteUrl": "https://suffolkpark.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=driving"
     },
     "links": []
   },

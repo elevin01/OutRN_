@@ -1,22 +1,40 @@
 {
   "runs": [
     {
-      "id": "00000000-0000-4000-8000-000000000031",
+      "id": "00000000-0000-4000-8000-000000000035",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.4.0",
-      "weightsVersion": "2026-09-28.1"
+      "engineVersion": "0.5.0",
+      "weightsVersion": "2026-09-29.2"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000067",
+      "id": "00000000-0000-4000-8000-000000000068",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.4.0",
-      "weightsVersion": "2026-09-28.1"
+      "engineVersion": "0.5.0",
+      "weightsVersion": "2026-09-29.2"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000034",
+      "areaName": "Lower East Side (test point)",
+      "createdAt": "2026-10-03T22:30:00.000Z",
+      "candidateCount": 80,
+      "durationMs": 42,
+      "engineVersion": "0.5.0",
+      "weightsVersion": "2026-09-29.2"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000033",
+      "areaName": "Lower East Side (test point)",
+      "createdAt": "2026-10-03T22:30:00.000Z",
+      "candidateCount": 80,
+      "durationMs": 42,
+      "engineVersion": "0.5.0",
+      "weightsVersion": "2026-09-29.2"
     },
     {
       "id": "00000000-0000-4000-8000-000000000030",
@@ -24,26 +42,8 @@
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
-      "engineVersion": "0.4.0",
-      "weightsVersion": "2026-09-28.1"
-    },
-    {
-      "id": "00000000-0000-4000-8000-00000000002f",
-      "areaName": "Lower East Side (test point)",
-      "createdAt": "2026-10-03T22:30:00.000Z",
-      "candidateCount": 80,
-      "durationMs": 42,
-      "engineVersion": "0.4.0",
-      "weightsVersion": "2026-09-28.1"
-    },
-    {
-      "id": "00000000-0000-4000-8000-00000000002c",
-      "areaName": "Lower East Side (test point)",
-      "createdAt": "2026-10-03T22:30:00.000Z",
-      "candidateCount": 80,
-      "durationMs": 42,
-      "engineVersion": "0.4.0",
-      "weightsVersion": "2026-09-28.1"
+      "engineVersion": "0.5.0",
+      "weightsVersion": "2026-09-29.2"
     }
   ]
 }

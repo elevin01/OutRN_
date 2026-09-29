@@ -1,38 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000011",
-  "name": "Ridge Bar",
+  "name": "Broome Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.930593,
-    "lon": -73.825424
+    "lat": 40.932019,
+    "lon": -73.846175
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -41,9 +38,9 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.611,
+        "confidence": 0.613,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -66,7 +63,7 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -75,9 +72,9 @@
       }
     },
     {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Mexican",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,15 +83,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.5,
+        "evidence": "published",
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
         "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -110,9 +107,9 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -135,7 +132,7 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -145,28 +142,28 @@
     }
   ],
   "parkingNearby": {
-    "name": null,
-    "kind": "street",
-    "fee": "unknown",
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
     "openingHours": null,
     "location": {
-      "lat": 40.9333,
-      "lon": -73.8254
+      "lat": 40.9325,
+      "lon": -73.8458
     },
-    "distanceMetres": 301,
-    "walkMinutes": 5,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9333%2C-73.8254&travelmode=driving",
-    "text": "Street parking 300 m away, ~5 min walk"
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
+    "text": "Rivington Garage (paid), ~2 min walk"
   },
   "contact": {
-    "websiteUrl": null,
-    "phone": null
+    "websiteUrl": "https://broomekitchen.example/",
+    "phone": "+1 212 555 7228"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
     },
     "links": []
   },

@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000013",
-  "name": "Broome Kitchen",
+  "name": "Attorney Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.932019,
-    "lon": -73.846175
+    "lat": 40.92844,
+    "lon": -73.849641
   },
   "address": null,
   "photos": [],
@@ -28,7 +28,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
+      "value": "Tu-Su 12:00-23:00; Mo off",
       "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.614,
+        "confidence": 0.606,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
       }
     },
     {
@@ -63,18 +63,41 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Vietnamese",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,12 +109,35 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Limited access",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
       }
     },
     {
@@ -109,38 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Rivington Garage",
-    "kind": "garage",
-    "fee": "paid",
+    "name": "Hester Lot",
+    "kind": "lot",
+    "fee": "unknown",
     "openingHours": null,
     "location": {
-      "lat": 40.9325,
-      "lon": -73.8458
+      "lat": 40.9287,
+      "lon": -73.8491
     },
-    "distanceMetres": 62,
-    "walkMinutes": 2,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
-    "text": "Rivington Garage (paid), ~2 min walk"
+    "distanceMetres": 54,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
+    "text": "Hester Lot, ~1 min walk"
   },
   "contact": {
-    "websiteUrl": "https://broomekitchen.example/",
-    "phone": "+1 212 555 7228"
+    "websiteUrl": "https://attorneykitchen.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
     },
     "links": []
   },

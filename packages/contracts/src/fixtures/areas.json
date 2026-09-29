@@ -219,6 +219,104 @@
         "id": "activity",
         "label": "Activity"
       }
+    ],
+    "cuisines": [
+      {
+        "id": "pizza",
+        "label": "Pizza"
+      },
+      {
+        "id": "italian",
+        "label": "Italian"
+      },
+      {
+        "id": "chinese",
+        "label": "Chinese"
+      },
+      {
+        "id": "japanese",
+        "label": "Japanese"
+      },
+      {
+        "id": "sushi",
+        "label": "Sushi"
+      },
+      {
+        "id": "ramen",
+        "label": "Ramen"
+      },
+      {
+        "id": "mexican",
+        "label": "Mexican"
+      },
+      {
+        "id": "thai",
+        "label": "Thai"
+      },
+      {
+        "id": "indian",
+        "label": "Indian"
+      },
+      {
+        "id": "korean",
+        "label": "Korean"
+      },
+      {
+        "id": "vietnamese",
+        "label": "Vietnamese"
+      },
+      {
+        "id": "american",
+        "label": "American"
+      },
+      {
+        "id": "burger",
+        "label": "Burgers"
+      },
+      {
+        "id": "french",
+        "label": "French"
+      },
+      {
+        "id": "greek",
+        "label": "Greek"
+      },
+      {
+        "id": "mediterranean",
+        "label": "Mediterranean"
+      },
+      {
+        "id": "middle_eastern",
+        "label": "Middle Eastern"
+      },
+      {
+        "id": "seafood",
+        "label": "Seafood"
+      },
+      {
+        "id": "spanish",
+        "label": "Spanish and tapas"
+      },
+      {
+        "id": "caribbean",
+        "label": "Caribbean"
+      },
+      {
+        "id": "latin_american",
+        "label": "Latin American"
+      },
+      {
+        "id": "breakfast",
+        "label": "Breakfast and brunch"
+      },
+      {
+        "id": "bagel",
+        "label": "Bagels"
+      },
+      {
+        "id": "sandwich",
+        "label": "Sandwiches and delis"
+      }
     ]
   },
   "limits": {
@@ -231,6 +329,7 @@
       "max": 120
     },
     "maxCategories": 5,
+    "maxCuisines": 5,
     "pageSize": 3
   }
 }
