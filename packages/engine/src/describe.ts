@@ -66,6 +66,7 @@ const SOURCE_LABEL: Record<string, string> = {
   founder: "OutRN",
   firstparty: "venue website",
   osm: "OpenStreetMap",
+  overture: "Overture Maps",
   user_observation: "visitor report",
   category_policy: "category default",
   google_places: "Google",

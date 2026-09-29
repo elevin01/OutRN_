@@ -5,6 +5,7 @@
 #   STUB_PHOTOS         set: this checkout has `outrn ingest photos`
 #   STUB_FAIL_OSM       areas whose `ingest osm` fails (after --save has written, like the real CLI)
 #   STUB_FAIL_PHOTOS    areas whose `ingest photos` fails (after --save has written)
+#   STUB_FAIL_OVERTURE  areas whose `ingest overture` fails (--save writes before anything else, like the real CLI)
 #   STUB_NO_VENUES      areas `areas launch` refuses for having no eligible venues
 #   STUB_FAIL_LAUNCH    areas `areas launch` fails for any other reason
 #   STUB_MIGRATE_EXIT   exit status of db:migrate
@@ -100,6 +101,17 @@ case "$group $cmd" in
       exit 1
     fi
     echo "  photos     3 for 2 of 5 venues"
+    ;;
+  "ingest overture")
+    known
+    replay
+    if [ -n "$save" ] && [ -z "$from" ]; then printf '{"outrn_capture":"overture","area":"new %s"}' "$area" >"$save"; fi
+    if listed "$area" "${STUB_FAIL_OVERTURE:-}"; then
+      echo "error: could not write facts" >&2
+      exit 1
+    fi
+    echo "  places     10 Overture places · 4 of 5 venues matched"
+    echo "  claims     4 operating · 0 closed · 1 websites · 1 phones"
     ;;
   "areas launch")
     known

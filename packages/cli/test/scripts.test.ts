@@ -105,6 +105,25 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
     expect(r.log).not.toMatch(/areas launch les/);
   });
 
+  it("replays an area's Overture capture after its places, never as an area of its own", () => {
+    put("les-overture.json", '{"outrn_capture":"overture"}');
+    const r = real();
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/claims +4 operating/);
+    expect(r.log).toMatch(/ingest overture --area les --from-file fixtures\/live\/les-overture\.json/);
+    expect(r.log).not.toMatch(/slug=les-overture/);
+    expect(r.out).toMatch(/Serving bronxville les on/);
+  });
+
+  it("stops before serving anything when a saved Overture capture fails to replay", () => {
+    put("les-overture.json", "not json");
+    const r = real();
+    expect(r.status).not.toBe(0);
+    expect(r.out).toMatch(/les: fixtures\/live\/les-overture\.json did not replay/);
+    expect(r.out).not.toContain("Serving");
+    expect(r.out).not.toContain("API STARTED");
+  });
+
   it("stops before serving anything when the capture of a real area is corrupt", () => {
     put("bronxville.json", "<html>502 Bad Gateway</html>");
     const r = real();
@@ -149,16 +168,19 @@ describe.each(SHELLS)("pnpm capture (%s)", (shell) => {
   const capture = (args: string[], env: Record<string, string> = {}) => run(shell, "capture-live.sh", args, { OUTRN_USER_AGENT: "outrn-test", CAPTURE_PAUSE_SECONDS: "0", STUB_PHOTOS: "1", ...env });
   const OLD_OSM = Buffer.from('{"osm":"old les"}\n');
   const OLD_PHOTOS = Buffer.from('{"photos":"old les"}\n');
+  const OLD_OVERTURE = Buffer.from('{"outrn_capture":"overture","area":"old les"}\n');
+  const unchanged = () => bytes("les.json").equals(OLD_OSM) && bytes("les-photos.json").equals(OLD_PHOTOS) && bytes("les-overture.json").equals(OLD_OVERTURE);
   beforeEach(() => {
     writeFileSync(live("les.json"), OLD_OSM);
     writeFileSync(live("les-photos.json"), OLD_PHOTOS);
+    writeFileSync(live("les-overture.json"), OLD_OVERTURE);
   });
 
   it("keeps the previous pair byte for byte when the places step writes its capture and then fails", () => {
     const r = capture(["les"], { STUB_FAIL_OSM: "les" });
     expect(r.status).not.toBe(0);
-    expect(bytes("les.json").equals(OLD_OSM)).toBe(true);
-    expect(bytes("les-photos.json").equals(OLD_PHOTOS)).toBe(true);
+    expect(unchanged()).toBe(true);
+    expect(r.log).not.toMatch(/ingest overture/);
     // The stub did write its capture: into the staging directory, which is gone.
     expect(r.log).toMatch(/ingest osm --area les --save .*\/fixtures\/live\/\.staging\.[^/]+\/les\.json/);
     expect(staging()).toEqual([]);
@@ -168,18 +190,28 @@ describe.each(SHELLS)("pnpm capture (%s)", (shell) => {
   it("keeps the previous pair byte for byte when the photos step fails after the places step succeeded", () => {
     const r = capture(["les"], { STUB_FAIL_PHOTOS: "les" });
     expect(r.status).not.toBe(0);
-    expect(bytes("les.json").equals(OLD_OSM)).toBe(true);
-    expect(bytes("les-photos.json").equals(OLD_PHOTOS)).toBe(true);
+    expect(unchanged()).toBe(true);
     expect(staging()).toEqual([]);
     expect(r.out).toMatch(/Failed: les \(photos\)/);
   });
 
-  it("replaces both files when every step succeeded, and only for the areas that did", () => {
+  it("keeps the previous set byte for byte when the Overture step writes its capture and then fails", () => {
+    const r = capture(["les"], { STUB_FAIL_OVERTURE: "les" });
+    expect(r.status).not.toBe(0);
+    expect(unchanged()).toBe(true);
+    expect(r.log).toMatch(/ingest overture --area les --save .*\/fixtures\/live\/\.staging\.[^/]+\/les-overture\.json/);
+    expect(staging()).toEqual([]);
+    expect(r.out).toMatch(/Failed: les \(overture\)/);
+  });
+
+  it("replaces all three files when every step succeeded, and only for the areas that did", () => {
     const r = capture(["les", "bronxville"], { STUB_FAIL_OSM: "bronxville" });
     expect(r.status).not.toBe(0);
     expect(bytes("les.json").toString()).toBe('{"osm":"new les"}');
     expect(bytes("les-photos.json").toString()).toBe('{"photos":"new les"}');
+    expect(bytes("les-overture.json").toString()).toBe('{"outrn_capture":"overture","area":"new les"}');
     expect(existsSync(live("bronxville.json"))).toBe(false);
+    expect(existsSync(live("bronxville-overture.json"))).toBe(false);
     expect(existsSync(live("bronxville-photos.json"))).toBe(false);
     expect(staging()).toEqual([]);
     expect(r.out).toMatch(/Run them again: pnpm capture bronxville$/m);
@@ -194,6 +226,7 @@ describe.each(SHELLS)("pnpm capture (%s)", (shell) => {
     expect(r.status, r.out).toBe(0);
     expect(bytes("les.json").toString()).toBe('{"osm":"new les"}');
     expect(bytes("les-photos.json").equals(OLD_PHOTOS)).toBe(true);
+    expect(bytes("les-overture.json").toString()).toBe('{"outrn_capture":"overture","area":"new les"}');
     expect(r.out).toMatch(/note: fixtures\/live\/les-photos\.json is from an earlier capture/);
     expect(r.log).not.toMatch(/ingest photos --area/);
   });

@@ -63,18 +63,19 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
-switches those areas on, and starts the API. Recommendations are for right now, as they would be
-for someone there. The only database it touches is `outrn_real` on the local cluster, dropped and
-recreated each run; it takes no database URL. A capture named after something that isn't an area
-is skipped. A capture of a real area that fails to replay stops it with an error before the API
-starts.
+checks their places against Overture Maps, switches those areas on, and starts the API.
+Recommendations are for right now, as they would be for someone there. The only database it
+touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
+URL. A capture named after something that isn't an area is skipped. A capture of a real area that
+fails to replay stops it with an error before the API starts.
 
-`pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…) and their
-photos into `fixtures/live`, on a machine that can reach overpass-api.de, www.wikidata.org and
-commons.wikimedia.org. `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT`
-first. Each area is recorded into a staging directory and replaces its `<area>.json` and
-`<area>-photos.json` only once every step for it has succeeded, so a failed capture keeps the
-previous pair as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
+`pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
+photos and their Overture places into `fixtures/live`, on a machine that can reach overpass-api.de,
+www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com.
+`pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT` first. Each area is
+recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json` and
+`<area>-overture.json` only once every step for it has succeeded, so a failed capture keeps the
+previous set as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
 `pnpm real` again afterwards and the new areas are served too.
 
 The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
@@ -82,6 +83,16 @@ people open the app from; the backtest samples origins there), and ingest covers
 farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive ~13 km at night
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
+
+**Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
+overture --area <slug>` reads the Overture places near the area's venues straight from Overture's
+public bucket: the Lower East Side is about 40 MB and half a minute. A venue matches a place with the
+same name within 120 m, or a partial name within 40 m of a fitting kind. A match marks it operating,
+closes it only on Overture's own status signal for the same name and kind close by (and asks for a
+check, and never over a founder's newer check), and adds a website or phone number no other source
+has. It creates no venues. Only records whose every source is CDLA-Permissive-2.0 or CC0-1.0 are
+kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data. On the Lower East
+Side it matches 1,140 of 1,691 venues.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.
