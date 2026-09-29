@@ -22,6 +22,7 @@
     "web:start": "pnpm --filter @outrn/web start",
     "contracts:schema": "pnpm --filter @outrn/contracts schema",
     "fixtures": "pnpm --filter @outrn/api fixtures",
+    "golden": "pnpm --filter @outrn/api golden",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "lint": "eslint .",
     "db:start": "bash scripts/db-start.sh",
