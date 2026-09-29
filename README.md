@@ -64,12 +64,19 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
 checks their places against Overture Maps, switches those areas on, and starts the API.
-Recommendations are for right now, as they would be for someone there.
+Recommendations are for right now, as they would be for someone there. The only database it
+touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
+URL. A capture named after something that isn't an area is skipped. A capture of a real area that
+fails to replay stops it with an error before the API starts.
 
 `pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
 photos and their Overture places into `fixtures/live`, on a machine that can reach overpass-api.de,
-www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com. `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT`
-first. Run `pnpm real` again afterwards and they are served too.
+www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com.
+`pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT` first. Each area is
+recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json` and
+`<area>-overture.json` only once every step for it has succeeded, so a failed capture keeps the
+previous set as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
+`pnpm real` again afterwards and the new areas are served too.
 
 The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
 people open the app from; the backtest samples origins there), and ingest covers that plus the
