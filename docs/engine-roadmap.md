@@ -74,8 +74,10 @@ changelog.
   to include it with chains ranked below independents.
 
 ### Batch 4: live conditions (free keys; jobs outside the request path)
-- **Weather:** an NWS hourly forecast per area. Rain or cold sinks outdoor options; clear evenings
-  surface them.
+- **Weather: done** (`outrn weather refresh`, hourly). The NWS hourly forecast is stored per area.
+  Over a plan's first two hours, rain likely (50%+) or cold (38°F or below) sinks outdoor options,
+  and a dry, mild forecast marks them "good weather for it". A forecast over 12 hours old is ignored.
+  Next: show the rain as a `conditions` kind on outdoor cards.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games

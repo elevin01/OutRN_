@@ -42,6 +42,25 @@ export interface ForecastResult {
   hours: HourlyWeather[];
   fetchedAt: Date;
   sourceUpdatedAt: Date | null;
+  /** The hourly forecast as NWS sent it: what `--save` keeps for replay. */
+  raw: string;
+}
+
+/** An NWS hourly forecast (the body of its forecastHourly URL) → hours in °F, in time order. */
+export function parseHourlyForecast(text: string, fetchedAt: Date): ForecastResult {
+  const parsed = HourlySchema.parse(JSON.parse(text));
+  const hours = parsed.properties.periods
+    .map((pe) => ({
+      start: new Date(pe.startTime),
+      end: new Date(pe.endTime),
+      temperatureF: pe.temperatureUnit === "C" ? Math.round((pe.temperature * 9) / 5 + 32) : pe.temperature,
+      precipProbability: pe.probabilityOfPrecipitation?.value ?? null,
+      shortForecast: pe.shortForecast ?? "",
+    }))
+    .filter((h) => !Number.isNaN(h.start.getTime()) && !Number.isNaN(h.end.getTime()) && h.end > h.start)
+    .sort((x, y) => x.start.getTime() - y.start.getTime());
+  const updated = parsed.properties.updateTime ? new Date(parsed.properties.updateTime) : null;
+  return { hours, fetchedAt, sourceUpdatedAt: updated && !Number.isNaN(updated.getTime()) ? updated : null, raw: text };
 }
 
 export async function fetchHourlyForecast(p: LatLon): Promise<ForecastResult> {
@@ -51,15 +70,7 @@ export async function fetchHourlyForecast(p: LatLon): Promise<ForecastResult> {
   const forecastUrl = new URL(PointsSchema.parse(JSON.parse(pts.text)).properties.forecastHourly);
   if (forecastUrl.protocol !== "https:" || forecastUrl.host !== NWS_HOST) throw new FetchBlocked(`forecast URL points off ${NWS_HOST}: ${forecastUrl.host}`);
   const hr = await guardedFetch(forecastUrl.toString(), common);
-  const parsed = HourlySchema.parse(JSON.parse(hr.text));
-  const hours = parsed.properties.periods.map((pe) => ({
-    start: new Date(pe.startTime),
-    end: new Date(pe.endTime),
-    temperatureF: pe.temperatureUnit === "C" ? Math.round((pe.temperature * 9) / 5 + 32) : pe.temperature,
-    precipProbability: pe.probabilityOfPrecipitation?.value ?? null,
-    shortForecast: pe.shortForecast ?? "",
-  }));
-  return { hours, fetchedAt: hr.fetchedAt, sourceUpdatedAt: parsed.properties.updateTime ? new Date(parsed.properties.updateTime) : null };
+  return parseHourlyForecast(hr.text, hr.fetchedAt);
 }
 
 /** Pick the forecast hour covering `at`, or null if outside the series. */

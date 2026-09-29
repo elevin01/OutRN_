@@ -13,6 +13,12 @@ const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
 export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1 } as const;
+/**
+ * Weather, as the seeded context rules rain_indoor and cold_indoor (0002) describe it: rain likely
+ * (50%+) sinks outdoor places and lifts indoor ones a little; cold (38°F or below) sinks outdoor ones.
+ * In appeal, where it outweighs a short walk: a park 3 minutes away in a downpour is not the pick.
+ */
+export const WEATHER_APPEAL = { rainOutdoor: -0.25, rainIndoor: 0.05, coldOutdoor: -0.15, rainChance: 50, coldF: 38 } as const;
 const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
   relaxed: ["food", "outdoors", "browse"],
   active: ["outdoors", "entertainment"],
@@ -50,9 +56,9 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = OUTDOOR.has(c.category) || (c.facts["indoor_outdoor"]?.value as { value?: string } | undefined)?.value === "outdoor";
+  const rainy = ctx.weather ? (ctx.weather.precipProbability ?? 0) >= WEATHER_APPEAL.rainChance : false;
+  const cold = ctx.weather ? ctx.weather.temperatureF <= WEATHER_APPEAL.coldF : false;
   if (ctx.weather) {
-    const rainy = (ctx.weather.precipProbability ?? 0) >= 50;
-    const cold = ctx.weather.temperatureF <= 38;
     if (outdoor) {
       weather = rainy || cold ? 0.1 : 0.9;
       if (!rainy && !cold) extra.push("WEATHER_SUITABLE");
@@ -90,6 +96,8 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
       extra.push("SUNSET_WINDOW");
     }
   }
+  if (outdoor) appeal += (rainy ? WEATHER_APPEAL.rainOutdoor : 0) + (cold ? WEATHER_APPEAL.coldOutdoor : 0);
+  else if (rainy) appeal += WEATHER_APPEAL.rainIndoor;
   appeal += c.boost;
   appeal = Math.max(0, Math.min(1, appeal));
 
