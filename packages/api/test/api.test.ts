@@ -101,6 +101,17 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       await db.query(`update facts set superseded_at = now() where subject_id = $1 and attribute = 'diets' and superseded_at is null`, [kitchen]);
       await materializeSubjects(db, "venue", [kitchen], SAT_EVENING);
     }
+    // Known only from its name ("Grand Kosher Cafe"): an option to check, never labelled kosher.
+    const named = (await db.query<{ id: string }>(`select id from venues where canonical_name = 'Forsyth Clinton Kitchen' and publish_state = 'eligible'`)).rows[0]!.id;
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: named, attribute: "diets", value: { kosher: "only" }, evidenceClass: "estimate", sourceId: "osm", evidence: "name=Forsyth Kosher Kitchen", fetchedAt: SAT_EVENING, confidence: 0.5, lineageGroup: "osm" }]);
+    await materializeSubjects(db, "venue", [named], SAT_EVENING);
+    try {
+      const kosher = await search({ areaId: "les", windowMinutes: 180, diets: ["kosher"] });
+      expect(kosher.items.map((i) => [i.name, i.status, i.diets, i.caveats.map((c) => c.code)])).toEqual([["Forsyth Clinton Kitchen", "check_first", [], ["DIET_FROM_NAME"]]]);
+    } finally {
+      await db.query(`update facts set superseded_at = now() where subject_id = $1 and attribute = 'diets' and superseded_at is null`, [named]);
+      await materializeSubjects(db, "venue", [named], SAT_EVENING);
+    }
     // Tables outside: the synthetic places that tag them, and they say so on the card.
     const outside = await search({ areaId: "les", windowMinutes: 180, features: ["outdoor_seating"] });
     expect(outside.request.features).toEqual(["outdoor_seating"]);

@@ -191,7 +191,9 @@ changelog.
 - **Part 5 (this PR): diets and must-haves in the search** (contract 1.7).
   - **Diets** from OSM `diet:*` (vegetarian 66, vegan 58, gluten-free 18, kosher 10 and halal 9 places
     on the LES capture), or, only when it has no `diet:*` tags at all, the name ("Jisu Vegetarian",
-    "East Side Glatt"), as an estimate. A search for diets keeps food places known to serve all of them (`yes` or `only`; a
+    "East Side Glatt"), as an estimate. A place known only by its name is Check first
+    (`DIET_FROM_NAME`) and never labelled: kosher, halal and gluten-free are needs, and a name is
+    not a record ("kosher-style" delis are not kosher). A search for diets keeps food places known to serve all of them (`yes` or `only`; a
     vegan place serves vegetarians). A diet is a need, so it is never relaxed.
   - **Must-haves:** tables outside (`outdoor_seating`), wifi (`internet_access=wlan`: 50 LES places,
     libraries included; `yes` is internet of an unknown kind and doesn't count) and step-free access

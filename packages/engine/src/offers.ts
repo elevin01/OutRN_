@@ -46,6 +46,11 @@ export function outdoorSeatingWeather(c: Candidate, ctx: RequestContext): boolea
   return w.precipProbability < OFFERS.outdoorMaxRainChance && w.temperatureF >= OFFERS.outdoorMinF && !readWeather(w).hot;
 }
 
+/** Whether its diets are only what its name says (an estimate), not what its record states. */
+export function dietsFromNameOnly(c: Candidate): boolean {
+  return c.facts.diets?.evidenceClass === "estimate";
+}
+
 /** What a place serves for diets (OSM diet:*, or its name), as its facts say; empty when unknown. */
 export function dietLevelsOf(c: Candidate): DietLevels {
   const v = c.facts.diets?.value;

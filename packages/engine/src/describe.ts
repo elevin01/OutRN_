@@ -167,7 +167,8 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
         if (level === "no") return [`no ${name.toLowerCase()} options`];
         return [];
       });
-      if (parts.length) return sentenceCase(parts.join("; "));
+      // Only a name says so: a guess, and it reads like one.
+      if (parts.length) return isEstimate ? `Probably ${parts.join("; ")}` : sentenceCase(parts.join("; "));
       break;
     }
     case "internet_access": {

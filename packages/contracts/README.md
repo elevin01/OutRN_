@@ -27,13 +27,14 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 - **1.7.0** (additive). Diets and must-haves:
   - A request may ask for diets (`diets`: `vegetarian`, `vegan`, `gluten_free`, `halal`, `kosher`, up to `limits.maxDiets`). Then only food places known to serve **all** of them are options, because one party eats together.
-    - "Known" means the place's OpenStreetMap `diet:*` tags say `yes` or `only`, or, only when it has no `diet:*` tags at all, its name ("Jisu Vegetarian").
+    - "Known" means the place's OpenStreetMap `diet:*` tags say `yes` or `only`.
+    - Only when a place has no `diet:*` tags at all, its name counts ("Jisu Vegetarian"). Such a place is Check first, with the caveat `DIET_FROM_NAME` ("only its name says it serves this diet: check with them"). It never gets a `diets` label, since a name is not a record: "kosher-style" delis are not kosher.
     - A vegan place serves vegetarians too.
     - "Limited", "no" and unknown are not a yes.
   - A request may ask for must-haves (`features`: `outdoor_seating`, `wifi`, `wheelchair`, up to `limits.maxFeatures`). Only places whose record states them are options.
     - `wheelchair` is step-free access: `yes` passes; `limited` passes as Check first (`ACCESS_LIMITED`); `no` and unknown are left out.
     - `wifi` is OSM `internet_access=wlan`, libraries and bookshops included. Internet of an unknown kind (`yes`, which may be a wired port or a terminal) doesn't count.
-  - `diets` and `features` on every item: what the record states, e.g. `{ id: "vegan", label: "Vegan" }` for a vegan place and `{ id: "vegan", label: "Vegan options" }` where there are some; `{ id: "wifi", label: "Wi-Fi" }`.
+  - `diets` and `features` on every item: what the record states (never a guess from the name), e.g. `{ id: "vegan", label: "Vegan" }` for a vegan place and `{ id: "vegan", label: "Vegan options" }` where there are some; `{ id: "wifi", label: "Wi-Fi" }`.
   - `ResolvedRequest.diets` and `.features` echo the request (`[]` by default).
   - `AreasResponse.filters.diets` and `.features` list the options, with `limits.maxDiets` (5) and `limits.maxFeatures` (3).
   - A new relaxation, `without_features` ("without outdoor seating or Wi-Fi"). A diet or step-free access is never offered as a relaxation, and a diet search without `categories` doesn't offer `more_categories`.
@@ -109,7 +110,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 | Field | Values today |
 | --- | --- |
 | `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `HAPPY_HOUR` (params `from`, `until`; `from` is null when it is on at the arrival), `OUTDOOR_SEATING`, `FRESH_REPORT`, `LANDMARK` |
-| `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`) |
+| `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`), `DIET_FROM_NAME` |
 | `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `any_cuisine`, `without_features`, `takeout`, `dine_in`, `stay_later` |
 | `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |
 | `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event` |

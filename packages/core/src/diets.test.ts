@@ -17,6 +17,9 @@ describe("diets", () => {
     expect(dietsFromName("Madina Halal Deli")).toEqual({ halal: "yes" });
     expect(dietsFromName("Bodhi Kosher Vegetarian Restaurant")).toEqual({ vegetarian: "only", kosher: "only" });
     for (const name of ["Vegetables & Co", "Halalbros", "The Standard", ""]) expect(dietsFromName(name)).toEqual({});
+    // "Kosher-style" is a kind of deli food, not a kosher kitchen.
+    for (const name of ["Katz's Kosher-Style Deli", "Kosher Style Pickles"]) expect(dietsFromName(name), name).toEqual({});
+    expect(dietsFromName("Glatt Kosher Grill")).toEqual({ kosher: "only" });
   });
 
   it("serves a diet at yes or only; vegan food is vegetarian food; anything else is no", () => {

@@ -155,6 +155,8 @@ export type ReasonCode =
   | "PROGRAMME_UNLISTED"
   /** Outdoors, and the forecast gives rain a 50% chance or more over the start of the plan. */
   | "RAIN_LIKELY"
+  /** A diet asked for is known only from the place's name ("Grand Kosher Cafe"): check it with them. */
+  | "DIET_FROM_NAME"
   /** Happy hour is on at the arrival, or starts soon after it. */
   | "HAPPY_HOUR"
   /** Tables outside, and the forecast is dry and mild. */

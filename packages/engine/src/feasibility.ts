@@ -4,7 +4,7 @@ import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
-import { dietLevelsOf, hasFeature } from "./offers.js";
+import { dietLevelsOf, dietsFromNameOnly, hasFeature } from "./offers.js";
 import { parkingMinutesFor, parkingOpenFor } from "./parking.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
@@ -139,6 +139,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (c.kind === "occurrence" || !CUISINE_CATEGORIES.has(c.category)) return out("NOT_REQUESTED");
     const levels = dietLevelsOf(c);
     if (!ctx.diets.every((d) => servesDiet(levels, d))) return out("DIET_NOT_KNOWN");
+    // A diet is a need (celiac, kosher, halal), and a name is not a record ("kosher-style" delis are
+    // not kosher): a place known only by its name is Check first, with the reason named.
+    if (dietsFromNameOnly(c)) unresolved.push("DIET_FROM_NAME");
   }
   // Must-haves the place's record has to state: tables outside, wifi.
   if (ctx.features?.length && !ctx.features.every((f) => hasFeature(c, f))) return out("FEATURE_NOT_KNOWN");
