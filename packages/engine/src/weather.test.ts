@@ -17,7 +17,7 @@ describe("the weather a plan allows for", () => {
     expect(weatherFor(HOURS, ISSUED, at("2026-10-03T17:00:00Z"), 180, at("2026-10-03T17:00:00Z"))).toEqual({ temperatureF: 59, precipProbability: 55 });
     // Rain later than two hours out does not change a plan starting now.
     expect(weatherFor(HOURS, ISSUED, at("2026-10-03T16:00:00Z"), 240, at("2026-10-03T16:00:00Z"))?.precipProbability).toBe(15);
-    // Hours with no chance given leave it to the others; none at all is unknown.
+    // A wet hour is wet whatever the others say; with no chance given at all, it is unknown.
     expect(weatherFor(HOURS, ISSUED, at("2026-10-03T20:30:00Z"), 120, at("2026-10-03T20:30:00Z"))).toEqual({ temperatureF: 45, precipProbability: 85 });
     expect(weatherFor(HOURS, ISSUED, at("2026-10-03T21:00:00Z"), 60, at("2026-10-03T21:00:00Z"))).toEqual({ temperatureF: 45, precipProbability: null });
   });
@@ -32,5 +32,33 @@ describe("the weather a plan allows for", () => {
   it("ignores hours it cannot read", () => {
     const junk = [{ start: "x", end: "y", temperatureF: 50, precipProbability: 90 }, { ...HOURS[0]!, temperatureF: Number.NaN }, HOURS[0]!] as ForecastHour[];
     expect(weatherFor(junk, ISSUED, at("2026-10-03T16:00:00Z"), 60, at("2026-10-03T16:00:00Z"))).toEqual({ temperatureF: 58, precipProbability: 10 });
+  });
+
+  it("dry only when every minute of the span has a chance of rain: a missing hour, a gap or the forecast's end is unknown", () => {
+    const now = at("2026-10-03T16:00:00Z");
+    const twoHours = (hours: ForecastHour[]) => weatherFor(hours, ISSUED, now, 120, now);
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 10), hour("2026-10-03T17:00:00Z", 60, null)])).toEqual({ temperatureF: 60, precipProbability: null });
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 10)])).toEqual({ temperatureF: 64, precipProbability: null });
+    const late = hour("2026-10-03T17:30:00Z", 60, 10);
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 10), late])?.precipProbability).toBeNull();
+    // An unreadable hour is dropped, so the hour it covered is unknown, not dry.
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 10), { ...hour("2026-10-03T17:00:00Z", 60, 90), temperatureF: Number.NaN }])?.precipProbability).toBeNull();
+    // A wet hour still counts, and a fully covered span is as dry as it says.
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 80), hour("2026-10-03T17:00:00Z", 60, null)])?.precipProbability).toBe(80);
+    expect(twoHours([hour("2026-10-03T16:00:00Z", 64, 10), hour("2026-10-03T17:00:00Z", 60, 20)])).toEqual({ temperatureF: 60, precipProbability: 20 });
+  });
+
+  it("none from a forecast issued after the request (beyond a few minutes of clock skew)", () => {
+    const now = at("2026-10-03T16:00:00Z");
+    expect(weatherFor(HOURS, at("2026-10-03T17:00:00Z"), now, 60, now)).toBeNull();
+    expect(weatherFor(HOURS, at("2099-01-01T00:00:00Z"), now, 60, now)).toBeNull();
+    expect(weatherFor(HOURS, at("2026-10-03T16:03:00Z"), now, 60, now)).toEqual({ temperatureF: 58, precipProbability: 10 });
+  });
+
+  it("reads a forecast of any length without running out of stack, and skips entries that are not hours", () => {
+    const many = Array.from({ length: 250_000 }, () => hour("2026-10-03T16:00:00Z", 58, 10));
+    const now = at("2026-10-03T16:00:00Z");
+    expect(weatherFor(many, ISSUED, now, 60, now)).toEqual({ temperatureF: 58, precipProbability: 10 });
+    expect(weatherFor([null, HOURS[0]!] as unknown as ForecastHour[], ISSUED, now, 60, now)).toEqual({ temperatureF: 58, precipProbability: 10 });
   });
 });

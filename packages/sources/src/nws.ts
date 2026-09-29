@@ -9,6 +9,10 @@ import { FetchBlocked, guardedFetch } from "./fetch.js";
  */
 
 const NWS_HOST = "api.weather.gov";
+/** NWS sends 156 hourly periods (6.5 days); many more is not an hourly forecast, and every request reads them all. */
+const MAX_PERIODS = 500;
+/** An hourly period is an hour; a longer one would speak for hours it does not describe. */
+const MAX_PERIOD_MS = 2 * 3_600_000;
 
 const PointsSchema = z.object({
   properties: z.object({ forecastHourly: z.string().url(), timeZone: z.string().optional() }),
@@ -20,13 +24,14 @@ const HourlySchema = z.object({
       z.object({
         startTime: z.string(),
         endTime: z.string(),
-        temperature: z.number(),
-        temperatureUnit: z.string(),
-        probabilityOfPrecipitation: z.object({ value: z.number().nullable() }).optional(),
+        // Plausible in either unit; JSON's 1e999 reads as Infinity and is refused here too.
+        temperature: z.number().min(-200).max(200),
+        temperatureUnit: z.enum(["F", "C"]),
+        probabilityOfPrecipitation: z.object({ value: z.number().min(0).max(100).nullable() }).optional(),
         shortForecast: z.string().optional(),
         windSpeed: z.string().optional(),
       }),
-    ),
+    ).max(MAX_PERIODS),
   }),
 });
 
@@ -57,7 +62,7 @@ export function parseHourlyForecast(text: string, fetchedAt: Date): ForecastResu
       precipProbability: pe.probabilityOfPrecipitation?.value ?? null,
       shortForecast: pe.shortForecast ?? "",
     }))
-    .filter((h) => !Number.isNaN(h.start.getTime()) && !Number.isNaN(h.end.getTime()) && h.end > h.start)
+    .filter((h) => !Number.isNaN(h.start.getTime()) && !Number.isNaN(h.end.getTime()) && h.end > h.start && h.end.getTime() - h.start.getTime() <= MAX_PERIOD_MS)
     .sort((x, y) => x.start.getTime() - y.start.getTime());
   const updated = parsed.properties.updateTime ? new Date(parsed.properties.updateTime) : null;
   return { hours, fetchedAt, sourceUpdatedAt: updated && !Number.isNaN(updated.getTime()) ? updated : null, raw: text };
