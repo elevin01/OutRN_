@@ -203,7 +203,7 @@ changelog.
     "Internet: Wi-Fi".
   - Golden scenarios added: a vegetarian Sunday lunch (74 options) and a Tuesday morning with wifi
     (37: cafés, restaurants, two public libraries).
-- **Part 6 (this PR): restrooms and what a place has for children.** No contract change: reason
+- **Part 6: restrooms and what a place has for children.** No contract change: reason
   and caveat codes are open-ended.
   - **Facts** from OSM, where mappers tag them:
     - `restroom` from `toilets`, `toilets:access` and `toilets:wheelchair` (`designated` is
@@ -229,6 +229,17 @@ changelog.
     restroom) and a Sunday lunch with a 2-year-old (Van Leeuwen, with no restroom, moves from #2 to #7).
   - **Next:** public restrooms in parks. OSM maps them as their own points (`amenity=toilets`),
     which the captures don't fetch yet; a park with one nearby would be worth saying to a family.
+- **Part 7 (this PR): community centres are programme venues.** A relevance audit (364 searches over
+  both captures, every day of the week, 8am to 1am) found Tuckahoe Community Center (no hours, no
+  site) at #2 to #5 in Bronxville every night at 10pm and 1am. With no time-of-day rule, it never
+  took the off-hours sink a gallery or patisserie takes.
+  - A community centre is visited for its classes and events, like a cinema for a screening: with
+    nothing listed, it's offered at its time (9am to 9pm) with its own site to check what's on
+    (Check first), and not at all otherwise (`NO_PROGRAMME`). Unlike a show room, it stays open to
+    families: its programme is often for them.
+  - Most of the category's "places" were offices tagged as community centres (community boards, a
+    planning council); without a site of their own they are no longer offered.
+  - Golden: 6 to 13 fewer eligible places in nine scenarios; no ranking moves.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

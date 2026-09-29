@@ -151,7 +151,7 @@ export type ReasonCode =
   | "WAIT_MAY_NOT_FIT"
   /** A bar that serves food, with children in the party: no age limit is known, but it's a bar first. */
   | "KIDS_UNCERTAIN"
-  /** A cinema, theatre or music venue with nothing listed here: see what's on on its own site. */
+  /** A cinema, theatre, music venue or community centre with nothing listed here: see what's on on its own site. */
   | "PROGRAMME_UNLISTED"
   /** Outdoors, and the forecast gives rain a 50% chance or more over the start of the plan. */
   | "RAIN_LIKELY"

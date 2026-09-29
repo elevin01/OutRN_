@@ -180,17 +180,18 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (ctx.visitStyle === "takeout" && FOOD_CATEGORIES.has(c.category) && takeout === "no") return out("NO_TAKEOUT");
   if (ctx.visitStyle !== "takeout" && c.category === "restaurant" && takeout === "only") return out("TAKEOUT_ONLY");
 
-  // A cinema, theatre or music venue qualifies through an occurrence in the window. The loader emits
-  // the venue row itself only when none was loaded, so this reads "nothing listed here". Its own site
-  // still lists what's on: arriving at its time of day (an evening, not a morning; judged in finish,
-  // at the arrival) it's worth a look, Check first. Only a site a user can open counts (the same rule
-  // the API applies before it shows the link). Not with anyone under 18: with nothing listed there is
-  // no show to judge, and many of these rooms are 21+ without a min_age tag (a burlesque theatre, a
-  // music hall with a bar). A listed occurrence brings its own age facts.
+  // A cinema, theatre, music venue or community centre qualifies through an occurrence in the window.
+  // The loader emits the venue row itself only when none was loaded, so this reads "nothing listed
+  // here". Its own site still lists what's on: arriving at its time of day (an evening, not a
+  // morning; judged in finish, at the arrival) it's worth a look, Check first. Only a site a user can
+  // open counts (the same rule the API applies before it shows the link). A show room not with anyone
+  // under 18: with nothing listed there is no show to judge, and many are 21+ without a min_age tag (a
+  // burlesque theatre, a music hall with a bar). A community centre's programme is often for them.
+  // A listed occurrence brings its own age facts.
   const unlistedProgramme = c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category);
   if (unlistedProgramme) {
     const site = (c.facts.website?.value as { value?: unknown } | undefined)?.value;
-    if (typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
+    if (typeof site !== "string" || !websiteUrl(site) || (minorInParty(ctx) && c.category !== "community")) return out("NO_PROGRAMME");
     unresolved.push("PROGRAMME_UNLISTED");
   }
 

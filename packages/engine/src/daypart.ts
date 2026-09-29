@@ -29,8 +29,9 @@ interface Hours {
 }
 
 /**
- * When each kind of place is a good idea. Outside prime and fair it is off. For a cinema, theatre or
- * music venue a listed event is its own time; these hours apply only when nothing is listed.
+ * When each kind of place is a good idea. Outside prime and fair it is off. For a cinema, theatre,
+ * music venue or community centre a listed event is its own time; these hours apply only when
+ * nothing is listed (and outside prime such a venue is not offered: see PROGRAMME_CATEGORIES).
  */
 const HOURS: Partial<Record<Category, Hours>> = {
   cafe: { prime: [span("07:00", "11:30")], weekendPrime: [span("08:00", "14:00")], fair: [span("11:30", "18:30")] },
@@ -47,6 +48,8 @@ const HOURS: Partial<Record<Category, Hours>> = {
   cinema: { prime: [span("17:00", "23:00")], weekendPrime: [span("12:00", "23:00")], fair: [span("12:00", "17:00")] },
   theatre: { prime: [span("18:00", "22:00")], weekendPrime: [span("13:00", "15:00")], fair: [span("13:00", "18:00")] },
   live_music: { prime: [span("19:00", "01:00")], fair: [span("17:00", "19:00")] },
+  // Classes, clubs and events run through the day and into the evening.
+  community: { prime: [span("09:00", "21:00")], fair: [] },
   market: { prime: [span("08:00", "15:00")], fair: [span("15:00", "19:00")] },
   bowling: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },
   arcade: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },

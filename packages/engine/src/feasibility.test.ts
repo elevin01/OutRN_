@@ -275,6 +275,27 @@ describe("feasibility: programme venues", () => {
     }
   });
 
+  it("a community centre is a programme venue too: its classes and events, in the day and evening, never at 1am", () => {
+    // Tuckahoe Community Center (no hours, no site) ranked #2 in Bronxville at 1am before this.
+    const centre = (site: string | null) => {
+      const c = venue({ category: "community", hours: null, admission: "walk_in" });
+      return site ? withSite(c, site) : c;
+    };
+    const late = one(centre("https://settlement.example.org/"), ctx("2026-09-29 00:50", 120));
+    expect(late.excludedBy).toBe("NO_PROGRAMME");
+    expect(one(centre("https://settlement.example.org/"), ctx("2026-09-29 21:30", 120)).excludedBy).toBe("NO_PROGRAMME");
+    // Its time of day: Check first, see what's on.
+    const day = one(centre("https://settlement.example.org/"), ctx("2026-09-29 11:00", 120));
+    expect(day.class).toBe("check_first");
+    expect(caveatNotes(day).map((n) => n.text)).toContain("check what's on");
+    // Nothing to check what's on with: not an option at any hour.
+    expect(one(centre(null), ctx("2026-09-29 11:00", 120)).excludedBy).toBe("NO_PROGRAMME");
+    // Unlike a show room, it's for families too.
+    for (const party of [{ company: "family" }, { youngestAge: 8 }] as const) {
+      expect(one(centre("https://settlement.example.org/"), ctx("2026-09-29 16:00", 120, party)).unresolved, JSON.stringify(party)).toContain("PROGRAMME_UNLISTED");
+    }
+  });
+
   it("with anyone under 18 going, nothing listed means nothing to judge: the bare venue stays out (many are 21+ with no min_age tag)", () => {
     const at = ctx("2026-10-02 19:00", 300);
     for (const category of ["cinema", "theatre", "live_music"] as const) {
@@ -533,7 +554,7 @@ describe("appeal signals", () => {
   it("after 9pm, bars and late food get a late-night bonus; at 4:30pm they do not", () => {
     // Against a kind of place with no time-of-day rule, so only the bar's own hour moves it.
     const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
-    const hall = venue({ id: "hall", category: "community", hours: "Mo-Su 12:00-02:00" });
+    const hall = venue({ id: "hall", category: "other", hours: "Mo-Su 12:00-02:00" });
     const late = evaluateAll([bar, hall], ctx("2026-09-26 21:30", 120), POLICIES);
     // 9:30pm is also a bar's prime time.
     expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(APPEAL_WEIGHTS.lateNight + APPEAL_WEIGHTS.primeTime, 3);

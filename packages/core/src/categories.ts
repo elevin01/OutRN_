@@ -67,10 +67,11 @@ export const ACTIVITY_OF_CATEGORY: Record<Category, ActivityType> = {
 };
 
 /**
- * Programme venues are visited through a dated occurrence (a screening, a show, a set), never as a
- * flexible visit: a cinema with nothing on is not an option, whatever its door hours say.
+ * Programme venues are visited through a dated occurrence (a screening, a show, a set, a community
+ * centre's class or event), never as a flexible visit: a cinema with nothing on is not an option,
+ * whatever its door hours say, and neither is a community centre at 1am.
  */
-export const PROGRAMME_CATEGORIES: ReadonlySet<Category> = new Set<Category>(["cinema", "theatre", "live_music"]);
+export const PROGRAMME_CATEGORIES: ReadonlySet<Category> = new Set<Category>(["cinema", "theatre", "live_music", "community"]);
 
 export function isCategory(x: string): x is Category {
   return (CATEGORIES as readonly string[]).includes(x);
