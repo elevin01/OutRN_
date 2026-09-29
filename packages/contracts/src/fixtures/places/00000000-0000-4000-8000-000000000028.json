@@ -1,38 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000028",
-  "name": "Delancey Bar",
+  "name": "Attorney Pitt Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.727594,
-    "lon": -73.999704
+    "lat": 40.718281,
+    "lon": -73.971661
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T07:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 3am"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Sa 18:00-03:00",
-      "detail": "Open now until 3am",
+      "value": "Tu-Su 12:00-23:00; Mo off",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -41,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.557,
+        "confidence": 0.591,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -66,64 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.5,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "admission",
-      "label": "Admission",
-      "value": "Walk in",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.55,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Accessible",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Italian",
       "detail": null,
       "provenance": {
         "sources": [
@@ -133,20 +84,43 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.7,
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in; reservations taken",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.45,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -158,25 +132,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2025",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": null
+    "websiteUrl": "https://attorneypittkitchen.example/",
+    "phone": "+1 212 555 1242"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=driving"
     },
     "links": []
   },

@@ -38,7 +38,7 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.567,
+        "confidence": 0.566,
         "verifiedAt": null,
         "sourceUpdatedAt": "2025-11-07T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
@@ -69,6 +69,29 @@
         "conflict": false,
         "freshness": "last edited in OSM Nov 2025",
         "summary": "OpenStreetMap · last edited in OSM Nov 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Korean",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-11-07T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2025",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2025 · published"
       }
     },
     {

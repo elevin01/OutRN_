@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000024",
-  "name": "Ludlow Tavern",
+  "name": "Essex Hester Bar",
   "category": {
     "id": "bar",
     "label": "Bar"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.73031,
-    "lon": -73.988579
+    "lat": 40.709488,
+    "lon": -73.975001
   },
   "address": null,
   "photos": [],
@@ -31,7 +31,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-02:00",
+      "value": "Mo-Su 16:00-02:00",
       "detail": "Open now until 2am",
       "provenance": {
         "sources": [
@@ -41,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.564,
+        "confidence": 0.551,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
@@ -66,12 +66,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -89,12 +89,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -112,35 +112,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Limited access",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -158,25 +135,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-20T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://ludlowtavern.example/",
+    "websiteUrl": "https://essexhesterbar.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=driving"
     },
     "links": []
   },

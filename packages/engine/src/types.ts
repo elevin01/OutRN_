@@ -1,6 +1,6 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.4.0";
+export const ENGINE_VERSION = "0.5.0";
 export const WEIGHTS_VERSION = "2026-09-29.2";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
@@ -32,6 +32,8 @@ export interface RequestContext {
   youngestAge?: number;
   /** Narrow to these categories (user tapped a chip). Diversity across activity types is skipped. */
   categories?: Category[];
+  /** Only food places serving one of these (CUISINE_FILTERS ids). Diversity across activity types is skipped. */
+  cuisines?: string[];
   /** How the user wants to eat, for food places: to go is quick. Missing = sitting down. */
   visitStyle?: "dine_in" | "takeout";
   /** Items shown recently on this device, and items dismissed. */
@@ -155,6 +157,7 @@ export type ExclusionCode =
   | "CLOSED_TEMPORARILY"
   | "EXCLUDED_BY_OVERRIDE"
   | "NOT_REQUESTED"
+  | "OTHER_CUISINE"
   | "TOO_FAR"
   | "CLOSED_ON_ARRIVAL"
   | "NOT_ENOUGH_TIME"

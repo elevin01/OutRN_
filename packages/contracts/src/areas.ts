@@ -37,11 +37,15 @@ export const AreasResponse = z.object({
     moods: z.array(Option),
     companies: z.array(Option),
     categories: z.array(Option),
+    /** Cuisines a request may ask for (`cuisines`), each taking in its kinds: Japanese includes sushi and ramen. */
+    cuisines: z.array(Option),
   }),
   limits: z.object({
     windowMinutes: Range,
     youngestAge: Range,
     maxCategories: z.int(),
+    /** Most cuisines a request may ask for (`cuisines`). */
+    maxCuisines: z.int(),
     /** Items per page of recommendations. */
     pageSize: z.int(),
   }),

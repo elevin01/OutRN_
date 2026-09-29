@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-00000000001d",
-  "name": "Delancey Tavern",
+  "name": "Pitt Street Nightcap",
   "category": {
     "id": "bar",
     "label": "Bar"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.716973,
-    "lon": -73.998882
+    "lat": 40.715594,
+    "lon": -73.996037
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
-    "opensAt": null,
-    "summary": "Open now until 2am"
+    "state": "closed",
+    "closesAt": null,
+    "opensAt": "2026-10-04T00:00:00.000Z",
+    "summary": "Closed now · opens 8pm today"
   },
   "price": {
     "kind": "unknown"
@@ -31,8 +31,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Mo-Su 20:00-04:00",
+      "detail": "Closed now · opens 8pm today",
       "provenance": {
         "sources": [
           {
@@ -41,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.513,
+        "confidence": 0.507,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · published"
       }
     },
     {
@@ -66,12 +66,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     },
     {
@@ -89,12 +89,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     },
     {
@@ -112,12 +112,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     },
     {
@@ -135,25 +135,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://delanceytavern.example/",
+    "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=driving"
     },
     "links": []
   },

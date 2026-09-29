@@ -1,24 +1,24 @@
 {
-  "id": "00000000-0000-4000-8000-000000000004",
-  "name": "Delancey Books",
+  "id": "00000000-0000-4000-8000-00000000002f",
+  "name": "Broome Playhouse",
   "category": {
-    "id": "bookshop",
-    "label": "Bookshop"
+    "id": "theatre",
+    "label": "Theatre"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.715671,
-    "lon": -73.989625
+    "lat": 40.727811,
+    "lon": -73.986647
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T01:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 9pm"
+    "summary": null
   },
   "price": {
     "kind": "unknown"
@@ -28,24 +28,19 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 10:00-21:00",
-      "detail": "Open now until 9pm",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.53,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -61,20 +56,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Ticket required",
       "detail": null,
       "provenance": {
         "sources": [
@@ -84,14 +79,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -109,25 +104,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-03-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Mar 2025",
-        "summary": "OpenStreetMap · last edited in OSM Mar 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://delanceybooks.example/",
+    "websiteUrl": "https://broomeplayhouse.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=driving"
     },
     "links": []
   },

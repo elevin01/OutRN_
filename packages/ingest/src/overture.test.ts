@@ -340,4 +340,12 @@ describe("places OSM lacks", () => {
     // Without Overture's signal or a confident record, no status at all: still no estimate in its place.
     expect(placeFacts("venue-1", { ...p, confidence: 0.5 }, "cafe", null, now).some((x) => x.attribute === "business_status")).toBe(false);
   });
+
+  it("a new food place's name gives its cuisine, as an estimate; a gallery's never does", () => {
+    const now = new Date("2026-09-29T00:00:00Z");
+    const taqueria = placeFacts("venue-2", place({ id: "ovt-t", name: "Taqueria Diana", category: "restaurant" }), "restaurant", "run-1", now);
+    expect(taqueria.find((x) => x.attribute === "cuisine")).toMatchObject({ value: { values: ["mexican"] }, evidenceClass: "estimate", evidence: "Overture place ovt-t: name", confidence: 0.5 });
+    expect(placeFacts("venue-3", place({ id: "ovt-g", name: "Pizza Gallery", category: "art_gallery" }), "gallery", "run-1", now).some((x) => x.attribute === "cuisine")).toBe(false);
+    expect(placeFacts("venue-4", place({ id: "ovt-r", name: "Rebelle", category: "restaurant" }), "restaurant", "run-1", now).some((x) => x.attribute === "cuisine")).toBe(false);
+  });
 });

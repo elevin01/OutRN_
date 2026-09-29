@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000027",
+  "requestId": "00000000-0000-4000-8000-000000000025",
   "asOf": "2026-10-04T05:15:00.000Z",
   "generatedAt": "2026-10-04T05:15:00.000Z",
   "expiresAt": "2026-10-04T05:35:00.000Z",
@@ -21,6 +21,7 @@
       "lon": -73.988
     },
     "company": "family",
+    "cuisines": [],
     "categories": [
       "bar"
     ],
@@ -47,7 +48,8 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000025",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-000000000023",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
@@ -117,7 +119,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000025",
+      "placeId": "00000000-0000-4000-8000-000000000023",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -158,7 +160,8 @@
       ],
       "parking": null,
       "photos": [],
-      "id": "00000000-0000-4000-8000-000000000028",
+      "cuisines": [],
+      "id": "00000000-0000-4000-8000-000000000026",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
@@ -228,7 +231,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000028",
+      "placeId": "00000000-0000-4000-8000-000000000026",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -260,7 +263,7 @@
     "offset": 3,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6MH0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI1IiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

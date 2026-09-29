@@ -1,35 +1,38 @@
 {
   "id": "00000000-0000-4000-8000-000000000010",
-  "name": "Broome Scoops",
+  "name": "Ridge Bar",
   "category": {
-    "id": "dessert",
-    "label": "Dessert"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.933632,
-    "lon": -73.829916
+    "lat": 40.930593,
+    "lon": -73.825424
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T06:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 2am"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": null,
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 16:00-02:00",
+      "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
@@ -38,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.497,
+        "confidence": 0.611,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2024",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -61,14 +64,37 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.35,
+        "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2024",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -86,12 +112,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2024",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -109,28 +135,28 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2024",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
     "name": null,
-    "kind": "lot",
-    "fee": "free",
+    "kind": "street",
+    "fee": "unknown",
     "openingHours": null,
     "location": {
-      "lat": 40.934,
-      "lon": -73.8304
+      "lat": 40.9333,
+      "lon": -73.8254
     },
-    "distanceMetres": 58,
-    "walkMinutes": 1,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934%2C-73.8304&travelmode=driving",
-    "text": "Lot 60 m away (free), ~1 min walk"
+    "distanceMetres": 301,
+    "walkMinutes": 5,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9333%2C-73.8254&travelmode=driving",
+    "text": "Street parking 300 m away, ~5 min walk"
   },
   "contact": {
     "websiteUrl": null,
@@ -138,9 +164,9 @@
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=driving"
     },
     "links": []
   },

@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000017",
-  "name": "Attorney Kitchen",
+  "name": "Delancey Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.92844,
-    "lon": -73.849641
+    "lat": 40.929225,
+    "lon": -73.844511
   },
   "address": null,
   "photos": [],
@@ -28,7 +28,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Su 12:00-23:00; Mo off",
+      "value": "Mo-Su 11:00-23:00",
       "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.606,
+        "confidence": 0.492,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
@@ -61,20 +61,43 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Pizza",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,41 +109,18 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Limited access",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -132,38 +132,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Hester Lot",
+    "name": "Orchard Street Lot",
     "kind": "lot",
-    "fee": "unknown",
-    "openingHours": null,
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
     "location": {
-      "lat": 40.9287,
-      "lon": -73.8491
+      "lat": 40.9296,
+      "lon": -73.8434
     },
-    "distanceMetres": 54,
-    "walkMinutes": 1,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
-    "text": "Hester Lot, ~1 min walk"
+    "distanceMetres": 102,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
   },
   "contact": {
-    "websiteUrl": "https://attorneykitchen.example/",
+    "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
     },
     "links": []
   },

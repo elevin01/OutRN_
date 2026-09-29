@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000026",
-  "name": "Essex Hester Bar",
+  "name": "Delancey Bar",
   "category": {
     "id": "bar",
     "label": "Bar"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.709488,
-    "lon": -73.975001
+    "lat": 40.727594,
+    "lon": -73.999704
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "closesAt": "2026-10-04T07:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": "Open now until 3am"
   },
   "price": {
     "kind": "unknown"
@@ -31,8 +31,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Tu-Sa 18:00-03:00",
+      "detail": "Open now until 3am",
       "provenance": {
         "sources": [
           {
@@ -41,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.551,
+        "confidence": 0.557,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
       }
     },
     {
@@ -66,12 +66,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
@@ -89,12 +89,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     },
     {
@@ -112,12 +112,35 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · published"
       }
     },
     {
@@ -135,25 +158,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2025",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://essexhesterbar.example/",
+    "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=driving"
     },
     "links": []
   },

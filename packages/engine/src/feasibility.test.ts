@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
 import { conditionsFor, waitFloorMinutes } from "./conditions.js";
+import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
@@ -1314,5 +1315,57 @@ describe("weather", () => {
     expect(recommend([park], ctx("2026-10-03 14:00", 120, { weather: { temperatureF: 64, precipProbability: 10 } }), POLICIES).items[0]!.reasons).toContain("WEATHER_SUITABLE");
     expect(recommend([park], ctx("2026-10-03 14:00", 120, { weather: { temperatureF: 64, precipProbability: 60 } }), POLICIES).items[0]!.reasons).not.toContain("WEATHER_SUITABLE");
     expect(at(null).class).toBe("ready");
+  });
+});
+
+describe("asking for a cuisine", () => {
+  const eat = (id: string, cuisine: string[] | undefined, category: Candidate["category"] = "restaurant") => venue({ id, category, hours: "Mo-Su 11:00-23:00", ...(cuisine ? { cuisine } : {}) });
+
+  it("keeps only food places serving it: a group takes in its kinds, a kind is only itself", () => {
+    const cands = [eat("sushi", ["sushi"]), eat("ramen", ["ramen"]), eat("izakaya", ["japanese"]), eat("thai", ["thai"]), eat("unknown", undefined), venue({ id: "park", category: "park" })];
+    const by = (cuisines: string[]) => Object.fromEntries(evaluateAll(cands, ctx("2026-10-02 19:00", 120, { cuisines }), POLICIES).map((e) => [e.candidate.id, e.excludedBy]));
+    expect(by(["japanese"])).toEqual({ sushi: null, ramen: null, izakaya: null, thai: "OTHER_CUISINE", unknown: "OTHER_CUISINE", park: "NOT_REQUESTED" });
+    expect(by(["sushi"])).toMatchObject({ sushi: null, ramen: "OTHER_CUISINE", izakaya: "OTHER_CUISINE" });
+    expect(by(["thai", "ramen"])).toMatchObject({ thai: null, ramen: null, sushi: "OTHER_CUISINE" });
+    // An id that is not a filter's own finds nothing, including what every object inherits.
+    expect(by(["__proto__"])).toMatchObject({ sushi: "OTHER_CUISINE", thai: "OTHER_CUISINE" });
+  });
+
+  it("any food place can serve it (a sake bar, a bagel café), and with categories only those kinds", () => {
+    const cands = [eat("sake", ["japanese"], "bar"), eat("sushi", ["sushi"]), eat("bagel", ["bagel"], "cafe")];
+    const x = (over: Partial<RequestContext>) => evaluateAll(cands, ctx("2026-10-02 19:00", 120, over), POLICIES).filter((e) => e.class !== "ineligible").map((e) => e.candidate.id);
+    expect(x({ cuisines: ["japanese"] }).sort()).toEqual(["sake", "sushi"]);
+    expect(x({ cuisines: ["japanese"], categories: ["bar"] })).toEqual(["sake"]);
+    expect(x({ cuisines: ["bagel"] })).toEqual(["bagel"]);
+  });
+
+  it("is a narrowed request (no activity diversity), and offers 'try any cuisine', not other kinds of place", () => {
+    const cands = [eat("thai", ["thai"]), eat("it1", ["italian"]), eat("it2", ["pizza"]), venue({ id: "b1", category: "bookshop", hours: "Mo-Su 10:00-21:00" })];
+    const s = recommend(cands, ctx("2026-10-02 19:00", 120, { cuisines: ["thai"] }), POLICIES);
+    expect(s.items.map((e) => e.candidate.id)).toEqual(["thai"]);
+    expect(s.relaxations).toEqual([{ code: "any_cuisine", text: "try any cuisine", admits: 2 }]);
+    // With a category too, widening it is still an option.
+    const withCategory = recommend(cands, ctx("2026-10-02 19:00", 120, { cuisines: ["thai"], categories: ["restaurant"] }), POLICIES);
+    expect(withCategory.relaxations.map((r) => r.code)).toEqual(["more_categories", "any_cuisine"]);
+    // Three Italian places, pizza included, fill a page with no bookshop pushed in for variety.
+    const italian = recommend([...cands, eat("it3", ["italian", "pasta"])], ctx("2026-10-02 19:00", 120, { cuisines: ["italian"] }), POLICIES);
+    expect(italian.items.map((e) => e.candidate.id).sort()).toEqual(["it1", "it2", "it3"]);
+  });
+
+  it("the card leads with what a food place serves; a café's coffee says nothing new, and nothing else gets one", () => {
+    const line = (c: Candidate) => explain(one(c, ctx("2026-10-02 19:00", 120)), TZ).factLine;
+    expect(line(eat("thai", ["thai", "noodle"]))).toMatch(/^Thai · ~\d+ min walk · /);
+    expect(line(eat("tm", ["tex_mex"]))).toMatch(/^Tex-Mex · /);
+    expect(line(eat("cafe", ["coffee_shop", "breakfast"], "cafe"))).toMatch(/^Breakfast · /);
+    expect(line(eat("coffee", ["coffee_shop"], "cafe"))).toMatch(/^~\d+ min walk · /);
+    expect(line(eat("none", undefined))).toMatch(/^~\d+ min walk · /);
+    // In a search for a cuisine, the one asked for leads: a pizza search shows "Pizza", not "Italian".
+    const ainslie = eat("ainslie", ["italian", "pizza", "brunch"]);
+    expect(explain(one(ainslie, ctx("2026-10-02 19:00", 120)), TZ, ["pizza"]).factLine).toMatch(/^Pizza · /);
+    expect(cuisinesOf(ainslie, ["pizza"])).toEqual(["pizza", "italian", "brunch"]);
+    expect(cuisinesOf(ainslie, ["italian"])).toEqual(["italian", "pizza", "brunch"]);
+    expect(cuisinesOf(ainslie)).toEqual(["italian", "pizza", "brunch"]);
+    // A cuisine on a bookshop (a café inside, say) is not what the bookshop is.
+    expect(line({ ...eat("books", ["coffee_shop", "italian"]), category: "bookshop" })).toMatch(/^~\d+ min walk · /);
   });
 });

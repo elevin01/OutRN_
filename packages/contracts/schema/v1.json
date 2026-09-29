@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.5.0",
+  "contract": "1.6.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -252,6 +252,26 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "cuisines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -261,7 +281,8 @@
               "budgets",
               "moods",
               "companies",
-              "categories"
+              "categories",
+              "cuisines"
             ],
             "additionalProperties": false
           },
@@ -313,6 +334,11 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "maxCuisines": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
               "pageSize": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -323,6 +349,7 @@
               "windowMinutes",
               "youngestAge",
               "maxCategories",
+              "maxCuisines",
               "pageSize"
             ],
             "additionalProperties": false
@@ -427,6 +454,14 @@
                 "maximum": 120
               },
               "categories": {
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "cuisines": {
                 "maxItems": 5,
                 "type": "array",
                 "items": {
@@ -667,6 +702,12 @@
                   "type": "string"
                 }
               },
+              "cuisines": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "at": {
                 "type": "string",
                 "format": "date-time",
@@ -728,6 +769,7 @@
               "company",
               "youngestAge",
               "categories",
+              "cuisines",
               "at",
               "atIsExplicit",
               "origin",
@@ -879,6 +921,27 @@
                       "type": "null"
                     }
                   ]
+                },
+                "cuisines": {
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "label": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  }
                 },
                 "status": {
                   "type": "string",
@@ -1638,6 +1701,7 @@
                 "photos",
                 "category",
                 "subtype",
+                "cuisines",
                 "status",
                 "callToAction",
                 "location",
@@ -2607,6 +2671,14 @@
               "minLength": 1
             }
           },
+          "cuisines": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
           "at": {
             "type": "string",
             "format": "date-time",
@@ -3335,6 +3407,14 @@
                 "maximum": 120
               },
               "categories": {
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "cuisines": {
                 "maxItems": 5,
                 "type": "array",
                 "items": {

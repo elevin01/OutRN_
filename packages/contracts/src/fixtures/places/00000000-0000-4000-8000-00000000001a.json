@@ -21,7 +21,8 @@
     "summary": null
   },
   "price": {
-    "kind": "unknown"
+    "kind": "free",
+    "evidence": "estimate"
   },
   "ageLimit": null,
   "facts": [
@@ -80,6 +81,29 @@
         ],
         "evidence": "estimate",
         "confidence": 0.55,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.7,
         "verifiedAt": null,
         "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",

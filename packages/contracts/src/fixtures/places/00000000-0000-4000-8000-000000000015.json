@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000015",
-  "name": "Stanton Kitchen",
+  "name": "Clinton Norfolk Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.93814,
-    "lon": -73.82182
+    "lat": 40.929098,
+    "lon": -73.843087
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T03:30:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 11:30pm"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+      "detail": "Open now until 11:30pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.548,
+        "confidence": 0.565,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -63,18 +63,41 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Mexican",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,12 +109,35 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -109,25 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     }
   ],
-  "parkingNearby": null,
+  "parkingNearby": {
+    "name": "Orchard Street Lot",
+    "kind": "lot",
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
+    "location": {
+      "lat": 40.9296,
+      "lon": -73.8434
+    },
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
+  },
   "contact": {
     "websiteUrl": null,
-    "phone": null
+    "phone": "+1 212 555 6566"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
     },
     "links": []
   },
