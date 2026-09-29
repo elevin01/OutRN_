@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import type { RecommendationRequest } from "@outrn/contracts";
 import { reset, type Db } from "@outrn/db";
 import { caveatNotes, reasonNotes } from "@outrn/engine";
-import { ingestOsmArea } from "@outrn/ingest";
+import { ingestOsmArea, ingestOverture } from "@outrn/ingest";
 import { runEngine } from "../src/service/recommendations.js";
 
 /**
@@ -69,6 +69,8 @@ export async function seedGolden(db: Db, root: string): Promise<void> {
   await reset(db);
   // Just after the captures were made (OSM base 2026-09-27), so their survey dates all count.
   for (const area of ["les", "bronxville"]) await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}.json`), clock: () => new Date("2026-09-28T12:00:00Z") });
+  // Then Overture's read of each (taken 29 Sep): whether places still operate, and the places OSM lacks.
+  for (const area of ["les", "bronxville"]) await ingestOverture(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}-overture.json`), clock: () => new Date("2026-09-29T12:00:00Z") });
 }
 
 export async function runGolden(db: Db): Promise<GoldenResult[]> {

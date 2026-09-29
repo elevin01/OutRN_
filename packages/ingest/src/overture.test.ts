@@ -36,6 +36,14 @@ describe("matching venues to Overture places", () => {
     expect(match(venue("Parque de Tranquilidad", "garden"), place({ name: "Parque de Tranquilidad", category: "arts_and_entertainment" }))).toHaveLength(1);
   });
 
+  it("numbers match however they are written: Hunan III is Hunan 3", () => {
+    expect(match(venue("Hunan III"), place({ name: "Hunan 3", ...north(30) })).map((x) => x.name)).toEqual(["same"]);
+    expect(match(venue("Pizza Number One"), place({ name: "Pizza Number 1", ...north(10) })).map((x) => x.name)).toEqual(["same"]);
+    // Only whole words: "Vinyl" is not "5inyl".
+    expect(match(venue("Vinyl Bar"), place({ name: "Vinyl Bar", ...north(10) })).map((x) => x.name)).toEqual(["same"]);
+    expect(match(venue("Hunan III"), place({ name: "Hunan 4", ...north(30) }))).toEqual([]);
+  });
+
   it("a name that starts with or contains the other's: within 40 m, whole words, and a kind that fits", () => {
     expect(match(venue("Rong Hang"), place({ name: "Rong Hang Restaurant" }))[0]?.name).toBe("prefix");
     expect(match(venue("Ballato"), place({ name: "Emilio's Ballato" }))[0]?.name).toBe("within");
@@ -280,6 +288,10 @@ describe("places OSM lacks", () => {
     expect(newPlaceGate(np({ name: "Eileen's Special Cheesecake" }))).toEqual({ category: "dessert" });
     expect(newPlaceGate(np({ name: "Topps Bakery" }))).toEqual({ category: "cafe" });
     expect(newPlaceGate(np({ name: "Voyager Espresso", category: "casual_eatery" }))).toEqual({ category: "cafe" });
+    // Karaoke is something to book and do (OSM's karaoke_box), not a show: an activity, whatever Overture files it under.
+    expect(newPlaceGate(np({ name: "Boho Karaoke Orchard", category: "music_venue" }))).toEqual({ category: "activity" });
+    expect(newPlaceGate(np({ name: "Karaoke Boho", category: "bar" }))).toEqual({ category: "activity" });
+    expect(kindEstimates("activity").find((e) => e.attribute === "admission")?.value).toEqual({ requirement: "reservation_available" });
     // Only for a restaurant: a bar named for its coffee is still a bar.
     expect(newPlaceGate(np({ name: "Coffee Bar Nights", category: "bar" }))).toEqual({ category: "bar" });
   });

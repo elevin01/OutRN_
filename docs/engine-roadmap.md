@@ -193,8 +193,11 @@ changelog.
       400 ms instead of 230, and ranking about 190 ms.
     - Bronxville: 63 venues to 94. Its Sunday family search has 85 options instead of 54, and the
       Ready places still lead.
+  - **Golden scenarios** now replay the Overture captures too. Places stay the same when their
+    number is written differently ("Hunan III" matches Overture's "Hunan 3"), and a music venue
+    named for karaoke is an activity, not a show.
   - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
-    them can be Ready. And golden scenarios with Overture's places, once reviewed.
+    them can be Ready.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use
