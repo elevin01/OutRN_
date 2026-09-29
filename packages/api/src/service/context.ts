@@ -1,7 +1,7 @@
 import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
 import { haversineMetres, type Category, type LatLon } from "@outrn/core";
 import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
-import { loadParkingBuffer, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
+import { loadParkingBuffer, loadWeather, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
 import { invalid } from "../errors.js";
 
@@ -81,6 +81,9 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.visitStyle === "takeout") ctx.visitStyle = "takeout";
   // Enables the sunset window for viewpoints, waterfronts and parks.
   ctx.sunset = sunsetOn(origin, at, area.timezone);
+  // The area's stored forecast (outrn weather refresh), when it is current and covers the start.
+  const weather = await loadWeather(q, area.id, at, request.windowMinutes, now);
+  if (weather) ctx.weather = weather;
   if (overrides.maxTravelMinutes) ctx.maxTravelMinutes = overrides.maxTravelMinutes;
   if (overrides.requireWheelchair) ctx.requireWheelchair = true;
   if (mode === "drive") {
