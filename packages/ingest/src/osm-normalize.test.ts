@@ -179,6 +179,37 @@ describe("OSM normalization", () => {
     });
   });
 
+  it("happy_hours and outdoor_seating become facts where food or drink is served; unparseable or unknown values are dropped", () => {
+    expect(fact(rec({ name: "Ten Bells", amenity: "bar", happy_hours: "Mo-Fr 17:00-19:00" }), "happy_hours")).toMatchObject({ evidenceClass: "published", value: { osm: "Mo-Fr 17:00-19:00" }, evidence: "happy_hours=Mo-Fr 17:00-19:00" });
+    expect(fact(rec({ name: "Ten Bells", amenity: "bar", happy_hours: "when the owner feels like it" }), "happy_hours")).toBeUndefined();
+    expect(fact(rec({ name: "Seward Park", leisure: "park", happy_hours: "Mo-Fr 17:00-19:00" }), "happy_hours")).toBeUndefined();
+    // Any kind of table outside is a yes; "no" is a no; anything else says nothing.
+    for (const v of ["yes", "sidewalk", "garden;street", "Roof", "only", "beach", "separate"]) expect(fact(rec({ name: "R", amenity: "restaurant", outdoor_seating: v }), "outdoor_seating"), v).toMatchObject({ evidenceClass: "published", value: { value: "yes" } });
+    expect(fact(rec({ name: "R", amenity: "restaurant", outdoor_seating: "no" }), "outdoor_seating")).toMatchObject({ value: { value: "no" } });
+    for (const v of ["maybe", "sidewalk;maybe", "", "constructor"]) expect(fact(rec({ name: "R", amenity: "restaurant", outdoor_seating: v }), "outdoor_seating"), v).toBeUndefined();
+    expect(fact(rec({ name: "Books", shop: "books", outdoor_seating: "yes" }), "outdoor_seating")).toBeUndefined();
+  });
+
+  it("the seats are read once: the outdoor_seating fact and the setting always agree", () => {
+    const both = (tags: Record<string, string>) => {
+      const n = rec({ name: "R", amenity: "restaurant", ...tags });
+      return [(fact(n, "outdoor_seating")?.value as { value?: string } | undefined)?.value ?? null, (fact(n, "indoor_outdoor")?.value as { value: string }).value];
+    };
+    // OSM's documented specific values count as tables outside.
+    expect(both({ outdoor_seating: "beach" })).toEqual(["yes", "mixed"]);
+    expect(both({ outdoor_seating: "separate" })).toEqual(["yes", "mixed"]);
+    expect(both({ outdoor_seating: "sidewalk" })).toEqual(["yes", "mixed"]);
+    // Seats only outside: the place is outdoors, so rain and cold count against it.
+    expect(both({ outdoor_seating: "only" })).toEqual(["yes", "outdoor"]);
+    expect(both({ outdoor_seating: "garden", indoor_seating: "no" })).toEqual(["yes", "outdoor"]);
+    expect(fact(rec({ name: "R", amenity: "restaurant", outdoor_seating: "garden", indoor_seating: "no" }), "outdoor_seating")?.evidence).toBe("outdoor_seating=garden; indoor_seating=no");
+    // No tables outside, or nothing we can read: indoors, as before.
+    expect(both({ outdoor_seating: "no" })).toEqual(["no", "indoor"]);
+    expect(both({ outdoor_seating: "maybe" })).toEqual([null, "indoor"]);
+    expect(both({ indoor_seating: "no" })).toEqual([null, "indoor"]);
+    expect(both({})).toEqual([null, "indoor"]);
+  });
+
   it("opening_hours:kitchen becomes kitchen hours; an unparseable rule is dropped", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant", opening_hours: "Mo-Su 12:00-23:00", "opening_hours:kitchen": "Mo-Su 12:00-22:00" }), "kitchen_hours")).toMatchObject({ evidenceClass: "published", value: { osm: "Mo-Su 12:00-22:00" }, evidence: "opening_hours:kitchen=Mo-Su 12:00-22:00" });
     expect(fact(rec({ name: "R", amenity: "restaurant", "opening_hours:kitchen": "until the chef leaves" }), "kitchen_hours")).toBeUndefined();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal } from "@outrn/core";
-import { describeFacts, formatFactValue, hoursToday, type FactRecord } from "./describe.js";
+import { describeFacts, formatFactValue, happyHourToday, hoursToday, type FactRecord } from "./describe.js";
 
 const TZ = "America/New_York";
 const P = { lat: 40.941, lon: -73.835 };
@@ -24,6 +24,23 @@ describe("detail page facts", () => {
     expect(hoursToday({ osm: "Mo-Fr 06:00-15:00; Sa 08:00-14:00; Su off" }, NOW, TZ, P)).toBe("Closed now · opens Mon 6am");
     expect(hoursToday({ osm: "24/7" }, NOW, TZ, P)).toBe("Open 24/7");
     expect(hoursToday({ osm: "Mo-Su 22:00-02:00" }, NOW, TZ, P)).toBe("Closed now · opens 10pm today");
+  });
+
+  it("happy hour and outdoor seating read as words, with when happy hour is today", () => {
+    expect(formatFactValue("happy_hours", { osm: "Mo-Fr 17:00-19:00" })).toBe("Mo-Fr 17:00-19:00");
+    expect(formatFactValue("outdoor_seating", { value: "yes" })).toBe("Yes");
+    // Saturday 9:37pm.
+    expect(happyHourToday({ osm: "Mo-Su 21:00-23:00" }, NOW, TZ, P)).toBe("On now until 11pm");
+    expect(happyHourToday({ osm: "Sa 22:00-24:00" }, NOW, TZ, P)).toBe("Today from 10pm");
+    expect(happyHourToday({ osm: "Mo-Fr 17:00-19:00" }, NOW, TZ, P)).toBeNull();
+    expect(happyHourToday({ osm: "24/7" }, NOW, TZ, P)).toBeNull();
+    const rows = describeFacts({ outdoor_seating: rec({ value: { value: "yes" } }), happy_hours: rec({ value: { osm: "Mo-Su 21:00-23:00" } }), takeout: rec({ value: { value: "yes" } }) }, { tz: TZ, point: P, now: NOW });
+    expect(rows.map((r) => [r.label, r.value, r.detail])).toEqual([
+      ["Hours", "Not listed", "Check before you go"],
+      ["Takeout", "Available", null],
+      ["Happy hour", "Mo-Su 21:00-23:00", "On now until 11pm"],
+      ["Outdoor seating", "Yes", null],
+    ]);
   });
 
   it("hours come first and are always present; each row names its source, age and evidence class", () => {

@@ -157,7 +157,7 @@ changelog.
     share of the outing spent getting there and back. The same walk costs a two-hour museum less
     than a café, and a café less than an ice cream. Up to 90 minutes, ranking is unchanged.
   - Golden scenarios added: dinner with only restaurants, and a five-hour Saturday.
-- **Part 3 (this PR): cuisine on the card and in the search** (contract 1.6).
+- **Part 3: cuisine on the card and in the search** (contract 1.6).
   - **On the card:** items list what a food place serves (`cuisines`, up to 3), and the summary
     leads with it: "Thai · ~12 min walk · …". A café's coffee isn't repeated.
   - **From the name** when no mapper gave a cuisine ("Arturo's Coal Oven Pizza", "Taqueria Diana",
@@ -174,6 +174,20 @@ changelog.
       leads with the cuisine asked for.
     - When few match, it offers "try any cuisine" (`any_cuisine`), not other kinds of place.
   - Golden scenarios added: Japanese on a Friday evening, and pizza on a Saturday afternoon.
+- **Part 4 (this PR): what a place offers at the hour.** No contract change: reason codes are open-ended.
+  - **Happy hour** from OSM `happy_hours` (opening-hours syntax; 58 places on the LES and
+    Bronxville captures). When it's on at the arrival with at least 20 minutes left, or starts
+    within 30 minutes of it, the card says so ("happy hour until 7pm", "happy hour from 5pm";
+    `HAPPY_HOUR`, params `from`, `until`) and appeal rises 0.05.
+    - Never for a party with a minor.
+    - Never for a happy hour that never ends.
+    - Place details show it with today's times ("On now until 7pm").
+  - **Tables outside** from OSM `outdoor_seating` (any kind: sidewalk, garden, roof; 219 places yes,
+    62 no). When the forecast is dry (rain under 30%), 55°F or warmer and not hot, the card says
+    "good weather to sit outside" (`OUTDOOR_SEATING`) and appeal rises 0.05.
+  - Neither ever excludes a place or changes its class: an offer breaks a near-tie.
+  - Golden: three places move up for their happy hour. Ten Bells is #2 on Saturday at 6:30pm.
+    Superbueno (Tuesday) and Botantica Bar (Saturday) open straight into theirs at 4pm.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

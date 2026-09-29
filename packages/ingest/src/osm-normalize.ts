@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.8";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.10";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,6 +225,23 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
+/** OSM outdoor_seating values that mean tables outside: "yes", "only" (no seats inside), or where they are. */
+const OUTDOOR_SEATING_KINDS: ReadonlySet<string> = new Set(["yes", "only", "sidewalk", "pavement", "street", "parklet", "garden", "patio", "terrace", "veranda", "roof", "rooftop", "balcony", "pedestrian_zone", "courtyard", "backyard", "beach", "separate", "bench", "picnic_table"]);
+
+/**
+ * Where a place seats people, read once from outdoor_seating (and indoor_seating) so every fact
+ * built from it agrees: tables outside or not (null when the tag says nothing we know), and whether
+ * outside is all there is ("only", or tables outside with indoor_seating=no).
+ */
+export function seatingOf(t: Readonly<Record<string, string>>): { outside: "yes" | "no" | null; outdoorOnly: boolean; evidence: string | null } {
+  const raw = t["outdoor_seating"]?.trim().toLowerCase();
+  if (!raw) return { outside: null, outdoorOnly: false, evidence: null };
+  if (raw === "no") return { outside: "no", outdoorOnly: false, evidence: "outdoor_seating=no" };
+  const parts = raw.split(";").map((x) => x.trim());
+  if (!parts.every((x) => OUTDOOR_SEATING_KINDS.has(x))) return { outside: null, outdoorOnly: false, evidence: null };
+  const noSeatsInside = t["indoor_seating"]?.trim().toLowerCase() === "no";
+  return { outside: "yes", outdoorOnly: parts.includes("only") || noSeatsInside, evidence: `outdoor_seating=${raw}${noSeatsInside ? "; indoor_seating=no" : ""}` };
+}
 /** Kinds with an age limit by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
 const DEFAULT_AGE_LIMIT: Readonly<Record<string, number>> = { casino: 21, nightclub: 21 };
 
@@ -337,6 +354,15 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     if (oh) pub("kitchen_hours", { osm: kitchen }, `opening_hours:kitchen=${kitchen}`, hoursConfidence(rec.sourceUpdatedAt, now));
   }
 
+  // Where food and drink are served: happy hour, in opening-hours syntax (only a parseable rule counts),
+  // and tables outside, whatever kind ("sidewalk", "garden", "roof"; "only" has no seats inside).
+  if (category && CUISINE_CATEGORIES.has(category)) {
+    const happy = t["happy_hours"]?.trim();
+    if (happy && parseOsmHours(happy, rec.point.lat, rec.point.lon).oh) pub("happy_hours", { osm: happy }, `happy_hours=${happy}`, hoursConfidence(rec.sourceUpdatedAt, now));
+    const seats = seatingOf(t);
+    if (seats.outside) pub("outdoor_seating", { value: seats.outside }, seats.evidence!, 0.7);
+  }
+
   // Food to go (OSM takeaway): "only" means no seats, "no" means it is not offered.
   const takeaway = t["takeaway"]?.trim();
   if (takeaway === "yes" || takeaway === "no" || takeaway === "only") pub("takeout", { value: takeaway }, `takeaway=${takeaway}`, 0.7);
@@ -378,8 +404,11 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   else if (category === "library" && !membersOnlyLibrary(t)) est("price", { currency: "USD", free: true, basis: "per_person" }, 0.7);
   else if (category === "gallery" && t["tourism"] === "gallery") est("price", { currency: "USD", free: true, basis: "per_person" }, 0.55);
 
-  const outdoor = (category && OUTDOOR.has(category)) || t["leisure"] === "miniature_golf";
-  if (category) est("indoor_outdoor", { value: outdoor ? "outdoor" : t["outdoor_seating"] === "yes" ? "mixed" : "indoor" }, 0.6);
+  // The setting, from the same reading of the seats as the outdoor_seating fact: tables only outside
+  // make the place outdoors (rain and cold count against it), tables inside and out make it mixed.
+  const seats = seatingOf(t);
+  const outdoor = (category && OUTDOOR.has(category)) || t["leisure"] === "miniature_golf" || seats.outdoorOnly;
+  if (category) est("indoor_outdoor", { value: outdoor ? "outdoor" : seats.outside === "yes" ? "mixed" : "indoor" }, 0.6);
 
   if (t["parking"] || t["amenity"] === "parking") pub("parking", { kind: parkingKind(t["parking"]), cost: t["parking:fee"] === "no" ? "free" : t["parking:fee"] === "yes" ? "paid" : "unknown" }, `parking=${t["parking"] ?? "yes"}`, 0.6);
 

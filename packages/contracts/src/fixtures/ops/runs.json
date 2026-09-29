@@ -7,7 +7,7 @@
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.5.0",
-      "weightsVersion": "2026-09-29.2"
+      "weightsVersion": "2026-09-29.3"
     },
     {
       "id": "00000000-0000-4000-8000-000000000068",
@@ -16,7 +16,7 @@
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.5.0",
-      "weightsVersion": "2026-09-29.2"
+      "weightsVersion": "2026-09-29.3"
     },
     {
       "id": "00000000-0000-4000-8000-000000000034",
@@ -25,7 +25,7 @@
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.5.0",
-      "weightsVersion": "2026-09-29.2"
+      "weightsVersion": "2026-09-29.3"
     },
     {
       "id": "00000000-0000-4000-8000-000000000033",
@@ -34,7 +34,7 @@
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.5.0",
-      "weightsVersion": "2026-09-29.2"
+      "weightsVersion": "2026-09-29.3"
     },
     {
       "id": "00000000-0000-4000-8000-000000000030",
@@ -43,7 +43,7 @@
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.5.0",
-      "weightsVersion": "2026-09-29.2"
+      "weightsVersion": "2026-09-29.3"
     }
   ]
 }

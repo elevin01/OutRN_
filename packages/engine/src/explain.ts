@@ -2,6 +2,7 @@ import { addMinutes } from "@outrn/core";
 import { waitCeilingMinutes } from "./conditions.js";
 import { leadCuisine } from "./cuisine.js";
 import { ageLimitOf } from "./feasibility.js";
+import { happyHourAt } from "./offers.js";
 import { parkStepText } from "./parking.js";
 import { fmtDuration, fmtTime } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
@@ -58,6 +59,8 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   const add = (code: ReasonCode, text: string, params: Note["params"] = {}) => out.push({ code, text, params });
   if (has("EVENT_STARTS_SOON")) add("EVENT_STARTS_SOON", "starts soon", { startsAt: iso(e.candidate.occurrence?.start) });
   if (has("SHORT_TRAVEL")) add("SHORT_TRAVEL", t.travel.mode === "walk" ? "a short walk" : t.travel.mode === "drive" ? "a short drive" : "a short trip", { mode: t.travel.mode, minutes: t.travel.minutes });
+  const happy = has("HAPPY_HOUR") ? happyHourAt(e.candidate, t.arrival, t.latestFinish) : null;
+  if (happy) add("HAPPY_HOUR", happy.from ? `happy hour from ${fmtTime(happy.from, tz)}` : `happy hour until ${fmtTime(happy.until, tz)}`, { from: iso(happy.from), until: iso(happy.until) });
   if (has("WAIT_FOR_OPENING")) add("WAIT_FOR_OPENING", `opens at ${fmtTime(t.arrival, tz)}`, { opensAt: iso(t.arrival) });
   if (has("ENOUGH_TIME")) add("ENOUGH_TIME", "plenty of time", { usefulMinutes: t.usefulMinutes });
   else if (has("CLOSES_SOON")) add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
@@ -67,6 +70,7 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
   if (has("SUNSET_WINDOW")) add("SUNSET_WINDOW", "sunset window");
   if (has("WEATHER_SUITABLE")) add("WEATHER_SUITABLE", "good weather for it");
+  if (has("OUTDOOR_SEATING")) add("OUTDOOR_SEATING", "good weather to sit outside");
   if (has("FRESH_REPORT")) add("FRESH_REPORT", "recent report");
   if (has("LANDMARK")) add("LANDMARK", "a landmark");
   return out;
