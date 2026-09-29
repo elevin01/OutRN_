@@ -80,7 +80,30 @@ const REPRESENTATIVE: Readonly<Record<string, readonly { url: string; credit: st
  * The place's own photos, each with its credit; without any, representative photos of the kind of
  * place, labelled as such; without those, none (the card shows the category icon).
  */
+/** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
+const PHOTO_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
+
+/** An https address without credentials (optionally on one of `hosts`), else null. */
+export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): string | null {
+  if (!value) return null;
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && !u.username && !u.password && (!hosts || hosts.test(u.hostname)) ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** "a café", "an arts centre". */
+const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
+
 export function photosFor(name: string, category: { id: string; label: string }, photos: readonly Photo[] | undefined): ShownPhoto[] {
-  if (photos?.length) return photos.map((p, i) => ({ url: p.url, kind: "place", credit: p.credit, creditUrl: p.sourceUrl, alt: p.alt ? `${name}: ${p.alt}` : `Photo ${i + 1} of ${name}` }));
-  return (own(REPRESENTATIVE, category.id) ?? []).map((r) => ({ ...r, kind: "representative", alt: `A representative photo of a ${category.label.toLowerCase()}, not ${name}` }));
+  // The payload is not trusted: only https images on Wikimedia's hosts load, and a credit links only
+  // over https. A photo that fails the check is dropped; a credit that does is shown as plain text.
+  const mine = (photos ?? []).flatMap((p, i): ShownPhoto[] => {
+    const url = safeHttpsUrl(p.url, PHOTO_HOSTS);
+    return url ? [{ url, kind: "place", credit: p.credit, creditUrl: safeHttpsUrl(p.sourceUrl), alt: p.alt ? `${name}: ${p.alt}` : `Photo ${i + 1} of ${name}` }] : [];
+  });
+  if (mine.length) return mine;
+  return (own(REPRESENTATIVE, category.id) ?? []).map((r) => ({ ...r, kind: "representative", alt: `A representative photo of ${withArticle(category.label.toLowerCase())}, not ${name}` }));
 }

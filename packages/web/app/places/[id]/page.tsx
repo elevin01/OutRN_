@@ -36,14 +36,13 @@ export default async function PlacePage({ params, searchParams }: { params: Prom
   const maps = item.actions.directionsUrls[mode];
   const { websiteUrl: site, phone } = item.contact;
   const photos = photosFor(item.name, item.category, item.photos);
-  const fallback = photosFor(item.name, item.category, [])[0];
   return (
     <section className="detail-shell">
       <Link className="back-link" href="/">← Back to the three</Link>
       {photos.length > 0 ? (
         <div className="detail-photos">
           {photos.map((p) => (
-            <PhotoFigure key={p.url} photo={p} fallback={fallback} category={item.category.id} />
+            <PhotoFigure key={p.url} photo={p} category={item.category.id} />
           ))}
         </div>
       ) : (

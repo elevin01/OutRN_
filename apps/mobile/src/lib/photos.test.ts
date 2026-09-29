@@ -30,4 +30,19 @@ describe("which photos a place shows", () => {
     expect(shown).toEqual([{ source: "cafe.jpg", kind: "representative", credit: "Unsplash", creditUrl: "https://images.unsplash.com/photo-1", alt: "A representative photo of a cafe, not Rex" }]);
     expect(photosFor("Rex", "Cafe", undefined, [], remote)).toEqual([]);
   });
+
+  it("loads only https photos on Wikimedia's image hosts, and links the credit only over https", () => {
+    for (const url of ["http://thumb.wikimedia.org/wikipedia/commons/a.jpg", "https://tracker.example/pixel.gif", "file:///etc/hosts", "data:image/png;base64,AAAA", "https://user:pw@upload.wikimedia.org/wikipedia/commons/a.jpg", "https://upload.wikimedia.org.evil.example/a.jpg"]) {
+      expect(photosFor("Rex", "Cafe", [photo({ url })], stock, remote).map((p) => p.kind), url).toEqual(["representative"]);
+    }
+    for (const sourceUrl of ["javascript:alert(1)", "http://commons.wikimedia.org/wiki/File:A.jpg", "data:text/html,hi"]) {
+      expect(photosFor("Rex", "Cafe", [photo({ sourceUrl })], stock, remote)[0], sourceUrl).toMatchObject({ kind: "place", creditUrl: null });
+    }
+    // One bad photo among good ones drops out alone.
+    expect(photosFor("Rex", "Cafe", [photo({ url: "https://tracker.example/a.gif" }), photo()], stock, remote).map((p) => p.kind)).toEqual(["place"]);
+  });
+
+  it("names the kind with the right article", () => {
+    expect(photosFor("Rex", "Arts centre", [], stock, remote)[0]!.alt).toBe("A representative photo of an arts centre, not Rex");
+  });
 });

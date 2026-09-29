@@ -33,7 +33,6 @@ export function ActivityProfile({
   area,
   timezone,
   photos = [],
-  fallbackPhotos = [],
   strip,
   height,
   saved,
@@ -53,8 +52,6 @@ export function ActivityProfile({
   timezone: string;
   /** The place's photos, or representative ones when it has none. */
   photos?: ShownPhoto<ImageSourcePropType>[];
-  /** Shown instead when every photo fails to load (a representative photo, else the artwork). */
-  fallbackPhotos?: ShownPhoto<ImageSourcePropType>[];
   /** Category shortcuts, under the header. */
   strip?: ReactNode;
   height: number;
@@ -69,8 +66,9 @@ export function ActivityProfile({
 }) {
   const [photo, setPhoto] = useState(0);
   const [failed, setFailed] = useState<ReadonlySet<ShownPhoto<ImageSourcePropType>>>(new Set());
-  const loaded = photos.filter((p) => !failed.has(p));
-  const shown = loaded.length ? loaded : fallbackPhotos.filter((p) => !failed.has(p));
+  // A photo that fails to load drops out; when none is left, the artwork (never a representative
+  // photo in place of the venue's own).
+  const shown = photos.filter((p) => !failed.has(p));
   const current = shown[Math.min(photo, Math.max(0, shown.length - 1))];
   const credit = current?.creditUrl ? safeExternalUrl(current.creditUrl) : undefined;
   const inset = useSafeAreaInsets();
@@ -245,7 +243,7 @@ export function ActivityProfile({
               onPress={() => credit && void Linking.openURL(credit).catch(() => undefined)}
               style={styles.creditHit}
             >
-              <Copy style={styles.credit} numberOfLines={1}>
+              <Copy style={styles.credit} numberOfLines={2}>
                 {current.kind === "representative" ? "Representative photo" : "Photo"}: {current.credit}
               </Copy>
             </Pressable>

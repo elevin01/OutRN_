@@ -15,11 +15,12 @@ function toneOf(category: string): string {
 
 /**
  * A place's photo with its credit, or a representative one labelled as such. When it fails to load
- * (or there is none), the fallback, then the category's icon.
+ * (or there is none), the category's icon: never a representative photo in place of the venue's own.
  */
-export function PhotoFigure({ photo, fallback, category }: { photo: ShownPhoto | undefined; fallback?: ShownPhoto | undefined; category: string }) {
+export function PhotoFigure({ photo, category }: { photo: ShownPhoto | undefined; category: string }) {
   const [failed, setFailed] = useState<string[]>([]);
-  const shown = [photo, fallback].find((p): p is ShownPhoto => !!p && !failed.includes(p.url));
+  const shown = photo && !failed.includes(photo.url) ? photo : undefined;
+  const fail = (url: string) => setFailed((f) => (f.includes(url) ? f : [...f, url]));
   if (!shown)
     return (
       <div className="card-photo card-photo-empty" data-tone={toneOf(category)} aria-hidden="true">
@@ -30,11 +31,21 @@ export function PhotoFigure({ photo, fallback, category }: { photo: ShownPhoto |
     <figure className="card-photo">
       {/* A plain img: photos come from Wikimedia's servers with their own sizes; no optimizer proxy. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={shown.url} alt={shown.alt} loading="lazy" onError={() => setFailed((f) => [...f, shown.url])} />
+      <img
+        ref={(img) => {
+          // An error before hydration never reaches onError: check the element once React has it.
+          if (img?.complete && img.naturalWidth === 0) fail(shown.url);
+        }}
+        src={shown.url}
+        alt={shown.alt}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => fail(shown.url)}
+      />
       <figcaption>
         {shown.kind === "representative" ? "Representative photo · not this place · " : "Photo: "}
         {shown.creditUrl ? (
-          <a href={shown.creditUrl} target="_blank" rel="noreferrer">
+          <a href={shown.creditUrl} target="_blank" rel="noopener noreferrer">
             {shown.credit}
           </a>
         ) : (

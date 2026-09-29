@@ -22,6 +22,23 @@ export interface RepresentativePhoto<Source = unknown> {
   url: string;
 }
 
+/** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
+const PHOTO_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
+
+/** An https address without credentials (optionally on one of `hosts`), else null. */
+export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): string | null {
+  if (!value) return null;
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" && !u.username && !u.password && (!hosts || hosts.test(u.hostname)) ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** "a café", "an arts centre". */
+const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
+
 export function photosFor<Source>(
   placeName: string,
   categoryLabel: string,
@@ -29,20 +46,29 @@ export function photosFor<Source>(
   representative: readonly RepresentativePhoto<Source>[],
   remote: (url: string) => Source,
 ): ShownPhoto<Source>[] {
-  if (photos?.length)
-    return photos.map((p, i) => ({
-      source: remote(p.url),
-      kind: "place",
-      credit: p.credit,
-      creditUrl: p.sourceUrl,
-      alt: p.alt ? `${placeName}: ${p.alt}` : `Photo ${i + 1} of ${placeName}`,
-    }));
+  // The payload is not trusted: only https images on Wikimedia's hosts load, and a credit links only
+  // over https. A photo that fails the check is dropped; a credit that does is shown as plain text.
+  const own = (photos ?? []).flatMap((p, i): ShownPhoto<Source>[] => {
+    const url = safeHttpsUrl(p.url, PHOTO_HOSTS);
+    return url
+      ? [
+          {
+            source: remote(url),
+            kind: "place",
+            credit: p.credit,
+            creditUrl: safeHttpsUrl(p.sourceUrl),
+            alt: p.alt ? `${placeName}: ${p.alt}` : `Photo ${i + 1} of ${placeName}`,
+          },
+        ]
+      : [];
+  });
+  if (own.length) return own;
   const kind = categoryLabel.toLowerCase();
   return representative.map((r) => ({
     source: r.source,
     kind: "representative",
     credit: r.credit,
     creditUrl: r.url,
-    alt: `A representative photo of a ${kind}, not ${placeName}`,
+    alt: `A representative photo of ${withArticle(kind)}, not ${placeName}`,
   }));
 }

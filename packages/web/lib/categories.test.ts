@@ -34,6 +34,20 @@ describe("category shortcuts on the web", () => {
     expect(photosFor("Seward Park", { id: "park", label: "Park" }, [])).toEqual([]);
   });
 
+  it("load only https photos on Wikimedia's image hosts, and link the credit only over https", () => {
+    const photo = (over: Record<string, string>) => ({ url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/A.jpg/960px-A.jpg", width: 960, height: 720, alt: null, credit: "Jane Doe, CC BY-SA 4.0", author: "Jane Doe", license: "CC BY-SA 4.0", licenseUrl: null, sourceUrl: "https://commons.wikimedia.org/wiki/File:A.jpg", ...over });
+    const cafe = { id: "cafe", label: "Cafe" };
+    for (const url of ["http://thumb.wikimedia.org/wikipedia/commons/a.jpg", "https://tracker.example/pixel.gif", "file:///etc/hosts", "data:image/png;base64,AAAA", "https://user:pw@upload.wikimedia.org/wikipedia/commons/a.jpg", "https://upload.wikimedia.org.evil.example/a.jpg"]) {
+      const kinds = photosFor("Rex", cafe, [photo({ url })]).map((p) => p.kind);
+      expect(kinds.length, url).toBeGreaterThan(0);
+      expect(kinds.every((k) => k === "representative"), url).toBe(true);
+    }
+    for (const sourceUrl of ["javascript:alert(1)", "http://commons.wikimedia.org/wiki/File:A.jpg", "data:text/html,hi"]) {
+      expect(photosFor("Rex", cafe, [photo({ sourceUrl })])[0], sourceUrl).toMatchObject({ kind: "place", creditUrl: null });
+    }
+    expect(photosFor("Rex", { id: "arts_centre", label: "Arts centre" }, [])[0]?.alt).toBe("A representative photo of an arts centre, not Rex");
+  });
+
   it("carry a shortcut's kinds back to the page from a resolved search", () => {
     // Only the fields the form reads.
     const resolved = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, categories: ["cinema", "theatre"], youngestAge: null, at: "2026-10-02T23:00:00Z", atIsExplicit: false };

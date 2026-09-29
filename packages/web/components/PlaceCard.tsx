@@ -13,7 +13,7 @@ export function PlaceCard({ item, index }: Props) {
   const photo = photosFor(item.name, item.category, item.photos)[0];
   return (
     <article className="place-card">
-      <PhotoFigure photo={photo} category={item.category.id} fallback={photosFor(item.name, item.category, [])[0]} />
+      <PhotoFigure photo={photo} category={item.category.id} />
       <div className="card-topline">
         <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
         <span className={`status-pill ${item.status}`}>{item.copy.action}</span>

@@ -72,7 +72,7 @@ corepack pnpm --filter @outrn/mobile lint
 corepack pnpm test
 corepack pnpm check:boundaries
 EXPO_PUBLIC_API_URL=https://YOUR_API_HOST EXPO_PUBLIC_DEMO_MODE=false corepack pnpm mobile:export
-# Exports clear the Metro cache and verify that demo photos do not ship in production.
+# Exports clear the Metro cache and check the build: the labelled representative photos ship, the demo text doesn't.
 ```
 
 CI checks mobile lint, typecheck, and all-platform export. Native device QA, VoiceOver/TalkBack,
