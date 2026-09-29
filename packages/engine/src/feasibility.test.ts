@@ -275,27 +275,6 @@ describe("feasibility: programme venues", () => {
     }
   });
 
-  it("a community centre is a programme venue too: its classes and events, in the day and evening, never at 1am", () => {
-    // Tuckahoe Community Center (no hours, no site) ranked #2 in Bronxville at 1am before this.
-    const centre = (site: string | null) => {
-      const c = venue({ category: "community", hours: null, admission: "walk_in" });
-      return site ? withSite(c, site) : c;
-    };
-    const late = one(centre("https://settlement.example.org/"), ctx("2026-09-29 00:50", 120));
-    expect(late.excludedBy).toBe("NO_PROGRAMME");
-    expect(one(centre("https://settlement.example.org/"), ctx("2026-09-29 21:30", 120)).excludedBy).toBe("NO_PROGRAMME");
-    // Its time of day: Check first, see what's on.
-    const day = one(centre("https://settlement.example.org/"), ctx("2026-09-29 11:00", 120));
-    expect(day.class).toBe("check_first");
-    expect(caveatNotes(day).map((n) => n.text)).toContain("check what's on");
-    // Nothing to check what's on with: not an option at any hour.
-    expect(one(centre(null), ctx("2026-09-29 11:00", 120)).excludedBy).toBe("NO_PROGRAMME");
-    // Unlike a show room, it's for families too.
-    for (const party of [{ company: "family" }, { youngestAge: 8 }] as const) {
-      expect(one(centre("https://settlement.example.org/"), ctx("2026-09-29 16:00", 120, party)).unresolved, JSON.stringify(party)).toContain("PROGRAMME_UNLISTED");
-    }
-  });
-
   it("with anyone under 18 going, nothing listed means nothing to judge: the bare venue stays out (many are 21+ with no min_age tag)", () => {
     const at = ctx("2026-10-02 19:00", 300);
     for (const category of ["cinema", "theatre", "live_music"] as const) {
@@ -561,6 +540,26 @@ describe("appeal signals", () => {
     // 4:30pm is fair for a bar: neither bonus nor penalty.
     const afternoon = evaluateAll([bar, hall], ctx("2026-09-26 16:30", 120), POLICIES);
     expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
+  });
+
+  it("a community centre has its time of day too, for ranking only: 1am sinks it, published hours still decide", () => {
+    // Tuckahoe Community Center (no hours) ranked #2 in Bronxville at 1am when community had no rule.
+    const centre = venue({ id: "centre", category: "community", hours: null, admission: "walk_in" });
+    const other = venue({ id: "other", category: "other", hours: null, admission: "walk_in" });
+    const gap = (when: string) => {
+      const [c, o] = evaluateAll([centre, other], ctx(when, 120), POLICIES);
+      return c!.scores.appeal - o!.scores.appeal;
+    };
+    expect(gap("2026-09-29 01:00")).toBeCloseTo(-APPEAL_WEIGHTS.offHours, 5);
+    expect(gap("2026-09-29 11:00")).toBeCloseTo(APPEAL_WEIGHTS.primeTime, 5);
+    // A centre that publishes walk-in hours outside 9am-9pm (a 24/7 drop-in) stays open to a visit then.
+    const plain = venue({ id: "dropin", category: "community", hours: "24/7", admission: "walk_in" });
+    const dropIn: Candidate = { ...plain, facts: { ...plain.facts, website: { value: { value: "https://dropin.example.org/" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } };
+    for (const when of ["2026-09-29 07:30", "2026-09-29 21:30", "2026-09-29 01:00"]) {
+      const e = one(dropIn, ctx(when, 120));
+      expect(e.class, when).not.toBe("ineligible");
+      expect(e.unresolved, when).not.toContain("PROGRAMME_UNLISTED");
+    }
   });
 
   it("open isn't the same as a good idea: a park after dark, a bar at 10am, a café at 9pm sink; the right place for the hour rises", () => {

@@ -41,7 +41,7 @@ describe("time of day: when each kind of place is a good idea", () => {
     expect(dayPart("other", at("2026-10-03", "22:00"), TZ)).toBeNull();
   });
 
-  it("a community centre's time is when its classes and events run: the day and the evening", () => {
+  it("a community centre's time is when its drop-in hours, classes and events run: the day and the evening", () => {
     expect(dayPart("community", at("2026-10-03", "10:00"), TZ)).toBe("prime");
     expect(dayPart("community", at("2026-10-03", "20:30"), TZ)).toBe("prime");
     expect(dayPart("community", at("2026-10-03", "22:00"), TZ)).toBe("off");
