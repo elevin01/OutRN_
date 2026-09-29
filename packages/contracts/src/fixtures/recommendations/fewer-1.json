@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000002c",
+  "requestId": "00000000-0000-4000-8000-000000000030",
   "asOf": "2026-10-04T06:30:00.000Z",
   "generatedAt": "2026-10-04T06:30:00.000Z",
   "expiresAt": "2026-10-04T06:50:00.000Z",
@@ -19,7 +19,12 @@
     "mood": null,
     "company": null,
     "youngestAge": null,
-    "categories": [],
+    "categories": [
+      "park",
+      "viewpoint",
+      "waterfront"
+    ],
+    "cuisines": [],
     "at": "2026-10-04T06:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -32,9 +37,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-00000000002d",
+      "id": "00000000-0000-4000-8000-000000000031",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000002d",
+      "placeId": "00000000-0000-4000-8000-000000000031",
       "name": "Stanton Park",
       "placeName": "Stanton Park",
       "photos": [],
@@ -43,6 +48,7 @@
         "label": "Park"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "check_first",
       "callToAction": "check",
       "location": {
@@ -119,7 +125,7 @@
         },
         {
           "code": "FREE",
-          "text": "free",
+          "text": "usually free",
           "params": {},
           "required": false
         }
@@ -134,7 +140,7 @@
       ],
       "copy": {
         "summary": "~10 min walk · takes about 1h · usually free",
-        "sentence": "A short walk, free.",
+        "sentence": "A short walk, usually free.",
         "caveat": "Check first: hours not listed",
         "action": "Check first"
       },
@@ -146,9 +152,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000002e",
+      "id": "00000000-0000-4000-8000-000000000032",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000002e",
+      "placeId": "00000000-0000-4000-8000-000000000032",
       "name": "East River Overlook",
       "placeName": "East River Overlook",
       "photos": [],
@@ -157,6 +163,7 @@
         "label": "Viewpoint"
       },
       "subtype": null,
+      "cuisines": [],
       "status": "check_first",
       "callToAction": "check",
       "location": {
@@ -224,7 +231,7 @@
       "reasons": [
         {
           "code": "FREE",
-          "text": "free",
+          "text": "usually free",
           "params": {},
           "required": false
         }
@@ -239,7 +246,7 @@
       ],
       "copy": {
         "summary": "~18 min walk · takes about 25 min · usually free",
-        "sentence": "Free.",
+        "sentence": "Usually free.",
         "caveat": "Check first: hours not listed",
         "action": "Check first"
       },
@@ -262,19 +269,19 @@
     "wanted": 3,
     "relaxations": [
       {
-        "code": "longer_travel",
-        "text": "allow a longer walk",
-        "admits": 1
-      },
-      {
         "code": "more_time",
         "text": "give it more time",
-        "admits": 10
+        "admits": 1
       },
       {
         "code": "different_time",
         "text": "try a different time",
-        "admits": 59
+        "admits": 3
+      },
+      {
+        "code": "more_categories",
+        "text": "widen the categories",
+        "admits": 74
       }
     ]
   },

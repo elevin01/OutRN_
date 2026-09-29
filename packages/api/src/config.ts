@@ -1,5 +1,5 @@
 import type { AreasResponse, Option } from "@outrn/contracts";
-import { CATEGORIES } from "@outrn/core";
+import { CATEGORIES, CUISINE_FILTERS } from "@outrn/core";
 import type { Company, Mood } from "@outrn/engine";
 
 /**
@@ -50,6 +50,7 @@ export const FILTERS: AreasResponse["filters"] = {
   moods: options(MOODS),
   companies: options(COMPANIES),
   categories: REQUESTABLE_CATEGORIES.map((id) => ({ id, label: labelOf(id) })),
+  cuisines: Object.entries(CUISINE_FILTERS).map(([id, c]) => ({ id, label: c.label })),
 };
 
 export const LIMITS: AreasResponse["limits"] = {

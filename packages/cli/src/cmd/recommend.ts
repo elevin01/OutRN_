@@ -24,6 +24,7 @@ export function registerRecommend(program: Command): void {
     .option("--mood <relaxed|active|food|culture>")
     .option("--company <alone|date|friends|family>")
     .option("--categories <list>", "comma-separated categories to narrow to")
+    .option("--cuisines <list>", "comma-separated cuisines (japanese, pizza…): only food places serving one")
     .option("--wheelchair", "require wheelchair access")
     .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
     .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
@@ -47,6 +48,7 @@ export function registerRecommend(program: Command): void {
         ...(o["company"] ? { company: o["company"] } : {}),
         ...(typeof o["youngest"] === "number" && Number.isFinite(o["youngest"]) ? { youngestAge: o["youngest"] } : {}),
         ...(o["categories"] ? { categories: String(o["categories"]).split(",").map((x) => x.trim()) } : {}),
+        ...(o["cuisines"] ? { cuisines: String(o["cuisines"]).split(",").map((x) => x.trim()) } : {}),
         ...(o["at"] ? { at: new Date(String(o["at"])).toISOString() } : {}),
       });
       if (!parsed.success) {
@@ -76,7 +78,7 @@ export function registerRecommend(program: Command): void {
       console.log(`ready ${counts["ready"]} · check first ${counts["check_first"]} · ineligible ${counts["ineligible"]}`);
       console.log("");
       items.forEach((e, i) => {
-        const copy = explain(e, ctx.timezone);
+        const copy = explain(e, ctx.timezone, ctx.cuisines);
         console.log(`${offset + i + 1}. ${e.candidate.name}  [${e.candidate.category}]  ${copy.cta ?? ""}`);
         console.log(`   ${copy.factLine}`);
         if (copy.sentence) console.log(`   ${copy.sentence}`);

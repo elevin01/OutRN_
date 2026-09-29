@@ -1,5 +1,6 @@
 import { addMinutes } from "@outrn/core";
 import { waitCeilingMinutes } from "./conditions.js";
+import { leadCuisine } from "./cuisine.js";
 import { ageLimitOf } from "./feasibility.js";
 import { parkStepText } from "./parking.js";
 import { fmtDuration, fmtTime } from "./format.js";
@@ -94,12 +95,14 @@ export function caveatNotes(e: Evaluation): Note[] {
   }));
 }
 
-export function explain(e: Evaluation, tz: string): CardCopy {
+export function explain(e: Evaluation, tz: string, cuisines: readonly string[] = []): CardCopy {
   if (e.class === "ineligible" || !e.timing) {
     return { factLine: "", sentence: "", caveat: e.excludedBy ? `Excluded: ${e.excludedBy.toLowerCase().replace(/_/g, " ")}` : null, cta: null };
   }
   const t = e.timing;
-  const parts: string[] = [t.travel.basis];
+  // What a food place serves leads, the cuisine asked for first: "Thai · ~12 min walk · …".
+  const cuisine = e.candidate.kind === "occurrence" ? null : leadCuisine(e.candidate, cuisines);
+  const parts: string[] = [...(cuisine ? [cuisine] : []), t.travel.basis];
   if (e.candidate.kind === "occurrence" && e.candidate.occurrence) {
     const o = e.candidate.occurrence;
     parts.push(`starts ${fmtTime(o.start, tz)}${o.end ? `, ends ${fmtTime(o.end, tz)}` : ""}`);

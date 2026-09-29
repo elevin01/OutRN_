@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { contentHash, haversineMetres, isPublicWebHost, matchKey, ownValue, type Category, type FactInput } from "@outrn/core";
+import { contentHash, CUISINE_CATEGORIES, cuisineFromName, haversineMetres, isPublicWebHost, matchKey, ownValue, type Category, type FactInput } from "@outrn/core";
 import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { createIfNew } from "@outrn/identity";
@@ -659,7 +659,13 @@ export function placeFacts(venueId: string, p: OverturePlace, category: Category
   // One claim per attribute: an estimate only where the place itself says nothing (never its status).
   const said = new Set(stated.map((f) => f.attribute));
   const estimates = kindEstimates(category).filter((e) => !said.has(e.attribute) && e.attribute !== "business_status");
-  return [...stated, ...estimates.map((e): FactInput => ({ ...base, attribute: e.attribute, value: e.value, evidenceClass: "estimate", evidence: null, confidence: e.confidence }))];
+  // What its name says it serves ("Taqueria Diana"), as OSM's rules read a name without a cuisine tag.
+  const named = CUISINE_CATEGORIES.has(category) ? cuisineFromName(p.name) : [];
+  return [
+    ...stated,
+    ...estimates.map((e): FactInput => ({ ...base, attribute: e.attribute, value: e.value, evidenceClass: "estimate", evidence: null, confidence: e.confidence })),
+    ...(named.length ? [{ ...base, attribute: "cuisine", value: { values: named }, evidenceClass: "estimate", evidence: `Overture place ${p.id}: name`, sourceUpdatedAt: updated, confidence: 0.5 } satisfies FactInput] : []),
+  ];
 }
 
 /**

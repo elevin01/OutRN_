@@ -10,8 +10,8 @@ import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
  * would add a new activity type. Within a class, a broad request prefers distinct activity types
  * first, then fills from the same class, where a repeat of what was just shown (the same kind of
  * place, the same cuisine) costs a little: a slightly lower-scored Thai place comes before a third
- * Italian one, but a much better Italian place still wins. Narrowed request (a category chip):
- * respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
+ * Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
+ * a cuisine): respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
  * A child venue is not shown beside its parent. Never fill a third slot by silently relaxing a
  * constraint; name the relaxation instead.
  */
@@ -67,7 +67,7 @@ const PASSES: Pass[] = [
 /** Every eligible candidate in display order. Pages ("More options") are slices of this. */
 export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluation[] {
   const eligible = all.filter((e) => e.class !== "ineligible").sort(compareEvaluations);
-  const narrowed = Boolean(ctx.categories?.length);
+  const narrowed = Boolean(ctx.categories?.length || ctx.cuisines?.length);
   const ordered: Evaluation[] = [];
   const taken = new Set<Evaluation>();
   const usedVenues = new Set<string>();
@@ -181,7 +181,9 @@ export function relaxations(all: Evaluation[], ctx: RequestContext): Relaxation[
   add(["CLOSED_ON_ARRIVAL", "KITCHEN_CLOSED"], "different_time", "try a different time");
   add("OVER_BUDGET", "higher_budget", "raise the budget");
   add("NOT_FREE", "include_paid", "include paid options");
-  add("NOT_REQUESTED", "more_categories", "widen the categories");
+  // A cuisine search without categories asked for food: widening means any cuisine, not other kinds of place.
+  if (ctx.categories?.length || !ctx.cuisines?.length) add("NOT_REQUESTED", "more_categories", "widen the categories");
+  add("OTHER_CUISINE", "any_cuisine", "try any cuisine");
   add("TAKEOUT_ONLY", "takeout", "get food to go");
   add("NO_TAKEOUT", "dine_in", "sit down to eat");
   add("EVENT_ENDS_AFTER_DEADLINE", "stay_later", "stay out later");

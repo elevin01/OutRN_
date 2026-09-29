@@ -1,48 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000006",
-  "name": "Norfolk Park",
+  "name": "Allen Kitchen",
   "category": {
-    "id": "park",
-    "label": "Park"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.722865,
-    "lon": -73.985733
+    "lat": 40.719101,
+    "lon": -73.993416
   },
   "address": null,
-  "photos": [
-    {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
-      "width": 800,
-      "height": 600,
-      "alt": "OutRN synthetic Norfolk Park",
-      "credit": "Unknown author, Public domain, via Wikimedia Commons",
-      "author": "Unknown author",
-      "license": "Public domain",
-      "licenseUrl": null,
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg"
-    }
-  ],
+  "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T05:00:00.000Z",
+    "closesAt": "2026-10-04T02:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 1am"
+    "summary": "Open now until 10pm"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 06:00-01:00",
-      "detail": "Open now until 1am",
+      "value": "Mo-Su 11:30-15:00,17:00-22:00",
+      "detail": "Open now until 10pm",
       "provenance": {
         "sources": [
           {
@@ -51,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.6,
+        "confidence": 0.605,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-28T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · published"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
       }
     },
     {
@@ -76,18 +63,41 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-28T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Chinese",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-06-28T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -97,43 +107,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-28T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.6,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -145,44 +132,30 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-05-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-06-28T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM May 2026",
-        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
       }
     }
   ],
-  "parkingNearby": {
-    "name": "Rivington Garage",
-    "kind": "garage",
-    "fee": "paid",
-    "openingHours": null,
-    "location": {
-      "lat": 40.72101,
-      "lon": -73.98795
-    },
-    "distanceMetres": 278,
-    "walkMinutes": 5,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
-    "text": "Rivington Garage (paid), ~5 min walk"
-  },
+  "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 1075"
+    "websiteUrl": "https://allenkitchen.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=driving"
     },
     "links": []
   },
   "asOf": "2026-10-03T22:30:00.000Z",
   "attributions": [
-    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

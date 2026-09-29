@@ -157,11 +157,28 @@ changelog.
     share of the outing spent getting there and back. The same walk costs a two-hour museum less
     than a café, and a café less than an ice cream. Up to 90 minutes, ranking is unchanged.
   - Golden scenarios added: dinner with only restaurants, and a five-hour Saturday.
+- **Part 3 (this PR): cuisine on the card and in the search** (contract 1.6).
+  - **On the card:** items list what a food place serves (`cuisines`, up to 3), and the summary
+    leads with it: "Thai · ~12 min walk · …". A café's coffee isn't repeated.
+  - **From the name** when no mapper gave a cuisine ("Arturo's Coal Oven Pizza", "Taqueria Diana",
+    "Great Szechuan"), as an estimate. Whole words that name a cuisine or a dish nothing else is,
+    never ones names use for anything ("kitchen", "fish"). This covers OSM food places without a tag
+    and Overture's new places, which have none. On the LES and Bronxville captures, all 27 read
+    from OSM names are right; 766 of the LES Overture capture's 4,495 food places have one.
+  - **In the search:** `cuisines` (up to 5 of 24: Japanese, pizza, Mexican, Thai…). Only food
+    places serving one are options.
+    - A cuisine takes in its kinds: Japanese finds sushi and ramen, and Italian finds pizzerias.
+      Sushi finds only sushi.
+    - An unknown cuisine is not a match.
+    - It narrows the request like a category chip does (no activity diversity), and each card
+      leads with the cuisine asked for.
+    - When few match, it offers "try any cuisine" (`any_cuisine`), not other kinds of place.
+  - Golden scenarios added: Japanese on a Friday evening, and pizza on a Saturday afternoon.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
-  - Show the cuisine on the card itself (a contract addition), so "Thai" is visible before opening.
+  - In the apps: cuisine chips beside the category shortcuts, and `cuisines` on the card.
   - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)

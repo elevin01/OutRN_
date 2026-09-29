@@ -65,11 +65,37 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.5.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.6.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
     expect(areas.filters.categories.map((c) => c.id)).toContain("bowling");
+    expect(areas.filters.cuisines).toEqual(expect.arrayContaining([{ id: "japanese", label: "Japanese" }, { id: "pizza", label: "Pizza" }]));
+  });
+
+  it("finds a cuisine: only food places serving it, each card saying what it serves; offers any cuisine when few do", async () => {
+    now = SAT_EVENING;
+    const italian = await search({ areaId: "les", windowMinutes: 120, cuisines: ["italian"] });
+    expect(italian.request.cuisines).toEqual(["italian"]);
+    expect(italian.items.length).toBeGreaterThan(0);
+    for (const i of italian.items) {
+      expect(i.cuisines.map((c) => c.id).some((c) => ["italian", "pizza"].includes(c)), i.name).toBe(true);
+      expect(i.copy.summary).toMatch(/^(Italian|Pizza) · /);
+    }
+    // Asking for pizza, a place serving Italian and pizza leads with pizza.
+    const pizza = await search({ areaId: "les", windowMinutes: 120, cuisines: ["pizza"] });
+    expect(pizza.items.length).toBeGreaterThan(0);
+    for (const i of pizza.items) expect([i.cuisines[0]?.id, i.copy.summary.split(" · ")[0]], i.name).toEqual(["pizza", "Pizza"]);
+    // No bar in the fixture serves Chinese food: nothing, and the change that would admit some.
+    const chineseBars = await search({ areaId: "les", windowMinutes: 120, cuisines: ["chinese"], categories: ["bar"] });
+    expect(chineseBars.items).toEqual([]);
+    expect(chineseBars.insufficient?.relaxations.map((r) => r.code)).toEqual(expect.arrayContaining(["any_cuisine"]));
+    // A café the mapper gave no cuisine, but whose name says bagels.
+    const bagels = await search({ areaId: "les", windowMinutes: 120, cuisines: ["bagel"], at: "2026-10-03T14:00:00Z" });
+    expect(bagels.items.map((i) => [i.name, i.cuisines])).toContainEqual(["Bagel Depot", [{ id: "bagel", label: "Bagel" }]]);
+    // Not a food place: no cuisines, whatever else the search is.
+    const all = await search({ areaId: "les", windowMinutes: 180 });
+    for (const i of all.items) if (!["restaurant", "cafe", "dessert", "bar"].includes(i.category.id)) expect(i.cuisines).toEqual([]);
   });
 
   it("serves only launched areas; operators can evaluate one before it opens", async () => {
@@ -303,6 +329,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
+    // Stored by a 1.5 API: no cuisines asked for, and none listed on the items.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'cuisines', items = (select jsonb_agg(i - 'cuisines') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    const before16 = await search(next);
+    expect(before16.items.map((i) => i.id)).toEqual(expected);
+    expect([before16.request.cuisines, before16.items.map((i) => i.cuisines)]).toEqual([[], expected.map(() => [])]);
     // Items a 1.4 API stored have no photos; a 1.3 API's name no parking; a 1.2 API's have no conditions either: that search computed none.
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'photos') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     expect((await search(next)).items.map((i) => i.photos)).toEqual(expected.map(() => []));
@@ -476,6 +507,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
         [{ areaId: "les", windowMinutes: 120, company: key }, "company"],
       ]),
       [{ areaId: "les", windowMinutes: 120, categories: ["bar", "spaceport"] }, "categories.1"],
+      [{ areaId: "les", windowMinutes: 120, cuisines: ["thai", "martian"] }, "cuisines.1"],
+      [{ areaId: "les", windowMinutes: 120, cuisines: ["__proto__"] }, "cuisines.0"],
+      [{ areaId: "les", windowMinutes: 120, cuisines: ["thai", "pizza", "sushi", "ramen", "korean", "indian"] }, "cuisines"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
       [{ areaId: "les", windowMinutes: 120, colour: "blue" }, "(body)"],
     ];

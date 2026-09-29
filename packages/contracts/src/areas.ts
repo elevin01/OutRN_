@@ -37,6 +37,8 @@ export const AreasResponse = z.object({
     moods: z.array(Option),
     companies: z.array(Option),
     categories: z.array(Option),
+    /** Cuisines a request may ask for (`cuisines`), each taking in its kinds: Japanese includes sushi and ramen. */
+    cuisines: z.array(Option),
   }),
   limits: z.object({
     windowMinutes: Range,

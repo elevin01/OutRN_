@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.5.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.6.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,19 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.6.0** (additive). Cuisine:
+  - `cuisines` on every item: what a food place (restaurant, café, dessert place, bar) serves, lead first, at most 3, as options (`{ id: "thai", label: "Thai" }`). The list comes from the place's OpenStreetMap entry, or, when it has none, from what its name says ("Joe's Pizza" serves pizza). Empty when unknown, and always empty for other kinds of place.
+  - The default `copy.summary` leads with the cuisine: "Thai · ~12 min walk · takes about 1h20 · until 10pm · $15–35". A café's coffee isn't repeated there.
+  - A request may ask for cuisines (`cuisines`, up to 5 ids from `AreasResponse.filters.cuisines`). Then only food places serving one of them are options.
+    - A cuisine takes in its kinds: `japanese` finds sushi bars and ramen shops, and `italian` finds pizzerias. `sushi` or `pizza` finds only places that list it.
+    - A place whose cuisine isn't known is not an option.
+    - With `categories` too, only food places of those categories count (`["bar"]` with `japanese` is sake bars).
+    - Each card lists the cuisine asked for first.
+    - An unknown id is a `VALIDATION_FAILED` on `cuisines.<i>`.
+  - `ResolvedRequest.cuisines` echoes the request's cuisines (`[]` by default).
+  - A new relaxation, `any_cuisine` ("try any cuisine"). A cuisine search without `categories` doesn't offer `more_categories`, because it asked for food.
+  - `AreasResponse.filters.cuisines` lists the cuisines a request may ask for, with labels.
+  - Snapshots stored by a 1.5 API page with `cuisines: []` on their items and resolved request.
 - **1.5.0** (additive). Photos:
   - `photos` on every item (up to 3) and on place details: freely licensed photos of the place itself, lead first. Each has `url` (a copy 800 px wide or a little more, from Wikimedia's image servers: thumb.wikimedia.org or upload.wikimedia.org), `width`, `height`, `alt` (null when the source doesn't describe it), `credit`, `author`, `license`, `licenseUrl` and `sourceUrl`.
   - **Always show `credit` with the photo, linked to `sourceUrl`.** The license requires it.
@@ -83,7 +96,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 | --- | --- |
 | `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `FRESH_REPORT`, `LANDMARK` |
 | `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`) |
-| `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `takeout`, `dine_in`, `stay_later` |
+| `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `any_cuisine`, `takeout`, `dine_in`, `stay_later` |
 | `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |
 | `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event` |
 | `plan[].kind` | `leave`, `park`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` |

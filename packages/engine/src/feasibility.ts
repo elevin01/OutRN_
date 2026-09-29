@@ -1,8 +1,9 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
+import { cuisinesOf } from "./cuisine.js";
 import { parkingMinutesFor, parkingOpenFor } from "./parking.js";
 import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from "./visit.js";
 
@@ -125,6 +126,12 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (c.excluded) return out("EXCLUDED_BY_OVERRIDE");
   if (ctx.dismissedIds?.includes(c.id)) return out("DISMISSED");
   if (ctx.categories?.length && !ctx.categories.includes(c.category)) return out("NOT_REQUESTED");
+  if (ctx.cuisines?.length) {
+    // A cuisine search is a search for food: nothing else was asked for, and a place whose cuisine
+    // isn't known is not known to serve it.
+    if (c.kind === "occurrence" || !CUISINE_CATEGORIES.has(c.category)) return out("NOT_REQUESTED");
+    if (!cuisineMatches(ctx.cuisines, cuisinesOf(c))) return out("OTHER_CUISINE");
+  }
 
   const status = fact<{ status: string }>(c, "business_status");
   if (status && status.value.status.startsWith("closed") && (!status.isEstimate || status.confidence >= 0.6)) return out(status.value.status === "closed_temporarily" ? "CLOSED_TEMPORARILY" : "CLOSED_PERMANENTLY");

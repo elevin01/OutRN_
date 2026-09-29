@@ -1,5 +1,5 @@
 import type { AgeLimit, Evidence, NearbyParking, Option, Price, TravelMode, VenueLink } from "@outrn/contracts";
-import { isMenuUrlFor, isPublicWebHost } from "@outrn/core";
+import { cuisineLabel, isMenuUrlFor, isPublicWebHost } from "@outrn/core";
 import { parkingText, type NearbyParking as EngineParking } from "@outrn/engine";
 import { labelOf } from "../config.js";
 
@@ -33,6 +33,17 @@ export function ageLimitFrom(fact: { value: unknown; evidenceClass: EvidenceClas
 export function subtypeFrom(value: unknown): Option | null {
   const id = (value as { value?: unknown } | undefined)?.value;
   return typeof id === "string" && id ? { id, label: labelOf(id) } : null;
+}
+
+/** Up to 3 cuisines as a card names them, lead first; "pizza" and "italian_pizza" are both "Pizza", shown once. */
+export function cuisineOptions(slugs: readonly string[]): Option[] {
+  const out: Option[] = [];
+  for (const id of slugs) {
+    const label = cuisineLabel(id);
+    if (!out.some((o) => o.label === label)) out.push({ id, label });
+    if (out.length === 3) break;
+  }
+  return out;
 }
 
 export function textFrom(value: unknown): string | null {

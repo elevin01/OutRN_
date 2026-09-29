@@ -21,6 +21,7 @@
       "lon": -73.835
     },
     "company": null,
+    "cuisines": [],
     "categories": [],
     "travelMode": "drive",
     "visitStyle": "dine_in",
@@ -35,50 +36,26 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
+          "text": "Places like this are usually quiet on Saturday evenings",
           "basis": "typical",
-          "level": "busy",
+          "level": "quiet",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "parking": {
-        "fee": "paid",
-        "kind": "lot",
-        "name": "Orchard Street Lot",
-        "text": "Orchard Street Lot (paid), ~2 min walk",
-        "location": {
-          "lat": 40.9296,
-          "lon": -73.8434
-        },
-        "walkMinutes": 2,
-        "openingHours": "Mo-Su 06:00-24:00",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-        "distanceMetres": 102
-      },
+      "parking": null,
       "photos": [],
+      "cuisines": [],
       "id": "00000000-0000-4000-8000-000000000018",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~11 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
-        "sentence": "A short drive, plenty of time, open late."
+        "summary": "~8 min drive incl. parking · takes about 1h · until 1am · usually free",
+        "sentence": "A short drive, plenty of time, open late, usually free."
       },
       "kind": "venue",
-      "name": "Delancey Kitchen",
+      "name": "Pitt Park",
       "plan": [
         {
           "at": "2026-10-03T23:30:00.000Z",
@@ -87,15 +64,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T23:39:00.000Z",
-          "kind": "park",
-          "text": "Park at Orchard Street Lot (paid), then walk ~2 min",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T23:51:00.000Z",
+          "at": "2026-10-03T23:43:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 7:51pm",
+          "text": "Arrive around 7:43pm",
           "isEstimate": true
         },
         {
@@ -107,34 +78,35 @@
       ],
       "event": null,
       "price": {
-        "kind": "unknown"
+        "kind": "free",
+        "evidence": "estimate"
       },
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
+          "label": "Visit",
+          "style": "visit",
           "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
+          "minMinutes": 45,
+          "typicalMinutes": 60
         },
         "travel": {
           "mode": "drive",
-          "minutes": 11,
+          "minutes": 8,
           "isEstimate": true,
           "parkingMinutes": 5
         },
         "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:51:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
+        "arriveAt": "2026-10-03T23:43:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 99
+        "usefulMinutes": 107
       },
       "actions": {
         "links": [],
         "phone": null,
         "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934679%2C-73.840902&travelmode=driving"
       },
       "caveats": [],
       "placeId": "00000000-0000-4000-8000-000000000018",
@@ -144,7 +116,7 @@
           "text": "a short drive",
           "params": {
             "mode": "drive",
-            "minutes": 11
+            "minutes": 8
           },
           "required": false
         },
@@ -152,7 +124,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 99
+            "usefulMinutes": 107
           },
           "required": false
         },
@@ -160,22 +132,28 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
+            "closesAt": "2026-10-04T05:00:00.000Z"
           },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
           "required": false
         }
       ],
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
+        "id": "park",
+        "label": "Park"
       },
       "location": {
-        "lat": 40.929225,
-        "lon": -73.844511
+        "lat": 40.934679,
+        "lon": -73.840902
       },
-      "placeName": "Delancey Kitchen",
+      "placeName": "Pitt Park",
       "callToAction": "go"
     },
     {
@@ -217,11 +195,17 @@
         "distanceMetres": 160
       },
       "photos": [],
+      "cuisines": [
+        {
+          "id": "mexican",
+          "label": "Mexican"
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000019",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~10 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "summary": "Mexican · ~10 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
         "sentence": "A short drive, plenty of time."
       },
       "kind": "venue",
@@ -344,12 +328,13 @@
         "distanceMetres": 74
       },
       "photos": [],
+      "cuisines": [],
       "id": "00000000-0000-4000-8000-00000000001a",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: hours not listed",
-        "summary": "~10 min drive incl. parking · takes about 45 min · price unknown",
-        "sentence": "A short drive, plenty of time."
+        "summary": "~10 min drive incl. parking · takes about 45 min · usually free",
+        "sentence": "A short drive, plenty of time, usually free."
       },
       "kind": "venue",
       "name": "Forsyth Library",
@@ -381,7 +366,8 @@
       ],
       "event": null,
       "price": {
-        "kind": "unknown"
+        "kind": "free",
+        "evidence": "estimate"
       },
       "status": "check_first",
       "timing": {
@@ -435,6 +421,12 @@
           "params": {
             "usefulMinutes": 105
           },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
           "required": false
         }
       ],

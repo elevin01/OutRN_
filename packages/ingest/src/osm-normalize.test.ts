@@ -258,6 +258,17 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "cuisine")).toBeUndefined();
   });
 
+  it("without a cuisine tag, what a food place's name says it serves is an estimate; a tag always wins", () => {
+    expect(fact(rec({ name: "Arturo's Coal Oven Pizza", amenity: "restaurant" }), "cuisine")).toMatchObject({ evidenceClass: "estimate", value: { values: ["pizza"] }, evidence: "name=Arturo's Coal Oven Pizza", confidence: 0.5 });
+    expect(fact(rec({ name: "Bagel Depot", amenity: "cafe" }), "cuisine")).toMatchObject({ evidenceClass: "estimate", value: { values: ["bagel"] } });
+    expect(fact(rec({ name: "Sake Bar Izakaya", amenity: "bar" }), "cuisine")).toMatchObject({ value: { values: ["japanese"] } });
+    // The mapper's tag is the claim, even when the name says otherwise.
+    expect(fact(rec({ name: "Joe's Pizza", amenity: "restaurant", cuisine: "italian" }), "cuisine")).toMatchObject({ evidenceClass: "published", value: { values: ["italian"] } });
+    // Only where food is served: a park or a shop named for a dish is not a restaurant.
+    expect(fact(rec({ name: "Pizza Park", leisure: "park" }), "cuisine")).toBeUndefined();
+    expect(fact(rec({ name: "Thai Books", shop: "books" }), "cuisine")).toBeUndefined();
+  });
+
   it("takeaway becomes a published takeout fact; other values are ignored", () => {
     expect(fact(rec({ name: "Slice", amenity: "restaurant", takeaway: "only" }), "takeout")).toMatchObject({ evidenceClass: "published", value: { value: "only" }, evidence: "takeaway=only" });
     expect(fact(rec({ name: "Bistro", amenity: "restaurant", takeaway: "no" }), "takeout")).toMatchObject({ value: { value: "no" } });

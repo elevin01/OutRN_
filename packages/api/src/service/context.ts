@@ -1,5 +1,5 @@
 import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
-import { haversineMetres, type Category, type LatLon } from "@outrn/core";
+import { CUISINE_FILTERS, haversineMetres, type Category, type LatLon } from "@outrn/core";
 import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadParkingBuffer, loadWeather, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
@@ -48,6 +48,10 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   categories.forEach((c, i) => {
     if (!(REQUESTABLE_CATEGORIES as readonly string[]).includes(c)) throw invalid(`categories.${i}`, `unknown category "${c}"`);
   });
+  const cuisines = request.cuisines ?? [];
+  cuisines.forEach((c, i) => {
+    if (!Object.hasOwn(CUISINE_FILTERS, c)) throw invalid(`cuisines.${i}`, `unknown cuisine "${c}"`);
+  });
   const budget: Budget = request.budget ?? { kind: "any" };
   if (budget.kind === "max" && budget.currency !== "USD") throw invalid("budget.currency", "only USD is supported");
 
@@ -76,6 +80,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.company) ctx.company = request.company as Company;
   if (request.youngestAge !== undefined) ctx.youngestAge = request.youngestAge;
   if (categories.length) ctx.categories = categories as Category[];
+  if (cuisines.length) ctx.cuisines = cuisines;
   if (backBy ?? overrides.backBy) ctx.backBy = (backBy ?? overrides.backBy)!;
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
@@ -102,6 +107,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     company: request.company ?? null,
     youngestAge: request.youngestAge ?? null,
     categories,
+    cuisines,
     at: at.toISOString(),
     atIsExplicit: request.at !== undefined,
     origin,

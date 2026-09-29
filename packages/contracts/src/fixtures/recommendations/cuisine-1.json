@@ -1,15 +1,15 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000034",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
   "area": {
-    "id": "mock-expired",
-    "name": "Mock · expired pages",
+    "id": "mock-cuisine",
+    "name": "Mock · a cuisine",
     "timezone": "America/New_York"
   },
   "request": {
-    "areaId": "mock-expired",
+    "areaId": "mock-cuisine",
     "windowMinutes": 120,
     "travelMode": "walk",
     "travelModeIsDefault": true,
@@ -20,7 +20,9 @@
     "company": null,
     "youngestAge": null,
     "categories": [],
-    "cuisines": [],
+    "cuisines": [
+      "italian"
+    ],
     "at": "2026-10-03T22:30:00.000Z",
     "atIsExplicit": false,
     "origin": {
@@ -33,239 +35,11 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000002",
+      "id": "00000000-0000-4000-8000-000000000008",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000002",
-      "name": "Clinton Bar",
-      "placeName": "Clinton Bar",
-      "photos": [],
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "cuisines": [],
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.723404,
-        "lon": -73.980264
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 14,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:49:00.000Z",
-        "usefulMinutes": 101,
-        "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
-        "visit": {
-          "style": "visit",
-          "label": "Visit",
-          "minMinutes": 45,
-          "typicalMinutes": 60,
-          "isEstimate": true
-        }
-      },
-      "plan": [
-        {
-          "kind": "leave",
-          "at": "2026-10-03T22:30:00.000Z",
-          "isEstimate": false,
-          "text": "Leave at 6:30pm"
-        },
-        {
-          "kind": "arrive",
-          "at": "2026-10-03T22:49:00.000Z",
-          "isEstimate": true,
-          "text": "Arrive around 6:49pm"
-        },
-        {
-          "kind": "wrap_up",
-          "at": "2026-10-04T00:30:00.000Z",
-          "isEstimate": false,
-          "text": "Wrap up by 8:30pm"
-        }
-      ],
-      "parking": null,
-      "conditions": [
-        {
-          "kind": "crowd",
-          "level": "moderate",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually fairly busy on Saturday evenings"
-        }
-      ],
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 101
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "HOURS_CONFIRMED",
-          "text": "hours confirmed",
-          "params": {
-            "verifiedAt": "2026-09-29T16:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late, hours confirmed.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
-        "websiteUrl": null,
-        "phone": "+1 212 555 8297",
-        "links": []
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000004",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000004",
-      "name": "Delancey Books",
-      "placeName": "Delancey Books",
-      "photos": [],
-      "category": {
-        "id": "bookshop",
-        "label": "Bookshop"
-      },
-      "subtype": null,
-      "cuisines": [],
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.715671,
-        "lon": -73.989625
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 6,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:41:00.000Z",
-        "usefulMinutes": 109,
-        "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T01:00:00.000Z",
-        "visit": {
-          "style": "visit",
-          "label": "Visit",
-          "minMinutes": 30,
-          "typicalMinutes": 30,
-          "isEstimate": true
-        }
-      },
-      "plan": [
-        {
-          "kind": "leave",
-          "at": "2026-10-03T22:30:00.000Z",
-          "isEstimate": false,
-          "text": "Leave at 6:30pm"
-        },
-        {
-          "kind": "arrive",
-          "at": "2026-10-03T22:41:00.000Z",
-          "isEstimate": true,
-          "text": "Arrive around 6:41pm"
-        },
-        {
-          "kind": "wrap_up",
-          "at": "2026-10-04T00:30:00.000Z",
-          "isEstimate": false,
-          "text": "Wrap up by 8:30pm"
-        }
-      ],
-      "parking": null,
-      "conditions": [
-        {
-          "kind": "crowd",
-          "level": "quiet",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually quiet on Saturday evenings"
-        }
-      ],
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": null,
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 6
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 109
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
-        "sentence": "A short walk, plenty of time.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking",
-        "websiteUrl": "https://delanceybooks.example/",
-        "phone": null,
-        "links": []
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000003",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000003",
-      "name": "Forsyth Clinton Kitchen",
-      "placeName": "Forsyth Clinton Kitchen",
+      "placeId": "00000000-0000-4000-8000-000000000008",
+      "name": "Ridge Ludlow Kitchen",
+      "placeName": "Ridge Ludlow Kitchen",
       "photos": [],
       "category": {
         "id": "restaurant",
@@ -274,27 +48,277 @@
       "subtype": null,
       "cuisines": [
         {
-          "id": "mexican",
-          "label": "Mexican"
+          "id": "pizza",
+          "label": "Pizza"
         }
       ],
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.720713,
-        "lon": -73.98824
+        "lat": 40.718864,
+        "lon": -73.979899
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 5,
+          "minutes": 12,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:45:00.000Z",
-        "usefulMinutes": 105,
+        "arriveAt": "2026-10-03T22:52:00.000Z",
+        "usefulMinutes": 98,
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "closesAt": "2026-10-04T03:30:00.000Z",
+        "visit": {
+          "style": "dine_in",
+          "label": "Sit-down meal",
+          "minMinutes": 60,
+          "typicalMinutes": 80,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:52:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:52pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T00:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 8:30pm"
+        }
+      ],
+      "parking": null,
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday evenings"
+        },
+        {
+          "kind": "wait",
+          "level": "long",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": {
+            "min": 15,
+            "max": 30
+          },
+          "reportedAt": null,
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)"
+        }
+      ],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 98
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:30:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "Pizza · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking",
+        "websiteUrl": "https://ridgeludlowkitchen.example/",
+        "phone": "+1 212 555 7135",
+        "links": []
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000000d",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
+      "name": "Ridge Suffolk Kitchen",
+      "placeName": "Ridge Suffolk Kitchen",
+      "photos": [],
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "subtype": null,
+      "cuisines": [
+        {
+          "id": "pizza",
+          "label": "Pizza"
+        }
+      ],
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.712091,
+        "lon": -73.990301
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:53:00.000Z",
+        "usefulMinutes": 97,
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
+        "visit": {
+          "style": "dine_in",
+          "label": "Sit-down meal",
+          "minMinutes": 60,
+          "typicalMinutes": 80,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:53:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:53pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T00:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 8:30pm"
+        }
+      ],
+      "parking": null,
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday evenings"
+        },
+        {
+          "kind": "wait",
+          "level": "long",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": {
+            "min": 15,
+            "max": 30
+          },
+          "reportedAt": null,
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)"
+        }
+      ],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": null,
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 97
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T02:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "Pizza · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=walking",
+        "websiteUrl": "https://ridgesuffolkkitchen.example/",
+        "phone": "+1 212 555 5718",
+        "links": []
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000028",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000028",
+      "name": "Attorney Pitt Kitchen",
+      "placeName": "Attorney Pitt Kitchen",
+      "photos": [],
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "subtype": null,
+      "cuisines": [
+        {
+          "id": "italian",
+          "label": "Italian"
+        }
+      ],
+      "status": "check_first",
+      "callToAction": "check",
+      "location": {
+        "lat": 40.718281,
+        "lon": -73.971661
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 23,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T23:03:00.000Z",
+        "usefulMinutes": 87,
         "finishBy": "2026-10-04T00:30:00.000Z",
         "closesAt": "2026-10-04T03:00:00.000Z",
         "visit": {
@@ -314,9 +338,9 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:45:00.000Z",
+          "at": "2026-10-03T23:03:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:45pm"
+          "text": "Arrive around 7:03pm"
         },
         {
           "kind": "wrap_up",
@@ -330,20 +354,23 @@
         {
           "kind": "crowd",
           "level": "busy",
-          "basis": "report",
-          "isEstimate": false,
+          "basis": "typical",
+          "isEstimate": true,
           "minutes": null,
-          "reportedAt": "2026-10-03T22:28:00.000Z",
-          "text": "Reported busy at 6:28pm"
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday evenings"
         },
         {
           "kind": "wait",
-          "level": "short",
-          "basis": "report",
-          "isEstimate": false,
-          "minutes": null,
-          "reportedAt": "2026-10-03T22:28:00.000Z",
-          "text": "Reported a short line at 6:28pm"
+          "level": "long",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": {
+            "min": 15,
+            "max": 30
+          },
+          "reportedAt": null,
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)"
         }
       ],
       "price": {
@@ -352,48 +379,34 @@
       "ageLimit": null,
       "reasons": [
         {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 5
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 105
-          },
-          "required": false
-        },
-        {
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
             "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
-        },
-        {
-          "code": "FRESH_REPORT",
-          "text": "recent report",
-          "params": {},
-          "required": false
         }
       ],
-      "caveats": [],
+      "caveats": [
+        {
+          "code": "WAIT_MAY_NOT_FIT",
+          "text": "a wait could leave too little time",
+          "params": {
+            "waitMinutes": 30
+          },
+          "required": true
+        }
+      ],
       "copy": {
-        "summary": "Mexican · ~5 min walk · takes about 1h20 · short line reported · until 11pm · price unknown",
-        "sentence": "A short walk, plenty of time, open late, recent report.",
-        "caveat": null,
-        "action": "Go now"
+        "summary": "Italian · ~23 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Open late.",
+        "caveat": "Check first: a wait could leave too little time",
+        "action": "Check first"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=walking",
-        "websiteUrl": null,
-        "phone": "+1 212 555 9967",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=walking",
+        "websiteUrl": "https://attorneypittkitchen.example/",
+        "phone": "+1 212 555 1242",
         "links": []
       }
     }
@@ -401,12 +414,11 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM0IiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,
   "attributions": [
-    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

@@ -1,8 +1,8 @@
 import type { Photo, RecommendationItem } from "@outrn/contracts";
 import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
-import { caveatNotes, explain, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
+import { caveatNotes, cuisinesOf, explain, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
-import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
+import { ageLimitFrom, cuisineOptions, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
 
 const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
 
@@ -14,7 +14,7 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
   const c = e.candidate;
   const t = e.timing;
   if (e.class === "ineligible" || !t) throw new Error(`toItem: ${c.id} is ineligible and must not be shown`);
-  const copy = explain(e, ctx.timezone);
+  const copy = explain(e, ctx.timezone, ctx.cuisines);
   const o = c.occurrence;
   return {
     id: c.id,
@@ -25,6 +25,7 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
     photos: photos.slice(0, 3),
     category: { id: c.category, label: labelOf(c.category) },
     subtype: subtypeFrom(c.facts.subtype?.value),
+    cuisines: cuisineOptions(cuisinesOf(c, ctx.cuisines)),
     status: e.class,
     callToAction: e.cta ?? "check",
     location: { lat: c.point.lat, lon: c.point.lon },
