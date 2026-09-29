@@ -3,6 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PlaceDetails, TravelMode } from "@outrn/contracts";
 import { ApiProblem } from "../../../components/ApiProblem";
+import { CategoryIcon } from "../../../components/CategoryIcon";
+import { PhotoFigure } from "../../../components/PhotoFigure";
+import { photosFor } from "../../../lib/categories";
 import { api, ApiRequestError } from "../../../lib/api";
 import { one, type Search } from "../../../lib/query";
 
@@ -32,12 +35,25 @@ export default async function PlacePage({ params, searchParams }: { params: Prom
   const mode = MODES.find((m) => m === requested) ?? "walk";
   const maps = item.actions.directionsUrls[mode];
   const { websiteUrl: site, phone } = item.contact;
+  const photos = photosFor(item.name, item.category, item.photos);
+  const fallback = photosFor(item.name, item.category, [])[0];
   return (
     <section className="detail-shell">
       <Link className="back-link" href="/">← Back to the three</Link>
+      {photos.length > 0 ? (
+        <div className="detail-photos">
+          {photos.map((p) => (
+            <PhotoFigure key={p.url} photo={p} fallback={fallback} category={item.category.id} />
+          ))}
+        </div>
+      ) : (
+        <div className="detail-photos">
+          <PhotoFigure photo={undefined} category={item.category.id} />
+        </div>
+      )}
       <div className="detail-hero">
         <div>
-          <p className="eyebrow">{item.category.label}</p>
+          <p className="eyebrow category-line"><CategoryIcon category={item.category.id} size={14} />{item.category.label}</p>
           <h1>{item.name}</h1>
           {item.address && <p className="detail-address">{item.address}</p>}
         </div>

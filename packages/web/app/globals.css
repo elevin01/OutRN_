@@ -199,3 +199,24 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
   .run-list > a { gap: 5px; grid-template-columns: 1fr 1fr; }
   footer { gap: 15px; }
 }
+
+/* Photos and category icons */
+.category-icon { display: inline-block; flex: none; vertical-align: -3px; }
+.category-line { align-items: center; display: flex; gap: 8px; }
+.category-shortcuts { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; }
+.category-shortcuts .shortcut { align-items: center; background: rgba(255, 253, 247, .08); border: 1px solid rgba(255, 253, 247, .35); border-radius: 999px; color: var(--card); display: inline-flex; font-size: 14px; font-weight: 600; gap: 8px; min-height: 44px; padding: 0 16px; text-decoration: none; }
+.category-shortcuts .shortcut:hover { background: rgba(255, 253, 247, .16); border-color: var(--card); }
+.category-shortcuts .shortcut:focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+.category-shortcuts .shortcut.active { background: var(--lime); border-color: var(--lime); color: var(--ink); }
+.card-photo { aspect-ratio: 4 / 3; border-radius: 4px; margin: -10px -10px 18px; overflow: hidden; position: relative; }
+.card-photo img { display: block; height: 100%; object-fit: cover; width: 100%; }
+.card-photo figcaption { background: linear-gradient(transparent, rgba(16, 27, 20, .78)); bottom: 0; color: #f7f5ef; font-size: 11px; left: 0; line-height: 1.4; padding: 18px 10px 8px; position: absolute; right: 0; }
+.card-photo figcaption a { color: inherit; }
+.card-photo-empty { align-items: center; background: var(--cream); color: var(--moss); display: flex; justify-content: center; }
+.card-photo-empty[data-tone="outdoors"] { background: #dbe8d3; color: var(--moss-dark); }
+.card-photo-empty[data-tone="drink"] { background: #f6d9cc; color: #8a3a22; }
+.card-photo-empty[data-tone="culture"] { background: #dcdcef; color: #3d3b6b; }
+.card-photo-empty[data-tone="entertainment"] { background: var(--blue); color: #1d4a46; }
+.card-photo-empty[data-tone="food"] { background: #f3e2c2; color: #7a4a14; }
+.detail-photos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 0 0 28px; }
+.detail-photos .card-photo { margin: 0; }

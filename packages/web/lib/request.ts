@@ -24,8 +24,12 @@ export function requestFromQuery(query: Search, meta: AreasResponse): Recommenda
     const value = one(query[key]);
     if (value) request[key] = value;
   }
+  // One kind from the form's select, or several from a category shortcut ("categories=park,garden").
+  const offered = new Set(filters.categories.map((c) => c.id));
+  const several = (one(query["categories"]) ?? "").split(",").filter((id) => offered.has(id)).slice(0, limits.maxCategories);
   const category = one(query["category"]);
-  if (category) request.categories = [category];
+  if (several.length) request.categories = several;
+  else if (category) request.categories = [category];
   if (youngest) request.youngestAge = integer(youngest, 0, limits.youngestAge.min, limits.youngestAge.max);
   const at = one(query["at"]);
   if (at) {
@@ -44,7 +48,8 @@ export function formFromResolved(r: ResolvedRequest, meta: AreasResponse): FormV
     budget: meta.filters.budgets.find((b) => sameBudget(b.budget, r.budget))?.id ?? "any",
     mood: r.mood ?? "",
     company: r.company ?? "",
-    category: r.categories[0] ?? "",
+    category: r.categories.length === 1 ? r.categories[0] : "",
+    categories: r.categories.length > 1 ? r.categories.join(",") : undefined,
     youngest: r.youngestAge === null ? undefined : String(r.youngestAge),
     at: r.atIsExplicit ? r.at : undefined,
   };
@@ -58,7 +63,8 @@ export function hrefForRequest(r: RecommendationRequest, meta: AreasResponse, ba
   if (budget) params.set("budget", budget.id);
   if (r.mood) params.set("mood", r.mood);
   if (r.company) params.set("company", r.company);
-  if (r.categories?.[0]) params.set("category", r.categories[0]);
+  if (r.categories?.length === 1) params.set("category", r.categories[0]!);
+  else if (r.categories?.length) params.set("categories", r.categories.join(","));
   if (r.youngestAge !== undefined) params.set("youngest", String(r.youngestAge));
   if (r.at) params.set("at", r.at);
   return `${base}?${params.toString()}`;
