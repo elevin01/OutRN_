@@ -432,6 +432,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       [{ areaId: "les", windowMinutes: 5 }, "windowMinutes"],
       [{ areaId: "atlantis", windowMinutes: 120 }, "areaId"],
       [{ areaId: "les", windowMinutes: 120, mood: "sleepy" }, "mood"],
+      // Names every object inherits are not moods or companies either.
+      ...["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"].flatMap((key): [unknown, string][] => [
+        [{ areaId: "les", windowMinutes: 120, mood: key }, "mood"],
+        [{ areaId: "les", windowMinutes: 120, company: key }, "company"],
+      ]),
       [{ areaId: "les", windowMinutes: 120, categories: ["bar", "spaceport"] }, "categories.1"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
       [{ areaId: "les", windowMinutes: 120, colour: "blue" }, "(body)"],
