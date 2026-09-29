@@ -36,4 +36,24 @@ describe("NWS hourly forecast", () => {
     expect(() => parseHourlyForecast(JSON.stringify({ properties: {} }), FETCHED)).toThrow();
     expect(() => parseHourlyForecast(JSON.stringify({ properties: { periods: [{ startTime: "2026-10-03T12:00:00-04:00", endTime: "2026-10-03T13:00:00-04:00", temperature: "warm", temperatureUnit: "F" }] } }), FETCHED)).toThrow();
   });
+
+  it("refuses a forecast out of range: too many hours, impossible numbers, an unknown unit", () => {
+    const doc = JSON.parse(SAMPLE) as { properties: { periods: Record<string, unknown>[] } };
+    const a = doc.properties.periods[0]!;
+    const withPeriods = (periods: unknown[]) => JSON.stringify({ ...doc, properties: { ...doc.properties, periods } });
+    expect(() => parseHourlyForecast(withPeriods(Array.from({ length: 501 }, () => a)), FETCHED)).toThrow();
+    expect(parseHourlyForecast(withPeriods(Array.from({ length: 156 }, () => a)), FETCHED).hours).toHaveLength(156);
+    for (const bad of [{ temperature: 1e308, temperatureUnit: "C" }, { temperatureUnit: "K" }, { probabilityOfPrecipitation: { value: -500 } }, { probabilityOfPrecipitation: { value: 5000 } }]) {
+      expect(() => parseHourlyForecast(withPeriods([{ ...a, ...bad }]), FETCHED), JSON.stringify(bad)).toThrow();
+    }
+    // JSON's 1e999 reads as Infinity.
+    expect(() => parseHourlyForecast(withPeriods([a]).replace(/"temperature":\s*-?[\d.]+/, '"temperature": 1e999'), FETCHED)).toThrow();
+  });
+
+  it("drops a period longer than an hour or two: it would speak for hours it does not describe", () => {
+    const doc = JSON.parse(SAMPLE) as { properties: { periods: Record<string, unknown>[] } };
+    const a = doc.properties.periods[0]!;
+    doc.properties.periods = [{ ...a, startTime: "2000-01-01T00:00:00Z", endTime: "2100-01-01T00:00:00Z" }, a];
+    expect(parseHourlyForecast(JSON.stringify(doc), FETCHED).hours.map((h) => h.start.toISOString())).toEqual(["2026-10-03T16:00:00.000Z"]);
+  });
 });
