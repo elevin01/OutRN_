@@ -27,12 +27,12 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 - **1.7.0** (additive). Diets and must-haves:
   - A request may ask for diets (`diets`: `vegetarian`, `vegan`, `gluten_free`, `halal`, `kosher`, up to `limits.maxDiets`). Then only food places known to serve **all** of them are options, because one party eats together.
-    - "Known" means the place's OpenStreetMap `diet:*` tags say `yes` or `only`, or, without any tags, its name ("Jisu Vegetarian").
+    - "Known" means the place's OpenStreetMap `diet:*` tags say `yes` or `only`, or, only when it has no `diet:*` tags at all, its name ("Jisu Vegetarian").
     - A vegan place serves vegetarians too.
     - "Limited", "no" and unknown are not a yes.
   - A request may ask for must-haves (`features`: `outdoor_seating`, `wifi`, `wheelchair`, up to `limits.maxFeatures`). Only places whose record states them are options.
     - `wheelchair` is step-free access: `yes` passes; `limited` passes as Check first (`ACCESS_LIMITED`); `no` and unknown are left out.
-    - `wifi` includes libraries and bookshops.
+    - `wifi` is OSM `internet_access=wlan`, libraries and bookshops included. Internet of an unknown kind (`yes`, which may be a wired port or a terminal) doesn't count.
   - `diets` and `features` on every item: what the record states, e.g. `{ id: "vegan", label: "Vegan" }` for a vegan place and `{ id: "vegan", label: "Vegan options" }` where there are some; `{ id: "wifi", label: "Wi-Fi" }`.
   - `ResolvedRequest.diets` and `.features` echo the request (`[]` by default).
   - `AreasResponse.filters.diets` and `.features` list the options, with `limits.maxDiets` (5) and `limits.maxFeatures` (3).

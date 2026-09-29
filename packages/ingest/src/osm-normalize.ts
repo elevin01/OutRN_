@@ -1,4 +1,4 @@
-import { CUISINE_CATEGORIES, cuisineFromName, cuisineSlugs, dietsFromName, dietsFromTags, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { CUISINE_CATEGORIES, cuisineFromName, cuisineSlugs, dietsFromName, dietsFromTags, hasDietTags, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.11";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.12";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,13 +225,17 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
-/** OSM internet_access → wlan | yes | wired | terminal | no; "wifi" is wlan, and wlan wins a list ("yes, wifi"). Null for anything else. */
+/**
+ * OSM internet_access → wlan | yes | wired | terminal | no. "wifi" is wlan, and wlan names the kind in
+ * a list ("yes, wifi"). "yes" alone is internet of an unknown kind. A list that says "no" and
+ * anything else contradicts itself, and anything unknown says nothing: null.
+ */
 const NET = new Set(["wlan", "yes", "wired", "terminal", "no"]);
 export function internetAccess(raw: string | undefined): "wlan" | "yes" | "wired" | "terminal" | "no" | null {
   const parts = (raw ?? "").toLowerCase().split(/[;,]/).map((x) => (x.trim() === "wifi" ? "wlan" : x.trim())).filter(Boolean);
   if (!parts.length || !parts.every((x) => NET.has(x))) return null;
+  if (parts.includes("no") && parts.some((x) => x !== "no")) return null;
   if (parts.includes("wlan")) return "wlan";
-  if (parts.length > 1 && parts.includes("no")) return null;
   return parts[0] as "yes" | "wired" | "terminal" | "no";
 }
 
@@ -371,11 +375,12 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
     if (happy && parseOsmHours(happy, rec.point.lat, rec.point.lon).oh) pub("happy_hours", { osm: happy }, `happy_hours=${happy}`, hoursConfidence(rec.sourceUpdatedAt, now));
     const seats = seatingOf(t);
     if (seats.outside) pub("outdoor_seating", { value: seats.outside }, seats.evidence!, 0.7);
-    // What it serves for diets: the diet:* tags when a mapper gave any (they say more than a name),
-    // else what its name says ("Jisu Vegetarian", "Madina Halal"), as an estimate.
+    // What it serves for diets: the diet:* tags when a mapper gave any (they say more than a name;
+    // tags we can't read say nothing, and the name doesn't overrule them), else what its name says
+    // ("Jisu Vegetarian", "Madina Halal"), as an estimate.
     const tagged = dietsFromTags(t);
     if (tagged) pub("diets", tagged.levels, tagged.evidence, 0.7);
-    else if (name) {
+    else if (name && !hasDietTags(t)) {
       const named = dietsFromName(name);
       if (Object.keys(named).length) facts.push({ ...base, attribute: "diets", value: named, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
     }

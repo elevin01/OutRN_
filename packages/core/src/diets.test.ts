@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dietLabel, dietsFromName, dietsFromTags, servesDiet } from "./diets.js";
+import { dietLabel, dietsFromName, dietsFromTags, hasDietTags, servesDiet } from "./diets.js";
 import { validateFactValue } from "./fact-values.js";
 
 describe("diets", () => {
@@ -7,6 +7,8 @@ describe("diets", () => {
     expect(dietsFromTags({ "diet:vegan": "only", "diet:vegetarian": "Yes", "diet:halal": "limited" })).toEqual({ levels: { vegan: "only", vegetarian: "yes", halal: "limited" }, evidence: "diet:vegetarian=yes; diet:vegan=only; diet:halal=limited" });
     expect(dietsFromTags({ "diet:vegan": "sometimes", "diet:paleo": "yes", "diet:__proto__": "yes" })).toBeNull();
     expect(dietsFromTags({})).toBeNull();
+    // Tags we can't read are still tags: the mapper said something, so a name doesn't stand in for them.
+    expect([hasDietTags({ "diet:vegan": "unknown" }), hasDietTags({ "diet:paleo": "yes" }), hasDietTags({ cuisine: "vegan" }), hasDietTags({})]).toEqual([true, true, false, false]);
   });
 
   it("reads what a name says: a vegetarian or kosher place is all that; halal is on offer", () => {

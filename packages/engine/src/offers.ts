@@ -54,10 +54,13 @@ export function dietLevelsOf(c: Candidate): DietLevels {
 
 const valueOf = (c: Candidate, a: "outdoor_seating" | "internet_access" | "wheelchair") => (c.facts[a]?.value as { value?: unknown } | undefined)?.value;
 
-/** Whether a place's record says it has a must-have: tables outside, wifi, step-free access. Unknown is no. */
+/**
+ * Whether a place's record says it has a must-have: tables outside, wifi (internet_access=wlan; "yes"
+ * is internet of an unknown kind, maybe a wired port or a terminal), step-free access. Unknown is no.
+ */
 export function hasFeature(c: Candidate, feature: string): boolean {
   if (feature === "outdoor_seating") return valueOf(c, "outdoor_seating") === "yes";
-  if (feature === "wifi") return valueOf(c, "internet_access") === "wlan" || valueOf(c, "internet_access") === "yes";
+  if (feature === "wifi") return valueOf(c, "internet_access") === "wlan";
   if (feature === "wheelchair") return valueOf(c, "wheelchair") === "yes";
   return false;
 }

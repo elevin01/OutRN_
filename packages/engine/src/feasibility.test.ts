@@ -1467,10 +1467,12 @@ describe("asking for a diet or a must-have", () => {
       eat("inside", undefined, { outdoor_seating: fact({ value: "no" }) }),
       eat("wifi", undefined, { internet_access: fact({ value: "wlan" }) }, "cafe"),
       eat("wired", undefined, { internet_access: fact({ value: "wired" }) }, "cafe"),
+      // Internet of an unknown kind: maybe a port or a terminal, so not wifi.
+      eat("net", undefined, { internet_access: fact({ value: "yes" }) }, "cafe"),
       { ...venue({ id: "library", category: "library", hours: "Mo-Su 09:00-20:00" }), facts: { ...venue({ id: "l" }).facts, internet_access: fact({ value: "wlan" }) } },
     ];
     expect(excluded(cands, { features: ["outdoor_seating"] })).toMatchObject({ patio: null, inside: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
-    expect(excluded(cands, { features: ["wifi"] })).toMatchObject({ wifi: null, wired: "FEATURE_NOT_KNOWN", library: null, patio: "FEATURE_NOT_KNOWN" });
+    expect(excluded(cands, { features: ["wifi"] })).toMatchObject({ wifi: null, wired: "FEATURE_NOT_KNOWN", net: "FEATURE_NOT_KNOWN", library: null, patio: "FEATURE_NOT_KNOWN" });
     expect(excluded(cands, { features: ["outdoor_seating", "wifi"] })).toMatchObject({ patio: "FEATURE_NOT_KNOWN", wifi: "FEATURE_NOT_KNOWN" });
   });
 

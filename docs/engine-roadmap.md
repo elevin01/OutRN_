@@ -190,16 +190,17 @@ changelog.
     Superbueno (Tuesday) and Botantica Bar (Saturday) open straight into theirs at 4pm.
 - **Part 5 (this PR): diets and must-haves in the search** (contract 1.7).
   - **Diets** from OSM `diet:*` (vegetarian 66, vegan 58, gluten-free 18, kosher 10 and halal 9 places
-    on the LES capture), or, without tags, the name ("Jisu Vegetarian", "East Side Glatt"), as an
-    estimate. A search for diets keeps food places known to serve all of them (`yes` or `only`; a
+    on the LES capture), or, only when it has no `diet:*` tags at all, the name ("Jisu Vegetarian",
+    "East Side Glatt"), as an estimate. A search for diets keeps food places known to serve all of them (`yes` or `only`; a
     vegan place serves vegetarians). A diet is a need, so it is never relaxed.
-  - **Must-haves:** tables outside (`outdoor_seating`), wifi (`internet_access=wlan`: 60 places,
-    libraries and bookshops included) and step-free access (`wheelchair`). Unknown is no. Going
+  - **Must-haves:** tables outside (`outdoor_seating`), wifi (`internet_access=wlan`: 50 LES places,
+    libraries included; `yes` is internet of an unknown kind and doesn't count) and step-free access
+    (`wheelchair`). Unknown is no. Going
     without tables outside or wifi is offered as a relaxation; step-free access never is.
   - Cards list `diets` and `features`; place details read "Vegan; gluten-free options" and
     "Internet: Wi-Fi".
   - Golden scenarios added: a vegetarian Sunday lunch (74 options) and a Tuesday morning with wifi
-    (47: cafés, bookshops, two public libraries).
+    (37: cafés, restaurants, two public libraries).
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

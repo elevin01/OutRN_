@@ -31,6 +31,14 @@ export function dietsFromTags(t: Readonly<Record<string, string>>): { levels: Di
   return read.length ? { levels, evidence: read.join("; ") } : null;
 }
 
+/**
+ * Whether a mapper said anything about diets (any diet:* tag, known or not). Then the tags are the
+ * word on it: a name is read only where none exist, so "Vegan Cafe" with diet:vegan=unknown stays unknown.
+ */
+export function hasDietTags(t: Readonly<Record<string, string>>): boolean {
+  return Object.keys(t).some((k) => k.startsWith("diet:"));
+}
+
 /** Words in a name that say a place keeps a diet: "Jisu Vegetarian", "Madina Halal", "East Side Glatt". */
 const NAME_DIET: readonly [RegExp, Diet][] = [
   [/\bvegan\b/, "vegan"],

@@ -1409,11 +1409,11 @@
   {
    "id": "les-tue-wifi",
    "title": "LES, Tuesday 9am, 3 hours, wifi",
-   "eligible": 47,
+   "eligible": 37,
    "top": [
     {
      "rank": 1,
-     "name": "Black Cat LES",
+     "name": "Georgie's Cafe & Bar",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -1438,18 +1438,6 @@
     },
     {
      "rank": 3,
-     "name": "McnNally Jackson",
-     "category": "bookshop",
-     "status": "ready",
-     "reasons": [
-      "WAIT_FOR_OPENING",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Veselka",
      "category": "restaurant",
      "status": "ready",
@@ -1461,8 +1449,19 @@
      "caveats": []
     },
     {
+     "rank": 4,
+     "name": "Ost Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 5,
-     "name": "Georgie's Cafe & Bar",
+     "name": "12 Corners",
      "category": "cafe",
      "status": "ready",
      "reasons": [

@@ -197,10 +197,15 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Madina Halal Deli", amenity: "restaurant", "diet:vegan": "no" }), "diets")).toMatchObject({ evidenceClass: "published", value: { vegan: "no" } });
     expect(fact(rec({ name: "Kosher Books", shop: "books", "diet:kosher": "only" }), "diets")).toBeUndefined();
     expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "diets")).toBeUndefined();
+    // Diet tags the mapper gave but we can't read say nothing, and the name doesn't overrule them.
+    for (const tags of [{ "diet:vegan": "unknown" }, { "diet:vegan": "sometimes" }, { "diet:paleo": "yes" }]) expect(fact(rec({ name: "Vegan Cafe", amenity: "cafe", ...tags }), "diets"), JSON.stringify(tags)).toBeUndefined();
+    expect(fact(rec({ name: "Vegan Cafe", amenity: "cafe" }), "diets")).toMatchObject({ evidenceClass: "estimate", value: { vegan: "only" } });
     // Wifi is wlan, whatever it's called; a list with wlan is wlan; anything unknown says nothing.
     const net = (v: string, tags: Record<string, string> = { amenity: "cafe" }) => (fact(rec({ name: "N", ...tags, internet_access: v }), "internet_access")?.value as { value?: string } | undefined)?.value ?? null;
     expect([net("wlan"), net("wifi"), net("yes, wifi"), net("yes"), net("no"), net("terminal")]).toEqual(["wlan", "wlan", "wlan", "yes", "no", "terminal"]);
     expect([net("maybe"), net("no;yes"), net(""), net("constructor")]).toEqual([null, null, null, null]);
+    // A list that says no and something else contradicts itself, whichever comes first.
+    expect([net("no;wlan"), net("wlan;no"), net("wifi, no")]).toEqual([null, null, null]);
     expect(net("wlan", { amenity: "library" })).toBe("wlan");
   });
 
