@@ -119,6 +119,19 @@ describe("guarded fetch: pacing and size", () => {
   });
   const ok = () => new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
 
+  it("reports an error reply by its status, not its body's type, and does not retry it", async () => {
+    const stub = vi.fn(async () => new Response("CONNECT tunnel refused by policy", { status: 403, headers: { "content-type": "text/plain" } }));
+    vi.stubGlobal("fetch", stub);
+    const err = await guardedFetch("https://93.184.215.14/points", { sourceId: "status-test", minIntervalMs: 0, allowedContentTypes: ["application/json"] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(FetchFailed);
+    expect((err as FetchFailed).status).toBe(403);
+    expect((err as Error).message).toMatch(/^403 from 93\.184\.215\.14: CONNECT tunnel refused/);
+    expect(stub).toHaveBeenCalledTimes(1);
+    // A successful reply of the wrong type is still refused.
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status: 200, headers: { "content-type": "text/html" } })));
+    await expect(guardedFetch("https://93.184.215.14/points", { sourceId: "status-test", minIntervalMs: 0, allowedContentTypes: ["application/json"] })).rejects.toThrow(/unexpected content-type 'text\/html'/);
+  });
+
   it("spaces concurrent calls to one source by its interval", async () => {
     const at: number[] = [];
     vi.stubGlobal("fetch", vi.fn(async () => (at.push(Date.now()), ok())));
