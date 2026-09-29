@@ -19,8 +19,11 @@ so `pnpm real` and the golden scenarios run offline:
 
 - `<area>.json`: the Overpass response (OpenStreetMap, ODbL, © OpenStreetMap contributors).
 - `<area>-overture.json`: the Overture Maps places near the area's venues (`outrn ingest overture --save`),
-  release and bounding box included. Overture Maps Foundation, CDLA-Permissive-2.0; records from
-  Foursquare are Apache-2.0 and from AllThePlaces CC0. Credit "Overture Maps Foundation" where it is shown.
+  release and bounding box included. Overture Maps Foundation data under the Community Data License
+  Agreement – Permissive, Version 2.0 ([CDLA-Permissive-2.0](https://cdla.dev/permissive-2-0/)); a few
+  places also draw on AllThePlaces records (CC0-1.0). Each place lists its sources' licenses, and only places
+  whose every source is CDLA-Permissive-2.0 or CC0-1.0 are kept: **Foursquare's records (Apache-2.0) are
+  excluded**, as is any record without a license. Credit "Overture Maps Foundation" where it is shown.
 
 `overture/places-mini.parquet` is an invented Overture-shaped file (two row groups, zstd) for the
 parquet reader's tests; `overture/make-mini.py` writes it (pyarrow).

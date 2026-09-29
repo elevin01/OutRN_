@@ -1,24 +1,42 @@
 import { readFile } from "node:fs/promises";
 import { parquetMetadataAsync, parquetReadObjects, type AsyncBuffer, type FileMetaData } from "hyparquet";
 import { compressors } from "hyparquet-compressors";
-import { assertPublicHost, FetchBlocked, FetchFailed, guardedFetch } from "./fetch.js";
+import { z } from "zod";
+import { FetchBlocked, FetchFailed, guardedFetch } from "./fetch.js";
 
 /**
  * Overture Maps places (docs.overturemaps.org/guides/places): an open places dataset conflated each
- * month from Meta, Microsoft, Foursquare, AllThePlaces and others, published as GeoParquet on a
- * public S3 bucket. Free, no key. Only the row groups whose bounding box overlaps the area are read
- * (HTTP range requests), and only the columns used here.
+ * month from several providers, published as GeoParquet on a public S3 bucket. Free, no key. Only the
+ * row groups whose bounding box overlaps the area are read (HTTP range requests), and only the
+ * columns used here.
  *
- * Licenses: CDLA-Permissive-2.0, with Foursquare's records under Apache-2.0 and AllThePlaces' under
- * CC0. A place with any other license among its sources is left out.
+ * Licenses fail closed: a place is kept only when it lists its sources and every one of them is
+ * CDLA-Permissive-2.0 or CC0-1.0; a source without a license leaves it out. Foursquare's records
+ * (Apache-2.0) are left out too, until Foursquare's NOTICE ships with the data.
  */
 
 export const OVERTURE_BUCKET = "https://overturemaps-us-west-2.s3.us-west-2.amazonaws.com";
 const RELEASE = /^\d{4}-\d{2}-\d{2}\.\d+$/;
 const PART = /^part-[A-Za-z0-9._-]+\.parquet$/;
-export const OVERTURE_LICENSES: ReadonlySet<string> = new Set(["CDLA-Permissive-2.0", "Apache-2.0", "CC0-1.0"]);
+/** The only licenses a kept place's sources may carry. */
+export const OVERTURE_LICENSES = ["CDLA-Permissive-2.0", "CC0-1.0"] as const;
+const ALLOWED_LICENSES: ReadonlySet<string> = new Set(OVERTURE_LICENSES);
+/** Datasets left out whatever license a record claims: Foursquare's records need its NOTICE shipped with them. */
+const EXCLUDED_DATASET = /foursquare/i;
 /** Overture's own confidence and status-signal entries, as opposed to the datasets a place comes from. */
 const INTERNAL_DATASETS = new Set(["Overture", "Overture-signals"]);
+const STATUSES = ["open", "permanently_closed", "temporarily_closed"] as const;
+/** Bounds on what a place carries, shared by the reader and the capture schema. */
+const MAX_ID = 64;
+const MAX_NAME = 256;
+const MAX_CATEGORY = 64;
+const MAX_URL = 2048;
+const MAX_PHONE = 64;
+const MAX_DATASET = 64;
+const MAX_CONTACTS = 3;
+const MAX_DATASETS = 16;
+/** A whole metro is a few hundred thousand places; more is not a capture of one area. */
+const MAX_PLACES = 500_000;
 const COLUMNS = ["id", "names", "bbox", "confidence", "websites", "phones", "operating_status", "basic_category", "sources"];
 /** At most this many bytes are read from the bucket per fetch: a whole city is a few hundred MB. */
 const DEFAULT_MAX_BYTES = 1_500_000_000;
@@ -39,8 +57,8 @@ export interface OverturePlace {
   lon: number;
   /** basic_category: "restaurant", "art_gallery"… */
   category: string;
-  /** operating_status: open, permanently_closed, temporarily_closed; null when not stated. */
-  status: string | null;
+  /** operating_status; null when not stated. */
+  status: (typeof STATUSES)[number] | null;
   /** Confidence of Overture's own operating-status signal, when one backs the status. */
   statusSignal: number | null;
   /** When that signal was last updated (ISO). */
@@ -51,8 +69,10 @@ export interface OverturePlace {
   phones: string[];
   /** The newest update among the datasets behind the place (ISO). */
   updatedAt: string | null;
-  /** Those datasets: "meta", "Microsoft", "Foursquare"… */
+  /** Those datasets: "meta", "Microsoft", "AllThePlaces"… */
   datasets: string[];
+  /** The licenses of every source behind the place: only CDLA-Permissive-2.0 and CC0-1.0. */
+  licenses: string[];
 }
 
 export interface OvertureCapture {
@@ -93,7 +113,13 @@ interface RowSource {
 
 const str = (x: unknown): string | null => (typeof x === "string" && x.trim() ? x.trim() : null);
 const num = (x: unknown): number | null => (typeof x === "number" && Number.isFinite(x) ? x : null);
-const strings = (x: unknown, max: number): string[] => (Array.isArray(x) ? x.map(str).filter((s): s is string => s !== null).slice(0, max) : []);
+/** A share (a confidence) is 0–1; anything else is not one. */
+const share = (x: unknown): number | null => {
+  const n = num(x);
+  return n !== null && n >= 0 && n <= 1 ? n : null;
+};
+const strings = (x: unknown, maxCount: number, maxLength: number): string[] =>
+  Array.isArray(x) ? x.map(str).filter((s): s is string => s !== null && s.length <= maxLength).slice(0, maxCount) : [];
 const iso = (x: unknown): string | null => {
   const s = str(x);
   if (!s) return null;
@@ -104,7 +130,10 @@ const newest = (a: string | null, b: string | null): string | null => (!a ? b : 
 
 export type RowOutcome = { place: OverturePlace } | { skip: "outside" | "category" | "license" | "unnamed" };
 
-/** One parquet row → a place, if it lies in the box, has a category asked for, a name, and only allowed licenses. */
+/**
+ * One parquet row → a place, if it lies in the box, has a category asked for, a name, and sources
+ * that all carry an allowed license (no sources, or a source without a license, is not allowed).
+ */
 export function placeFromRow(row: OvertureRow, bbox: Bbox, categories: ReadonlySet<string>): RowOutcome {
   const b = row.bbox;
   const xmin = num(b?.xmin), xmax = num(b?.xmax), ymin = num(b?.ymin), ymax = num(b?.ymax);
@@ -113,31 +142,38 @@ export function placeFromRow(row: OvertureRow, bbox: Bbox, categories: ReadonlyS
   const lat = (ymin + ymax) / 2;
   if (lon < bbox.west || lon > bbox.east || lat < bbox.south || lat > bbox.north) return { skip: "outside" };
   const category = str(row.basic_category);
-  if (!category || !categories.has(category)) return { skip: "category" };
+  if (!category || category.length > MAX_CATEGORY || !categories.has(category)) return { skip: "category" };
   const id = str(row.id);
   const name = str(row.names?.primary);
-  if (!id || !name) return { skip: "unnamed" };
-  const sources = Array.isArray(row.sources) ? (row.sources as RowSource[]) : [];
+  if (!id || !name || id.length > MAX_ID || name.length > MAX_NAME) return { skip: "unnamed" };
+  // Fail closed: no sources means no license to go by.
+  if (!Array.isArray(row.sources) || !row.sources.length) return { skip: "license" };
+  const sources = row.sources as (RowSource | null | undefined)[];
   let statusSignal: number | null = null;
   let statusUpdatedAt: string | null = null;
   let updatedAt: string | null = null;
   const datasets = new Set<string>();
+  const licenses = new Set<string>();
   for (const s of sources) {
     const license = str(s?.license);
-    if (license && !OVERTURE_LICENSES.has(license)) return { skip: "license" };
-    const dataset = str(s?.dataset);
-    if (s?.property === "/properties/operating_status") {
-      const c = num(s.confidence);
+    if (!s || !license || !ALLOWED_LICENSES.has(license)) return { skip: "license" };
+    const dataset = str(s.dataset);
+    if (dataset && EXCLUDED_DATASET.test(dataset)) return { skip: "license" };
+    licenses.add(license);
+    if (s.property === "/properties/operating_status") {
+      const c = share(s.confidence);
       if (c !== null && (statusSignal === null || c > statusSignal)) {
         statusSignal = c;
         statusUpdatedAt = iso(s.update_time);
       }
     }
-    if (dataset && !INTERNAL_DATASETS.has(dataset)) {
+    if (dataset && !INTERNAL_DATASETS.has(dataset) && dataset.length <= MAX_DATASET) {
       datasets.add(dataset);
-      updatedAt = newest(updatedAt, iso(s?.update_time));
+      updatedAt = newest(updatedAt, iso(s.update_time));
     }
   }
+  const status = str(row.operating_status);
+  const confidence = share(row.confidence);
   return {
     place: {
       id,
@@ -145,14 +181,16 @@ export function placeFromRow(row: OvertureRow, bbox: Bbox, categories: ReadonlyS
       lat: Math.round(lat * 1e6) / 1e6,
       lon: Math.round(lon * 1e6) / 1e6,
       category,
-      status: str(row.operating_status),
+      // A status this reader does not know is no status.
+      status: STATUSES.find((x) => x === status) ?? null,
       statusSignal,
       statusUpdatedAt,
-      confidence: num(row.confidence) === null ? null : Math.round(num(row.confidence)! * 1000) / 1000,
-      websites: strings(row.websites, 3),
-      phones: strings(row.phones, 3),
+      confidence: confidence === null ? null : Math.round(confidence * 1000) / 1000,
+      websites: strings(row.websites, MAX_CONTACTS, MAX_URL),
+      phones: strings(row.phones, MAX_CONTACTS, MAX_PHONE),
       updatedAt,
-      datasets: [...datasets].sort(),
+      datasets: [...datasets].sort().slice(0, MAX_DATASETS),
+      licenses: [...licenses].sort(),
     },
   };
 }
@@ -161,7 +199,8 @@ export function placeFromRow(row: OvertureRow, bbox: Bbox, categories: ReadonlyS
 export function parseS3List(xml: string): { prefixes: string[]; objects: { key: string; size: number }[]; next: string | null } {
   const unescape = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
   const prefixes = [...xml.matchAll(/<CommonPrefixes>\s*<Prefix>([^<]*)<\/Prefix>/g)].map((m) => unescape(m[1]!));
-  const objects = [...xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g)].flatMap((m) => {
+  // Up to the next <Contents> or </Contents>: a lazy [\s\S]*? rescans the rest of an unterminated listing from every tag.
+  const objects = [...xml.matchAll(/<Contents>((?:(?!<\/?Contents>)[\s\S])*)<\/Contents>/g)].flatMap((m) => {
     const key = /<Key>([^<]*)<\/Key>/.exec(m[1]!)?.[1];
     const size = Number(/<Size>(\d+)<\/Size>/.exec(m[1]!)?.[1]);
     return key && Number.isFinite(size) ? [{ key: unescape(key), size }] : [];
@@ -206,46 +245,27 @@ export async function listOverturePlaceFiles(release: string): Promise<{ url: st
   return files;
 }
 
-interface Budget {
+export interface Budget {
   bytes: number;
   max: number;
 }
 
+/**
+ * One byte range of a file on the bucket, through the shared guard: paced with the listing, retried
+ * on 429/5xx, and never more than the range: a whole file (200) or a longer reply is refused as it
+ * arrives, not read first. Redirects off the bucket's host are refused there too.
+ */
 async function rangeGet(url: URL, start: number, end: number): Promise<ArrayBuffer> {
   const want = end - start;
-  let lastErr: unknown;
-  for (let attempt = 1; attempt <= 4; attempt++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 60_000);
-    try {
-      await assertPublicHost(url);
-      const res = await fetch(url, {
-        headers: { range: `bytes=${start}-${end - 1}`, "user-agent": process.env["OUTRN_USER_AGENT"] ?? "outrn-dev (set OUTRN_USER_AGENT)" },
-        redirect: "error",
-        signal: ctrl.signal,
-      });
-      if (res.status === 429 || res.status >= 500) {
-        lastErr = new FetchFailed(`${res.status} from ${url.host}`, res.status);
-      } else if (res.status !== 206) {
-        throw new FetchFailed(`expected a partial answer (206) from ${url.host}, got ${res.status}`, res.status);
-      } else {
-        const buf = await res.arrayBuffer();
-        if (buf.byteLength !== want) throw new FetchFailed(`${url.host} answered ${buf.byteLength} bytes for a ${want}-byte range`);
-        return buf;
-      }
-    } catch (e) {
-      if (e instanceof FetchBlocked || (e instanceof FetchFailed && e.status && e.status < 500 && e.status !== 429)) throw e;
-      lastErr = e;
-    } finally {
-      clearTimeout(timer);
-    }
-    await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
-  }
-  throw lastErr instanceof Error ? lastErr : new FetchFailed(String(lastErr));
+  if (want <= 0) return new ArrayBuffer(0);
+  const res = await guardedFetch(url.toString(), { sourceId: "overture", minIntervalMs: 200, timeoutMs: 60_000, maxBytes: want, accept: "*/*", headers: { range: `bytes=${start}-${end - 1}` } });
+  if (res.status !== 206 || res.body.byteLength !== want) throw new FetchFailed(`expected ${want} bytes (206) from ${url.host}, got ${res.body.byteLength} (${res.status})`, res.status === 206 ? undefined : res.status);
+  const { buffer, byteOffset, byteLength } = res.body;
+  return buffer.slice(byteOffset, byteOffset + byteLength) as ArrayBuffer;
 }
 
 /** A parquet file on the bucket, read in ranges, counted against the fetch's byte budget. */
-function remoteFile(rawUrl: string, byteLength: number, budget: Budget): AsyncBuffer {
+export function remoteFile(rawUrl: string, byteLength: number, budget: Budget): AsyncBuffer {
   const url = new URL(rawUrl);
   if (url.origin !== OVERTURE_BUCKET) throw new FetchBlocked(`not the Overture bucket: ${url.origin}`);
   return {
@@ -336,15 +356,80 @@ export function overtureCapture(r: OvertureCapture): OvertureCapture {
   return { outrn_capture: "overture", release: r.release, bbox: r.bbox, fetchedAt: r.fetchedAt, places: r.places };
 }
 
+/** A date as this module writes it (toISOString): a real day, so "not a date" or 31 February is refused. */
+const isoDate = z.string().max(40).refine((s) => {
+  const d = new Date(s);
+  return !Number.isNaN(d.getTime()) && d.toISOString() === s;
+}, "expected an ISO date like 2026-09-23T00:00:00.000Z");
+const shareSchema = z.number().min(0).max(1);
+const bounded = (max: number) => z.string().min(1).max(max).refine((s) => s.trim() === s, "expected no surrounding spaces");
+
+const PlaceSchema = z
+  .object({
+    id: bounded(MAX_ID),
+    name: bounded(MAX_NAME),
+    lat: z.number().finite().min(-90).max(90),
+    lon: z.number().finite().min(-180).max(180),
+    category: bounded(MAX_CATEGORY),
+    status: z.enum(STATUSES).nullable(),
+    statusSignal: shareSchema.nullable(),
+    statusUpdatedAt: isoDate.nullable(),
+    confidence: shareSchema.nullable(),
+    websites: z.array(bounded(MAX_URL)).max(MAX_CONTACTS),
+    phones: z.array(bounded(MAX_PHONE)).max(MAX_CONTACTS),
+    updatedAt: isoDate.nullable(),
+    datasets: z.array(bounded(MAX_DATASET).refine((d) => !EXCLUDED_DATASET.test(d), "Foursquare's records are left out")).max(MAX_DATASETS),
+    licenses: z.array(z.enum(OVERTURE_LICENSES)).min(1).max(OVERTURE_LICENSES.length),
+  })
+  .strict();
+
+const CaptureSchema = z
+  .object({
+    outrn_capture: z.literal("overture"),
+    release: z.string().max(40).regex(RELEASE, "expected a release name like 2026-09-23.1"),
+    bbox: z
+      .object({ west: z.number(), south: z.number(), east: z.number(), north: z.number() })
+      .strict()
+      .superRefine((b, ctx) => {
+        try {
+          assertBbox(b);
+        } catch (e) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: (e as Error).message });
+        }
+      }),
+    fetchedAt: isoDate,
+    places: z.array(PlaceSchema).max(MAX_PLACES),
+  })
+  .strict()
+  .superRefine((c, ctx) => {
+    const seen = new Set<string>();
+    c.places.forEach((p, i) => {
+      if (seen.has(p.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["places", i, "id"], message: `duplicate place id ${p.id}` });
+      seen.add(p.id);
+    });
+  });
+
+/**
+ * Check a whole capture, from a file or a live read, before anything is written. Nothing is dropped:
+ * a place left out would read as a place that disappeared, and its venue's claims would be retracted.
+ * One bad place refuses the capture, naming the first few problems.
+ */
+export function parseOvertureCapture(data: unknown, what: string): OvertureCapture {
+  if ((data as { outrn_capture?: unknown } | null)?.outrn_capture !== "overture") throw new Error(`${what} is not an Overture capture (outrn ingest overture --save)`);
+  const r = CaptureSchema.safeParse(data);
+  if (r.success) return r.data;
+  const issues = r.error.issues.slice(0, 5).map((i) => `${i.path.map((k) => (typeof k === "number" ? `[${k}]` : `.${k}`)).join("").replace(/^\./, "") || "(capture)"}: ${i.message}`);
+  const more = r.error.issues.length > issues.length ? ` (and ${r.error.issues.length - issues.length} more)` : "";
+  throw new Error(`${what} is not a valid Overture capture, so nothing was written: ${issues.join("; ")}${more}`);
+}
+
 export async function loadOvertureCapture(path: string): Promise<OvertureCapture> {
-  const data = JSON.parse(await readFile(path, "utf8")) as Partial<OvertureCapture>;
-  if (data.outrn_capture !== "overture" || !Array.isArray(data.places) || typeof data.release !== "string" || !data.bbox) throw new Error(`${path} is not an Overture capture (outrn ingest overture --save)`);
-  assertBbox(data.bbox);
-  // A capture is a file anyone could have edited: keep only well-formed places.
-  const places = (data.places as Partial<OverturePlace>[]).filter(
-    (p): p is OverturePlace =>
-      typeof p?.id === "string" && typeof p.name === "string" && typeof p.category === "string" && num(p.lat) !== null && num(p.lon) !== null &&
-      Array.isArray(p.websites) && Array.isArray(p.phones) && Array.isArray(p.datasets),
-  );
-  return { outrn_capture: "overture", release: data.release, bbox: data.bbox, fetchedAt: typeof data.fetchedAt === "string" ? data.fetchedAt : new Date(0).toISOString(), places };
+  const raw = await readFile(path, "utf8");
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    throw new Error(`${path} is not an Overture capture (outrn ingest overture --save): ${(e as Error).message}`);
+  }
+  return parseOvertureCapture(data, path);
 }

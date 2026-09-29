@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { haversineMetres, isPublicWebHost, matchKey, type Category, type FactInput } from "@outrn/core";
 import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
 import { materializeSubjects, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
-import { fetchOverturePlaces, finishRun, loadOvertureCapture, overtureCapture, startRun, type Bbox, type OvertureCapture, type OverturePlace } from "@outrn/sources";
+import { fetchOverturePlaces, finishRun, loadOvertureCapture, overtureCapture, parseOvertureCapture, startRun, type Bbox, type OvertureCapture, type OverturePlace } from "@outrn/sources";
 
 /**
  * Overture Maps places as a second opinion on the venues OSM gave us. It creates no venues: it
@@ -13,10 +13,12 @@ import { fetchOverturePlaces, finishRun, loadOvertureCapture, overtureCapture, s
  *    A street name alone ("The Delancey") would otherwise match every "Delancey …" on its block.
  *  - Any open match: "operating", published. 0.75 when Overture's own status signal backs it,
  *    0.6 when only a confident record does (0.8+), nothing otherwise.
- *  - Closed: only when no match is open and a same-name match within 60 m is closed permanently
- *    with Overture's status signal (0.9+). Overture also marks places closed from company registers
- *    (a dissolved company is not a closed storefront); those are ignored. A closure excludes the
- *    venue and asks for a check, like one from OSM.
+ *  - Closed: only when no match is open or temporarily closed, and a match closed permanently has
+ *    all of: Overture's status signal (0.9+); the venue's name, within 60 m; a kind the venue's could
+ *    be; a record confidence of 0.5+; a dataset other than a company register (a dissolved company
+ *    is not a closed storefront). Never for a venue whose name is only generic words ("Deli &
+ *    Grocery", "Pizza"): the same name 50 m away is as likely another shop. A closure excludes the
+ *    venue and asks for a check, like one from OSM, unless a founder has seen it operating since.
  *  - Website and phone only when no other source has one for the venue, and only from a place with
  *    the venue's name or one that starts with it ("Rong Hang" → "Rong Hang Restaurant", never
  *    "Pickle Guys - Essex Market" for Essex Market). A website must also carry the venue's name in its
@@ -30,6 +32,10 @@ export const OVERTURE_MATCH_M = 120;
 const PARTIAL_MATCH_M = 40;
 const CLOSURE_MATCH_M = 60;
 const SIGNAL = 0.9;
+/** A closed place's record must be at least this sure it exists as described. */
+const CLOSURE_CONFIDENCE = 0.5;
+/** Company registers: a dissolved company is not a closed storefront. */
+const COMPANY_REGISTERS = new Set(["BrightQuery"]);
 
 /** Overture basic_category values, by the kinds of OutRN venue they can be. */
 const EAT_DRINK = [
@@ -154,9 +160,9 @@ export function matchVenue(v: MatchVenue, index: PlaceIndex): OvertureMatch[] {
 /** Sites that are not the venue's own: a social profile or a delivery listing is no website. */
 const NOT_OWN_SITE = /(^|\.)(facebook|fb|instagram|twitter|x|tiktok|yelp|tripadvisor|doordash|grubhub|ubereats|seamless|postmates|linktr|google|goo|opentable|resy)\.[a-z.]+$/;
 
-/** Words too common to tie a domain to a venue: "pizza" is in pizzahut.com too. */
+/** Words too common to tie a domain, or a closure, to a venue: "pizza" is in pizzahut.com too. */
 const GENERIC_WORDS = new Set([
-  "restaurant", "cafe", "coffee", "kitchen", "pizza", "pizzeria", "grill", "deli", "bakery", "market", "street", "avenue", "square", "place",
+  "restaurant", "cafe", "coffee", "kitchen", "pizza", "pizzeria", "grill", "deli", "grocery", "bakery", "market", "street", "avenue", "square", "place",
   "park", "garden", "gallery", "museum", "theatre", "theater", "cinema", "lounge", "club", "house", "shop", "store", "food", "foods", "york",
   "city", "east", "west", "north", "south", "village", "center", "centre", "company", "tavern", "wine", "beer", "bagel", "bagels", "sushi",
   "ramen", "noodle", "noodles", "thai", "chinese", "italian", "mexican", "japanese", "korean", "indian", "express", "original", "famous",
@@ -209,8 +215,27 @@ export interface OvertureClaim {
 
 const date = (s: string | null): Date | null => (s ? new Date(s) : null);
 
+/** Whether every word of a name is a generic one ("deli and grocery", "pizza"): nothing ties a closure to this shop. */
+export function genericName(nameKey: string): boolean {
+  const words = nameKey.split(" ").filter(Boolean);
+  return words.every((w) => GENERIC_WORDS.has(w));
+}
+
+/** A permanently closed match that may close the venue (see the header for the rule). */
+function closes(venue: Pick<MatchVenue, "category">, m: OvertureMatch): boolean {
+  const p = m.place;
+  return (
+    p.status === "permanently_closed" && (p.statusSignal ?? 0) >= SIGNAL &&
+    m.name === "same" && m.metres <= CLOSURE_MATCH_M &&
+    (ACCEPTS[venue.category] ?? ACCEPTS.other).has(p.category) &&
+    (p.confidence ?? 0) >= CLOSURE_CONFIDENCE &&
+    p.datasets.some((d) => !COMPANY_REGISTERS.has(d))
+  );
+}
+
 /** What the matches say about a venue, given which attributes other sources already cover. */
-export function claimsFor(venueNameKey: string, matches: readonly OvertureMatch[], has: { website: boolean; phone: boolean }): OvertureClaim[] {
+export function claimsFor(venue: Pick<MatchVenue, "nameKey" | "category">, matches: readonly OvertureMatch[], has: { website: boolean; phone: boolean }): OvertureClaim[] {
+  const venueNameKey = venue.nameKey;
   const claims: OvertureClaim[] = [];
   const open = matches.filter((m) => m.place.status === "open");
   const signalled = open.find((m) => (m.place.statusSignal ?? 0) >= SIGNAL);
@@ -221,8 +246,8 @@ export function claimsFor(venueNameKey: string, matches: readonly OvertureMatch[
   } else if (confident) {
     const p = confident.place;
     claims.push({ attribute: "business_status", value: { status: "operating" }, confidence: 0.6, evidence: `Overture place ${p.id} "${p.name}": open (${p.datasets.join(", ") || "Overture"})`, sourceUpdatedAt: date(p.updatedAt) });
-  } else if (!open.length) {
-    const closed = matches.find((m) => m.name === "same" && m.metres <= CLOSURE_MATCH_M && m.place.status === "permanently_closed" && (m.place.statusSignal ?? 0) >= SIGNAL);
+  } else if (!open.length && !matches.some((m) => m.place.status === "temporarily_closed") && !genericName(venueNameKey)) {
+    const closed = matches.find((m) => closes(venue, m));
     if (closed) {
       const p = closed.place;
       claims.push({ attribute: "business_status", value: { status: "closed_permanently" }, confidence: 0.65, evidence: `Overture place ${p.id} "${p.name}": permanently closed, by Overture's operating-status signal`, sourceUpdatedAt: date(p.statusUpdatedAt ?? p.updatedAt) });
@@ -340,8 +365,9 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
     const bbox = bboxAround(venues, OVERTURE_MATCH_M + 30);
     log(`reading Overture places in ${bbox.west},${bbox.south},${bbox.east},${bbox.north}`);
     const r = await fetchOverturePlaces({ bbox, categories: OVERTURE_CATEGORIES, ...(opts.release ? { release: opts.release } : {}), log });
-    log(`read ${r.rowGroups.read} of ${r.rowGroups.total} row groups, ${(r.bytes / 1_048_576).toFixed(0)} MB; ${r.places.length} places kept (${r.skipped.category} other kinds, ${r.skipped.license} other licenses)`);
-    capture = overtureCapture(r);
+    log(`read ${r.rowGroups.read} of ${r.rowGroups.total} row groups, ${(r.bytes / 1_048_576).toFixed(0)} MB; ${r.places.length} places kept (${r.skipped.category} other kinds, ${r.skipped.license} other or missing licenses)`);
+    // The same check as a replay: a read that would not replay is not written either.
+    capture = parseOvertureCapture(overtureCapture(r), "the Overture read");
     read = { rowGroups: r.rowGroups.read, totalRowGroups: r.rowGroups.total, bytes: r.bytes };
     // Saved before anything is written: a failure below can be replayed without reading the bucket again.
     if (opts.saveTo) await writeFile(opts.saveTo, JSON.stringify(capture), "utf8");
@@ -370,7 +396,7 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
         const matches = matchVenue({ id: v.id, nameKey: v.name_key, category: v.category, lat: v.lat, lon: v.lon }, index);
         if (matches.length) summary.venues.matched++;
         const has = covered.get(v.id);
-        const claims = claimsFor(v.name_key, matches, { website: has?.has("website") ?? false, phone: has?.has("phone") ?? false });
+        const claims = claimsFor({ nameKey: v.name_key, category: v.category }, matches, { website: has?.has("website") ?? false, phone: has?.has("phone") ?? false });
         for (const c of claims) {
           if (c.attribute !== "business_status") summary.claims[c.attribute]++;
           else if ((c.value as { status: string }).status === "operating") summary.claims.operating++;

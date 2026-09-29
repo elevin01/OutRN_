@@ -14,7 +14,7 @@
 # (outrn_capture on the local cluster, recreated each run). It runs on macOS's Bash 3.2.
 #
 # Captures are OpenStreetMap data (ODbL, © OpenStreetMap contributors), Wikimedia metadata, and
-# Overture Maps places (CDLA-Permissive-2.0; Foursquare's records Apache-2.0).
+# Overture Maps places (CDLA-Permissive-2.0, a few also CC0-1.0; Foursquare's Apache-2.0 records are left out).
 # fixtures/live is gitignored: add a capture on purpose (git add -f) to share it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

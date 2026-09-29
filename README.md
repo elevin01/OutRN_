@@ -86,11 +86,13 @@ in the capture so a replay only tombstones records inside the area it actually c
 
 **Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
 overture --area <slug>` reads the Overture places near the area's venues straight from Overture's
-public bucket: the Lower East Side is about 40 MB and 15 seconds. A venue matches a place with the
+public bucket: the Lower East Side is about 40 MB and half a minute. A venue matches a place with the
 same name within 120 m, or a partial name within 40 m of a fitting kind. A match marks it operating,
-closes it only on Overture's own status signal (and asks for a check), and adds a website or phone
-number no other source has. It creates no venues. On the Lower East Side it matches 1,245 of 1,691
-venues.
+closes it only on Overture's own status signal for the same name and kind close by (and asks for a
+check, and never over a founder's newer check), and adds a website or phone number no other source
+has. It creates no venues. Only records whose every source is CDLA-Permissive-2.0 or CC0-1.0 are
+kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data. On the Lower East
+Side it matches 1,140 of 1,691 venues.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.

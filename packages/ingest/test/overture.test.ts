@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import type { Bbox, OvertureCapture, OverturePlace } from "@outrn/sources";
+import { setFounderFact } from "../src/founder.js";
 import { ingestOverture } from "../src/overture.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -48,21 +49,23 @@ const place = (over: Partial<OverturePlace> & Pick<OverturePlace, "id" | "name" 
   phones: [],
   updatedAt: "2026-09-01T00:00:00.000Z",
   datasets: ["meta"],
+  licenses: ["CDLA-Permissive-2.0"],
   ...over,
 });
 const SIGNAL = { statusSignal: 1, statusUpdatedAt: "2026-06-26T16:25:14.000Z" };
 // Beside the synthetic venues of the same names (fixtures/osm/les-synthetic.json).
 const GRAND = place({ id: "ovt-grand", name: "Grand Kitchen", lat: 40.72698, lon: -73.99268, ...SIGNAL, websites: ["https://www.instagram.com/grandkitchen", "https://grandkitchen.example.com/"], phones: ["2125550100"] });
-const BROOME = place({ id: "ovt-broome", name: "Broome Kitchen NYC", lat: 40.72663, lon: -73.9859, category: "casual_eatery", confidence: 0.85, phones: ["+1 (212) 555-0142"], datasets: ["Foursquare"] });
+const BROOME = place({ id: "ovt-broome", name: "Broome Kitchen NYC", lat: 40.72663, lon: -73.9859, category: "casual_eatery", confidence: 0.85, phones: ["+1 (212) 555-0142"], datasets: ["Microsoft"] });
 const HESTER_CLOSED = place({ id: "ovt-hester", name: "Hester Kitchen", lat: 40.7263, lon: -73.9816, status: "permanently_closed", ...SIGNAL });
 // Closed by a company register only: no signal.
 const ELDRIDGE = place({ id: "ovt-eldridge", name: "Eldridge Kitchen", lat: 40.70605, lon: -73.99103, status: "permanently_closed", datasets: ["BrightQuery"] });
 // The same name, 300 m from the venue: another place.
 const ESSEX_FAR = place({ id: "ovt-essex", name: "Essex Kitchen", lat: 40.7334, lon: -73.9723, ...SIGNAL });
 
-function capture(name: string, places: OverturePlace[], bbox = LES): string {
+function capture(name: string, places: unknown[], bbox = LES): string {
   const path = join(DIR, `${name}.json`);
-  const c: OvertureCapture = { outrn_capture: "overture", release: "2026-09-23.1", bbox, fetchedAt: "2026-09-29T00:00:00.000Z", places };
+  // unknown[]: the malformed captures below hold what no OverturePlace can.
+  const c: Omit<OvertureCapture, "places"> & { places: unknown[] } = { outrn_capture: "overture", release: "2026-09-23.1", bbox, fetchedAt: "2026-09-29T00:00:00.000Z", places };
   writeFileSync(path, JSON.stringify(c));
   return path;
 }
@@ -91,8 +94,10 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
 
     // Closed on the signal: delisted, and someone is asked to confirm it.
     expect(await state("Hester Kitchen")).toBe("excluded");
-    const task = await db.query(`select question from verification_tasks where subject_id = $1 and attribute = 'business_status'`, [await venueId("Hester Kitchen")]);
-    expect(task.rows).toEqual([{ question: "Overture Maps now says this place has closed. Has it?" }]);
+    const hester = await venueId("Hester Kitchen");
+    const task = await db.query(`select question, dedupe_key from verification_tasks where subject_id = $1 and attribute = 'business_status'`, [hester]);
+    // Its own key: an OSM closure check already answered for the venue would not swallow it.
+    expect(task.rows).toEqual([{ question: "Overture Maps now says this place has closed. Has it?", dedupe_key: `venue:${hester}:map_closure` }]);
     // A company register's closure changes nothing; a same-name place 300 m off is not the venue.
     expect(await state("Eldridge Kitchen")).toBe("eligible");
     expect(await overtureFacts("Eldridge Kitchen")).toEqual([]);
@@ -131,5 +136,56 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     writeFileSync(join(DIR, "osm.json"), JSON.stringify({ elements: [] }));
     await expect(ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "osm.json") })).rejects.toThrow(/not an Overture capture/);
     await expect(ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "first.json"), release: "2026-08-20.0" })).rejects.toThrow(/is release 2026-09-23.1/);
+  });
+
+  it("a malformed capture is refused whole before a run starts: nothing dropped, nothing written", async () => {
+    await ingestOverture(db, { areaSlug: "les", fromFile: capture("good", [GRAND, BROOME]) });
+    const snapshot = async () => ({
+      facts: (await db.query(`select id, subject_id, attribute, value, confidence, superseded_at from facts where source_id = 'overture' order by id`)).rows,
+      current: (await db.query(`select subject_id, attribute, value, source_ids, confidence from current_facts where subject_id = any($1::uuid[]) order by subject_id, attribute`, [[await venueId("Grand Kitchen"), await venueId("Broome Kitchen")]])).rows,
+      runs: (await db.query<{ n: number }>(`select count(*)::int as n from ingestion_runs where source_id = 'overture'`)).rows[0]!.n,
+    });
+    const before = await snapshot();
+    expect(before.facts.length).toBeGreaterThan(0);
+    for (const [name, places] of [
+      // A phone that is not text crashed the run halfway.
+      ["phone", [GRAND, { ...BROOME, phones: [42] }]],
+      // "1" read as a signal of 0.9 or more.
+      ["signal", [GRAND, { ...BROOME, statusSignal: "1" }]],
+      ["date", [{ ...GRAND, statusUpdatedAt: "not a date" }, BROOME]],
+      // A place the old loader dropped: its venue would lose its claims as if the place had gone.
+      ["lat", [{ ...GRAND, lat: "40.72698" }, BROOME]],
+      ["duplicate", [GRAND, BROOME, { ...BROOME, name: "Broome Kitchen Bar" }]],
+    ] as const) {
+      await expect(ingestOverture(db, { areaSlug: "les", fromFile: capture(`bad-${name}`, [...places]) }), name).rejects.toThrow(/is not a valid Overture capture, so nothing was written/);
+      expect(await snapshot(), name).toEqual(before);
+    }
+  });
+
+  it("a founder's check since Overture's closure keeps the venue listed; one from before does not", async () => {
+    const at = async (name: string) => (await db.query<{ lat: number; lon: number }>(`select ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues where id = $1`, [await venueId(name)])).rows[0]!;
+    const closedBeside = async (id: string, name: string) => place({ id, name, ...(await at(name)), status: "permanently_closed", ...SIGNAL }); // signal of 26 Jun
+    const closureTasks = async (name: string) => (await db.query<{ dedupe_key: string }>(`select dedupe_key from verification_tasks where subject_id = $1 and dedupe_key like '%closure'`, [await venueId(name)])).rows.map((r) => r.dedupe_key);
+    expect([await state("Norfolk Kitchen"), await state("Orchard Kitchen")]).toEqual(["eligible", "eligible"]);
+    const operating = { attribute: "business_status" as const, value: { status: "operating" }, evidence: "called" };
+    await setFounderFact(db, { venueId: await venueId("Norfolk Kitchen"), ...operating, verifiedAt: new Date("2026-09-20T18:00:00Z") });
+    await setFounderFact(db, { venueId: await venueId("Orchard Kitchen"), ...operating, verifiedAt: new Date("2026-06-01T18:00:00Z") });
+
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: capture("closures", [await closedBeside("ovt-norfolk", "Norfolk Kitchen"), await closedBeside("ovt-orchard", "Orchard Kitchen")]) });
+    expect(s.claims.closed).toBe(2);
+    // Checked on 20 Sep, after the 26 Jun signal: the founder's call stands, and nobody is asked again.
+    expect(await overtureFacts("Norfolk Kitchen")).toEqual(["business_status"]);
+    expect(await state("Norfolk Kitchen")).toBe("eligible");
+    expect(await current("Norfolk Kitchen", "business_status")).toMatchObject({ value: { status: "operating" }, source_ids: ["founder"] });
+    expect(await closureTasks("Norfolk Kitchen")).toEqual([]);
+    // Checked on 1 Jun, before it: the closure is newer, so the venue is delisted and someone asked.
+    expect(await state("Orchard Kitchen")).toBe("excluded");
+    expect(await current("Orchard Kitchen", "business_status")).toMatchObject({ value: { status: "closed_permanently" }, source_ids: ["overture"] });
+    expect(await closureTasks("Orchard Kitchen")).toEqual([`venue:${await venueId("Orchard Kitchen")}:map_closure`]);
+
+    // Overture re-asserts its closure on every run: still nothing changes for the venue checked since.
+    await ingestOverture(db, { areaSlug: "les", fromFile: join(DIR, "closures.json") });
+    expect(await state("Norfolk Kitchen")).toBe("eligible");
+    expect(await closureTasks("Norfolk Kitchen")).toEqual([]);
   });
 });

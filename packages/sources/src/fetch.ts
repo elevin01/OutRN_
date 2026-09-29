@@ -31,6 +31,8 @@ export interface GuardedResponse {
   url: string;
   contentType: string;
   text: string;
+  /** The body as received, for binary replies (a parquet range); text is the same bytes as UTF-8. */
+  body: Buffer;
   bytes: number;
   fetchedAt: Date;
   attempts: number;
@@ -105,11 +107,37 @@ export async function assertPublicHost(url: URL): Promise<void> {
   for (const a of answers) if (isPrivateAddress(a.address)) throw new FetchBlocked(`host ${host} resolves to private address ${a.address}`);
 }
 
+/**
+ * Space a source's requests by its interval. The slot is reserved before waiting, so callers that
+ * arrive together (several files read at once) queue one interval apart instead of all waking at once.
+ */
 async function throttle(sourceId: string, minIntervalMs: number): Promise<void> {
-  const last = lastCallAt.get(sourceId) ?? 0;
-  const wait = last + minIntervalMs - Date.now();
-  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-  lastCallAt.set(sourceId, Date.now());
+  const now = Date.now();
+  const at = Math.max(now, (lastCallAt.get(sourceId) ?? 0) + minIntervalMs);
+  lastCallAt.set(sourceId, at);
+  if (at > now) await new Promise((r) => setTimeout(r, at - now));
+}
+
+/**
+ * The body, read only until it passes `limit` bytes: an oversized reply (whatever its content-length
+ * said, or without one) is cut off there instead of read in full. `over` says it was.
+ */
+async function readUpTo(res: Response, limit: number): Promise<{ buf: Buffer; over: boolean }> {
+  if (!res.body) return { buf: Buffer.alloc(0), over: false };
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    n += value.byteLength;
+    if (n > limit) {
+      await reader.cancel().catch(() => undefined);
+      return { buf: Buffer.alloc(0), over: true };
+    }
+    chunks.push(value);
+  }
+  return { buf: Buffer.concat(chunks, n), over: false };
 }
 
 /** Redirects one fetch follows: a loop between two paths would otherwise never end. */
@@ -163,13 +191,19 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
       if (opts.allowedContentTypes && !opts.allowedContentTypes.some((p) => contentType.startsWith(p))) {
         throw new FetchBlocked(`unexpected content-type '${contentType}' from ${url.host}`);
       }
+      // Too large is refused, never retried: by the length announced, else by what arrives.
+      const status = res.status >= 400 ? `, status ${res.status}` : "";
       const len = Number(res.headers.get("content-length"));
-      if (Number.isFinite(len) && len > maxBytes) throw new FetchBlocked(`response too large (${len} bytes) from ${url.host}`);
-      const buf = Buffer.from(await res.arrayBuffer());
-      if (buf.byteLength > maxBytes) throw new FetchBlocked(`response too large (${buf.byteLength} bytes) from ${url.host}`);
-      const text = buf.toString("utf8");
-      if (res.status >= 400) throw new FetchFailed(`${res.status} from ${url.host}: ${text.slice(0, 200)}`, res.status);
-      return { status: res.status, url: url.toString(), contentType, text, bytes: buf.byteLength, fetchedAt: new Date(), attempts: attempt };
+      if (res.headers.has("content-length") && Number.isFinite(len) && len > maxBytes) {
+        await res.body?.cancel().catch(() => undefined);
+        throw new FetchBlocked(`response too large (${len} bytes${status}) from ${url.host}`);
+      }
+      const { buf, over } = await readUpTo(res, maxBytes);
+      if (over) throw new FetchBlocked(`response too large (over ${maxBytes} bytes${status}) from ${url.host}`);
+      if (res.status >= 400) throw new FetchFailed(`${res.status} from ${url.host}: ${buf.subarray(0, 800).toString("utf8").slice(0, 200)}`, res.status);
+      // Decoded on first use: a binary reply (a parquet range) is never read as text.
+      let text: string | undefined;
+      return { status: res.status, url: url.toString(), contentType, get text() { return (text ??= buf.toString("utf8")); }, body: buf, bytes: buf.byteLength, fetchedAt: new Date(), attempts: attempt };
     } catch (e) {
       if (e instanceof FetchBlocked) throw e;
       if (e instanceof FetchFailed && e.status && e.status < 500 && e.status !== 429) throw e;
