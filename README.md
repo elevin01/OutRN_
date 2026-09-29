@@ -55,6 +55,31 @@ pnpm outrn ingest osm --area bronxville --save fixtures/live/bronxville.json
 pnpm outrn ingest photos --area les --save fixtures/live/les-photos.json
 ```
 
+### Try it on real places
+
+```bash
+pnpm real        # every capture in fixtures/live, ingested and served by the real API on :4000
+OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real places
+# or the mobile app: EXPO_PUBLIC_API_URL=http://<this computer>:4000 and
+# EXPO_PUBLIC_DEMO_MODE=false in apps/mobile/.env, `HOST=0.0.0.0 pnpm real`, then pnpm mobile:dev
+```
+
+`pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
+from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
+switches those areas on, and starts the API. Recommendations are for right now, as they would be
+for someone there. The only database it touches is `outrn_real` on the local cluster, dropped and
+recreated each run; it takes no database URL. A capture named after something that isn't an area
+is skipped. A capture of a real area that fails to replay stops it with an error before the API
+starts.
+
+`pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…) and their
+photos into `fixtures/live`, on a machine that can reach overpass-api.de, www.wikidata.org and
+commons.wikimedia.org. `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT`
+first. Each area is recorded into a staging directory and replaces its `<area>.json` and
+`<area>-photos.json` only once every step for it has succeeded, so a failed capture keeps the
+previous pair as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
+`pnpm real` again afterwards and the new areas are served too.
+
 The ingest extent is derived, not configured: an area's `radius_m` is its origin catchment (where
 people open the app from; the backtest samples origins there), and ingest covers that plus the
 farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive ~13 km at night

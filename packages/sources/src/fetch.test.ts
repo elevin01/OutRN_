@@ -82,3 +82,33 @@ describe("guarded fetch: an internal service is never contacted", () => {
     expect(hits).toBe(0);
   });
 });
+
+describe("guarded fetch: redirects", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+  const redirectTo = (location: string) => new Response(null, { status: 301, headers: { location } });
+  const opts = { sourceId: "redirect-test", minIntervalMs: 0, retries: 0 };
+
+  it("never follows https down to http, even on the same host", async () => {
+    const fetchStub = vi.fn(async (url: URL) => (url.protocol === "https:" ? redirectTo("http://93.184.215.14/next") : new Response("{}", { status: 200, headers: { "content-type": "application/json" } })));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/start", opts)).rejects.toBeInstanceOf(FetchBlocked);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives up on a redirect loop", async () => {
+    let n = 0;
+    const fetchStub = vi.fn(async () => redirectTo(`https://93.184.215.14/hop/${++n}`));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/start", opts)).rejects.toThrow(/more than 5 redirects/);
+    expect(fetchStub).toHaveBeenCalledTimes(6);
+  });
+
+  it("still follows a same-host https redirect", async () => {
+    const fetchStub = vi.fn(async (url: URL) => (url.pathname === "/start" ? redirectTo("/next") : new Response("{}", { status: 200, headers: { "content-type": "application/json" } })));
+    vi.stubGlobal("fetch", fetchStub);
+    const r = await guardedFetch("https://93.184.215.14/start", opts);
+    expect([r.status, r.url]).toEqual([200, "https://93.184.215.14/next"]);
+  });
+});

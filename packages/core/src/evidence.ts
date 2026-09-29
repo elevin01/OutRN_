@@ -12,7 +12,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - opening_hours      : { osm: string } | { weekly: WeeklyIntervals }  (see time.ts)
  *  - kitchen_hours      : same shape as opening_hours; when food is served (last orders at the close)
  *  - last_entry_offset  : { minutes: number }  minutes before close that admission stops
- *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"unknown" }
+ *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"members_only"|"unknown" }
+ *                         members_only: not open to the public (a private club, a university library)
  *  - admission_status   : { status: "confirmed"|"unconfirmed"|"sold_out"|"cancelled" }
  *  - price              : { min?: number, max?: number, currency: string, free?: boolean, basis: "per_person"|"per_group" }
  *  - min_useful_minutes : { minutes: number }

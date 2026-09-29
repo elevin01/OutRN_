@@ -112,7 +112,10 @@ async function throttle(sourceId: string, minIntervalMs: number): Promise<void> 
   lastCallAt.set(sourceId, Date.now());
 }
 
-export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions): Promise<GuardedResponse> {
+/** Redirects one fetch follows: a loop between two paths would otherwise never end. */
+export const MAX_REDIRECTS = 5;
+
+export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, redirects = 0): Promise<GuardedResponse> {
   const url = new URL(rawUrl);
   const timeoutMs = opts.timeoutMs ?? 30_000;
   const maxBytes = opts.maxBytes ?? 25 * 1024 * 1024;
@@ -144,8 +147,11 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions): P
         if (!loc) throw new FetchFailed(`redirect without location from ${url.host}`, res.status);
         const next = new URL(loc, url);
         if (next.host !== url.host && !opts.allowCrossHostRedirect) throw new FetchBlocked(`cross-host redirect ${url.host} -> ${next.host}`);
+        // Never from https down to http: the rest of the exchange would travel in the clear.
+        if (url.protocol === "https:" && next.protocol !== "https:") throw new FetchBlocked(`redirect from https to ${next.protocol} at ${url.host}`);
+        if (redirects >= MAX_REDIRECTS) throw new FetchBlocked(`more than ${MAX_REDIRECTS} redirects from ${url.host}`);
         await assertPublicHost(next);
-        return guardedFetch(next.toString(), { ...opts, retries: 0 });
+        return guardedFetch(next.toString(), { ...opts, retries: 0 }, redirects + 1);
       }
       if (res.status === 429 || res.status >= 500) {
         lastErr = new FetchFailed(`${res.status} from ${url.host}`, res.status);

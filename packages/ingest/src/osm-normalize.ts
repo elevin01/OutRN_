@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-28.10";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.3";
 
 export interface OsmRecord {
   externalId: string;
@@ -201,6 +201,28 @@ function servesFood(t: Record<string, string>): boolean {
 }
 
 const OUTDOOR: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint"]);
+
+/** access=* values that close a place to the public: only its owners, members or permit holders get in. */
+const MEMBERS_ACCESS = new Set(["private", "no", "members", "permit"]);
+/** access=* values that say the public may come in: they outweigh any guess from the operator or building. */
+const PUBLIC_ACCESS = new Set(["yes", "permissive", "public"]);
+
+/**
+ * A library for a university, college or school's own people. Nothing tags that directly, so the
+ * signs are read: library=academic/school, a university or school building, or such an operator.
+ * A public library system (New York Public Library, a village library) never matches.
+ */
+function academicLibrary(t: Record<string, string>): boolean {
+  if (t["amenity"] !== "library") return false;
+  if (["academic", "university", "school"].includes(t["library"] ?? "")) return true;
+  if (["university", "college", "school"].includes(t["building"] ?? "")) return true;
+  return /\b(university|college|school|seminary|institute)\b/i.test(t["operator"] ?? "") && !/\bpublic\b/i.test(t["operator"] ?? "");
+}
+
+/** A library for its institution's own people, unless the record says the public may use it (access=yes). */
+function membersOnlyLibrary(t: Record<string, string>): boolean {
+  return academicLibrary(t) && !PUBLIC_ACCESS.has(t["access"] ?? "");
+}
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
 /** Kinds with an age limit by default in NY (21+); an estimate until a min_age tag or a check says otherwise. */
@@ -322,13 +344,17 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
 
   const charge = t["fee"] === "no" ? null : parseCharge(t["charge"]);
 
-  // Admission
-  if (t["reservation"] === "required") pub("admission", { requirement: "reservation" }, "reservation=required", 0.7);
+  // Admission. Not open to the public comes first: the tag says so, or it's a university or school's own library.
+  if (MEMBERS_ACCESS.has(t["access"] ?? "")) pub("admission", { requirement: "members_only" }, `access=${t["access"]}`, 0.7);
+  else if (membersOnlyLibrary(t)) est("admission", { requirement: "members_only" }, 0.7);
+  else if (t["reservation"] === "required") pub("admission", { requirement: "reservation" }, "reservation=required", 0.7);
   else if ((t["fee"] === "yes" || (charge && charge.max > 0)) && category && ["museum", "attraction", "gallery", "garden"].includes(category)) pub("admission", { requirement: "ticket" }, t["fee"] === "yes" ? "fee=yes" : `charge=${t["charge"]}`, 0.6);
   else if (t["leisure"] === "escape_game") est("admission", { requirement: "reservation" }, 0.6); // escape rooms are booked by the slot
   else if (t["amenity"] === "karaoke_box") est("admission", { requirement: "reservation_available" }, 0.45);
   else if (category && ["cafe", "bar", "dessert", "bookshop", "library", "park", "viewpoint", "waterfront", "market", "community"].includes(category)) est("admission", { requirement: "walk_in" }, 0.55);
   else if (category && ["bowling", "arcade", "nightclub", "activity"].includes(category)) est("admission", { requirement: "walk_in" }, 0.45);
+  // A commercial art gallery is open to walk in during its hours (a charge or fee=yes made it a ticket above).
+  else if (category === "gallery" && t["tourism"] === "gallery") est("admission", { requirement: "walk_in" }, 0.5);
   else if (category === "restaurant") est("admission", { requirement: t["reservation"] === "yes" || t["reservation"] === "recommended" ? "reservation_available" : "walk_in" }, 0.45);
   else if (category && ["theatre", "cinema", "live_music"].includes(category)) est("admission", { requirement: "ticket" }, 0.6);
   else est("admission", { requirement: "unknown" }, 0.2);
@@ -339,6 +365,10 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   else if (charge) pub("price", { currency: "USD", paid: true, basis: charge.basis, min: charge.min, max: charge.max }, `charge=${t["charge"]}`, 0.65);
   else if (t["fee"] === "yes") pub("price", { currency: "USD", basis: "per_person", unknown: true, paid: true }, "fee=yes", 0.6);
   else if (category && OUTDOOR.has(category) && t["natural"] !== "beach") est("price", { currency: "USD", free: true, basis: "per_person" }, 0.6);
+  // A public library is free to walk into, and so is a commercial art gallery (it sells the art, not
+  // the visit). Museums are not assumed either way.
+  else if (category === "library" && !membersOnlyLibrary(t)) est("price", { currency: "USD", free: true, basis: "per_person" }, 0.7);
+  else if (category === "gallery" && t["tourism"] === "gallery") est("price", { currency: "USD", free: true, basis: "per_person" }, 0.55);
 
   const outdoor = (category && OUTDOOR.has(category)) || t["leisure"] === "miniature_golf";
   if (category) est("indoor_outdoor", { value: outdoor ? "outdoor" : t["outdoor_seating"] === "yes" ? "mixed" : "indoor" }, 0.6);

@@ -394,7 +394,8 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   });
 
   it("shows a place's own free photos with their credits, and credits the source", async () => {
-    now = SAT_EVENING;
+    // 2pm: at 6:30pm Pitt Park is near sunset, when parks fall out of the three.
+    now = new Date("2026-10-03T18:00:00Z");
     const page = await search({ areaId: "les", windowMinutes: 180 });
     const park = page.items.find((i) => i.name === "Pitt Park")!;
     expect(park.photos.map((p) => [p.license, p.credit])).toEqual([
@@ -461,6 +462,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       [{ areaId: "les", windowMinutes: 5 }, "windowMinutes"],
       [{ areaId: "atlantis", windowMinutes: 120 }, "areaId"],
       [{ areaId: "les", windowMinutes: 120, mood: "sleepy" }, "mood"],
+      // Names every object inherits are not moods or companies either.
+      ...["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"].flatMap((key): [unknown, string][] => [
+        [{ areaId: "les", windowMinutes: 120, mood: key }, "mood"],
+        [{ areaId: "les", windowMinutes: 120, company: key }, "company"],
+      ]),
       [{ areaId: "les", windowMinutes: 120, categories: ["bar", "spaceport"] }, "categories.1"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
       [{ areaId: "les", windowMinutes: 120, colour: "blue" }, "(body)"],
