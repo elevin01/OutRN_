@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.15";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.16";
 
 export interface OsmRecord {
   externalId: string;
@@ -202,8 +202,8 @@ function servesFood(t: Record<string, string>): boolean {
 
 const OUTDOOR: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint"]);
 
-/** access=* values that close a place to the public: only its owners, members or permit holders get in. */
-const MEMBERS_ACCESS = new Set(["private", "no", "members", "permit"]);
+/** access=* values that close a place to the public: only its owners, members, permit holders or residents get in. */
+const MEMBERS_ACCESS = new Set(["private", "no", "members", "permit", "residents"]);
 /** access=* values that say the public may come in: they outweigh any guess from the operator or building. */
 const PUBLIC_ACCESS = new Set(["yes", "permissive", "public"]);
 
@@ -259,8 +259,8 @@ export function seatingOf(t: Readonly<Record<string, string>>): { outside: "yes"
 /** toilets:access values a visitor may use (a customer is a visitor), and ones they may not (staff only, none). */
 const RESTROOM_OPEN: ReadonlySet<string> = new Set(["yes", "customers", "permissive", "public", "key"]);
 const RESTROOM_CLOSED: ReadonlySet<string> = new Set(["no", "private"]);
-/** toilets:wheelchair values; "designated" (built for wheelchair users) is accessible. */
-const RESTROOM_WHEELCHAIR: Readonly<Record<string, NonNullable<Restroom["wheelchair"]>>> = { yes: "yes", designated: "yes", limited: "limited", no: "no" };
+/** wheelchair and toilets:wheelchair values; "designated" (built for wheelchair users) is accessible. */
+const WHEELCHAIR_ACCESS: Readonly<Record<string, "yes" | "limited" | "no">> = { yes: "yes", designated: "yes", limited: "limited", no: "no" };
 
 /**
  * A restroom visitors may use, and its step-free access, from toilets, toilets:access and
@@ -286,8 +286,8 @@ export function restroomOf(t: Readonly<Record<string, string>>): { value: Restro
     used.push(`toilets:access=${access}`);
   }
   let wheelchairAccess: Restroom["wheelchair"];
-  if (available !== "no" && wheelchair && ownValue(RESTROOM_WHEELCHAIR, wheelchair)) {
-    wheelchairAccess = ownValue(RESTROOM_WHEELCHAIR, wheelchair);
+  if (available !== "no" && wheelchair && ownValue(WHEELCHAIR_ACCESS, wheelchair)) {
+    wheelchairAccess = ownValue(WHEELCHAIR_ACCESS, wheelchair);
     used.push(`toilets:wheelchair=${wheelchair}`);
     if (wheelchairAccess !== "no") available ??= "yes";
   }
@@ -480,7 +480,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (website) pub("website", { value: website }, `website=${website}`, 0.8);
   const phone = t["phone"] ?? t["contact:phone"];
   if (phone) pub("phone", { value: phone }, `phone=${phone}`, 0.8);
-  if (t["wheelchair"] && ["yes", "limited", "no"].includes(t["wheelchair"])) pub("wheelchair", { value: t["wheelchair"] }, `wheelchair=${t["wheelchair"]}`, 0.7);
+  const stepFree = ownValue(WHEELCHAIR_ACCESS, t["wheelchair"]?.trim().toLowerCase() ?? "");
+  if (stepFree) pub("wheelchair", { value: stepFree }, `wheelchair=${t["wheelchair"]!.trim().slice(0, 50)}`, 0.7);
 
   const charge = t["fee"] === "no" ? null : parseCharge(t["charge"]);
 
