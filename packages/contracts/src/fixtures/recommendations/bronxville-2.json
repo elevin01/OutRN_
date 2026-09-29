@@ -44,6 +44,7 @@
         }
       ],
       "parking": null,
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000012",
       "copy": {
         "action": "Go now",
@@ -191,6 +192,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
         "distanceMetres": 62
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000013",
       "copy": {
         "action": "Go now",
@@ -337,6 +339,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
         "distanceMetres": 62
       },
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000014",
       "copy": {
         "action": "Go now",

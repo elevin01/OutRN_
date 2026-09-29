@@ -1262,6 +1262,7 @@
         "FREE",
         "SHORT_TRAVEL",
         "ENOUGH_TIME",
+        "LANDMARK",
         "SUNSET_WINDOW"
       ],
       "unresolved": [],
@@ -1270,7 +1271,7 @@
       "scores": {
         "evidence": 0.538,
         "fit": 0.722,
-        "appeal": 0.717,
+        "appeal": 0.817,
         "novelty": 1
       },
       "shortlisted": true

@@ -1,4 +1,4 @@
-import type { RecommendationItem } from "@outrn/contracts";
+import type { Photo, RecommendationItem } from "@outrn/contracts";
 import { DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
 import { caveatNotes, explain, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
@@ -10,7 +10,7 @@ const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter:
  * Engine evaluation → public item. The engine's `Evaluation` never crosses the boundary: only what
  * the product needs, with estimates and unknowns kept explicit.
  */
-export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
+export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = []): RecommendationItem {
   const c = e.candidate;
   const t = e.timing;
   if (e.class === "ineligible" || !t) throw new Error(`toItem: ${c.id} is ineligible and must not be shown`);
@@ -22,6 +22,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
     placeId: c.venueId,
     name: c.name,
     placeName: c.venueName ?? c.name,
+    photos: photos.slice(0, 3),
     category: { id: c.category, label: labelOf(c.category) },
     subtype: subtypeFrom(c.facts.subtype?.value),
     status: e.class,
@@ -54,7 +55,7 @@ export function toItem(e: Evaluation, ctx: RequestContext): RecommendationItem {
       directionsUrl: directionsUrl(c.point, t.travel.mode),
       websiteUrl: websiteUrl(textFrom(c.facts.website?.value)),
       phone: textFrom(c.facts.phone?.value),
-      links: linksFrom(c.facts.links?.value),
+      links: linksFrom(c.facts.links?.value, textFrom(c.facts.website?.value)),
     },
   };
 }

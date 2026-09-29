@@ -37,6 +37,30 @@
       "placeId": "00000000-0000-4000-8000-000000000002",
       "name": "Pitt Park",
       "placeName": "Pitt Park",
+      "photos": [
+        {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg",
+          "width": 960,
+          "height": 720,
+          "alt": "The lawn at Pitt Park on a summer evening (synthetic fixture: this file does not exist)",
+          "credit": "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons",
+          "author": "Synthetic Photographer",
+          "license": "CC BY-SA 4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg"
+        },
+        {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg/960px-OutRN_synthetic_Pitt_Park_fountain.jpg",
+          "width": 960,
+          "height": 1280,
+          "alt": "Fountain in Pitt Park & its benches (synthetic fixture)",
+          "credit": "CC0, via Wikimedia Commons",
+          "author": null,
+          "license": "CC0",
+          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg"
+        }
+      ],
       "category": {
         "id": "park",
         "label": "Park"
@@ -143,12 +167,18 @@
           "text": "sunset window",
           "params": {},
           "required": false
+        },
+        {
+          "code": "LANDMARK",
+          "text": "a landmark",
+          "params": {},
+          "required": false
         }
       ],
       "caveats": [],
       "copy": {
         "summary": "~8 min walk · takes about 1h · until 1am · usually free",
-        "sentence": "A short walk, plenty of time, open late, free, sunset window.",
+        "sentence": "A short walk, plenty of time, open late, free, sunset window, a landmark.",
         "caveat": null,
         "action": "Go now"
       },
@@ -165,6 +195,7 @@
       "placeId": "00000000-0000-4000-8000-000000000003",
       "name": "Forsyth Clinton Kitchen",
       "placeName": "Forsyth Clinton Kitchen",
+      "photos": [],
       "category": {
         "id": "restaurant",
         "label": "Restaurant"
@@ -295,6 +326,7 @@
       "placeId": "00000000-0000-4000-8000-000000000004",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -415,6 +447,7 @@
   },
   "insufficient": null,
   "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

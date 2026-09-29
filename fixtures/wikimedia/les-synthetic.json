@@ -1,0 +1,292 @@
+{
+ "outrn_capture": "wikimedia",
+ "note": "Synthetic capture: invented responses in the shape of the Wikidata and Commons APIs, for the synthetic LES fixture. The files do not exist on Commons, so the image URLs do not load; Q4115189 is Wikidata's sandbox item. Replay with `outrn ingest photos --area les --from-file fixtures/wikimedia/les-synthetic.json`.",
+ "responses": {
+  "https://commons.wikimedia.org/w/api.php?action=query&titles=File%3AOutRN+synthetic+Delancey+Books+window.jpg%7CFile%3AOutRN+synthetic+East+River+Overlook.jpg%7CFile%3AOutRN+synthetic+Norfolk+Park.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+fountain.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+lawn.jpg%7CFile%3AOutRN+synthetic+Pitt+Park+map.svg&prop=imageinfo%7Ctemplates&iiprop=timestamp%7Curl%7Csize%7Cmime%7Cextmetadata&iiurlwidth=800&iiextmetadatafilter=Artist%7CLicenseShortName%7CLicenseUrl%7CAttributionRequired%7CNonFree%7CImageDescription%7CObjectName&tltemplates=Template%3ADelete%7CTemplate%3ASpeedydelete%7CTemplate%3ACopyvio%7CTemplate%3ANo+license+since%7CTemplate%3ANo+source+since%7CTemplate%3ANo+permission+since&tllimit=max&format=json&formatversion=2": {
+   "batchcomplete": true,
+   "query": {
+    "pages": [
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic Pitt Park lawn.jpg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2019-05-04T16:21:07Z",
+        "size": 2400000,
+        "width": 3840,
+        "height": 2880,
+        "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "thumbwidth": 960,
+        "thumbheight": 720,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/jpeg",
+        "extmetadata": {
+         "Artist": {
+          "value": "<a href=\"//commons.wikimedia.org/wiki/User:Synthetic\" title=\"User:Synthetic\">Synthetic Photographer</a>",
+          "source": "commons-desc-page"
+         },
+         "LicenseShortName": {
+          "value": "CC BY-SA 4.0",
+          "source": "commons-desc-page"
+         },
+         "LicenseUrl": {
+          "value": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "true",
+          "source": "commons-desc-page"
+         },
+         "ImageDescription": {
+          "value": "The lawn at Pitt Park on a summer evening (synthetic fixture: this file does not exist)",
+          "source": "commons-desc-page"
+         },
+         "ObjectName": {
+          "value": "OutRN synthetic Pitt Park lawn",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic Pitt Park map.svg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2018-03-11T09:02:44Z",
+        "size": 2400000,
+        "width": 3840,
+        "height": 2880,
+        "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/OutRN_synthetic_Pitt_Park_map.svg/960px-OutRN_synthetic_Pitt_Park_map.svg.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "thumbwidth": 960,
+        "thumbheight": 720,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/5/5c/OutRN_synthetic_Pitt_Park_map.svg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_map.svg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/svg+xml",
+        "extmetadata": {
+         "Artist": {
+          "value": "Synthetic Cartographer",
+          "source": "commons-desc-page"
+         },
+         "LicenseShortName": {
+          "value": "CC BY-SA 4.0",
+          "source": "commons-desc-page"
+         },
+         "LicenseUrl": {
+          "value": "https://creativecommons.org/licenses/by-sa/4.0",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "true",
+          "source": "commons-desc-page"
+         },
+         "ImageDescription": {
+          "value": "Map of Pitt Park",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic Pitt Park fountain.jpg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2021-07-19T20:15:31Z",
+        "size": 2400000,
+        "width": 3840,
+        "height": 5120,
+        "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg/960px-OutRN_synthetic_Pitt_Park_fountain.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "thumbwidth": 960,
+        "thumbheight": 1280,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/jpeg",
+        "extmetadata": {
+         "LicenseShortName": {
+          "value": "CC0",
+          "source": "commons-desc-page"
+         },
+         "LicenseUrl": {
+          "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "false",
+          "source": "commons-desc-page"
+         },
+         "ImageDescription": {
+          "value": "Fountain in Pitt Park &amp; its benches<br/>(synthetic fixture)",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic Norfolk Park.jpg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2012-10-02T13:48:55Z",
+        "size": 2400000,
+        "width": 3200,
+        "height": 2400,
+        "thumburl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
+        "thumbwidth": 800,
+        "thumbheight": 600,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/OutRN_synthetic_Norfolk_Park.jpg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/jpeg",
+        "extmetadata": {
+         "Artist": {
+          "value": "Unknown author",
+          "source": "commons-desc-page"
+         },
+         "LicenseShortName": {
+          "value": "Public domain",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "false",
+          "source": "commons-desc-page"
+         },
+         "ObjectName": {
+          "value": "OutRN synthetic Norfolk Park",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic Delancey Books window.jpg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2023-01-28T11:30:00Z",
+        "size": 2400000,
+        "width": 3840,
+        "height": 2880,
+        "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/OutRN_synthetic_Delancey_Books_window.jpg/960px-OutRN_synthetic_Delancey_Books_window.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "thumbwidth": 960,
+        "thumbheight": 720,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/OutRN_synthetic_Delancey_Books_window.jpg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Delancey_Books_window.jpg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/jpeg",
+        "extmetadata": {
+         "Artist": {
+          "value": "Synthetic Shopkeeper",
+          "source": "commons-desc-page"
+         },
+         "LicenseShortName": {
+          "value": "Fair use",
+          "source": "commons-desc-page"
+         },
+         "NonFree": {
+          "value": "true",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "true",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "ns": 6,
+      "title": "File:OutRN synthetic East River Overlook.jpg",
+      "imagerepository": "local",
+      "imageinfo": [
+       {
+        "timestamp": "2020-06-14T18:07:12Z",
+        "size": 2400000,
+        "width": 3840,
+        "height": 2880,
+        "thumburl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/OutRN_synthetic_East_River_Overlook.jpg/960px-OutRN_synthetic_East_River_Overlook.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "thumbwidth": 960,
+        "thumbheight": 720,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/OutRN_synthetic_East_River_Overlook.jpg",
+        "descriptionurl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_East_River_Overlook.jpg",
+        "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=0",
+        "mime": "image/jpeg",
+        "extmetadata": {
+         "LicenseShortName": {
+          "value": "CC BY 2.0",
+          "source": "commons-desc-page"
+         },
+         "LicenseUrl": {
+          "value": "https://creativecommons.org/licenses/by/2.0",
+          "source": "commons-desc-page"
+         },
+         "AttributionRequired": {
+          "value": "true",
+          "source": "commons-desc-page"
+         },
+         "ImageDescription": {
+          "value": "East River from the overlook",
+          "source": "commons-desc-page"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "https://www.wikidata.org/w/api.php?action=wbgetentities&ids=Q4115189&props=claims&format=json&formatversion=2": {
+   "entities": {
+    "Q4115189": {
+     "type": "item",
+     "id": "Q4115189",
+     "claims": {
+      "P18": [
+       {
+        "mainsnak": {
+         "snaktype": "value",
+         "property": "P18",
+         "datavalue": {
+          "value": "OutRN synthetic Pitt Park old gate.jpg",
+          "type": "string"
+         },
+         "datatype": "commonsMedia"
+        },
+        "type": "statement",
+        "rank": "deprecated"
+       },
+       {
+        "mainsnak": {
+         "snaktype": "value",
+         "property": "P18",
+         "datavalue": {
+          "value": "OutRN synthetic Pitt Park fountain.jpg",
+          "type": "string"
+         },
+         "datatype": "commonsMedia"
+        },
+        "type": "statement",
+        "rank": "preferred"
+       }
+      ]
+     }
+    }
+   },
+   "success": 1
+  }
+ }
+}

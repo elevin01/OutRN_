@@ -12,6 +12,7 @@
     "lon": -74.001489
   },
   "address": null,
+  "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",

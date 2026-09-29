@@ -44,6 +44,7 @@
         }
       ],
       "parking": null,
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000005",
       "copy": {
         "action": "Go now",
@@ -151,6 +152,19 @@
         }
       ],
       "parking": null,
+      "photos": [
+        {
+          "alt": "OutRN synthetic Norfolk Park",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
+          "width": 800,
+          "author": "Unknown author",
+          "credit": "Unknown author, Public domain, via Wikimedia Commons",
+          "height": 600,
+          "license": "Public domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg",
+          "licenseUrl": null
+        }
+      ],
       "id": "00000000-0000-4000-8000-000000000006",
       "copy": {
         "action": "Go now",
@@ -279,6 +293,7 @@
         }
       ],
       "parking": null,
+      "photos": [],
       "id": "00000000-0000-4000-8000-000000000007",
       "copy": {
         "action": "Go now",
@@ -394,6 +409,7 @@
   },
   "insufficient": null,
   "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
     "© OpenStreetMap contributors"
   ]
 }

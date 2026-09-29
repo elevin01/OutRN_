@@ -1,4 +1,4 @@
-import { cuisineSlugs, fromLocal, isPublicWebHost, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
+import { cuisineSlugs, fromLocal, isMenuUrlFor, ownValue, type Category, type FactInput, type LatLon } from "@outrn/core";
 import { parseOsmHours } from "@outrn/facts";
 import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outrn/sources";
 
@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.4";
+export const OSM_NORMALIZE_VERSION = "2026-09-29.5";
 
 export interface OsmRecord {
   externalId: string;
@@ -162,8 +162,10 @@ const isHandle = (h: string) => /[A-Za-z]/.test(h);
 
 /**
  * The venue's own pages from OSM contact tags, as links we are willing to show: rebuilt from the
- * handle on the official host (never passed through raw), or an https menu on a public host (never
- * an IP literal or a network-local name). Anything else is dropped.
+ * handle on the official host (never passed through raw), or an https menu on the venue's own site
+ * or a known menu platform (never a stranger's page, a free site builder, another tenant of a host
+ * the website shares by path, an IP literal or a network-local name).
+ * Anything else is dropped.
  */
 export function venueLinks(t: Record<string, string>): { links: { instagram?: string; facebook?: string; menu?: string }; evidence: string[] } | null {
   const links: { instagram?: string; facebook?: string; menu?: string } = {};
@@ -182,7 +184,7 @@ export function venueLinks(t: Record<string, string>): { links: { instagram?: st
   if (menu && menu.length <= 500) {
     try {
       const u = new URL(menu);
-      if (u.protocol === "https:" && !u.username && !u.password && isPublicWebHost(u.hostname)) {
+      if (isMenuUrlFor(u.toString(), t["website"] ?? t["contact:website"] ?? t["url"] ?? null)) {
         links.menu = u.toString();
         evidence.push(`website:menu=${menu}`);
       }

@@ -37,6 +37,7 @@
       "placeId": "00000000-0000-4000-8000-00000000000f",
       "name": "Suffolk Park",
       "placeName": "Suffolk Park",
+      "photos": [],
       "category": {
         "id": "park",
         "label": "Park"
@@ -151,6 +152,7 @@
       "placeId": "00000000-0000-4000-8000-000000000010",
       "name": "Broome Scoops",
       "placeName": "Broome Scoops",
+      "photos": [],
       "category": {
         "id": "dessert",
         "label": "Dessert"
@@ -297,6 +299,7 @@
       "placeId": "00000000-0000-4000-8000-000000000011",
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
+      "photos": [],
       "category": {
         "id": "bar",
         "label": "Bar"

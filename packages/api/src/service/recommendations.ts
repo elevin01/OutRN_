@@ -4,6 +4,7 @@ import { loadCandidates, loadPolicies, MAX_OFFSET, WEATHER_SOURCE, persistRun, p
 import { PAGE_SIZE, SNAPSHOT_RETENTION_HOURS, SNAPSHOT_TTL_MINUTES } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
 import { sourcesOf, toItem } from "../map/item.js";
+import { loadPhotos, photoSources } from "./photos.js";
 import { resolveRequest, type InternalOverrides, type ResolvedContext } from "./context.js";
 
 export interface ServiceOptions {
@@ -107,6 +108,8 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
   const clock = opts.clock ?? (() => new Date());
   const run = await runEngine(q, request, { ...opts, clock });
   const { shortlist, ctx } = run;
+  const venueIds = [...new Set(shortlist.ordered.map((e) => e.candidate.venueId))];
+  const photos = await loadPhotos(q, venueIds, 3);
   const generatedAt = clock();
   const snapshot: Snapshot = {
     runId: run.runId!,
@@ -114,10 +117,10 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
     request: run.request,
     resolved: run.resolved,
     area: areaOf(run.area),
-    items: shortlist.ordered.map((e) => toItem(e, ctx)),
+    items: shortlist.ordered.map((e) => toItem(e, ctx, photos.get(e.candidate.venueId))),
     insufficient: shortlist.fewerThanThree ? { found: shortlist.items.length, wanted: PAGE_SIZE, relaxations: shortlist.relaxations } : null,
-    // A forecast shaped the order (rain sinks parks): credit it with the facts' sources.
-    attributions: await attributionsFor(q, [...sourcesOf(shortlist.ordered), ...(ctx.weather ? [WEATHER_SOURCE] : [])]),
+    // A forecast shaped the order (rain sinks parks): credit it with the facts' and photos' sources.
+    attributions: await attributionsFor(q, [...sourcesOf(shortlist.ordered), ...(await photoSources(q, venueIds)), ...(ctx.weather ? [WEATHER_SOURCE] : [])]),
     asOf: ctx.now,
     generatedAt,
     expiresAt: new Date(generatedAt.getTime() + SNAPSHOT_TTL_MINUTES * 60_000),
@@ -143,9 +146,9 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
 
 /**
  * Fields later versions added to items, with what an older search computed for them: none. A 1.2
- * item has no conditions; a 1.3 item names no parking.
+ * item has no conditions; a 1.3 item names no parking; a 1.4 item has no photos.
  */
-const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null };
+const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [] };
 function upgradeItems(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
   return items.map((i: unknown) => (i && typeof i === "object" ? { ...ITEM_DEFAULTS, ...i } : i));
