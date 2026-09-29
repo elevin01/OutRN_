@@ -215,6 +215,9 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Nightcap", amenity: "bar" }), "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 }, confidence: 0.5 });
     expect(fact(rec({ name: "Pub", amenity: "pub", food: "no" }), "age_limit")).toMatchObject({ value: { minAge: 21 } });
     for (const food of [{ food: "yes" }, { cuisine: "burger" }, { "opening_hours:kitchen": "Mo-Su 12:00-22:00" }]) expect(fact(rec({ name: "Gastropub", amenity: "pub", ...food }), "age_limit")).toBeUndefined();
+    // A karaoke box is a bar with private rooms: the same estimate, food or not.
+    for (const food of [{}, { cuisine: "korean" }]) expect(fact(rec({ name: "Sing", amenity: "karaoke_box", ...food }), "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 21 }, confidence: 0.5 });
+    expect(fact(rec({ name: "Family karaoke", amenity: "karaoke_box", min_age: "0" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 0 } });
     // A published limit always wins.
     expect(fact(rec({ name: "All ages", amenity: "bar", min_age: "0" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 0 } });
   });

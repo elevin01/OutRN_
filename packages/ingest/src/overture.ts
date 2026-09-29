@@ -120,7 +120,17 @@ export interface OvertureMatch {
   name: "same" | "prefix" | "within";
 }
 
-function namesMatch(venueKey: string, placeKey: string): OvertureMatch["name"] | null {
+/** Numbers read the same however they are written: "Hunan III" is "Hunan 3". */
+const NUMBER_WORDS: Readonly<Record<string, string>> = {
+  i: "1", ii: "2", iii: "3", iv: "4", v: "5", vi: "6", vii: "7", viii: "8", ix: "9", x: "10",
+  one: "1", two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10",
+};
+/** A name key with its numbers written as digits. */
+const numbered = (key: string): string => key.split(" ").map((w) => ownValue(NUMBER_WORDS, w) ?? w).join(" ");
+
+function namesMatch(venueKeyAsWritten: string, placeKeyAsWritten: string): OvertureMatch["name"] | null {
+  const venueKey = numbered(venueKeyAsWritten);
+  const placeKey = numbered(placeKeyAsWritten);
   if (!venueKey || !placeKey) return null;
   if (venueKey === placeKey || venueKey.replace(/ /g, "") === placeKey.replace(/ /g, "")) return "same";
   const [short, long] = venueKey.length <= placeKey.length ? [venueKey, placeKey] : [placeKey, venueKey];
@@ -279,6 +289,7 @@ const STUDIO_NAME = /\bstudios?\b/;
 /** What a place's name says it serves, when Overture only says "restaurant". */
 const DESSERT_NAME = /\b(ice cream|gelato|gelateria|creamery|frozen yogurt|froyo|desserts?|cupcakes?|cookies?|donuts?|doughnuts?|cheesecakes?|cakes?|pastry|pastries)\b/;
 const CAFE_NAME = /\b(coffee|cafe|espresso|bakery|bakeshop|patisserie|boulangerie)\b/;
+const KARAOKE_NAME = /\bkaraoke\b/;
 
 /**
  * National and New York chains, as name keys: a franchise is the same everywhere, and OSM maps
@@ -333,15 +344,12 @@ export function newPlaceGate(p: OverturePlace, chains: ReadonlySet<string> = KNO
   // Overture files ice cream parlors and bakeries under "restaurant"; a card would time them as a sit-down meal.
   if (category === "restaurant" && DESSERT_NAME.test(key)) category = "dessert";
   else if (category === "restaurant" && CAFE_NAME.test(key)) category = "cafe";
+  // And karaoke under "music_venue": it is something to book and do, as OSM files it, not a show to see.
+  if ((category === "live_music" || category === "bar") && KARAOKE_NAME.test(key)) category = "activity";
   return { category };
 }
 
-/** Numbers read the same however they are written: "Hunan III" is "Hunan 3". */
-const NUMBER_WORDS: Readonly<Record<string, string>> = {
-  i: "1", ii: "2", iii: "3", iv: "4", v: "5", vi: "6", vii: "7", viii: "8", ix: "9", x: "10",
-  one: "1", two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10",
-};
-const nameWords = (name: string): string[] => matchKey(name).split(" ").filter(Boolean).map((w) => ownValue(NUMBER_WORDS, w) ?? w);
+const nameWords = (name: string): string[] => numbered(matchKey(name)).split(" ").filter(Boolean);
 
 /**
  * Whether two names this far apart could be one place: the same name within 500 m (a second
@@ -366,6 +374,7 @@ export function namesake(a: string, b: string, metres: number): boolean {
 const BARE_TAGS: Readonly<Partial<Record<Category, Record<string, string>>>> = {
   restaurant: { amenity: "restaurant" }, cafe: { amenity: "cafe" }, dessert: { amenity: "ice_cream" }, bar: { amenity: "bar" }, gallery: { tourism: "gallery" },
   live_music: { amenity: "music_venue" }, nightclub: { amenity: "nightclub" }, arcade: { leisure: "amusement_arcade" }, market: { amenity: "marketplace" },
+  activity: { amenity: "karaoke_box" },
 };
 
 /**

@@ -270,8 +270,9 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   const minAge = t["min_age"] && /^\d{1,2}$/.test(t["min_age"].trim()) ? Number(t["min_age"].trim()) : null;
   if (minAge !== null && minAge <= 25) pub("age_limit", { minAge }, `min_age=${t["min_age"]}`, 0.75);
   else if (subtype && ownValue(DEFAULT_AGE_LIMIT, subtype)) est("age_limit", { minAge: ownValue(DEFAULT_AGE_LIMIT, subtype)! }, 0.7);
-  // A bar that serves no food is usually 21+ in practice. Low confidence: a family sees Check first, never an exclusion.
-  else if (category === "bar" && !servesFood(t)) est("age_limit", { minAge: 21 }, 0.5);
+  // A bar that serves no food is usually 21+ in practice, and so is a karaoke box, food or not (a bar with
+  // private rooms, most of them 21+ at night). Low confidence: a family sees Check first, never an exclusion.
+  else if ((category === "bar" && !servesFood(t)) || t["amenity"] === "karaoke_box") est("age_limit", { minAge: 21 }, 0.5);
 
   // Surveys: when a mapper last checked the hours, and when anyone last checked the place at all.
   const hoursCheckedAt = surveyDate(t["check_date:opening_hours"], rec.sourceUpdatedAt, now);
