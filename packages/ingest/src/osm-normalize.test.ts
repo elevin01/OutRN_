@@ -248,6 +248,16 @@ describe("OSM normalization", () => {
     for (const far of ["2027-12-01", "9998-12-31"]) expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: far }), "business_status"), far).toMatchObject({ value: { status: "operating" } });
   });
 
+  it("cuisine becomes a published list of slugs where food is served; nowhere else", () => {
+    expect(fact(rec({ name: "Lombardi's", amenity: "restaurant", cuisine: "Pizza; italian" }), "cuisine")).toMatchObject({ evidenceClass: "published", value: { values: ["pizza", "italian"] }, evidence: "cuisine=Pizza; italian", confidence: 0.8 });
+    expect(fact(rec({ name: "Gastropub", amenity: "pub", cuisine: "burger" }), "cuisine")).toMatchObject({ value: { values: ["burger"] } });
+    expect(fact(rec({ name: "Rex", amenity: "cafe", cuisine: "coffee_shop;breakfast" }), "cuisine")).toMatchObject({ value: { values: ["coffee_shop", "breakfast"] } });
+    // Not a place that serves food, or nothing that reads as a cuisine: no fact.
+    expect(fact(rec({ name: "Seward Park", leisure: "park", cuisine: "picnic" }), "cuisine")).toBeUndefined();
+    expect(fact(rec({ name: "Odd", amenity: "restaurant", cuisine: ";;<b>" }), "cuisine")).toBeUndefined();
+    expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "cuisine")).toBeUndefined();
+  });
+
   it("takeaway becomes a published takeout fact; other values are ignored", () => {
     expect(fact(rec({ name: "Slice", amenity: "restaurant", takeaway: "only" }), "takeout")).toMatchObject({ evidenceClass: "published", value: { value: "only" }, evidence: "takeaway=only" });
     expect(fact(rec({ name: "Bistro", amenity: "restaurant", takeaway: "no" }), "takeout")).toMatchObject({ value: { value: "no" } });

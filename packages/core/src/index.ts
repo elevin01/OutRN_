@@ -7,3 +7,4 @@ export * from "./fact-values.js";
 export * from "./urls.js";
 export * from "./website.js";
 export * from "./lookup.js";
+export * from "./cuisine.js";

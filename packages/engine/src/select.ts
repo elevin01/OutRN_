@@ -1,6 +1,6 @@
-import { ACTIVITY_OF_CATEGORY } from "@outrn/core";
+import { ACTIVITY_OF_CATEGORY, cuisineGroups } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
-import { compareEvaluations } from "./score.js";
+import { compareEvaluations, merit } from "./score.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
 /**
@@ -8,10 +8,46 @@ import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
  *
  * Class beats diversity: a Ready option is never displaced by a Check-first one just because it
  * would add a new activity type. Within a class, a broad request prefers distinct activity types
- * first, then fills from the same class ignoring diversity. Narrowed request (a category chip):
- * respect it — three bars is a valid answer to "bars". A child venue is not shown beside its parent.
- * Never fill a third slot by silently relaxing a constraint; name the relaxation instead.
+ * first, then fills from the same class, where a repeat of what was just shown (the same kind of
+ * place, the same cuisine) costs a little: a slightly lower-scored Thai place comes before a third
+ * Italian one, but a much better Italian place still wins. Narrowed request (a category chip):
+ * respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
+ * A child venue is not shown beside its parent. Never fill a third slot by silently relaxing a
+ * constraint; name the relaxation instead.
  */
+
+/**
+ * What a repeat costs, in merit (see score.ts), against each of the last `window` places shown:
+ * the same category, and the same kind within it (a cuisine group, or the subtype of an activity).
+ * Merit gaps between neighbours are usually a few hundredths; a place that is better by more than
+ * the penalty keeps its place.
+ */
+export const VARIETY = { window: 3, sameCategory: 0.03, sameKind: 0.05 } as const;
+
+/** What makes two places of one category the same kind: their cuisine groups, or their subtype. */
+function kindsOf(e: Evaluation): Set<string> {
+  const f = e.candidate.facts;
+  const cuisines = (f.cuisine?.value as { values?: unknown } | undefined)?.values;
+  const kinds = Array.isArray(cuisines) ? cuisineGroups(cuisines.filter((x): x is string => typeof x === "string")) : new Set<string>();
+  const subtype = (f.subtype?.value as { value?: unknown } | undefined)?.value;
+  if (typeof subtype === "string") kinds.add(`${e.candidate.category}:${subtype}`);
+  return kinds;
+}
+
+function repeatPenalty(e: Evaluation, kinds: Set<string>, recent: Evaluation[], kindCache: Map<Evaluation, Set<string>>): number {
+  let p = 0;
+  for (const r of recent) {
+    if (r.candidate.category === e.candidate.category) p += VARIETY.sameCategory;
+    const rk = kindCache.get(r)!;
+    for (const k of kinds) {
+      if (rk.has(k)) {
+        p += VARIETY.sameKind;
+        break;
+      }
+    }
+  }
+  return p;
+}
 
 interface Pass {
   cls: Exclude<ResultClass, "ineligible"> | "any";
@@ -39,24 +75,61 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   // A museum café is not a destination while the museum itself qualifies: hold children back when their parent is eligible.
   const eligibleVenueIds = new Set(eligible.map((e) => e.candidate.venueId));
 
+  const kindCache = new Map<Evaluation, Set<string>>();
+  const kinds = (e: Evaluation) => {
+    let k = kindCache.get(e);
+    if (!k) kindCache.set(e, (k = kindsOf(e)));
+    return k;
+  };
+  const admissible = (e: Evaluation, pass: Pass): boolean => {
+    if ((pass.cls !== "any" && e.class !== pass.cls) || taken.has(e)) return false;
+    const parent = e.candidate.parentVenueId;
+    if (usedVenues.has(e.candidate.venueId)) return false;
+    if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;
+    if (pass.diverse && usedActivities.has(ACTIVITY_OF_CATEGORY[e.candidate.category])) return false;
+    // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am): it waits for its score.
+    if (pass.diverse && e.dayPart === "off") return false;
+    return true;
+  };
+  const take = (e: Evaluation) => {
+    ordered.push(e);
+    taken.add(e);
+    usedVenues.add(e.candidate.venueId);
+    if (e.candidate.parentVenueId) usedVenues.add(e.candidate.parentVenueId);
+    usedActivities.add(ACTIVITY_OF_CATEGORY[e.candidate.category]);
+  };
+
   for (const pass of PASSES) {
     if (narrowed && pass.diverse) continue;
-    for (const e of eligible) {
-      if ((pass.cls !== "any" && e.class !== pass.cls) || taken.has(e)) continue;
-      const venueKey = e.candidate.venueId;
-      const parent = e.candidate.parentVenueId;
-      if (usedVenues.has(venueKey)) continue;
-      if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) continue;
-      const act = ACTIVITY_OF_CATEGORY[e.candidate.category];
-      if (pass.diverse && usedActivities.has(act)) continue;
-      // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am): it waits for its score.
-      if (pass.diverse && e.dayPart === "off") continue;
-      ordered.push(e);
-      taken.add(e);
-      usedVenues.add(venueKey);
-      if (parent) usedVenues.add(parent);
-      usedActivities.add(act);
+    // One of each activity, best first; and the leftovers, in merit order.
+    if (pass.diverse || pass.cls === "any") {
+      for (const e of eligible) if (admissible(e, pass)) take(e);
+      continue;
     }
+    // Filling within a class: the best place once a repeat of the last few shown is paid for.
+    // Within a class `eligible` is in merit order and the penalty is never negative, so the scan
+    // stops at the first place whose merit alone can't beat the best found.
+    // Every place a page can show (MAX_OFFSET + a page) is ordered this way; the rest follow in merit order.
+    while (ordered.length < MAX_OFFSET + 3) {
+      const recent = ordered.slice(-VARIETY.window);
+      for (const r of recent) kinds(r);
+      let best: Evaluation | null = null;
+      let bestScore = Number.NEGATIVE_INFINITY;
+      for (const e of eligible) {
+        if (e.class !== pass.cls) continue;
+        const m = merit(e);
+        if (m <= bestScore) break;
+        if (!admissible(e, pass)) continue;
+        const score = m - repeatPenalty(e, kinds(e), recent, kindCache);
+        if (score > bestScore) {
+          best = e;
+          bestScore = score;
+        }
+      }
+      if (!best) break;
+      take(best);
+    }
+    for (const e of eligible) if (admissible(e, pass)) take(e);
   }
   return ordered;
 }

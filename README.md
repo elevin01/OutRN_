@@ -66,7 +66,9 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
-checks their places against Overture Maps, switches those areas on, and starts the API.
+checks their places against Overture Maps, switches those areas on, fetches their weather from the
+National Weather Service (optional: without it, plans ignore the weather, and it says so), and starts
+the API.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that

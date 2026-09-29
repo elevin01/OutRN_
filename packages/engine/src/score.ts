@@ -14,6 +14,8 @@ const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
 export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25 } as const;
+/** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
+export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
  * Weather, as the seeded context rules rain_indoor and cold_indoor (0002) describe it: rain likely
  * (50%+) sinks outdoor places and lifts indoor ones a little; cold (38°F or below) sinks outdoor ones.
@@ -42,7 +44,12 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   // Travel counts against the time the user has: a 15-minute walk is nothing in an evening, a lot in an hour.
   const windowMinutes = Math.max(1, minutesBetween(ctx.now, deadlineOf(ctx)));
   const reach = Math.min(maxTravel, Math.max(10, windowMinutes * 0.25));
-  const travelScore = Math.max(0, 1 - t.travel.minutes / reach);
+  // And, with time to spare, against what it buys (worth the trip): the share of the outing spent
+  // getting there and back. A long trip is for a place that takes a while (a museum, a market, a
+  // long meal), not a 25-minute ice cream. It counts from 90 minutes and fully from four hours.
+  const worth = 1 - (2 * t.travel.minutes) / (2 * t.travel.minutes + t.visit.typicalMinutes);
+  const longWindow = Math.max(0, Math.min(1, (windowMinutes - WORTH_THE_TRIP.fromMinutes) / (WORTH_THE_TRIP.fullMinutes - WORTH_THE_TRIP.fromMinutes)));
+  const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * Math.max(0, 1 - t.travel.minutes / reach) + longWindow * WORTH_THE_TRIP.share * worth;
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
@@ -124,12 +131,17 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   return { scores: { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) }, extraReasons: extra, dayPart: part };
 }
 
-/** Ordering within the eligible set: class, then appeal, then fit, novelty as tiebreaker. */
+/** One number for how good an option is within its class: appeal, then fit, novelty least. */
+export function merit(e: Evaluation): number {
+  return e.scores.appeal * 0.5 + e.scores.fit * 0.35 + e.scores.novelty * 0.15;
+}
+
+/** Ordering within the eligible set: class, then merit. */
 export function compareEvaluations(a: Evaluation, b: Evaluation): number {
   const rank = (e: Evaluation) => (e.class === "ready" ? 0 : e.class === "check_first" ? 1 : 2);
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
-  const wa = a.scores.appeal * 0.5 + a.scores.fit * 0.35 + a.scores.novelty * 0.15;
-  const wb = b.scores.appeal * 0.5 + b.scores.fit * 0.35 + b.scores.novelty * 0.15;
+  const wa = merit(a);
+  const wb = merit(b);
   if (wb !== wa) return wb - wa;
   // Equal on merit: the better evidenced, then the nearer, then by name. The same search always gives
   // the same order, whatever order the places were loaded in (ids are random).

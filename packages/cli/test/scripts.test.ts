@@ -95,6 +95,31 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
     expect(r.log).toMatch(/ingest photos --area les --from-file fixtures\/live\/les-photos\.json/);
   });
 
+  it("fetches the served areas' weather after switching them on", () => {
+    const r = real();
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/== weather\n +les: 156 hours/);
+    const calls = r.pnpmCalls.map((c) => c.split(" | ")[0]);
+    expect(calls.indexOf("pnpm -s outrn weather refresh")).toBeGreaterThan(calls.findLastIndex((c) => c.includes("areas launch")));
+    expect(r.out).toContain("API STARTED");
+  });
+
+  it("says so when the weather can't be fetched, and serves the areas without it", () => {
+    const r = real({ STUB_FAIL_WEATHER: "1" });
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/not refreshed: plans ignore the weather/);
+    expect(r.out).toMatch(/could not resolve api\.weather\.gov/);
+    expect(r.out).toMatch(/Serving bronxville les on/);
+    expect(r.out).toContain("API STARTED");
+  });
+
+  it("fetches no weather when no area is served", () => {
+    const r = real({ STUB_NO_VENUES: "les bronxville" });
+    expect(r.status, r.out).toBe(0);
+    expect(r.log).not.toMatch(/weather refresh/);
+    expect(r.out).toMatch(/Serving no areas/);
+  });
+
   it("stops before serving anything when a saved photo capture fails to replay", () => {
     put("les-photos.json", '{"requests":{}}');
     const r = real({ STUB_PHOTOS: "1", STUB_FAIL_PHOTOS: "les" });
