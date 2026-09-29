@@ -58,7 +58,7 @@ export const FACT_VALUE_SCHEMAS = {
   opening_hours: hours,
   kitchen_hours: hours,
   last_entry_offset: minutes,
-  admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "unknown"]) }).strict(),
+  admission: z.object({ requirement: z.enum(["walk_in", "reservation", "reservation_available", "ticket", "tour_only", "members_only", "unknown"]) }).strict(),
   admission_status: z.object({ status: z.enum(["confirmed", "unconfirmed", "sold_out", "cancelled"]) }).strict(),
   price,
   min_useful_minutes: minutes,
@@ -77,6 +77,10 @@ export const FACT_VALUE_SCHEMAS = {
     .strict(),
   wheelchair: oneOf(["yes", "limited", "no", "unknown"]),
   subtype: z.object({ value: z.string().regex(/^[a-z0-9_]{2,40}$/, "subtype is a lowercase slug, e.g. miniature_golf") }).strict(),
+  cuisine: z
+    .object({ values: z.array(z.string().regex(/^[a-z0-9_]{2,40}$/, "a cuisine is a lowercase slug, e.g. italian")).min(1).max(8) })
+    .strict()
+    .refine((c) => new Set(c.values).size === c.values.length, "cuisines are listed once each"),
   // One number, so it cannot contradict itself: 0 = no age limit, 16 = 16+, 21 = 21+.
   age_limit: z.object({ minAge: z.number().int().min(0).max(25) }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),

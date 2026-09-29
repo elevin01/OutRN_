@@ -1,6 +1,6 @@
 import { RecommendationRequest, RecommendationResponse, type RecommendationItem, type RecommendationsBody, type ResolvedRequest } from "@outrn/contracts";
 import { findArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
-import { loadCandidates, loadPolicies, MAX_OFFSET, persistRun, pruneRuns, recommend, type Candidate, type Shortlist } from "@outrn/engine";
+import { loadCandidates, loadPolicies, MAX_OFFSET, WEATHER_SOURCE, persistRun, pruneRuns, recommend, type Candidate, type Shortlist } from "@outrn/engine";
 import { PAGE_SIZE, SNAPSHOT_RETENTION_HOURS, SNAPSHOT_TTL_MINUTES } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
 import { sourcesOf, toItem } from "../map/item.js";
@@ -119,7 +119,8 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
     area: areaOf(run.area),
     items: shortlist.ordered.map((e) => toItem(e, ctx, photos.get(e.candidate.venueId))),
     insufficient: shortlist.fewerThanThree ? { found: shortlist.items.length, wanted: PAGE_SIZE, relaxations: shortlist.relaxations } : null,
-    attributions: await attributionsFor(q, [...sourcesOf(shortlist.ordered), ...(await photoSources(q, venueIds))]),
+    // A forecast shaped the order (rain sinks parks): credit it with the facts' and photos' sources.
+    attributions: await attributionsFor(q, [...sourcesOf(shortlist.ordered), ...(await photoSources(q, venueIds)), ...(ctx.weather ? [WEATHER_SOURCE] : [])]),
     asOf: ctx.now,
     generatedAt,
     expiresAt: new Date(generatedAt.getTime() + SNAPSHOT_TTL_MINUTES * 60_000),

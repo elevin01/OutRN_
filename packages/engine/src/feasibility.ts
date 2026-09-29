@@ -1,4 +1,5 @@
-import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, PROGRAMME_CATEGORIES, type Attribute } from "@outrn/core";
+import { dayPart } from "./daypart.js";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
@@ -28,6 +29,19 @@ export function partyYoungest(ctx: RequestContext): number | "minor" | undefined
   if (typeof ctx.youngestAge === "number") return ctx.youngestAge;
   return ctx.company === "family" ? "minor" : undefined;
 }
+
+/** Whether anyone under 18 is going: a family of unknown ages, or a youngest age under 18, whatever the company. */
+export function minorInParty(ctx: RequestContext): boolean {
+  const youngest = partyYoungest(ctx);
+  return youngest === "minor" || (typeof youngest === "number" && youngest < 18);
+}
+
+/**
+ * How long a cinema, theatre or music venue with nothing listed needs, when all we know is its own
+ * site lists what's on: a feature and its trailers, a play, a set. Their category policies have no
+ * minimum (a listed occurrence brings its own duration), and a bare venue must not borrow that zero.
+ */
+export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, number>>> = { cinema: 120, theatre: 120, live_music: 90 };
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
@@ -120,6 +134,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const closureFact = fact<{ at: string }>(c, "scheduled_closure");
   const closureAt = closureFact && !closureFact.isEstimate ? new Date(closureFact.value.at) : null;
   if (closureAt && closureAt.getTime() <= ctx.now.getTime()) return out("CLOSED_PERMANENTLY");
+  // Not open to the public (a private club, a university's own library): not a place anyone can go.
+  if (fact<{ requirement: string }>(c, "admission")?.value.requirement === "members_only") return out("MEMBERS_ONLY");
 
   // Age limits are admission rules, not preferences. A published limit the party cannot meet excludes;
   // an estimated one (a casino assumed 21+) only downgrades to Check first, with the limit named.
@@ -133,6 +149,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     } else if (youngest === "minor") {
       unresolved.push("AGE_LIMIT_UNCERTAIN"); // e.g. 16+ with children whose ages we do not know
     }
+  } else if (!limit && minorInParty(ctx) && (c.category === "bar" || c.category === "nightclub")) {
+    // A bar that serves food has no age limit we know of, but children may not be welcome, least of all late.
+    unresolved.push("KIDS_UNCERTAIN");
   }
 
   // How the food is had: a place that does not do takeout cannot serve a takeout request, and a
@@ -141,9 +160,19 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   if (ctx.visitStyle === "takeout" && FOOD_CATEGORIES.has(c.category) && takeout === "no") return out("NO_TAKEOUT");
   if (ctx.visitStyle !== "takeout" && c.category === "restaurant" && takeout === "only") return out("TAKEOUT_ONLY");
 
-  // A cinema, theatre or music venue qualifies only through an occurrence in the window. The loader
-  // emits the venue row itself only when no occurrence was loaded, so this reads "nothing on".
-  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category)) return out("NO_PROGRAMME");
+  // A cinema, theatre or music venue qualifies through an occurrence in the window. The loader emits
+  // the venue row itself only when none was loaded, so this reads "nothing listed here". Its own site
+  // still lists what's on: arriving at its time of day (an evening, not a morning; judged in finish,
+  // at the arrival) it's worth a look, Check first. Only a site a user can open counts (the same rule
+  // the API applies before it shows the link). Not with anyone under 18: with nothing listed there is
+  // no show to judge, and many of these rooms are 21+ without a min_age tag (a burlesque theatre, a
+  // music hall with a bar). A listed occurrence brings its own age facts.
+  const unlistedProgramme = c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category);
+  if (unlistedProgramme) {
+    const site = (c.facts.website?.value as { value?: unknown } | undefined)?.value;
+    if (typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
+    unresolved.push("PROGRAMME_UNLISTED");
+  }
 
   // Travel and arrival
   const hour = localClock(ctx.now, ctx.timezone).hour;
@@ -179,7 +208,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // Food to go needs only the time to order and collect it.
   const minPub = fact<{ minutes: number }>(c, "min_useful_minutes");
   const takingOut = isTakeout(c, ctx);
-  const minUsefulMinutes = takingOut ? TAKEOUT_MINUTES : minPub && !minPub.isEstimate ? minPub.value.minutes : policy.minUsefulMinutes;
+  const categoryMinutes = unlistedProgramme ? Math.max(policy.minUsefulMinutes, ownValue(UNLISTED_PROGRAMME_MINUTES, c.category) ?? 0) : policy.minUsefulMinutes;
+  const minUsefulMinutes = takingOut ? TAKEOUT_MINUTES : minPub && !minPub.isEstimate ? minPub.value.minutes : categoryMinutes;
   const minUsefulIsEstimate = takingOut || !(minPub && !minPub.isEstimate);
 
   let closesAt: Date | null = null;
@@ -321,6 +351,9 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
   const visit = visitFor(c, ctx, base);
   const timing: Timing = { ...base, visit, conditions: conditionsFor(c, ctx, base, visit) };
   const bail = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
+  // A programme venue with nothing listed is worth a look only arriving in its prime time: the same
+  // instant the score reads the time of day at.
+  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category) && dayPart(c.category, base.arrival, c.timezone) !== "prime") return bail("NO_PROGRAMME");
 
   // Budget
   const pr = priceOf(c, ctx);
@@ -360,6 +393,8 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
   if (timing.closesAt && hoursConfidence < 0.4) unresolved.push("HOURS_UNVERIFIED");
   // An expected wait is an estimate: when it could eat the visit or run past last orders, check first.
   if (waitMayNotFit(timing, timing.conditions)) unresolved.push("WAIT_MAY_NOT_FIT");
+  // Rain likely outdoors: a forecast, so it never excludes a place, but look at the sky before going.
+  if (timing.conditions.some((x) => x.kind === "weather" && x.level === "rain")) unresolved.push("RAIN_LIKELY");
   // A report is a reason only while it still holds at the arrival, the rule the conditions use: a
   // crowd or queue report that became a condition, or an open/closed report valid past the arrival.
   const open = c.facts.open_state;

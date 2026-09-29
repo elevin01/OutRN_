@@ -248,6 +248,16 @@ describe("OSM normalization", () => {
     for (const far of ["2027-12-01", "9998-12-31"]) expect(fact(rec({ name: "S", amenity: "restaurant", opening_date: far }), "business_status"), far).toMatchObject({ value: { status: "operating" } });
   });
 
+  it("cuisine becomes a published list of slugs where food is served; nowhere else", () => {
+    expect(fact(rec({ name: "Lombardi's", amenity: "restaurant", cuisine: "Pizza; italian" }), "cuisine")).toMatchObject({ evidenceClass: "published", value: { values: ["pizza", "italian"] }, evidence: "cuisine=Pizza; italian", confidence: 0.8 });
+    expect(fact(rec({ name: "Gastropub", amenity: "pub", cuisine: "burger" }), "cuisine")).toMatchObject({ value: { values: ["burger"] } });
+    expect(fact(rec({ name: "Rex", amenity: "cafe", cuisine: "coffee_shop;breakfast" }), "cuisine")).toMatchObject({ value: { values: ["coffee_shop", "breakfast"] } });
+    // Not a place that serves food, or nothing that reads as a cuisine: no fact.
+    expect(fact(rec({ name: "Seward Park", leisure: "park", cuisine: "picnic" }), "cuisine")).toBeUndefined();
+    expect(fact(rec({ name: "Odd", amenity: "restaurant", cuisine: ";;<b>" }), "cuisine")).toBeUndefined();
+    expect(fact(rec({ name: "Plain", amenity: "restaurant" }), "cuisine")).toBeUndefined();
+  });
+
   it("takeaway becomes a published takeout fact; other values are ignored", () => {
     expect(fact(rec({ name: "Slice", amenity: "restaurant", takeaway: "only" }), "takeout")).toMatchObject({ evidenceClass: "published", value: { value: "only" }, evidence: "takeaway=only" });
     expect(fact(rec({ name: "Bistro", amenity: "restaurant", takeaway: "no" }), "takeout")).toMatchObject({ value: { value: "no" } });
@@ -313,6 +323,49 @@ describe("OSM normalization", () => {
         expect(venueLinks(tags), JSON.stringify(tags)).toBeNull();
       }
     });
+  });
+});
+
+describe("who can go, and what it costs, when the tags don't say", () => {
+  it("access=private or members-only: not open to the public", () => {
+    for (const access of ["private", "no", "members", "permit"]) {
+      const a = fact(rec({ name: "Club", amenity: "bar", access }), "admission");
+      expect(a, access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published", evidence: `access=${access}` });
+    }
+    // Customers only is how every café works; permissive is open.
+    for (const access of ["customers", "permissive", "yes"]) expect(fact(rec({ name: "Cafe", amenity: "cafe", access }), "admission")?.value, access).toEqual({ requirement: "walk_in" });
+  });
+
+  it("a university or school's own library is members only; a public library is free to walk into", () => {
+    // Elmer Holmes Bobst Library, as mapped.
+    const nyu = rec({ name: "Elmer Holmes Bobst Library", amenity: "library", building: "university", operator: "New York University" });
+    expect(fact(nyu, "admission")).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "estimate" });
+    expect(fact(nyu, "price")).toBeUndefined();
+    for (const tags of [{ library: "academic" }, { operator: "Sarah Lawrence College" }, { operator: "Bronx High School of Science" }]) {
+      expect(fact(rec({ name: "L", amenity: "library", ...tags }), "admission")?.value, JSON.stringify(tags)).toEqual({ requirement: "members_only" });
+    }
+    // The record's own access tag outweighs the guess: open to the public, or explicitly restricted.
+    for (const access of ["yes", "permissive", "public"]) {
+      const open = rec({ ...{ name: "Bobst", amenity: "library", building: "university", operator: "New York University" }, access });
+      expect(fact(open, "admission")?.value, access).toEqual({ requirement: "walk_in" });
+      expect(fact(open, "price")?.value, access).toMatchObject({ free: true });
+    }
+    for (const access of ["private", "no", "members", "permit"]) {
+      expect(fact(rec({ name: "Bobst", amenity: "library", operator: "New York University", access }), "admission"), access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published" });
+    }
+    const nypl = rec({ name: "Seward Park Library", amenity: "library", operator: "New York Public Library" });
+    expect(fact(nypl, "admission")?.value).toEqual({ requirement: "walk_in" });
+    expect(fact(nypl, "price")).toMatchObject({ value: { free: true }, evidenceClass: "estimate" });
+    expect(fact(rec({ name: "Bronxville Public Library", amenity: "library", operator: "Village of Bronxville Public Library" }), "admission")?.value).toEqual({ requirement: "walk_in" });
+  });
+
+  it("a commercial art gallery is a free walk-in, unless its tags say there's a charge", () => {
+    const g = rec({ name: "Gallery", tourism: "gallery" });
+    expect(fact(g, "price")).toMatchObject({ value: { free: true }, evidenceClass: "estimate" });
+    expect(fact(g, "admission")?.value).toEqual({ requirement: "walk_in" });
+    const paid = rec({ name: "Gallery", tourism: "gallery", fee: "yes" });
+    expect(fact(paid, "price")?.value).toMatchObject({ paid: true });
+    expect(fact(paid, "admission")?.value).toEqual({ requirement: "ticket" });
   });
 });
 

@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
-import { materializeSubjects, writeFacts } from "@outrn/facts";
+import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
 import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
@@ -255,17 +255,23 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const target = second.items[0]!;
     await writeFacts(db, [{ subjectKind: "venue", subjectId: target.placeId, attribute: "business_status", value: { status: "closed_temporarily" }, evidenceClass: "published", sourceId: "founder", evidence: "founder: sign on the door", sourceUpdatedAt: now, fetchedAt: now, confidence: 0.9, lineageGroup: "founder" }]);
     await materializeSubjects(db, "venue", [target.placeId], now);
-    const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
-    expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
-    // A new search sees the change.
-    const fresh = await search({ areaId: "les", windowMinutes: 180 });
-    const all: string[] = [...fresh.items.map((i) => i.id)];
-    let p = fresh;
-    while (p.page.nextCursor) {
-      p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
-      all.push(...p.items.map((i) => i.id));
+    try {
+      const again = await search({ cursor: first.page.nextCursor! } as unknown as RecommendationRequest);
+      expect(again.items.map((i) => i.id)).toEqual(second.items.map((i) => i.id));
+      // A new search sees the change.
+      const fresh = await search({ areaId: "les", windowMinutes: 180 });
+      const all: string[] = [...fresh.items.map((i) => i.id)];
+      let p = fresh;
+      while (p.page.nextCursor) {
+        p = await search({ cursor: p.page.nextCursor } as unknown as RecommendationRequest);
+        all.push(...p.items.map((i) => i.id));
+      }
+      expect(all).not.toContain(target.id);
+    } finally {
+      // Reopen it: which place this closes follows the ranking, and later tests expect the fixture as ingested.
+      await db.query(`delete from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'founder' and evidence = 'founder: sign on the door'`, [target.placeId]);
+      await materializeSubjects(db, "venue", [target.placeId], now);
     }
-    expect(all).not.toContain(target.id);
   });
 
   it("expires a search's pages with its plans, and hands back the search to run again", async () => {
@@ -378,6 +384,8 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const others = (await restaurants()).filter((id) => id !== kitchen);
     // Every fact about the place now comes from a founder check; the parking near it is OSM's.
     await db.query(`update current_facts set source_ids = '{founder}' where subject_kind = 'venue' and subject_id = $1`, [kitchen]);
+    // What a search reads (materialization keeps it; this test edits the rows behind it directly).
+    await refreshFactDocs(db, [kitchen]);
     try {
       const details = PlaceDetails.parse((await call("GET", `/v1/places/${kitchen}`)).json);
       expect(details.facts.flatMap((f) => f.provenance.sources.map((x) => x.id))).not.toContain("osm");
@@ -394,7 +402,8 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   });
 
   it("shows a place's own free photos with their credits, and credits the source", async () => {
-    now = SAT_EVENING;
+    // 2pm: at 6:30pm Pitt Park is near sunset, when parks fall out of the three.
+    now = new Date("2026-10-03T18:00:00Z");
     const page = await search({ areaId: "les", windowMinutes: 180 });
     const park = page.items.find((i) => i.name === "Pitt Park")!;
     expect(park.photos.map((p) => [p.license, p.credit])).toEqual([
@@ -461,6 +470,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       [{ areaId: "les", windowMinutes: 5 }, "windowMinutes"],
       [{ areaId: "atlantis", windowMinutes: 120 }, "areaId"],
       [{ areaId: "les", windowMinutes: 120, mood: "sleepy" }, "mood"],
+      // Names every object inherits are not moods or companies either.
+      ...["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"].flatMap((key): [unknown, string][] => [
+        [{ areaId: "les", windowMinutes: 120, mood: key }, "mood"],
+        [{ areaId: "les", windowMinutes: 120, company: key }, "company"],
+      ]),
       [{ areaId: "les", windowMinutes: 120, categories: ["bar", "spaceport"] }, "categories.1"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
       [{ areaId: "les", windowMinutes: 120, colour: "blue" }, "(body)"],

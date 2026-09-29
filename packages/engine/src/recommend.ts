@@ -18,8 +18,8 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
     if (f.class === "ineligible" || !f.timing) {
       return { candidate: c, class: "ineligible", excludedBy: f.excludedBy, reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
     }
-    const { scores, extraReasons } = scoreCandidate(c, ctx, f, policy, maxTravel);
-    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price };
+    const { scores, extraReasons, dayPart } = scoreCandidate(c, ctx, f, policy, maxTravel);
+    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart };
   });
 }
 

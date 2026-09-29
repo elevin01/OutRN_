@@ -12,7 +12,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - opening_hours      : { osm: string } | { weekly: WeeklyIntervals }  (see time.ts)
  *  - kitchen_hours      : same shape as opening_hours; when food is served (last orders at the close)
  *  - last_entry_offset  : { minutes: number }  minutes before close that admission stops
- *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"unknown" }
+ *  - admission          : { requirement: "walk_in"|"reservation"|"ticket"|"tour_only"|"members_only"|"unknown" }
+ *                         members_only: not open to the public (a private club, a university library)
  *  - admission_status   : { status: "confirmed"|"unconfirmed"|"sold_out"|"cancelled" }
  *  - price              : { min?: number, max?: number, currency: string, free?: boolean, basis: "per_person"|"per_group" }
  *  - min_useful_minutes : { minutes: number }
@@ -28,6 +29,7 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - takeout            : { value: "yes"|"no"|"only" }  food to go (OSM takeaway); "only" has no seats
  *  - links              : { instagram?, facebook?, menu? }  the venue's own pages, as https URLs
  *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
+ *  - cuisine            : { values: string[] }  what a place serves, as OSM cuisine slugs ("italian", "pizza")
  *  - age_limit          : { minAge: number }  minimum admission age; 0 = no age limit; absent = unknown
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
@@ -53,6 +55,7 @@ export const ATTRIBUTES = [
   "takeout",
   "links",
   "subtype",
+  "cuisine",
   "age_limit",
   "crowd_level",
   "queue",
@@ -107,6 +110,14 @@ export const CONFIRMATION_MAX_AGE_DAYS = 90;
 
 /** SQL for a current_facts row's verification time: latest founder check or observation among its agreeing inputs (never fetched_at). */
 export const VERIFIED_AT_SQL = `(select max(case when f.source_id = 'founder' then f.source_updated_at when f.evidence_class = 'observation' then f.observed_at end) from facts f where f.id = any(cf.input_fact_ids))`;
+
+/**
+ * SQL for a venue's fact document: its current_facts rows by attribute, each with its verification
+ * time (VERIFIED_AT_SQL), for the venue aliased `v`. Materialization keeps it on venues.facts_doc,
+ * so a search reads one value per candidate instead of aggregating facts, and their inputs, for
+ * each. Migration 0018 backfills with this same text.
+ */
+export const VENUE_FACTS_DOC_SQL = `coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids, 'conflict', cf.conflict, 'verified_at', ${VERIFIED_AT_SQL})) from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb)`;
 
 /** SQL for when a current_facts row's sources last changed it: an observation's time, else the source's own update time (an OSM edit). */
 export const AS_OF_SQL = `(select max(case when f.evidence_class = 'observation' then f.observed_at else f.source_updated_at end) from facts f where f.id = any(cf.input_fact_ids))`;

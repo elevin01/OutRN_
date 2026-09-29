@@ -82,3 +82,95 @@ describe("guarded fetch: an internal service is never contacted", () => {
     expect(hits).toBe(0);
   });
 });
+
+describe("guarded fetch: redirects", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+  const redirectTo = (location: string) => new Response(null, { status: 301, headers: { location } });
+  const opts = { sourceId: "redirect-test", minIntervalMs: 0, retries: 0 };
+
+  it("never follows https down to http, even on the same host", async () => {
+    const fetchStub = vi.fn(async (url: URL) => (url.protocol === "https:" ? redirectTo("http://93.184.215.14/next") : new Response("{}", { status: 200, headers: { "content-type": "application/json" } })));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/start", opts)).rejects.toBeInstanceOf(FetchBlocked);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives up on a redirect loop", async () => {
+    let n = 0;
+    const fetchStub = vi.fn(async () => redirectTo(`https://93.184.215.14/hop/${++n}`));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/start", opts)).rejects.toThrow(/more than 5 redirects/);
+    expect(fetchStub).toHaveBeenCalledTimes(6);
+  });
+
+  it("still follows a same-host https redirect", async () => {
+    const fetchStub = vi.fn(async (url: URL) => (url.pathname === "/start" ? redirectTo("/next") : new Response("{}", { status: 200, headers: { "content-type": "application/json" } })));
+    vi.stubGlobal("fetch", fetchStub);
+    const r = await guardedFetch("https://93.184.215.14/start", opts);
+    expect([r.status, r.url]).toEqual([200, "https://93.184.215.14/next"]);
+  });
+});
+
+describe("guarded fetch: pacing and size", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+  const ok = () => new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+
+  it("reports an error reply by its status, not its body's type, and does not retry it", async () => {
+    const stub = vi.fn(async () => new Response("CONNECT tunnel refused by policy", { status: 403, headers: { "content-type": "text/plain" } }));
+    vi.stubGlobal("fetch", stub);
+    const err = await guardedFetch("https://93.184.215.14/points", { sourceId: "status-test", minIntervalMs: 0, allowedContentTypes: ["application/json"] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(FetchFailed);
+    expect((err as FetchFailed).status).toBe(403);
+    expect((err as Error).message).toMatch(/^403 from 93\.184\.215\.14: CONNECT tunnel refused/);
+    expect(stub).toHaveBeenCalledTimes(1);
+    // A successful reply of the wrong type is still refused.
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("<html>", { status: 200, headers: { "content-type": "text/html" } })));
+    await expect(guardedFetch("https://93.184.215.14/points", { sourceId: "status-test", minIntervalMs: 0, allowedContentTypes: ["application/json"] })).rejects.toThrow(/unexpected content-type 'text\/html'/);
+  });
+
+  it("spaces concurrent calls to one source by its interval", async () => {
+    const at: number[] = [];
+    vi.stubGlobal("fetch", vi.fn(async () => (at.push(Date.now()), ok())));
+    await Promise.all([1, 2, 3].map(() => guardedFetch("https://93.184.215.14/x", { sourceId: "pacing-test", minIntervalMs: 100, retries: 0 })));
+    expect(at).toHaveLength(3);
+    const gaps = at.slice(1).map((t, i) => t - at[i]!);
+    // setTimeout may fire a millisecond early.
+    for (const g of gaps) expect(g).toBeGreaterThanOrEqual(95);
+  });
+
+  it("returns the body as bytes, and as text for the callers that read text", async () => {
+    const bytes = Buffer.from([0x50, 0x41, 0x52, 0x31, 0xff, 0x00]);
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(bytes, { status: 206, headers: { "content-type": "binary/octet-stream" } })));
+    const r = await guardedFetch("https://93.184.215.14/part.parquet", { sourceId: "bytes-test", minIntervalMs: 0, retries: 0, maxBytes: 6, headers: { range: "bytes=0-5" } });
+    expect([r.status, r.bytes, r.body.equals(bytes), r.text.startsWith("PAR1")]).toEqual([206, 6, true, true]);
+  });
+
+  it("refuses an oversized 206 by its content-length, without retrying", async () => {
+    const fetchStub = vi.fn(async () => new Response(Buffer.alloc(1000), { status: 206, headers: { "content-length": "1000" } }));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/part.parquet", { sourceId: "size-test", minIntervalMs: 0, maxBytes: 100 })).rejects.toBeInstanceOf(FetchBlocked);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses an oversized 206 without a content-length as it arrives: never read in full, never retried", async () => {
+    let sent = 0;
+    const endless = () =>
+      new ReadableStream<Uint8Array>({
+        pull(ctrl) {
+          // 64 MB in all unless the reader stops: far more than the 100 bytes asked for.
+          if (sent >= 64 * 1024 * 1024) return ctrl.close();
+          sent += 64 * 1024;
+          ctrl.enqueue(new Uint8Array(64 * 1024));
+        },
+      });
+    const fetchStub = vi.fn(async () => new Response(endless(), { status: 206 }));
+    vi.stubGlobal("fetch", fetchStub);
+    await expect(guardedFetch("https://93.184.215.14/part.parquet", { sourceId: "size-test", minIntervalMs: 0, maxBytes: 100 })).rejects.toBeInstanceOf(FetchBlocked);
+    expect(fetchStub).toHaveBeenCalledTimes(1);
+    expect(sent).toBeLessThanOrEqual(4 * 64 * 1024);
+  });
+});

@@ -52,10 +52,9 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   const radius = maxReachMetres(mode, maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[mode], buffer) * 1.05;
   const venues = (
     await q.query<VenueRow>(
+      // facts_doc is the venue's current facts, kept by materialization (VENUE_FACTS_DOC_SQL): one read per venue.
       `select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon, v.timezone, v.parent_venue_id,
-              coalesce((select jsonb_object_agg(cf.attribute, jsonb_build_object('value', cf.value, 'confidence', cf.confidence, 'evidence_class', cf.evidence_class, 'valid_until', cf.valid_until, 'independent_sources', cf.independent_sources, 'sources', cf.source_ids,
-                                                         'conflict', cf.conflict, 'verified_at', ${VERIFIED_AT_SQL}))
-                          from current_facts cf where cf.subject_kind = 'venue' and cf.subject_id = v.id), '{}'::jsonb) as facts,
+              v.facts_doc as facts,
               (select sum(weight) from venue_overrides o where o.venue_id = v.id and o.kind = 'boost' and (o.expires_at is null or o.expires_at > $4)) as boost,
               exists(select 1 from venue_overrides o where o.venue_id = v.id and o.kind = 'exclude' and (o.expires_at is null or o.expires_at > $4)) as excluded,
               exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark,

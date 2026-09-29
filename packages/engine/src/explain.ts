@@ -23,6 +23,9 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   LATE_ENTRY_UNCERTAIN: "may be past last entry",
   ACCESS_LIMITED: "limited accessibility",
   WAIT_MAY_NOT_FIT: "a wait could leave too little time",
+  KIDS_UNCERTAIN: "a bar: check children are welcome",
+  PROGRAMME_UNLISTED: "check what's on",
+  RAIN_LIKELY: "rain likely",
 };
 
 /** One reason or caveat as data: a stable code, its inputs, and default wording. */
@@ -59,7 +62,7 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   else if (has("CLOSES_SOON")) add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
   if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
   if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
-  if (has("FREE")) add("FREE", "free");
+  if (has("FREE")) add("FREE", e.price.isEstimate ? "usually free" : "free");
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
   if (has("SUNSET_WINDOW")) add("SUNSET_WINDOW", "sunset window");
   if (has("WEATHER_SUITABLE")) add("WEATHER_SUITABLE", "good weather for it");
@@ -74,11 +77,20 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
  */
 export function caveatNotes(e: Evaluation): Note[] {
   const age = ageLimitOf(e.candidate)?.minAge ?? 0;
-  const ageText: Partial<Record<ReasonCode, string>> = { AGE_LIMIT_LIKELY: `probably ${age}+ only`, AGE_LIMIT_UNCERTAIN: `${age}+ only; check your group's ages` };
+  // The forecast's own words for rain: "70% chance of rain between 3 and 5pm".
+  const rain = e.timing?.conditions.find((x) => x.kind === "weather" && x.level === "rain");
+  const own: Partial<Record<ReasonCode, string>> = { AGE_LIMIT_LIKELY: `probably ${age}+ only`, AGE_LIMIT_UNCERTAIN: `${age}+ only; check your group's ages`, ...(rain?.brief ? { RAIN_LIKELY: rain.brief } : {}) };
   return e.unresolved.map((code) => ({
     code,
-    text: ageText[code] ?? UNRESOLVED_TEXT[code] ?? code.toLowerCase().replace(/_/g, " "),
-    params: code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN" ? { minAge: age } : code === "WAIT_MAY_NOT_FIT" ? { waitMinutes: waitCeilingMinutes(e.timing?.conditions ?? []) } : {},
+    text: own[code] ?? UNRESOLVED_TEXT[code] ?? code.toLowerCase().replace(/_/g, " "),
+    params:
+      code === "AGE_LIMIT_LIKELY" || code === "AGE_LIMIT_UNCERTAIN"
+        ? { minAge: age }
+        : code === "WAIT_MAY_NOT_FIT"
+          ? { waitMinutes: waitCeilingMinutes(e.timing?.conditions ?? []) }
+          : code === "RAIN_LIKELY"
+            ? { chance: rain?.chance ?? null }
+            : {},
   }));
 }
 
@@ -100,6 +112,9 @@ export function explain(e: Evaluation, tz: string): CardCopy {
     else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
     if (t.closesAt) parts.push(`until ${fmtTime(t.closesAt, tz)}`);
   }
+  // Cold or heat outdoors is worth knowing before leaving; rain is a caveat of its own.
+  const weather = t.conditions.find((x) => x.kind === "weather" && (x.level === "cold" || x.level === "hot"));
+  if (weather?.brief) parts.push(weather.brief);
   parts.push(e.price.unknown ? "price unknown" : e.price.isEstimate && e.price.text === "free" ? "usually free" : e.price.text);
   // An age limit is always on the card, whoever is asking; an estimated one says so.
   const limit = ageLimitOf(e.candidate);

@@ -1,4 +1,4 @@
-import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, type Attribute, type EvidenceClass } from "@outrn/core";
+import { contentHash, isCategory, matchKey, MATERIAL_ATTRIBUTES, VENUE_FACTS_DOC_SQL, type Attribute, type EvidenceClass } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 
 /**
@@ -13,7 +13,8 @@ import type { Queryable } from "@outrn/db";
  *     unless the disagreeing claim is both less trusted and older than the winner: a founder's
  *     call on 26 Sep corrects a 2020 OSM tag, it does not contest it. An OSM edit made after the
  *     call, or a claim from an equally trusted source, is still a conflict for review.
- *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim. Only a
+ *  5. Closures are conservative: a credible closed_permanently beats an "operating" claim, unless
+ *     a more trusted source (a founder's check) has seen the place operating since. Only a
  *     permanent closure excludes the venue here; a temporary one (not open yet, closed for works)
  *     lapses on its own date, so the engine applies it per request instead of a state that only
  *     the next ingest could undo.
@@ -21,7 +22,7 @@ import type { Queryable } from "@outrn/db";
  *     filtering and recommendations never disagree with current_facts (no source writes them directly).
  */
 
-export const MATERIALIZE_POLICY_VERSION = "2026-09-28.1";
+export const MATERIALIZE_POLICY_VERSION = "2026-09-29.1";
 
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
@@ -30,6 +31,7 @@ const SOURCE_TRUST: Record<string, number> = {
   founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
   user_observation: 0.7,
   osm: 0.6,
+  overture: 0.6, // conflated from several map providers: as trusted as OSM, never above a check
   foursquare_os: 0.6,
   google_places: 0.65,
   category_policy: 0.3,
@@ -85,9 +87,13 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
       byAttr.set(r.attribute, list);
     }
     for (const [attribute, list] of byAttr) {
+      // A closure goes first, unless a more trusted source (a founder's check) has seen the place
+      // operating since: map data re-asserts its closure on every run and can't be corrected from here.
+      const answered = (f: FactRow) =>
+        list.some((o) => (o.value as { status?: string })?.status === "operating" && (SOURCE_TRUST[o.source_id] ?? 0.5) > (SOURCE_TRUST[f.source_id] ?? 0.5) && recency(o) > recency(f));
       list.sort((a, b) => {
-        const ca = isClosure(a) ? 1 : 0;
-        const cb = isClosure(b) ? 1 : 0;
+        const ca = isClosure(a) && !answered(a) ? 1 : 0;
+        const cb = isClosure(b) && !answered(b) ? 1 : 0;
         if (ca !== cb) return cb - ca; // closures first
         const cr = CLASS_RANK[b.evidence_class] - CLASS_RANK[a.evidence_class];
         if (cr !== 0) return cr;
@@ -128,8 +134,25 @@ export async function materializeSubjects(q: Queryable, subjectKind: "venue" | "
       result.tasksCreated += await updateVenuePublishState(q, subjectId, byAttr, now);
     }
   }
+  if (subjectKind === "venue") await refreshFactDocs(q, subjectIds);
   return result;
 }
+
+/**
+ * Rebuild venues' fact documents (venues.facts_doc) from their current facts: what a search reads
+ * instead of aggregating current_facts per candidate. Materialization calls it for every venue it
+ * touches, so the document never lags the rows it is built from.
+ */
+export async function refreshFactDocs(q: Queryable, venueIds: readonly string[]): Promise<void> {
+  if (!venueIds.length) return;
+  await q.query(`update venues v set facts_doc = ${VENUE_FACTS_DOC_SQL} where v.id = any($1::uuid[])`, [[...venueIds]]);
+}
+
+/** Map data whose closures alone should be confirmed by someone, by display name. */
+const MAP_SOURCES = new Map([
+  ["osm", "OpenStreetMap"],
+  ["overture", "Overture Maps"],
+]);
 
 const CONSEQUENCE: Partial<Record<Attribute, number>> = { opening_hours: 1.0, business_status: 1.0, admission: 0.8, price: 0.4 };
 
@@ -155,21 +178,25 @@ async function updateVenuePublishState(q: Queryable, venueId: string, byAttr: Ma
   if (v.publish_state !== "suspended" && v.publish_state !== "merged") {
     if (excluded) next = "excluded";
     else if (status === "closed_permanently") next = "excluded";
+    // No source speaks for it any more (OSM deleted it, Overture no longer lists it): not shown.
+    else if (!cur.length) next = "candidate";
     else if (v.canonical_name && v.category) next = "eligible";
     else next = "candidate";
   }
   if (next !== v.publish_state) await q.query(`update venues set publish_state = $2 where id = $1`, [venueId, next]);
   let created = 0;
-  // Anyone can edit OSM: when an OSM closure alone delists a published venue, someone should confirm
-  // it, so a vandal's edit (or a mistaken one) does not quietly hide a place.
+  // Anyone can edit OSM, and Overture's closures are inferred: when map data alone delists a published
+  // venue, someone should confirm it, so a vandal's edit (or a wrong signal) does not quietly hide a place.
   const closure = get("business_status");
-  if (v.publish_state === "eligible" && next === "excluded" && !excluded && closure?.source_ids.length && closure.source_ids.every((s) => s === "osm")) {
+  if (v.publish_state === "eligible" && next === "excluded" && !excluded && closure?.source_ids.length && closure.source_ids.every((s) => MAP_SOURCES.has(s))) {
     const r = await q.query(
       `insert into verification_tasks (subject_kind, subject_id, attribute, question, options, priority, dedupe_key, expires_at)
        values ('venue', $1, 'business_status', $2, $3, 1.0, $4, $5)
        on conflict (dedupe_key) do update set priority = excluded.priority, expires_at = excluded.expires_at
        returning (xmax = 0) as inserted`,
-      [venueId, "OpenStreetMap now says this place has closed. Has it?", JSON.stringify(["operating", "closed", "not_sure"]), `venue:${venueId}:osm_closure`, new Date(now.getTime() + 14 * 86_400_000)],
+      // OSM's closures keep the key they always had; one Overture takes part in gets its own, so an
+      // OSM closure check already answered does not swallow a new Overture one.
+      [venueId, `${closure.source_ids.map((s) => MAP_SOURCES.get(s)).join(" and ")} now ${closure.source_ids.length > 1 ? "say" : "says"} this place has closed. Has it?`, JSON.stringify(["operating", "closed", "not_sure"]), `venue:${venueId}:${closure.source_ids.includes("overture") ? "map_closure" : "osm_closure"}`, new Date(now.getTime() + 14 * 86_400_000)],
     );
     if ((r.rows[0] as { inserted: boolean }).inserted) created++;
   }

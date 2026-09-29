@@ -88,8 +88,19 @@ changelog.
   to include it with chains ranked below independents.
 
 ### Batch 4: live conditions (free keys; jobs outside the request path)
-- **Weather:** an NWS hourly forecast per area. Rain or cold sinks outdoor options; clear evenings
-  surface them.
+- **Weather: done** (`outrn weather refresh`, hourly). The NWS hourly forecast is stored per area.
+  Over a plan's first two hours, rain likely (50%+) or cold (38°F or below) sinks outdoor options,
+  and a dry, mild forecast marks them "good weather for it". A forecast over 12 hours old is ignored.
+- **Weather on the card: done.** Outdoor places (and outdoor events) carry a `weather` condition
+  from the forecast: rain, cold, hot (90°F or more) or fair, with the hours it covers.
+  - Rain likely is a caveat, so the place is Check first ("70% chance of rain between 2 and 4pm").
+    It is never an exclusion.
+  - Cold or heat goes on the fact line ("down to 34°F", "up to 93°F").
+  - Heat is not "good weather for it".
+  - Indoors, nothing is shown.
+  - No contract change: condition kinds and caveat codes are open-ended.
+  - Next, in the UIs: render `conditions` (crowd, wait and weather). Neither app shows them yet;
+    today the rain reaches users through the caveat, and cold or heat through the fact line.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
@@ -114,10 +125,44 @@ changelog.
   posts can be embedded by URL, curated or sent in by venues, and YouTube has an API.
 
 ### Batch 6: ranking quality
-- **Time-of-day fit.** Open isn't the same as a good idea: a café at 10pm, a bar at 3pm or a museum 40 minutes before close should rank lower.
-- **Window fit and worth the trip.** Long windows should allow bigger, farther places; short ones should favour close and quick.
-- **Diversity within a type.** Avoid three Italian restaurants; use subtype and cuisine, not only activity type.
-- **A golden scenario set per area**, like the 26 Sep case, run in CI. Ranking changes then show up as reviewable diffs rather than surprises.
+- **Part 1 (this PR): relevant results on real places.**
+  - **Golden scenarios:** fifteen fixed searches over the real LES and Bronxville captures, with
+    each ranking's top six pinned in `fixtures/golden/scenarios.json` and checked in CI.
+    `pnpm golden` accepts an intended change as a reviewable diff. Places equal on merit are
+    ordered by evidence, then distance, then name, so the same search always gives the same order.
+  - **Time-of-day fit:** each kind of place has prime, fair and off hours. Parks and gardens are
+    fair in the last 45 minutes before sunset and off after it. Off hours sink a place in ranking,
+    and variety no longer promotes it. Examples: a park after dark, a bar at 10am or 3pm, a café at
+    9pm. Prime hours lift it a little. It never excludes.
+  - **Who can go:** `access=private` (and no, members, permit) and a university or school's own
+    library are members only, and never an option.
+  - **Free when it is:** a public library and a commercial art gallery are estimated free, and a
+    gallery walk-in, so "free" and weekend afternoons include them.
+  - **Children:** a bar that serves food and names no age limit is shown to families, flagged
+    ("check children are welcome") and ranked below family places.
+  - **Nothing listed:** a cinema, theatre or music venue with no events loaded but its own website
+    is a Check-first "check what's on" in its time of day (evenings, weekend matinees). Without a
+    site, or in the morning, it is still not an option.
+  - **Travel against the window:** a walk counts against the time the user has, so a 15-minute
+    walk weighs more in an hour than in an evening.
+- **Part 2: variety and worth the trip.**
+  - **Cuisine** is stored from OSM (`cuisine=italian;pizza`) for restaurants, cafés, dessert places
+    and bars, shown on the details page ("Cuisine: Italian, pizza"), and settable by the founder.
+  - **Variety within a type.** After one of each activity, each next slot goes to the best place
+    once a repeat of the last three shown is paid for: 0.03 of merit per same category, 0.05 per
+    same cuisine group (Italian and pizza are one; sushi and ramen are one) or activity subtype.
+    A near-tie goes to the different place; a clearly better one keeps its slot. Class still comes
+    first, and a category chip still gets only that category, with its cuisines varied.
+  - **Worth the trip.** From 90 minutes, and fully from four hours, half the travel score is the
+    share of the outing spent getting there and back. The same walk costs a two-hour museum less
+    than a café, and a café less than an ice cream. Up to 90 minutes, ranking is unchanged.
+  - Golden scenarios added: dinner with only restaurants, and a five-hour Saturday.
+- **Still to do:**
+  - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
+    Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
+    outrank a Ready place. Founder checks or the museums' own sites would let them lead.
+  - Show the cuisine on the card itself (a contract addition), so "Thai" is visible before opening.
+  - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.
@@ -126,7 +171,44 @@ changelog.
 
 ### Batch 8: supply breadth
 - **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
-- **Foursquare OS Places** to fill OSM gaps (needs the export token).
+- **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
+  operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
+  records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the
+  API's developer documentation, so Overture does not stand in for Foursquare OS Places.
+- **Overture places OSM lacks: done** (the same command; `--no-new-places` turns it off).
+  - **What is added:** only a place that is open, confidently recorded (0.8+), updated in the last
+    two years, and not from a company register alone. Its kind must change faster than mappers keep
+    up: restaurants, cafés, bars, galleries, music venues, clubs, arcades, farmers markets. Not fast
+    food (the founder's call), and not parks, museums or libraries: OSM maps them well, and
+    Overture's extras of those kinds were mostly not places to visit.
+  - **The name** must be a real one: not generic words, an address, a street, a company, a shop, or
+    mostly another script (records misplaced from abroad). It is not a chain's (a built-in list plus
+    every brand OSM tags).
+  - **A way to check first:** a phone number, or a website of its own.
+  - **Duplicates:** anything close is left out rather than risk two cards for one place:
+    - a venue with its name within 500 m;
+    - one sharing a distinctive word within 100 m ("Hunan 3" beside "Hunan III");
+    - one of its family (food, drink, art) within 10 m, most likely the storefront's earlier or
+      later tenant ("Milk & Honey" where Attaboy is now);
+    - anything identity resolution would flag for review.
+  - **The kind:** from Overture's category, or from the name when Overture only says "restaurant"
+    (ice cream or cheesecake is dessert, a bakery a café).
+  - **What it knows:** name, kind, status, website and phone, and the estimates any venue of its
+    kind gets. It has no hours, so it is always Check first.
+  - **Lifecycle:** it loses its claims, and stops being shown, when a later read no longer supports
+    it. A venue OSM later maps at the same spot joins it rather than duplicating it. A venue no
+    source speaks for any more (OSM deleted it, Overture dropped it) is no longer shown.
+  - **Scope:** a live read covers the area's venues from other sources (OSM, a founder) and a
+    margin. Venues made from Overture's places never widen it, so the reads don't creep outward
+    run after run.
+  - **Scale, on the captures:**
+    - LES: +1,130. Left out: 526 as possible duplicates, 125 chains, 212 stale records, 51 with
+      nothing to check them by. Candidates within reach go from 1,682 to 2,402; loading takes about
+      400 ms instead of 230, and ranking about 190 ms.
+    - Bronxville: 63 venues to 94. Its Sunday family search has 85 options instead of 54, and the
+      Ready places still lead.
+  - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
+    them can be Ready. And golden scenarios with Overture's places, once reviewed.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use
@@ -138,8 +220,14 @@ changelog.
 ## Performance budget
 
 - **Target:** under 300 ms engine time per request at 5,000 venues within reach.
-- **Now:** the engine takes about 140 ms warm and 340 ms cold, and loading takes about 310 ms, at 3,850 candidates.
-- **Next:** a set-based candidate query or a precomputed per-venue fact document to cut load time.
+- **Now:** the engine takes about 140 ms warm and 340 ms cold, at 3,850 candidates.
+- **Loading: done.** Each venue's current facts are kept as one document (`venues.facts_doc`),
+  rebuilt by materialization with the same SQL the loader used to run per candidate. On the LES
+  capture with Overture's places (2,402 candidates), loading takes about 125 ms instead of 325; the
+  database part is about 30 ms. A set-based query was tried first: it was slower (2.6 s), because
+  it cannot use the index to find each fact's inputs.
+- **Next:** landmark and brand come from the source records per candidate (about 16 ms at 2,400);
+  they could join the document if loading matters again.
 
 `pnpm --filter @outrn/engine bench <area>` measures it.
 
