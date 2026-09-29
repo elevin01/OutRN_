@@ -329,6 +329,7 @@
       "max": 120
     },
     "maxCategories": 5,
+    "maxCuisines": 5,
     "pageSize": 3
   }
 }

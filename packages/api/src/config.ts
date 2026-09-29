@@ -57,5 +57,6 @@ export const LIMITS: AreasResponse["limits"] = {
   windowMinutes: { min: 30, max: 480 },
   youngestAge: { min: 0, max: 120 },
   maxCategories: 5,
+  maxCuisines: 5,
   pageSize: PAGE_SIZE,
 };

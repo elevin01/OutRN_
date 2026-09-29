@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationResponse, type RecommendationRequest } from "@outrn/contracts";
+import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationRequest, RecommendationResponse } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
 import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
@@ -71,6 +71,12 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
     expect(areas.filters.categories.map((c) => c.id)).toContain("bowling");
     expect(areas.filters.cuisines).toEqual(expect.arrayContaining([{ id: "japanese", label: "Japanese" }, { id: "pizza", label: "Pizza" }]));
+    // The limits a UI reads are the ones the request schema enforces.
+    for (const [field, max] of [["categories", areas.limits.maxCategories], ["cuisines", areas.limits.maxCuisines]] as const) {
+      const ids = (field === "categories" ? areas.filters.categories : areas.filters.cuisines).map((o) => o.id);
+      expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max) }).success, field).toBe(true);
+      expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max + 1) }).success, field).toBe(false);
+    }
   });
 
   it("finds a cuisine: only food places serving it, each card saying what it serves; offers any cuisine when few do", async () => {

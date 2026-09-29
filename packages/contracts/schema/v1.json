@@ -334,6 +334,11 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "maxCuisines": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
               "pageSize": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -344,6 +349,7 @@
               "windowMinutes",
               "youngestAge",
               "maxCategories",
+              "maxCuisines",
               "pageSize"
             ],
             "additionalProperties": false

@@ -44,6 +44,8 @@ export const AreasResponse = z.object({
     windowMinutes: Range,
     youngestAge: Range,
     maxCategories: z.int(),
+    /** Most cuisines a request may ask for (`cuisines`). */
+    maxCuisines: z.int(),
     /** Items per page of recommendations. */
     pageSize: z.int(),
   }),

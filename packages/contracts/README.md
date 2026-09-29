@@ -36,7 +36,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
     - An unknown id is a `VALIDATION_FAILED` on `cuisines.<i>`.
   - `ResolvedRequest.cuisines` echoes the request's cuisines (`[]` by default).
   - A new relaxation, `any_cuisine` ("try any cuisine"). A cuisine search without `categories` doesn't offer `more_categories`, because it asked for food.
-  - `AreasResponse.filters.cuisines` lists the cuisines a request may ask for, with labels.
+  - `AreasResponse.filters.cuisines` lists the cuisines a request may ask for, with labels, and `AreasResponse.limits.maxCuisines` how many at once (5).
   - Snapshots stored by a 1.5 API page with `cuisines: []` on their items and resolved request.
 - **1.5.0** (additive). Photos:
   - `photos` on every item (up to 3) and on place details: freely licensed photos of the place itself, lead first. Each has `url` (a copy 800 px wide or a little more, from Wikimedia's image servers: thumb.wikimedia.org or upload.wikimedia.org), `width`, `height`, `alt` (null when the source doesn't describe it), `credit`, `author`, `license`, `licenseUrl` and `sourceUrl`.
