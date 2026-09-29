@@ -44,7 +44,8 @@ const NAME_DIET: readonly [RegExp, Diet][] = [
   [/\bvegan\b/, "vegan"],
   [/\bvegetarian\b/, "vegetarian"],
   [/\bhalal\b/, "halal"],
-  [/\b(kosher|glatt)\b/, "kosher"],
+  // "Kosher-style" is a style of deli food, not a kosher kitchen.
+  [/\b(kosher|glatt)\b(?! style\b)/, "kosher"],
   [/\bgluten free\b/, "gluten_free"],
 ];
 

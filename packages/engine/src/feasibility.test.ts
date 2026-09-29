@@ -1456,6 +1456,17 @@ describe("asking for a diet or a must-have", () => {
     expect(excluded(cands, { diets: ["__proto__"] })).toMatchObject({ vegan: "DIET_NOT_KNOWN" });
   });
 
+  it("a diet known only from the name is Check first, with the reason named; a stated one is not", () => {
+    const named = { ...eat("named"), facts: { ...eat("named").facts, diets: { ...fact({ kosher: "only" }), evidenceClass: "estimate" as const, confidence: 0.5 } } };
+    const stated = eat("stated", { kosher: "only" });
+    const [n, s] = evaluateAll([named, stated], x({ diets: ["kosher"] }), POLICIES);
+    expect([n!.class, n!.unresolved]).toEqual(["check_first", ["DIET_FROM_NAME"]]);
+    expect(caveatNotes(n!).map((c) => c.text)).toEqual(["only its name says it serves this diet: check with them"]);
+    expect([s!.class, s!.unresolved]).toEqual(["ready", []]);
+    // Without a diet search, a name's guess changes nothing.
+    expect(evaluateAll([named], x({}), POLICIES)[0]!.unresolved).not.toContain("DIET_FROM_NAME");
+  });
+
   it("several diets must all be served: one party eats together", () => {
     const cands = [eat("both", { vegan: "yes", gluten_free: "yes" }), eat("vegan", { vegan: "only" }), eat("gf", { gluten_free: "yes" })];
     expect(excluded(cands, { diets: ["vegan", "gluten_free"] })).toEqual({ both: null, vegan: "DIET_NOT_KNOWN", gf: "DIET_NOT_KNOWN" });

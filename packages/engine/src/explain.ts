@@ -28,6 +28,7 @@ const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   KIDS_UNCERTAIN: "a bar: check children are welcome",
   PROGRAMME_UNLISTED: "check what's on",
   RAIN_LIKELY: "rain likely",
+  DIET_FROM_NAME: "only its name says it serves this diet: check with them",
 };
 
 /** One reason or caveat as data: a stable code, its inputs, and default wording. */
