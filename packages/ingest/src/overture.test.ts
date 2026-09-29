@@ -48,6 +48,13 @@ describe("matching venues to Overture places", () => {
     expect(match(venue("Hang Out"), place({ name: "Hangout Bar Hang Outs" }))).toHaveLength(0);
   });
 
+  it("a category named after an inherited property is treated as any other unknown kind, never a crash", () => {
+    for (const key of ["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"]) {
+      expect(() => match(venue("Grand Kitchen", key as MatchVenue["category"]), place({ name: "Grand Kitchen Bar" })), key).not.toThrow();
+      expect(match(venue("Grand Kitchen", key as MatchVenue["category"]), place({ name: "Grand Kitchen Bar" })), key).toHaveLength(1);
+    }
+  });
+
   it("best first: the same name, then Overture's confidence, then the nearest", () => {
     const got = match(venue("Grand Kitchen"), place({ id: "prefix", name: "Grand Kitchen Bar", confidence: 0.99 }), place({ id: "far", ...north(50), confidence: 0.9 }), place({ id: "near", ...north(5), confidence: 0.9 }), place({ id: "sure", ...north(80), confidence: 0.95 }));
     expect(got.map((x) => x.place.id)).toEqual(["sure", "near", "far", "prefix"]);

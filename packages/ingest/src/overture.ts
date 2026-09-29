@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { haversineMetres, isPublicWebHost, matchKey, type Category, type FactInput } from "@outrn/core";
+import { haversineMetres, isPublicWebHost, matchKey, ownValue, type Category, type FactInput } from "@outrn/core";
 import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
 import { materializeSubjects, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { fetchOverturePlaces, finishRun, loadOvertureCapture, overtureCapture, parseOvertureCapture, startRun, type Bbox, type OvertureCapture, type OverturePlace } from "@outrn/sources";
@@ -141,7 +141,7 @@ export class PlaceIndex {
 }
 
 export function matchVenue(v: MatchVenue, index: PlaceIndex): OvertureMatch[] {
-  const accepts = ACCEPTS[v.category] ?? ACCEPTS.other;
+  const accepts = ownValue(ACCEPTS, v.category) ?? ACCEPTS.other;
   const out: OvertureMatch[] = [];
   for (const { place, nameKey } of index.near(v.lat, v.lon)) {
     const metres = haversineMetres(v, place);
@@ -227,7 +227,7 @@ function closes(venue: Pick<MatchVenue, "category">, m: OvertureMatch): boolean 
   return (
     p.status === "permanently_closed" && (p.statusSignal ?? 0) >= SIGNAL &&
     m.name === "same" && m.metres <= CLOSURE_MATCH_M &&
-    (ACCEPTS[venue.category] ?? ACCEPTS.other).has(p.category) &&
+    (ownValue(ACCEPTS, venue.category) ?? ACCEPTS.other).has(p.category) &&
     (p.confidence ?? 0) >= CLOSURE_CONFIDENCE &&
     p.datasets.some((d) => !COMPANY_REGISTERS.has(d))
   );
