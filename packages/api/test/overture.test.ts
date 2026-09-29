@@ -38,6 +38,9 @@ const GOTAN: OverturePlace = {
   licenses: ["CDLA-Permissive-2.0"],
 };
 
+// Karaoke Overture files as a music venue: a bar with rooms to book, 100 m east of Gotan.
+const KARAOKE: OverturePlace = { ...GOTAN, id: "ovt-karaoke", name: "Boho Karaoke", lon: -73.9858, category: "music_venue", websites: ["https://bohokaraoke.example.com/"], phones: ["2125550188"] };
+
 beforeAll(async () => {
   if (!available) return;
   const admin = new pg.Pool({ connectionString: BASE });
@@ -51,7 +54,7 @@ beforeAll(async () => {
   await reset(db);
   await ingestOsmArea(db, { areaSlug: "les", fromFile: FIXTURE });
   const path = join(mkdtempSync(join(tmpdir(), "outrn-api-overture-")), "capture.json");
-  const capture: OvertureCapture = { outrn_capture: "overture", release: "2026-09-23.1", bbox: { west: -74.02, south: 40.69, east: -73.96, north: 40.75 }, fetchedAt: "2026-09-29T00:00:00.000Z", places: [GOTAN] };
+  const capture: OvertureCapture = { outrn_capture: "overture", release: "2026-09-23.1", bbox: { west: -74.02, south: 40.69, east: -73.96, north: 40.75 }, fetchedAt: "2026-09-29T00:00:00.000Z", places: [GOTAN, KARAOKE] };
   writeFileSync(path, JSON.stringify(capture));
   await ingestOverture(db, { areaSlug: "les", fromFile: path });
 });
@@ -77,5 +80,22 @@ describe.skipIf(!available)("a place OSM lacks, added from Overture", () => {
     expect(details.facts.find((f) => f.attribute === "opening_hours")?.value).toBe("Not listed");
     expect(details.facts.find((f) => f.attribute === "business_status")?.provenance.sources.map((s) => s.label)).toEqual(["Overture Maps"]);
     expect(details.attributions).toContain(OVERTURE_CREDIT);
+  });
+
+  it("karaoke is an activity a family sees as Check first, probably 21+; adults see no age caveat", async () => {
+    // Saturday 8pm, with a 10-year-old, then without.
+    const at = { clock: () => new Date("2026-10-04T00:00:00Z"), persist: false };
+    const find = async (youngestAge?: number) => {
+      const run = await runEngine(db, { areaId: "les", windowMinutes: 180, categories: ["activity"], ...(youngestAge !== undefined ? { youngestAge } : {}) }, at);
+      const e = run.shortlist.ordered.find((x) => x.candidate.name === "Boho Karaoke");
+      expect(e).toBeDefined();
+      return toItem(e!, run.ctx);
+    };
+    const family = await find(10);
+    expect(family.status).toBe("check_first");
+    expect(family.caveats.map((c) => c.code)).toContain("AGE_LIMIT_LIKELY");
+    expect(family.ageLimit?.minAge).toBe(21);
+    const adults = await find();
+    expect(adults.caveats.map((c) => c.code)).not.toContain("AGE_LIMIT_LIKELY");
   });
 });

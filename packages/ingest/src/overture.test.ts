@@ -292,6 +292,9 @@ describe("places OSM lacks", () => {
     expect(newPlaceGate(np({ name: "Boho Karaoke Orchard", category: "music_venue" }))).toEqual({ category: "activity" });
     expect(newPlaceGate(np({ name: "Karaoke Boho", category: "bar" }))).toEqual({ category: "activity" });
     expect(kindEstimates("activity").find((e) => e.attribute === "admission")?.value).toEqual({ requirement: "reservation_available" });
+    // And keeps a bar's care for children: probably 21+, so a family sees Check first, as it would at the bar.
+    expect(kindEstimates("activity").find((e) => e.attribute === "age_limit")?.value).toEqual({ minAge: 21 });
+    expect(kindEstimates("bar").find((e) => e.attribute === "age_limit")?.value).toEqual({ minAge: 21 });
     // Only for a restaurant: a bar named for its coffee is still a bar.
     expect(newPlaceGate(np({ name: "Coffee Bar Nights", category: "bar" }))).toEqual({ category: "bar" });
   });
