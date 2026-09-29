@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.4.0";
-export const WEIGHTS_VERSION = "2026-09-29.1";
+export const WEIGHTS_VERSION = "2026-09-29.2";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -38,8 +38,11 @@ export interface RequestContext {
   seenIds?: string[];
   dismissedIds?: string[];
   timezone: string;
-  /** Weather at roughly the arrival hour, if a forecast is loaded. */
-  weather?: { temperatureF: number; precipProbability: number | null } | null;
+  /**
+   * The forecast over the start of the plan (see weatherFor), if one is loaded: the lowest and
+   * highest temperature, the chance of rain when it is known for all of it, and the span it read.
+   */
+  weather?: { temperatureF: number; precipProbability: number | null; highF?: number; from?: Date; until?: Date } | null;
   sunset?: Date | null;
 }
 
@@ -143,7 +146,9 @@ export type ReasonCode =
   /** A bar that serves food, with children in the party: no age limit is known, but it's a bar first. */
   | "KIDS_UNCERTAIN"
   /** A cinema, theatre or music venue with nothing listed here: see what's on on its own site. */
-  | "PROGRAMME_UNLISTED";
+  | "PROGRAMME_UNLISTED"
+  /** Outdoors, and the forecast gives rain a 50% chance or more over the start of the plan. */
+  | "RAIN_LIKELY";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -210,10 +215,11 @@ export interface TimingBase {
  * fresh observation of it.
  */
 export interface Condition {
-  kind: "crowd" | "wait";
-  /** crowd: quiet, moderate, busy. wait: none, short (up to 15 min), long. */
-  level: "quiet" | "moderate" | "busy" | "none" | "short" | "long";
-  basis: "typical" | "report";
+  kind: "crowd" | "wait" | "weather";
+  /** crowd: quiet, moderate, busy. wait: none, short (up to 15 min), long. weather: rain, cold, hot, fair. */
+  level: "quiet" | "moderate" | "busy" | "none" | "short" | "long" | "rain" | "cold" | "hot" | "fair";
+  /** typical: usual for the kind of place; report: a recent report of the place; forecast: the weather service's. */
+  basis: "typical" | "report" | "forecast";
   isEstimate: boolean;
   /** What it may cost, as a range (a wait for a table: 15–30). Null when there is no estimate. */
   minutes: { min: number; max: number } | null;
@@ -221,6 +227,10 @@ export interface Condition {
   reportedAt: Date | null;
   /** Default wording, sentence case. */
   text: string;
+  /** Weather only: the chance of rain (percent), when the forecast gives one for the whole span. */
+  chance?: number;
+  /** Weather only: the words for a caveat or the fact line, e.g. "70% chance of rain between 3 and 5pm", "down to 35°F". */
+  brief?: string;
 }
 
 export interface Timing extends TimingBase {

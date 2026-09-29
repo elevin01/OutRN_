@@ -6,6 +6,7 @@ import pg from "pg";
 import type { RecommendationRequest } from "@outrn/contracts";
 import { reset, testDatabaseAvailable } from "@outrn/db";
 import { ingestOsmArea, refreshWeather } from "@outrn/ingest";
+import { toItem } from "../src/map/item.js";
 import { runEngine, search } from "../src/service/recommendations.js";
 
 /** Stored NWS forecasts shaping recommendations, on the synthetic LES fixture (outrn_test, reset per file). */
@@ -63,17 +64,35 @@ describe.skipIf(!available)("weather from the National Weather Service", () => {
     expect(stored).toMatchObject({ area: "les", hours: 8, issuedAt: new Date("2026-10-03T15:30:12Z") });
     const r = await firstOutdoor(at("2026-10-03T18:00:00Z"));
     // 2pm to 4pm: the 55% and 80% hours.
-    expect(r.weather).toEqual({ temperatureF: 61, precipProbability: 80 });
+    expect(r.weather).toMatchObject({ temperatureF: 61, precipProbability: 80 });
     expect(r.rank).toBeGreaterThan(dry);
     expect((await search(db, request, { clock: at("2026-10-03T18:00:00Z") })).attributions).toContain(NWS_CREDIT);
   });
 
+  it("the card says it: an outdoor place in the showers is Check first with the chance and the hours", async () => {
+    // Over the whole ordered list, as the API maps it: the showers sink outdoor places off the first page.
+    const run = await runEngine(db, { ...request, windowMinutes: 180 }, { clock: at("2026-10-03T18:00:00Z"), persist: false });
+    const all = run.shortlist.ordered.map((e) => toItem(e, run.ctx));
+    const outdoor = all.filter((i) => OUTDOOR.has(i.category.id));
+    expect(outdoor.length).toBeGreaterThan(0);
+    for (const item of outdoor) {
+      expect(item.status).toBe("check_first");
+      expect(item.conditions.find((c) => c.kind === "weather")).toMatchObject({ level: "rain", basis: "forecast", isEstimate: true, text: "80% chance of rain between 2 and 4pm" });
+      expect(item.caveats).toContainEqual({ code: "RAIN_LIKELY", text: "80% chance of rain between 2 and 4pm", params: { chance: 80 }, required: true });
+      expect(item.copy.caveat).toContain("80% chance of rain between 2 and 4pm");
+    }
+    // Indoors, the weather is not a caveat.
+    expect(all.filter((i) => !OUTDOOR.has(i.category.id)).every((i) => !i.caveats.some((c) => c.code === "RAIN_LIKELY") && !i.conditions.some((c) => c.kind === "weather"))).toBe(true);
+  });
+
   it("dry at noon: outdoor places are good for it", async () => {
     const r = await firstOutdoor(at("2026-10-03T16:00:00Z"), { ...request, windowMinutes: 60 });
-    expect(r.weather).toEqual({ temperatureF: 58, precipProbability: 10 });
+    expect(r.weather).toMatchObject({ temperatureF: 58, precipProbability: 10 });
     const outdoor = r.run.shortlist.ordered.filter((e) => OUTDOOR.has(e.candidate.category));
     expect(outdoor.length).toBeGreaterThan(0);
     expect(outdoor.every((e) => e.reasons.includes("WEATHER_SUITABLE"))).toBe(true);
+    // Noon to 1pm: dry, 58°F.
+    expect(outdoor.every((e) => e.timing!.conditions.find((c) => c.kind === "weather")?.text === "Dry between 12 and 1pm, 58°F")).toBe(true);
   });
 
   it("a forecast over 12 hours old, or one that does not reach the plan, is not used", async () => {

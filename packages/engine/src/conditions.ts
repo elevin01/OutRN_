@@ -1,6 +1,7 @@
 import { addMinutes, localClock, type Category } from "@outrn/core";
 import { isPublicHolidayOn } from "@outrn/facts";
 import { fmtTime } from "./format.js";
+import { weatherCondition } from "./forecast.js";
 import type { Candidate, Condition, RequestContext, TimingBase, Visit } from "./types.js";
 
 /**
@@ -162,9 +163,10 @@ function freshReport(c: Candidate, attribute: "crowd_level" | "queue", arrival: 
 
 const range = (m: { min: number; max: number }) => `${m.min}–${m.max} min`;
 
-/** Crowd, then wait, at the arrival. Events have none: the programme is the crowd. */
+/** Crowd, then wait, at the arrival, then the weather outdoors. Events have no crowd or wait: the programme is the crowd. */
 export function conditionsFor(c: Candidate, ctx: RequestContext, t: TimingBase, visit: Visit): Condition[] {
-  if (c.kind === "occurrence") return [];
+  const weather = weatherCondition(c, ctx);
+  if (c.kind === "occurrence") return weather ? [weather] : [];
   const out: Condition[] = [];
   const tz = ctx.timezone;
   const reported = (at: Date | null) => (at ? ` at ${fmtTime(at, tz)}` : " recently");
@@ -188,6 +190,7 @@ export function conditionsFor(c: Candidate, ctx: RequestContext, t: TimingBase, 
     const w = typicalWait(c, visit);
     if (w) out.push({ kind: "wait", level: w.minutes.max <= 15 ? "short" : "long", basis: "typical", isEstimate: true, minutes: w.minutes, reportedAt: null, text: `${w.text} (usually ${range(w.minutes)})` });
   }
+  if (weather) out.push(weather);
   return out;
 }
 

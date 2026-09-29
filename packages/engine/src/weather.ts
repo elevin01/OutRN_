@@ -1,6 +1,6 @@
 import type { Queryable } from "@outrn/db";
 import type { RequestContext } from "./types.js";
-import { WEATHER_APPEAL } from "./score.js";
+import { WEATHER_LIMITS } from "./forecast.js";
 
 /** One forecast hour as stored (weather_forecasts.hours). */
 export interface ForecastHour {
@@ -22,7 +22,7 @@ const CLOCK_SKEW_MS = 5 * 60_000;
 
 /**
  * The weather a plan should allow for: over the first two hours of the window (all of a shorter one),
- * the highest chance of rain and the lowest temperature. The chance of rain is unknown (null) unless it
+ * the highest chance of rain and the lowest temperature (and the highest, for heat), with the span read. The chance of rain is unknown (null) unless it
  * is given for every minute of that span, or some hour is already wet: an hour without one, a gap, or
  * the end of the forecast could be the wet one. Null when the forecast was issued more than 12 hours
  * before the request or after it, or does not cover the plan's start: no weather is better than wrong weather.
@@ -42,8 +42,14 @@ export function weatherFor(hours: readonly ForecastHour[], issuedAt: Date, at: D
     if (Date.parse(h.start) <= covered) covered = Math.max(covered, Date.parse(h.end));
     wettest = Math.max(wettest, h.precipProbability!);
   }
-  const precipProbability = known.length && (covered >= end || wettest >= WEATHER_APPEAL.rainChance) ? wettest : null;
-  return { temperatureF: span.reduce((m, h) => Math.min(m, h.temperatureF), Infinity), precipProbability };
+  const precipProbability = known.length && (covered >= end || wettest >= WEATHER_LIMITS.rainChance) ? wettest : null;
+  return {
+    temperatureF: span.reduce((m, h) => Math.min(m, h.temperatureF), Infinity),
+    precipProbability,
+    highF: span.reduce((m, h) => Math.max(m, h.temperatureF), -Infinity),
+    from: new Date(start),
+    until: new Date(end),
+  };
 }
 
 /** The area's stored forecast, as weather for this plan (see weatherFor). */

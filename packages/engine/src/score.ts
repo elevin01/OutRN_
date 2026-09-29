@@ -1,6 +1,7 @@
 import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
+import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
 import { dayPart, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
 
@@ -9,7 +10,6 @@ import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from ".
  * rescue a candidate that failed it, and Evidence is never traded against Appeal.
  */
 
-const OUTDOOR = new Set(["park", "garden", "waterfront", "viewpoint"]);
 /** What a 9pm+ window is for: bars and late food. */
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
@@ -21,7 +21,7 @@ export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } 
  * (50%+) sinks outdoor places and lifts indoor ones a little; cold (38°F or below) sinks outdoor ones.
  * In appeal, where it outweighs a short walk: a park 3 minutes away in a downpour is not the pick.
  */
-export const WEATHER_APPEAL = { rainOutdoor: -0.25, rainIndoor: 0.05, coldOutdoor: -0.15, rainChance: 50, coldF: 38 } as const;
+export const WEATHER_APPEAL = { rainOutdoor: -0.25, rainIndoor: 0.05, coldOutdoor: -0.15, rainChance: WEATHER_LIMITS.rainChance, coldF: WEATHER_LIMITS.coldF } as const;
 const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
   relaxed: ["food", "outdoors", "browse"],
   active: ["outdoors", "entertainment"],
@@ -66,16 +66,14 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   }
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
-  const outdoor = OUTDOOR.has(c.category) || (c.facts["indoor_outdoor"]?.value as { value?: string } | undefined)?.value === "outdoor";
+  const outdoor = isOutdoor(c);
   // A forecast hour with no chance of rain given says nothing about rain: neither wet nor dry.
-  const chance = ctx.weather?.precipProbability ?? null;
-  const rainy = chance !== null && chance >= WEATHER_APPEAL.rainChance;
-  const dry = chance !== null && chance < WEATHER_APPEAL.rainChance;
-  const cold = ctx.weather ? ctx.weather.temperatureF <= WEATHER_APPEAL.coldF : false;
+  const { rainy, dry, cold, hot } = readWeather(ctx.weather);
   if (ctx.weather) {
     if (outdoor) {
-      weather = rainy || cold ? 0.1 : dry ? 0.9 : 0.5;
-      if (dry && !cold) extra.push("WEATHER_SUITABLE");
+      // Heat is not a reason against going, but it is no longer good weather for it.
+      weather = rainy || cold ? 0.1 : hot ? 0.5 : dry ? 0.9 : 0.5;
+      if (dry && !cold && !hot) extra.push("WEATHER_SUITABLE");
     } else weather = rainy || cold ? 0.7 : 0.5;
   }
   let fit = 0.4 * travelScore + 0.3 * timeSlack + 0.15 * chips + 0.15 * weather;

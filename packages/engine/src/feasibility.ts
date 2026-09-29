@@ -393,6 +393,8 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
   if (timing.closesAt && hoursConfidence < 0.4) unresolved.push("HOURS_UNVERIFIED");
   // An expected wait is an estimate: when it could eat the visit or run past last orders, check first.
   if (waitMayNotFit(timing, timing.conditions)) unresolved.push("WAIT_MAY_NOT_FIT");
+  // Rain likely outdoors: a forecast, so it never excludes a place, but look at the sky before going.
+  if (timing.conditions.some((x) => x.kind === "weather" && x.level === "rain")) unresolved.push("RAIN_LIKELY");
   // A report is a reason only while it still holds at the arrival, the rule the conditions use: a
   // crowd or queue report that became a condition, or an open/closed report valid past the arrival.
   const open = c.facts.open_state;
