@@ -27,6 +27,8 @@
     "db:start": "bash scripts/db-start.sh",
     "db:migrate": "tsx --conditions=outrn-src packages/db/src/bin.ts migrate",
     "db:reset": "tsx --conditions=outrn-src packages/db/src/bin.ts reset",
+    "real": "bash scripts/real.sh",
+    "capture": "bash scripts/capture-live.sh",
     "outrn": "tsx --conditions=outrn-src packages/cli/src/main.ts",
     "mobile:dev": "pnpm --filter @outrn/mobile start",
     "mobile:web": "pnpm --filter @outrn/mobile web",
