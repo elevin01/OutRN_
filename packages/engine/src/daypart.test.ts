@@ -38,7 +38,14 @@ describe("time of day: when each kind of place is a good idea", () => {
   });
 
   it("no rule where the kind is too varied", () => {
-    for (const c of ["community", "other"] as const) expect(dayPart(c, at("2026-10-03", "22:00"), TZ)).toBeNull();
+    expect(dayPart("other", at("2026-10-03", "22:00"), TZ)).toBeNull();
+  });
+
+  it("a community centre's time is when its drop-in hours, classes and events run: the day and the evening", () => {
+    expect(dayPart("community", at("2026-10-03", "10:00"), TZ)).toBe("prime");
+    expect(dayPart("community", at("2026-10-03", "20:30"), TZ)).toBe("prime");
+    expect(dayPart("community", at("2026-10-03", "22:00"), TZ)).toBe("off");
+    expect(dayPart("community", at("2026-10-04", "01:00"), TZ)).toBe("off");
   });
 });
 

@@ -203,7 +203,7 @@ changelog.
     "Internet: Wi-Fi".
   - Golden scenarios added: a vegetarian Sunday lunch (74 options) and a Tuesday morning with wifi
     (37: cafés, restaurants, two public libraries).
-- **Part 6 (this PR): restrooms and what a place has for children.** No contract change: reason
+- **Part 6: restrooms and what a place has for children.** No contract change: reason
   and caveat codes are open-ended.
   - **Facts** from OSM, where mappers tag them:
     - `restroom` from `toilets`, `toilets:access` and `toilets:wheelchair` (`designated` is
@@ -229,6 +229,15 @@ changelog.
     restroom) and a Sunday lunch with a 2-year-old (Van Leeuwen, with no restroom, moves from #2 to #7).
   - **Next:** public restrooms in parks. OSM maps them as their own points (`amenity=toilets`),
     which the captures don't fetch yet; a park with one nearby would be worth saying to a family.
+- **Part 7 (this PR): a community centre's time of day.** A relevance audit (364 searches over both
+  captures, every day of the week, 8am to 1am) found Tuckahoe Community Center (no hours, no site)
+  at #2 to #5 in Bronxville every night at 10pm and 1am. `community` had no time-of-day rule, so it
+  never took the off-hours sink a gallery or patisserie takes.
+  - `community` now has one: prime 9am to 9pm, off otherwise. Ranking only, like every day-part
+    rule: `amenity=community_centre` also covers drop-in centres (social support, youth and family,
+    public information), so published hours still decide whether one is open, and a centre with a
+    listed event keeps its own row. Tuckahoe now ranks #12 at 1am and about #40 at 10pm.
+  - Golden: unchanged.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

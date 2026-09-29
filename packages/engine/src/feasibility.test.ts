@@ -533,13 +533,33 @@ describe("appeal signals", () => {
   it("after 9pm, bars and late food get a late-night bonus; at 4:30pm they do not", () => {
     // Against a kind of place with no time-of-day rule, so only the bar's own hour moves it.
     const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
-    const hall = venue({ id: "hall", category: "community", hours: "Mo-Su 12:00-02:00" });
+    const hall = venue({ id: "hall", category: "other", hours: "Mo-Su 12:00-02:00" });
     const late = evaluateAll([bar, hall], ctx("2026-09-26 21:30", 120), POLICIES);
     // 9:30pm is also a bar's prime time.
     expect(late[0]!.scores.appeal - late[1]!.scores.appeal).toBeCloseTo(APPEAL_WEIGHTS.lateNight + APPEAL_WEIGHTS.primeTime, 3);
     // 4:30pm is fair for a bar: neither bonus nor penalty.
     const afternoon = evaluateAll([bar, hall], ctx("2026-09-26 16:30", 120), POLICIES);
     expect(afternoon[0]!.scores.appeal).toBe(afternoon[1]!.scores.appeal);
+  });
+
+  it("a community centre has its time of day too, for ranking only: 1am sinks it, published hours still decide", () => {
+    // Tuckahoe Community Center (no hours) ranked #2 in Bronxville at 1am when community had no rule.
+    const centre = venue({ id: "centre", category: "community", hours: null, admission: "walk_in" });
+    const other = venue({ id: "other", category: "other", hours: null, admission: "walk_in" });
+    const gap = (when: string) => {
+      const [c, o] = evaluateAll([centre, other], ctx(when, 120), POLICIES);
+      return c!.scores.appeal - o!.scores.appeal;
+    };
+    expect(gap("2026-09-29 01:00")).toBeCloseTo(-APPEAL_WEIGHTS.offHours, 5);
+    expect(gap("2026-09-29 11:00")).toBeCloseTo(APPEAL_WEIGHTS.primeTime, 5);
+    // A centre that publishes walk-in hours outside 9am-9pm (a 24/7 drop-in) stays open to a visit then.
+    const plain = venue({ id: "dropin", category: "community", hours: "24/7", admission: "walk_in" });
+    const dropIn: Candidate = { ...plain, facts: { ...plain.facts, website: { value: { value: "https://dropin.example.org/" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } };
+    for (const when of ["2026-09-29 07:30", "2026-09-29 21:30", "2026-09-29 01:00"]) {
+      const e = one(dropIn, ctx(when, 120));
+      expect(e.class, when).not.toBe("ineligible");
+      expect(e.unresolved, when).not.toContain("PROGRAMME_UNLISTED");
+    }
   });
 
   it("open isn't the same as a good idea: a park after dark, a bar at 10am, a café at 9pm sink; the right place for the hour rises", () => {

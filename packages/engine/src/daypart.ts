@@ -47,6 +47,9 @@ const HOURS: Partial<Record<Category, Hours>> = {
   cinema: { prime: [span("17:00", "23:00")], weekendPrime: [span("12:00", "23:00")], fair: [span("12:00", "17:00")] },
   theatre: { prime: [span("18:00", "22:00")], weekendPrime: [span("13:00", "15:00")], fair: [span("13:00", "18:00")] },
   live_music: { prime: [span("19:00", "01:00")], fair: [span("17:00", "19:00")] },
+  // Drop-in hours, classes and events run through the day and into the evening. Ranking only, like
+  // every rule here: a centre's published hours still decide whether it is open (a 24/7 shelter).
+  community: { prime: [span("09:00", "21:00")], fair: [] },
   market: { prime: [span("08:00", "15:00")], fair: [span("15:00", "19:00")] },
   bowling: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },
   arcade: { prime: [span("12:00", "23:00")], fair: [span("10:00", "12:00"), span("23:00", "01:00")] },
