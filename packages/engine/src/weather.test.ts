@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { weatherCondition } from "./forecast.js";
+import type { Candidate } from "./types.js";
 import { weatherFor, type ForecastHour } from "./weather.js";
 
 const hour = (startIso: string, temperatureF: number, precipProbability: number | null): ForecastHour => {
@@ -40,6 +42,34 @@ describe("the weather a plan allows for", () => {
     });
     // A shorter window is read whole: 45 minutes from noon.
     expect(weatherFor(HOURS, ISSUED, at("2026-10-03T16:00:00Z"), 45, at("2026-10-03T16:00:00Z"))).toMatchObject({ highF: 58, until: at("2026-10-03T16:45:00Z") });
+  });
+
+  it("never speaks for hours it did not read: a forecast that ends early or has a gap is read up to there", () => {
+    // 2pm in New York, asking for the next two hours.
+    const now = at("2026-10-03T18:00:00Z");
+    const twoHours = (hours: ForecastHour[]) => weatherFor(hours, ISSUED, now, 120, now);
+    const park = { kind: "venue", category: "park", facts: {} } as unknown as Candidate;
+    const words = (hours: ForecastHour[]) => weatherCondition(park, { origin: { lat: 0, lon: 0 }, now, windowMinutes: 120, mode: "walk", timezone: "America/New_York", weather: twoHours(hours) })?.text ?? null;
+
+    // Ends early: one hour, 2 to 3pm, at 93°F. It says so for 2 to 3pm, not 2 to 4pm.
+    const early = [hour("2026-10-03T18:00:00Z", 93, null)];
+    expect(twoHours(early)).toEqual({ temperatureF: 93, precipProbability: null, highF: 93, from: now, until: at("2026-10-03T19:00:00Z") });
+    expect(words(early)).toBe("Hot: up to 93°F between 2 and 3pm");
+    // The same for rain and for cold.
+    expect(words([hour("2026-10-03T18:00:00Z", 61, 70)])).toBe("70% chance of rain between 2 and 3pm");
+    expect(words([hour("2026-10-03T18:00:00Z", 35, 0)])).toBe("Cold: down to 35°F between 2 and 3pm");
+    // Dry for one hour is not dry for two: no "fair" claim.
+    expect(words([hour("2026-10-03T18:00:00Z", 64, 10)])).toBeNull();
+
+    // A gap from 3 to 3:30pm: the 3:30pm hour is not read, whatever it says.
+    const gapped = [hour("2026-10-03T18:00:00Z", 60, 10), hour("2026-10-03T19:30:00Z", 95, 90)];
+    expect(twoHours(gapped)).toEqual({ temperatureF: 60, precipProbability: null, highF: 60, from: now, until: at("2026-10-03T19:00:00Z") });
+    expect(words(gapped)).toBeNull();
+    expect(words([hour("2026-10-03T18:00:00Z", 35, 10), hour("2026-10-03T19:30:00Z", 80, 90)])).toBe("Cold: down to 35°F between 2 and 3pm");
+    // Overlapping hours still join up: 2 to 3pm, then 2:30 to 3:30pm and 3 to 4pm cover the two hours.
+    const overlapping = [hour("2026-10-03T18:00:00Z", 64, 10), hour("2026-10-03T18:30:00Z", 66, 15), hour("2026-10-03T19:00:00Z", 62, 20)];
+    expect(twoHours(overlapping)).toEqual({ temperatureF: 62, precipProbability: 20, highF: 66, from: now, until: at("2026-10-03T20:00:00Z") });
+    expect(words(overlapping)).toBe("Dry between 2 and 4pm, 62–66°F");
   });
 
   it("ignores hours it cannot read", () => {

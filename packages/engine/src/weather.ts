@@ -22,8 +22,11 @@ const CLOCK_SKEW_MS = 5 * 60_000;
 
 /**
  * The weather a plan should allow for: over the first two hours of the window (all of a shorter one),
- * the highest chance of rain and the lowest temperature (and the highest, for heat), with the span read. The chance of rain is unknown (null) unless it
- * is given for every minute of that span, or some hour is already wet: an hour without one, a gap, or
+ * the highest chance of rain and the lowest temperature (and the highest, for heat), with the span read.
+ * The forecast is read from the plan's start for as long as it runs without a gap: nothing after a
+ * gap or past its end is read, and `until` says where the reading stopped, so nothing is ever said
+ * about an hour the forecast did not cover. The chance of rain is unknown (null) unless it is given
+ * for every minute of the two hours, or some hour read is already wet: an hour without one, a gap, or
  * the end of the forecast could be the wet one. Null when the forecast was issued more than 12 hours
  * before the request or after it, or does not cover the plan's start: no weather is better than wrong weather.
  */
@@ -32,23 +35,31 @@ export function weatherFor(hours: readonly ForecastHour[], issuedAt: Date, at: D
   if (!(age <= FORECAST_MAX_AGE_HOURS * 3_600_000 && age >= -CLOCK_SKEW_MS)) return null;
   const start = at.getTime();
   const end = start + Math.max(1, Math.min(windowMinutes, LOOKAHEAD_MINUTES)) * 60_000;
-  const span = hours.filter((h) => h !== null && typeof h === "object" && Number.isFinite(h.temperatureF) && Date.parse(h.start) < end && Date.parse(h.end) > start);
-  if (!span.some((h) => Date.parse(h.start) <= start)) return null;
-  // Dry needs a chance of rain for all of it: an hour without one, or a gap, could be the wet one.
-  const known = span.filter((h) => typeof h.precipProbability === "number" && Number.isFinite(h.precipProbability)).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
-  let covered = start;
-  let wettest = -Infinity;
-  for (const h of known) {
-    if (Date.parse(h.start) <= covered) covered = Math.max(covered, Date.parse(h.end));
-    wettest = Math.max(wettest, h.precipProbability!);
+  const span = hours
+    .filter((h) => h !== null && typeof h === "object" && Number.isFinite(h.temperatureF) && Date.parse(h.start) < end && Date.parse(h.end) > start)
+    .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+  // The hours read: from the start, each one beginning no later than the last one read ends.
+  const read: ForecastHour[] = [];
+  let reach = start;
+  for (const h of span) {
+    if (Date.parse(h.start) > reach) break; // a gap: what follows is not this plan's weather
+    read.push(h);
+    reach = Math.max(reach, Date.parse(h.end));
   }
-  const precipProbability = known.length && (covered >= end || wettest >= WEATHER_LIMITS.rainChance) ? wettest : null;
+  if (!read.length) return null;
+  const until = Math.min(reach, end);
+  // Dry needs a chance of rain for all of it: an hour without one, a gap, or the forecast's end could be the wet one.
+  const chance = (h: ForecastHour) => (typeof h.precipProbability === "number" && Number.isFinite(h.precipProbability) ? h.precipProbability : null);
+  const known = read.map(chance).filter((p): p is number => p !== null);
+  const wettest = known.reduce((m, p) => Math.max(m, p), -Infinity);
+  const everyMinute = reach >= end && read.every((h) => chance(h) !== null);
+  const precipProbability = known.length && (everyMinute || wettest >= WEATHER_LIMITS.rainChance) ? wettest : null;
   return {
-    temperatureF: span.reduce((m, h) => Math.min(m, h.temperatureF), Infinity),
+    temperatureF: read.reduce((m, h) => Math.min(m, h.temperatureF), Infinity),
     precipProbability,
-    highF: span.reduce((m, h) => Math.max(m, h.temperatureF), -Infinity),
+    highF: read.reduce((m, h) => Math.max(m, h.temperatureF), -Infinity),
     from: new Date(start),
-    until: new Date(end),
+    until: new Date(until),
   };
 }
 
