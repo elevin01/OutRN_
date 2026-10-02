@@ -108,10 +108,10 @@ public parking is known within about 400 m.
 Contract 1.5 adds `photos` on items and place details. These are freely licensed photos of the
 place itself, lead first; the list is empty when none is known. Each shows with its `credit`, linked
 to `sourceUrl`, since the license requires it. The web app shows them on cards and place pages
-(`components/PhotoFigure.tsx`); without any, a representative photo of the kind of place from
-`public/representative/`, labelled "Representative photo · not this place" with its credit; without
-that, the category icon. A photo that fails to load falls back the same way. The fixture photos are
-synthetic and their URLs don't load.
+(`components/PlacePhotos.tsx`); without any, or when none of them loads, a representative photo of
+the kind of place from `public/representative/`, labelled "Representative photo · not this place"
+with its credit; without that, no photo: never the category icon in place of one. The fixture photos
+are synthetic and their URLs don't load.
 
 Category shortcuts (`components/CategoryShortcuts.tsx`) narrow the search to a few related kinds in
 one click; several kinds travel in the URL as `categories=park,garden`. Icons are Material Design

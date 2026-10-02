@@ -2,10 +2,13 @@ import type { Photo } from "@outrn/contracts";
 
 /**
  * What the photo area shows, in order: the place's own photos (from the API, each with the credit its
- * license requires); when it has none, representative photos of the kind of place, labelled as such
- * so they are never taken for the place itself; when there are none of those either, the artwork.
+ * license requires); when it has none, or none of them loads, representative photos of the kind of
+ * place, labelled as such so they are never taken for the place itself; when there are none of those
+ * either, no photo at all (never the category's icon in place of one).
  */
 export interface ShownPhoto<Source = unknown> {
+  /** Tells photos apart across renders: the image's address, or the representative photo's page. */
+  key: string;
   source: Source;
   kind: "place" | "representative";
   /** Credit to show with the photo ("Jane Doe, CC BY-SA 4.0", "Unsplash"). */
@@ -36,6 +39,22 @@ export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): 
   }
 }
 
+/**
+ * The photos to show now: the place's own that have not failed to load; when none is left, the
+ * representative ones that have not (labelled as such); when none of those is left either, none.
+ */
+export function photosToShow<Source>(
+  photos: readonly ShownPhoto<Source>[],
+  fallback: readonly ShownPhoto<Source>[],
+  failed: ReadonlySet<string>,
+): ShownPhoto<Source>[] {
+  for (const list of [photos, fallback]) {
+    const live = list.filter((p) => !failed.has(p.key));
+    if (live.length) return live;
+  }
+  return [];
+}
+
 /** "a café", "an arts centre". */
 const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
 
@@ -53,6 +72,7 @@ export function photosFor<Source>(
     return url
       ? [
           {
+            key: url,
             source: remote(url),
             kind: "place",
             credit: p.credit,
@@ -65,6 +85,7 @@ export function photosFor<Source>(
   if (own.length) return own;
   const kind = categoryLabel.toLowerCase();
   return representative.map((r) => ({
+    key: r.url,
     source: r.source,
     kind: "representative",
     credit: r.credit,

@@ -2,10 +2,10 @@ import type { ImageSourcePropType } from "react-native";
 import type { RepresentativePhoto } from "./photos";
 
 /**
- * Representative photos by category: shown only when a place has no photo of its own, always
- * labelled "Representative photo · not this place", with their credit. Bundled with the app (never
- * hotlinked). Sources and licenses: assets/photos/README.md. A category without an entry shows the
- * category artwork.
+ * Representative photos by category: shown only when a place has no photo of its own or none of its
+ * own loads, always labelled "Representative photo · not this place", with their credit. Bundled with
+ * the app (never hotlinked). Sources and licenses: assets/photos/README.md. A category without an
+ * entry shows no photo (never the category's icon in place of one).
  */
 const cafe = require("../../assets/photos/cafe.jpg");
 const coffee = require("../../assets/photos/coffee.jpg");
@@ -31,6 +31,9 @@ const BY_CATEGORY: Readonly<Record<string, readonly RepresentativePhoto<ImageSou
   arts_centre: [GALLERY],
 };
 
+const NONE: readonly RepresentativePhoto<ImageSourcePropType>[] = [];
+
+/** The same array on every call for a category, so that memos keyed on it hold. */
 export function representativePhotos(categoryId: string): readonly RepresentativePhoto<ImageSourcePropType>[] {
-  return Object.prototype.hasOwnProperty.call(BY_CATEGORY, categoryId) ? BY_CATEGORY[categoryId]! : [];
+  return Object.prototype.hasOwnProperty.call(BY_CATEGORY, categoryId) ? BY_CATEGORY[categoryId]! : NONE;
 }

@@ -23,7 +23,7 @@ import {
 } from "../lib/presentation";
 import { demoMode } from "../lib/api";
 import { categoryIcon } from "../lib/categories";
-import type { ShownPhoto } from "../lib/photos";
+import { photosToShow, type ShownPhoto } from "../lib/photos";
 
 export function ActivityProfile({
   item,
@@ -33,6 +33,7 @@ export function ActivityProfile({
   area,
   timezone,
   photos = [],
+  fallback = [],
   strip,
   height,
   saved,
@@ -52,6 +53,8 @@ export function ActivityProfile({
   timezone: string;
   /** The place's photos, or representative ones when it has none. */
   photos?: ShownPhoto<ImageSourcePropType>[];
+  /** Representative photos, shown (labelled) when none of the place's own loads. */
+  fallback?: ShownPhoto<ImageSourcePropType>[];
   /** Category shortcuts, under the header. */
   strip?: ReactNode;
   height: number;
@@ -68,10 +71,12 @@ export function ActivityProfile({
   const [photoWidth, setPhotoWidth] = useState(0);
   const pager = useRef<ScrollView>(null);
   const currentPhoto = useRef(0);
-  const [failed, setFailed] = useState<ReadonlySet<ShownPhoto<ImageSourcePropType>>>(new Set());
-  // A photo that fails to load drops out; when none is left, the artwork (never a representative
-  // photo in place of the venue's own).
-  const shown = photos.filter((p) => !failed.has(p));
+  const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
+  const fail = (key: string) =>
+    setFailed((f) => (f.has(key) ? f : new Set(f).add(key)));
+  // A photo that fails to load drops out. When none of the place's own is left, the representative
+  // ones (labelled as such); when none of those loads either, no photo: never the category's icon.
+  const shown = photosToShow(photos, fallback, failed);
   const current = shown[Math.min(photo, Math.max(0, shown.length - 1))];
   const credit = current?.creditUrl ? safeExternalUrl(current.creditUrl) : undefined;
   const inset = useSafeAreaInsets();
@@ -93,14 +98,6 @@ export function ActivityProfile({
   const categoryId = item?.category.id || place?.category.id || "";
   // An event's admission price can differ from the venue's usual price.
   const price = item?.price ?? place?.price;
-  const nature = /park|garden|waterfront|viewpoint/.test(categoryId);
-  const artIcon: IconName = nature
-    ? "sun"
-    : /museum|book|gallery|library|arts/.test(categoryId)
-      ? "book-open"
-      : /bar|music|night/.test(categoryId)
-        ? "music"
-        : "compass";
   const description =
     item?.kind === "event"
       ? `At ${item.placeName}`
@@ -153,13 +150,13 @@ export function ActivityProfile({
         >
           {shown.map((p, index) => (
             <Image
-              key={photos.indexOf(p)}
+              key={p.key}
               testID={index === photo ? "activity-photo" : undefined}
               source={p.source}
               style={{ width: photoWidth, height: "100%" }}
               resizeMode="cover"
               accessibilityLabel={p.alt}
-              onError={() => setFailed((f) => new Set(f).add(p))}
+              onError={() => fail(p.key)}
             />
           ))}
         </ScrollView>
@@ -170,23 +167,9 @@ export function ActivityProfile({
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
           accessibilityLabel={current.alt}
-          onError={() => setFailed((f) => new Set(f).add(current))}
+          onError={() => fail(current.key)}
         />
-      ) : (
-        <View
-          pointerEvents="none"
-          accessible={false}
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: nature ? "#607767" : "#62605E" },
-          ]}
-        >
-          <View style={styles.artCircle} />
-          <View style={styles.artArch}>
-            <Icon name={artIcon} size={76} color="#E0E9D8" />
-          </View>
-        </View>
-      )}
+      ) : null}
       <LinearGradient
         pointerEvents="none"
         colors={["#101b1455", "#101b1400", "#14281cbb", "#14281cf5"]}
@@ -219,9 +202,7 @@ export function ActivityProfile({
           ? "Demo places · illustrative photos and posts"
           : current?.kind === "representative"
             ? "Representative photo · not this place"
-            : current
-              ? ""
-              : "No photo of this place yet"}
+            : ""}
       </Copy>
       {shown.length > 1 && (
         <Copy pointerEvents="none" style={styles.counter}>
@@ -495,25 +476,4 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   peekText: { fontSize: 13, lineHeight: 19, color: "#D7E2D3" },
-  artCircle: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "#9DAA8C",
-    position: "absolute",
-    top: 110,
-    right: -60,
-  },
-  artArch: {
-    position: "absolute",
-    left: 38,
-    top: 170,
-    width: 158,
-    height: 255,
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 100,
-    backgroundColor: "#263F35",
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });

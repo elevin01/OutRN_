@@ -136,6 +136,12 @@ export function ActivityExperience({
       ),
     [name, category?.label, item?.photos, place?.photos, representative],
   );
+  // When none of the place's own photos loads: the representative ones, labelled as such.
+  const fallback = useMemo(
+    () =>
+      photosFor(name, category?.label || "place", undefined, representative, (uri) => ({ uri })),
+    [name, category?.label, representative],
+  );
   // Category shortcuts on the deck (not on a place opened from Saved).
   const groups = useMemo(
     () => (areas ? groupsFor(areas.filters.categories, areas.limits.maxCategories) : []),
@@ -255,6 +261,7 @@ export function ActivityExperience({
             area={response?.area.name || "OutRN"}
             timezone={zone}
             photos={photos}
+            fallback={fallback}
             strip={strip}
             height={viewport}
             saved={saved.some((p) => p.id === placeId)}

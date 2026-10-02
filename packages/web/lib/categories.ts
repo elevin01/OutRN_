@@ -76,10 +76,6 @@ const REPRESENTATIVE: Readonly<Record<string, readonly { url: string; credit: st
   arts_centre: [unsplash("culture.jpg", "photo-1577720643272-265f09367456")],
 };
 
-/**
- * The place's own photos, each with its credit; without any, representative photos of the kind of
- * place, labelled as such; without those, none (the card shows the category icon).
- */
 /** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
 const PHOTO_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
 
@@ -97,6 +93,16 @@ export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): 
 /** "a café", "an arts centre". */
 const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
 
+/** Representative photos of the kind of place, labelled as such; none for a kind without any. */
+export function representativeFor(name: string, category: { id: string; label: string }): ShownPhoto[] {
+  return (own(REPRESENTATIVE, category.id) ?? []).map((r) => ({ ...r, kind: "representative", alt: `A representative photo of ${withArticle(category.label.toLowerCase())}, not ${name}` }));
+}
+
+/**
+ * The place's own photos, each with its credit; without any, representative photos of the kind of
+ * place, labelled as such; without those, none.
+ */
+
 export function photosFor(name: string, category: { id: string; label: string }, photos: readonly Photo[] | undefined): ShownPhoto[] {
   // The payload is not trusted: only https images on Wikimedia's hosts load, and a credit links only
   // over https. A photo that fails the check is dropped; a credit that does is shown as plain text.
@@ -104,6 +110,18 @@ export function photosFor(name: string, category: { id: string; label: string },
     const url = safeHttpsUrl(p.url, PHOTO_HOSTS);
     return url ? [{ url, kind: "place", credit: p.credit, creditUrl: safeHttpsUrl(p.sourceUrl), alt: p.alt ? `${name}: ${p.alt}` : `Photo ${i + 1} of ${name}` }] : [];
   });
-  if (mine.length) return mine;
-  return (own(REPRESENTATIVE, category.id) ?? []).map((r) => ({ ...r, kind: "representative", alt: `A representative photo of ${withArticle(category.label.toLowerCase())}, not ${name}` }));
+  return mine.length ? mine : representativeFor(name, category);
+}
+
+/**
+ * The photos to show now: the place's own that have not failed to load; when none is left, the
+ * representative ones that have not (labelled as such); when none of those is left either, none:
+ * never the category's icon in place of a photo.
+ */
+export function photosToShow(photos: readonly ShownPhoto[], fallback: readonly ShownPhoto[], failed: readonly string[]): ShownPhoto[] {
+  for (const list of [photos, fallback]) {
+    const live = list.filter((p) => !failed.includes(p.url));
+    if (live.length) return live;
+  }
+  return [];
 }

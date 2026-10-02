@@ -50,7 +50,8 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
 "Representative photo · not this place" with their credit ([sources](assets/photos/README.md)).
-Without those, the category artwork. A photo that fails to load falls back the same way. Category
+When none of its own loads, the representative ones, labelled the same way. Without those, no photo:
+never the category artwork in place of one. Category
 shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
 culture, Movies & shows, Games & play, Books) narrow the search in one tap.
 DM Sans is bundled

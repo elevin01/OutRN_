@@ -212,11 +212,5 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
 .card-photo img { display: block; height: 100%; object-fit: cover; width: 100%; }
 .card-photo figcaption { background: linear-gradient(transparent, rgba(16, 27, 20, .78)); bottom: 0; color: #f7f5ef; font-size: 11px; left: 0; line-height: 1.4; padding: 18px 10px 8px; position: absolute; right: 0; }
 .card-photo figcaption a { color: inherit; }
-.card-photo-empty { align-items: center; background: var(--cream); color: var(--moss); display: flex; justify-content: center; }
-.card-photo-empty[data-tone="outdoors"] { background: #dbe8d3; color: var(--moss-dark); }
-.card-photo-empty[data-tone="drink"] { background: #f6d9cc; color: #8a3a22; }
-.card-photo-empty[data-tone="culture"] { background: #dcdcef; color: #3d3b6b; }
-.card-photo-empty[data-tone="entertainment"] { background: var(--blue); color: #1d4a46; }
-.card-photo-empty[data-tone="food"] { background: #f3e2c2; color: #7a4a14; }
 .detail-photos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 0 0 28px; }
 .detail-photos .card-photo { margin: 0; }
