@@ -24,7 +24,7 @@ function candidateOf(e: Evaluation, shortlisted: Set<string>): OpsCandidate {
     unresolved: e.unresolved,
     travelMinutes: e.timing?.travel.minutes ?? null,
     usefulMinutes: e.timing?.usefulMinutes ?? null,
-    scores: e.scores,
+    scores: { evidence: e.scores.evidence, fit: e.scores.fit, appeal: e.scores.appeal, novelty: e.scores.novelty, taste: e.scores.taste ?? null },
     shortlisted: shortlisted.has(e.candidate.id),
   };
 }
@@ -108,7 +108,8 @@ export async function storedRun(q: Queryable, id: string): Promise<OpsRunDetail>
     unresolved: r.unresolved,
     travelMinutes: r.travel_minutes,
     usefulMinutes: r.useful_minutes,
-    scores: { evidence: r.scores.evidence ?? 0, fit: r.scores.fit ?? 0, appeal: r.scores.appeal ?? 0, novelty: r.scores.novelty ?? 0 },
+    // Stored runs keep no taste match (persistRun).
+    scores: { evidence: r.scores.evidence ?? 0, fit: r.scores.fit ?? 0, appeal: r.scores.appeal ?? 0, novelty: r.scores.novelty ?? 0, taste: null },
     shortlisted: shortlisted.has(r.item_id),
   }));
   return {

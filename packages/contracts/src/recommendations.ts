@@ -4,6 +4,13 @@ import { AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Pho
 /** POST /v1/recommendations — a short, ordered list of things that fit the time the user has. */
 
 /** A new search. Unknown fields are rejected. */
+/** One interest's weight in a taste: -1 skip, 0 no view, 1 love. */
+export const TasteWeight = z.strictObject({
+  interest: z.string().min(1).max(40),
+  weight: z.number().min(-1).max(1),
+});
+export type TasteWeight = z.infer<typeof TasteWeight>;
+
 export const RecommendationRequest = z.strictObject({
   areaId: z.string().min(1),
   /** Free time from `at`, in minutes. */
@@ -53,6 +60,13 @@ export const RecommendationRequest = z.strictObject({
    * leaves out places that do not do takeout. Omit to sit down; takeout-only counters are then left out.
    */
   visitStyle: z.enum(["dine_in", "takeout"]).optional(),
+  /**
+   * What this person likes and skips: weights from -1 (skip) to 1 (love) for interests
+   * (AreasResponse.filters.interests ids), kept on the device and sent with each search. Ranking only:
+   * a taste never hides a place. Ids not offered are ignored, so a stored profile outlives a change to
+   * the list; `request.taste` in the response lists what was applied. An id may appear once.
+   */
+  taste: z.array(TasteWeight).max(32).optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
@@ -93,6 +107,8 @@ export const ResolvedRequest = z.object({
   backBy: IsoDateTime.nullable(),
   /** The request's `visitStyle`, or "dine_in". */
   visitStyle: z.enum(["dine_in", "takeout"]),
+  /** The taste applied: the request's weights for offered interests, without zeros. */
+  taste: z.array(TasteWeight),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;
 

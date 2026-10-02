@@ -1,7 +1,7 @@
-import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
+import type { Attribute, Category, EvidenceClass, Interest, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.6.0";
-export const WEIGHTS_VERSION = "2026-09-29.4";
+export const ENGINE_VERSION = "0.7.0";
+export const WEIGHTS_VERSION = "2026-10-02.1";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -40,6 +40,12 @@ export interface RequestContext {
   features?: string[];
   /** How the user wants to eat, for food places: to go is quick. Missing = sitting down. */
   visitStyle?: "dine_in" | "takeout";
+  /**
+   * What this person likes (up to 1) and skips (down to -1), by interest: a profile kept on their
+   * device. Ranking only; with a taste (or a mood) the match carries the most weight. Build it only
+   * from validated interest ids.
+   */
+  taste?: ReadonlyMap<Interest, number>;
   /** Items shown recently on this device, and items dismissed. */
   seenIds?: string[];
   dismissedIds?: string[];
@@ -172,7 +178,9 @@ export type ReasonCode =
   /** A changing table, and the youngest going is under 3 (or a family's ages are unknown). */
   | "CHANGING_TABLE"
   /** A kids' area, and the youngest going is under 12 (or a family's ages are unknown). */
-  | "KIDS_AREA";
+  | "KIDS_AREA"
+  /** It is one of the things this person said they like (their taste, not the search's mood). */
+  | "TASTE_MATCH";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"
@@ -271,6 +279,8 @@ export interface Scores {
   fit: number;
   appeal: number;
   novelty: number;
+  /** How well it matches the person's taste and mood: 0.5 neutral, 1 loved, 0 skipped. Absent when neither is given. */
+  taste?: number;
 }
 
 export interface Evaluation {
@@ -285,6 +295,8 @@ export interface Evaluation {
   price: { text: string; isEstimate: boolean; unknown: boolean };
   /** How good an idea this kind of place is at the arrival (null: no rule, or ineligible). */
   dayPart?: "prime" | "fair" | "off" | null;
+  /** The interest from the person's own taste it matches best, when that is a like (TASTE_MATCH). */
+  tasteLead?: Interest | null;
 }
 
 /** A specific change that would admit more options: "allow a longer walk" (+4). */

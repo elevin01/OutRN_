@@ -13,3 +13,4 @@ export * from "./forecast.js";
 export * from "./offers.js";
 export * from "./amenities.js";
 export * from "./cuisine.js";
+export * from "./taste.js";

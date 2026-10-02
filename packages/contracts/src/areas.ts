@@ -43,6 +43,8 @@ export const AreasResponse = z.object({
     diets: z.array(Option),
     /** Must-haves a request may ask for (`features`): outdoor seating, wifi, wheelchair access. */
     features: z.array(Option),
+    /** Interests a taste may weigh (`taste`): live music, comedy, art, the outdoors… Offer them as quick picks. */
+    interests: z.array(Option),
   }),
   limits: z.object({
     windowMinutes: Range,
@@ -54,6 +56,8 @@ export const AreasResponse = z.object({
     maxDiets: z.int(),
     /** Most must-haves a request may ask for (`features`). */
     maxFeatures: z.int(),
+    /** Most interests a taste may weigh (`taste`). */
+    maxTaste: z.int(),
     /** Items per page of recommendations. */
     pageSize: z.int(),
   }),

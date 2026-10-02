@@ -1,5 +1,5 @@
-import type { Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
-import { CUISINE_FILTERS, DIETS, FEATURES, haversineMetres, type Category, type LatLon } from "@outrn/core";
+import type { Budget, RecommendationRequest, ResolvedRequest, TasteWeight } from "@outrn/contracts";
+import { CUISINE_FILTERS, DIETS, FEATURES, haversineMetres, isInterest, type Category, type Interest, type LatLon } from "@outrn/core";
 import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadParkingBuffer, loadWeather, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
@@ -60,6 +60,14 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   features.forEach((f, i) => {
     if (!Object.hasOwn(FEATURES, f)) throw invalid(`features.${i}`, `unknown feature "${f}"`);
   });
+  // A taste is a profile kept on the device: an interest no longer offered is ignored, not an error,
+  // so a stored profile outlives a change to the list. Each may appear once.
+  const seen = new Set<string>();
+  (request.taste ?? []).forEach((t, i) => {
+    if (seen.has(t.interest)) throw invalid(`taste.${i}.interest`, `"${t.interest}" appears twice`);
+    seen.add(t.interest);
+  });
+  const taste: TasteWeight[] = (request.taste ?? []).filter((t) => isInterest(t.interest) && t.weight !== 0);
   const budget: Budget = request.budget ?? { kind: "any" };
   if (budget.kind === "max" && budget.currency !== "USD") throw invalid("budget.currency", "only USD is supported");
 
@@ -98,6 +106,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
   if (request.visitStyle === "takeout") ctx.visitStyle = "takeout";
+  if (taste.length) ctx.taste = new Map(taste.map((t) => [t.interest as Interest, t.weight]));
   // Enables the sunset window for viewpoints, waterfronts and parks.
   ctx.sunset = sunsetOn(origin, at, area.timezone);
   // The area's stored forecast (outrn weather refresh), when it is current and covers the start.
@@ -129,6 +138,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     originIsDefault: origin === center,
     backBy: backBy?.toISOString() ?? null,
     visitStyle: request.visitStyle ?? "dine_in",
+    taste,
   };
   return { area, ctx, resolved, request: deviceOrigin ? { ...request, origin: deviceOrigin } : request };
 }
