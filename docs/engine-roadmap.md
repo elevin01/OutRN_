@@ -119,6 +119,13 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - `outrn recommend --like live_music,art:0.5 --skip drinks` runs a search with a taste.
 - **Part 2: the apps.** Quick picks of interests on first open, then Go, Save and Dismiss sharpen the
   taste on the device; it goes with every search. Nothing about the person is kept on the server.
+  - Contract 1.9: each card says what kind of outing it is (`interests`), the engine's own reading
+    (an event by its kinds or title, a place by what it is). The apps learn through it.
+  - Mobile: quick picks (like / not for you) on first open and from You; Go +0.2, Save +0.1 (unsave
+    undoes it), "Not for me" -0.15 and left out of fresh searches that session; once per option and action in a
+    session, nothing about which options were seen kept.
+  - Web: "What you like" in the search form (a like of 0.8 each; `skips=` in a link).
+  - A pop-up's site shows a "Happening" icon in both apps.
 - **Part 3 (this PR): pop-ups without a venue.**
   - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
     held at an `event_site` venue, shown only through its events and never on its own. It is never

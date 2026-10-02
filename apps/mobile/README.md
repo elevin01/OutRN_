@@ -46,6 +46,12 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
 - Session-only outing, directions handoff, manual arrival, and finish. A selected outing survives
   tab navigation but deliberately does not survive process restart. No location permission is used.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
+- Your interests (contract 1.8 `taste`): quick picks on first open, and any time from You (tap once
+  for a like, twice for not for you). Kept on the device and sent with each fresh search, never kept
+  by the API. Going to an option nudges its interests up (+0.2), saving it a little (+0.1, undone by
+  unsaving), and "Not for me" down (-0.15), through what the card says it is (contract 1.9
+  `interests`), once per option and action in a session. "Not for me" also leaves that option out of
+  fresh searches for the rest of the session. Which options were seen or chosen is never stored.
 
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
@@ -59,7 +65,7 @@ under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices
 
-Account sync, submission of venue corrections, taste-feedback services, persistent outings,
+Account sync, submission of venue corrections, persistent outings,
 device-location entry, representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
 The mobile search currently starts from the area center. Contract-supplied origins are labeled correctly; the app does not request device location.

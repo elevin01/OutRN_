@@ -242,6 +242,13 @@ export const RecommendationItem = z.object({
   /** Must-haves the place's record states: `outdoor_seating`, `wifi`, `wheelchair` (step-free). */
   features: z.array(Option).max(3),
   /**
+   * What kind of outing it is, as interest ids (`AreasResponse.filters.interests`): an event by its
+   * kinds or title ("Jazz on the Lawn" is `live_music`), a place by what it is (a gallery is `art`),
+   * at most 4. A device that keeps a taste learns from these what its person goes to, saves or turns
+   * down. Empty when it is none of them.
+   */
+  interests: z.array(z.string().min(1).max(40)).max(4),
+  /**
    * `ready`: everything that matters checks out. `check_first`: worth going, but something in
    * `caveats` needs checking. Never recompute or upgrade this in the UI.
    */

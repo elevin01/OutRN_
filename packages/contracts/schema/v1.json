@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.8.0",
+  "contract": "1.9.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -1144,6 +1144,15 @@
                     "additionalProperties": false
                   }
                 },
+                "interests": {
+                  "maxItems": 4,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  }
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -1905,6 +1914,7 @@
                 "cuisines",
                 "diets",
                 "features",
+                "interests",
                 "status",
                 "callToAction",
                 "location",

@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.8.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.9.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,10 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.9.0** (additive). What an option is:
+  - `RecommendationItem.interests` lists what kind of outing it is, as interest ids from `AreasResponse.filters.interests`, at most 4: an event by its kinds or its title, a place by what it is (a gallery is `art`, a bar `drinks`). Empty when it is none of them.
+  - It is what a device that keeps a taste learns from: going to an option, saving it or turning it down nudges the person's weights for its interests. The learning stays on the device; the API only ever receives the resulting `taste`.
+  - Snapshots stored by a 1.8 API page with `interests: []` on every item.
 - **1.8.0** (additive). Taste:
   - A request may carry a taste (`taste`): weights from `-1` (skip) to `1` (love) for interests from `AreasResponse.filters.interests` (live music, comedy, theatre & dance, movies, art, museums & history, restaurants, cafés & sweets, bars & drinks, nightlife, parks & outdoors, games & activities, markets & shopping, books & talks, sports, festivals & fairs), up to `limits.maxTaste`. It is a profile kept on the device and sent with each search, e.g. `[{ interest: "live_music", weight: 1 }, { interest: "drinks", weight: -1 }]`.
     - Ranking only: a taste never hides a place.
