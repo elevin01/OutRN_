@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { useWindowDimensions } from "react-native";
 import { nowIcon } from "../../lib/presentation";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, colors } from "../../components/ui";
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
+  // Keep a compact row at normal text size, with room for larger system labels.
+  const rowHeight = 52 + Math.max(0, fontScale - 1) * 16;
   const [hour, setHour] = useState(() => new Date().getHours());
   useEffect(() => {
     const timer = setInterval(() => setHour(new Date().getHours()), 60_000);
@@ -16,13 +20,15 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.muted,
+        tabBarAllowFontScaling: true,
         tabBarStyle: {
           backgroundColor: colors.paper,
           borderTopColor: colors.border,
-          height: 64 + insets.bottom,
-          paddingTop: 6,
-          paddingBottom: 8 + insets.bottom,
+          height: rowHeight + insets.bottom,
+          paddingTop: 0,
+          paddingBottom: insets.bottom,
         },
+        tabBarIconStyle: { height: 24 },
         tabBarLabelStyle: {
           fontFamily: "DMSans",
           fontSize: 11,

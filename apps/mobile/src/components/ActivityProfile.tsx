@@ -91,6 +91,8 @@ export function ActivityProfile({
     pager.current?.scrollTo({ x: index * photoWidth, animated: true });
   };
   const categoryId = item?.category.id || place?.category.id || "";
+  // An event's admission price can differ from the venue's usual price.
+  const price = item?.price ?? place?.price;
   const nature = /park|garden|waterfront|viewpoint/.test(categoryId);
   const artIcon: IconName = nature
     ? "sun"
@@ -254,7 +256,10 @@ export function ActivityProfile({
               color="#F7F5EF"
               accessible={false}
             />
-            <Copy style={styles.kind}>{category}</Copy>
+            <Copy testID="activity-summary" style={styles.kind}>
+              {category}
+              {price ? ` · ${priceLabel(price)}` : ""}
+            </Copy>
           </View>
           <Copy accessibilityRole="header" style={styles.title}>
             {name}
@@ -262,21 +267,17 @@ export function ActivityProfile({
           {!!description && (
             <Copy style={styles.description}>{description}</Copy>
           )}
-          <View style={styles.facts}>
-            {item && <Copy style={styles.fact}>{actionLabel(item)}</Copy>}
-            {item?.timing.closesAt && (
-              <Copy style={styles.fact}>
-                Closes {clock(item.timing.closesAt, timezone)}
-              </Copy>
-            )}
-            {item ? (
+          {item && (
+            <View style={styles.facts}>
+              <Copy style={styles.fact}>{actionLabel(item)}</Copy>
+              {item.timing.closesAt && (
+                <Copy style={styles.fact}>
+                  Closes {clock(item.timing.closesAt, timezone)}
+                </Copy>
+              )}
               <Copy style={styles.fact}>{travelLabel(item)}</Copy>
-            ) : (
-              place && (
-                <Copy style={styles.fact}>{priceLabel(place.price)}</Copy>
-              )
-            )}
-          </View>
+            </View>
+          )}
           {item && <RequiredNotes item={item} light />}
           {current && (
             <Pressable
