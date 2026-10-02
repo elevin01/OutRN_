@@ -1,0 +1,211 @@
+{
+  "environment": "Expo web; contract fixtures; safe-area case uses simulated insets, not a native device",
+  "results": [
+    {
+      "check": "52-point navigation row, unchanged 22-point icons, 48+ touch targets, full-height hero",
+      "metrics": {
+        "tabs": [
+          {
+            "text": "Now",
+            "x": 0,
+            "y": 793,
+            "width": 130,
+            "height": 51,
+            "bottom": 844
+          },
+          {
+            "text": "Saved",
+            "x": 130,
+            "y": 793,
+            "width": 130,
+            "height": 51,
+            "bottom": 844
+          },
+          {
+            "text": "You",
+            "x": 260,
+            "y": 793,
+            "width": 130,
+            "height": 51,
+            "bottom": 844
+          }
+        ],
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 792,
+          "bottom": 792
+        },
+        "summary": {
+          "x": 24,
+          "y": 502,
+          "width": 274,
+          "height": 18,
+          "bottom": 520
+        },
+        "overflow": false,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      }
+    },
+    {
+      "check": "Unknown price upfront, save navigation, saved-detail price"
+    },
+    {
+      "check": "320-point screen: summary wraps and navigation remains reachable",
+      "metrics": {
+        "tabs": [
+          {
+            "text": "Now",
+            "x": 0,
+            "y": 517,
+            "width": 106.65625,
+            "height": 51,
+            "bottom": 568
+          },
+          {
+            "text": "Saved",
+            "x": 106.65625,
+            "y": 517,
+            "width": 106.671875,
+            "height": 51,
+            "bottom": 568
+          },
+          {
+            "text": "You",
+            "x": 213.328125,
+            "y": 517,
+            "width": 106.671875,
+            "height": 51,
+            "bottom": 568
+          }
+        ],
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 618,
+          "bottom": 618
+        },
+        "summary": {
+          "x": 24,
+          "y": 321,
+          "width": 204,
+          "height": 18,
+          "bottom": 339
+        },
+        "overflow": false,
+        "viewport": {
+          "width": 320,
+          "height": 568
+        }
+      }
+    },
+    {
+      "check": "Simulated 47/34-point insets: bottom inset reserved once",
+      "metrics": {
+        "tabs": [
+          {
+            "text": "Now",
+            "x": 0,
+            "y": 759,
+            "width": 130,
+            "height": 51,
+            "bottom": 810
+          },
+          {
+            "text": "Saved",
+            "x": 130,
+            "y": 759,
+            "width": 130,
+            "height": 51,
+            "bottom": 810
+          },
+          {
+            "text": "You",
+            "x": 260,
+            "y": 759,
+            "width": 130,
+            "height": 51,
+            "bottom": 810
+          }
+        ],
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 758,
+          "bottom": 758
+        },
+        "summary": {
+          "x": 24,
+          "y": 468,
+          "width": 274,
+          "height": 18,
+          "bottom": 486
+        },
+        "overflow": false,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      }
+    },
+    {
+      "check": "Event admission price takes precedence over venue price; Book first remains"
+    },
+    {
+      "check": "Long unknown category and reported group price wrap without truncating evidence or units",
+      "metrics": {
+        "tabs": [
+          {
+            "text": "Now",
+            "x": 0,
+            "y": 517,
+            "width": 106.65625,
+            "height": 51,
+            "bottom": 568
+          },
+          {
+            "text": "Saved",
+            "x": 106.65625,
+            "y": 517,
+            "width": 106.671875,
+            "height": 51,
+            "bottom": 568
+          },
+          {
+            "text": "You",
+            "x": 213.328125,
+            "y": 517,
+            "width": 106.671875,
+            "height": 51,
+            "bottom": 568
+          }
+        ],
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 526,
+          "bottom": 526
+        },
+        "summary": {
+          "x": 24,
+          "y": 227,
+          "width": 204,
+          "height": 36,
+          "bottom": 263
+        },
+        "overflow": false,
+        "viewport": {
+          "width": 320,
+          "height": 568
+        }
+      }
+    }
+  ]
+}
