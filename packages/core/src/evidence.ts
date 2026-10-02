@@ -30,6 +30,10 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - indoor_outdoor     : { value: "indoor"|"covered"|"outdoor"|"mixed" }
  *  - parking            : { kind: "lot"|"street"|"garage"|"none"|"unknown", cost?: "free"|"paid"|"unknown", note?: string }
  *  - wheelchair         : { value: "yes"|"limited"|"no"|"unknown" }
+ *  - restroom           : { available?: "yes"|"no", wheelchair?: "yes"|"limited"|"no" }  at least one; a restroom
+ *                         visitors may use (OSM toilets, toilets:access) and its step-free access (toilets:wheelchair)
+ *  - kid_facilities     : { highchair?: "yes"|"no", changing_table?, kids_area?: "yes"|"limited"|"no" }; at least
+ *                         one. "limited" is OSM's: somewhere to change a diaper that isn't a table; a limited kids' area
  *  - takeout            : { value: "yes"|"no"|"only" }  food to go (OSM takeaway); "only" has no seats
  *  - links              : { instagram?, facebook?, menu? }  the venue's own pages, as https URLs
  *  - subtype            : { value: string }  the kind within a broad category ("casino", "miniature_golf", "zoo")
@@ -60,6 +64,8 @@ export const ATTRIBUTES = [
   "indoor_outdoor",
   "parking",
   "wheelchair",
+  "restroom",
+  "kid_facilities",
   "takeout",
   "links",
   "subtype",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { areas } from "@outrn/contracts/fixtures";
-import { categoryIconPath, groupOf, groupsFor, photosFor } from "./categories";
+import { categoryIconPath, groupOf, groupsFor, photosFor, photosToShow, representativeFor } from "./categories";
 import { formFromResolved, hrefForRequest, requestFromQuery } from "./request";
 
 describe("category shortcuts on the web", () => {
@@ -32,6 +32,21 @@ describe("category shortcuts on the web", () => {
     expect(own).toEqual([{ url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/A.jpg/960px-A.jpg", kind: "place", credit: "Jane Doe, CC BY-SA 4.0", creditUrl: "https://commons.wikimedia.org/wiki/File:A.jpg", alt: "Pitt Park: The lawn" }]);
     expect(photosFor("Rex", { id: "cafe", label: "Cafe" }, [])[0]).toMatchObject({ kind: "representative", url: "/representative/cafe.jpg", credit: "Unsplash", alt: "A representative photo of a cafe, not Rex" });
     expect(photosFor("Seward Park", { id: "park", label: "Park" }, [])).toEqual([]);
+  });
+
+  it("when none of the place's own loads, a labelled representative one; when none of those loads, nothing", () => {
+    const cafe = { id: "cafe", label: "Cafe" };
+    const own = photosFor("Rex", cafe, [{ url: "https://upload.wikimedia.org/wikipedia/commons/a.jpg", width: 960, height: 720, alt: null, credit: "Jane Doe, CC BY-SA 4.0", author: "Jane Doe", license: "CC BY-SA 4.0", licenseUrl: null, sourceUrl: "https://commons.wikimedia.org/wiki/File:A.jpg" }]);
+    const fallback = representativeFor("Rex", cafe);
+    expect(photosToShow(own, fallback, [])).toEqual(own);
+    expect(photosToShow(own, fallback, [own[0]!.url])).toEqual(fallback);
+    expect(photosToShow(own, fallback, [own[0]!.url])[0]).toMatchObject({ kind: "representative", alt: "A representative photo of a cafe, not Rex" });
+    expect(photosToShow(own, fallback, [own[0]!.url, ...fallback.map((p) => p.url)])).toEqual([]);
+    // A kind without representative photos: nothing, never a stand-in.
+    expect(representativeFor("Seward Park", { id: "park", label: "Park" })).toEqual([]);
+    expect(photosToShow(own, representativeFor("Rex", { id: "park", label: "Park" }), [own[0]!.url])).toEqual([]);
+    // Same lookup as the shortcuts: no inherited keys.
+    expect(representativeFor("Rex", { id: "__proto__", label: "Thing" })).toEqual([]);
   });
 
   it("load only https photos on Wikimedia's image hosts, and link the credit only over https", () => {

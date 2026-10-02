@@ -1,7 +1,7 @@
 # Representative photos
 
-Shown only when a place has no photo of its own, always labelled "Representative photo · not this
-place" with their credit (`src/lib/representative.ts`). They illustrate a kind of place, never a
+Shown only when a place has no photo of its own or none of its own loads, always labelled
+"Representative photo · not this place" with their credit (`src/lib/representative.ts`). They illustrate a kind of place, never a
 specific venue. Demo mode (`EXPO_PUBLIC_DEMO_MODE=true`) also uses them beside its invented posts.
 
 - `cafe.jpg` (café): https://images.unsplash.com/photo-1554118811-1e0d58224f24

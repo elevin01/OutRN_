@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Photo } from "@outrn/contracts";
-import { photosFor } from "./photos";
+import { photosFor, photosToShow } from "./photos";
 
 const photo = (over: Partial<Photo> = {}): Photo => ({
   url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Lozupone_katz2.png/960px-Lozupone_katz2.png",
@@ -27,7 +27,7 @@ describe("which photos a place shows", () => {
 
   it("without any, representative ones, never passed off as the place", () => {
     const shown = photosFor("Rex", "Cafe", [], stock, remote);
-    expect(shown).toEqual([{ source: "cafe.jpg", kind: "representative", credit: "Unsplash", creditUrl: "https://images.unsplash.com/photo-1", alt: "A representative photo of a cafe, not Rex" }]);
+    expect(shown).toEqual([{ key: "https://images.unsplash.com/photo-1", source: "cafe.jpg", kind: "representative", credit: "Unsplash", creditUrl: "https://images.unsplash.com/photo-1", alt: "A representative photo of a cafe, not Rex" }]);
     expect(photosFor("Rex", "Cafe", undefined, [], remote)).toEqual([]);
   });
 
@@ -40,6 +40,22 @@ describe("which photos a place shows", () => {
     }
     // One bad photo among good ones drops out alone.
     expect(photosFor("Rex", "Cafe", [photo({ url: "https://tracker.example/a.gif" }), photo()], stock, remote).map((p) => p.kind)).toEqual(["place"]);
+  });
+
+  it("when none of its own loads, representative ones, labelled; when none of those loads either, none", () => {
+    const own = photosFor("Rex", "Cafe", [photo(), photo({ url: "https://upload.wikimedia.org/wikipedia/commons/b.jpg" })], stock, remote);
+    const fallback = photosFor("Rex", "Cafe", undefined, stock, remote);
+    expect(photosToShow(own, fallback, new Set())).toEqual(own);
+    // One of its own fails: the other stays, with no stand-in beside it.
+    expect(photosToShow(own, fallback, new Set([own[0]!.key]))).toEqual([own[1]]);
+    const failedOwn = new Set(own.map((p) => p.key));
+    expect(photosToShow(own, fallback, failedOwn)).toEqual(fallback);
+    expect(photosToShow(own, fallback, failedOwn)[0]).toMatchObject({ kind: "representative", alt: "A representative photo of a cafe, not Rex" });
+    expect(photosToShow(own, fallback, new Set([...failedOwn, fallback[0]!.key]))).toEqual([]);
+    // A kind without representative photos: nothing, never a stand-in.
+    expect(photosToShow(own, photosFor("Rex", "Park", undefined, [], remote), failedOwn)).toEqual([]);
+    // A place showing representative photos already does not retry the same ones.
+    expect(photosToShow(fallback, fallback, new Set([fallback[0]!.key]))).toEqual([]);
   });
 
   it("names the kind with the right article", () => {

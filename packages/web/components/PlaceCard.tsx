@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { RecommendationItem } from "@outrn/contracts";
-import { photosFor } from "../lib/categories";
+import { photosFor, representativeFor } from "../lib/categories";
 import { cardTags } from "../lib/card";
 import { CategoryIcon } from "./CategoryIcon";
-import { PhotoFigure } from "./PhotoFigure";
+import { PlacePhotos } from "./PlacePhotos";
 
 interface Props {
   item: RecommendationItem;
@@ -11,11 +11,10 @@ interface Props {
 }
 
 export function PlaceCard({ item, index }: Props) {
-  const photo = photosFor(item.name, item.category, item.photos)[0];
   const tags = cardTags(item);
   return (
     <article className="place-card">
-      <PhotoFigure photo={photo} category={item.category.id} />
+      <PlacePhotos photos={photosFor(item.name, item.category, item.photos)} fallback={representativeFor(item.name, item.category)} max={1} />
       <div className="card-topline">
         <span className="card-number">{String(index + 1).padStart(2, "0")}</span>
         <span className={`status-pill ${item.status}`}>{item.copy.action}</span>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryFromTags, hoursConfidence, normalizeOsm, osmDate, parkingKind, parseCharge, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
+import { categoryFromTags, hoursConfidence, kidFacilitiesOf, normalizeOsm, osmDate, parkingKind, parseCharge, restroomOf, surveyedHoursConfidence, venueLinks } from "./osm-normalize.js";
 
 const NOW = new Date("2026-09-26T12:00:00Z");
 const rec = (tags: Record<string, string>, updated: string | null = "2026-08-01T00:00:00Z", now = NOW) => normalizeOsm({ externalId: "node/1", point: { lat: 40.7185, lon: -73.988 }, timezone: "America/New_York", tags, sourceUpdatedAt: updated ? new Date(updated) : null }, now);
@@ -234,6 +234,64 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant", "opening_hours:kitchen": "until the chef leaves" }), "kitchen_hours")).toBeUndefined();
   });
 
+  describe("restrooms and what a place has for children", () => {
+    const rest = (tags: Record<string, string>) => restroomOf(tags);
+    it("a restroom visitors may use, and its step-free access, as tagged", () => {
+      expect(rest({ toilets: "yes" })).toEqual({ value: { available: "yes" }, evidence: "toilets=yes" });
+      expect(rest({ toilets: "customers" })).toEqual({ value: { available: "yes" }, evidence: "toilets=customers" });
+      expect(rest({ toilets: "no" })).toEqual({ value: { available: "no" }, evidence: "toilets=no" });
+      expect(rest({ toilets: "yes", "toilets:wheelchair": "no" })).toEqual({ value: { available: "yes", wheelchair: "no" }, evidence: "toilets=yes; toilets:wheelchair=no" });
+      // An accessible restroom is a restroom; an inaccessible one says nothing about whether there is another.
+      expect(rest({ "toilets:wheelchair": "yes" })?.value).toEqual({ available: "yes", wheelchair: "yes" });
+      expect(rest({ "toilets:wheelchair": "limited" })?.value).toEqual({ available: "yes", wheelchair: "limited" });
+      expect(rest({ "toilets:wheelchair": "no" })?.value).toEqual({ wheelchair: "no" });
+      // toilets:access decides who may use it: staff only is none for visitors.
+      expect(rest({ toilets: "yes", "toilets:access": "private" })).toEqual({ value: { available: "no" }, evidence: "toilets=yes; toilets:access=private" });
+      expect(rest({ "toilets:access": "customers" })?.value).toEqual({ available: "yes" });
+      expect(rest({ toilets: "yes", "toilets:access": "customers" })?.evidence).toBe("toilets=yes");
+      // None for visitors has no access to describe, whatever else is tagged.
+      expect(rest({ toilets: "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
+      expect(rest({ toilets: "yes", "toilets:access": "no", "toilets:wheelchair": "yes" })?.value).toEqual({ available: "no" });
+      // Built for wheelchair users is accessible.
+      expect(rest({ toilets: "yes", "toilets:wheelchair": "designated" })).toEqual({ value: { available: "yes", wheelchair: "yes" }, evidence: "toilets=yes; toilets:wheelchair=designated" });
+      // Values we don't know say nothing.
+      expect(rest({ toilets: "maybe", "toilets:wheelchair": "maybe" })).toBeNull();
+      expect(rest({ "toilets:wheelchair": "__proto__" })).toBeNull();
+      expect(rest({ "toilets:unisex": "yes" })).toBeNull();
+      expect(rest({})).toBeNull();
+    });
+    it("high chairs, a changing table, a kids' area: as OSM documents each", () => {
+      expect(kidFacilitiesOf({ highchair: "yes", changing_table: "no" })).toEqual({ value: { highchair: "yes", changing_table: "no" }, evidence: "highchair=yes; changing_table=no" });
+      expect(kidFacilitiesOf({ highchair: "4" })?.value).toEqual({ highchair: "yes" });
+      expect(kidFacilitiesOf({ highchair: "0" })?.value).toEqual({ highchair: "no" });
+      // Limited is partial, not absent: somewhere to change a diaper that isn't a table; a limited kids' area.
+      expect(kidFacilitiesOf({ changing_table: "limited" })).toEqual({ value: { changing_table: "limited" }, evidence: "changing_table=limited" });
+      expect(kidFacilitiesOf({ kids_area: "limited" })).toEqual({ value: { kids_area: "limited" }, evidence: "kids_area=limited" });
+      // kids_area's documented forms: yes, designated, and where one is (kids_area:indoor / :outdoor).
+      expect(kidFacilitiesOf({ kids_area: "designated" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area=designated" });
+      expect(kidFacilitiesOf({ "kids_area:indoor": "yes" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area:indoor=yes" });
+      expect(kidFacilitiesOf({ "kids_area:outdoor": "yes" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area:outdoor=yes" });
+      expect(kidFacilitiesOf({ kids_area: "yes", "kids_area:indoor": "yes" })?.value).toEqual({ kids_area: "yes" });
+      // The documented tag says how much; the subtag only where.
+      expect(kidFacilitiesOf({ kids_area: "limited", "kids_area:outdoor": "yes" })).toEqual({ value: { kids_area: "limited" }, evidence: "kids_area=limited; kids_area:outdoor=yes" });
+      // kids_area=indoor|outdoor is a documented mistake for the subtags: it counts only when nothing documented says.
+      expect(kidFacilitiesOf({ kids_area: "indoor" })).toEqual({ value: { kids_area: "yes" }, evidence: "kids_area=indoor" });
+      expect(kidFacilitiesOf({ kids_area: "outdoor", "kids_area:indoor": "yes" })?.value).toEqual({ kids_area: "yes" });
+      // Denied and present at once is a contradiction: it says nothing.
+      expect(kidFacilitiesOf({ kids_area: "no", "kids_area:indoor": "yes" })).toBeNull();
+      expect(kidFacilitiesOf({ kids_area: "no" })?.value).toEqual({ kids_area: "no" });
+      expect(kidFacilitiesOf({ highchair: "some", changing_table: "room", "kids_area:indoor": "no" })).toBeNull();
+      expect(kidFacilitiesOf({ "changing_table:location": "wheelchair_toilet" })).toBeNull();
+    });
+    it("become published facts where the place is one we list, and validate", () => {
+      const n = rec({ name: "Pies", amenity: "cafe", toilets: "yes", "toilets:wheelchair": "no", highchair: "yes" });
+      expect(fact(n, "restroom")).toMatchObject({ evidenceClass: "published", value: { available: "yes", wheelchair: "no" }, evidence: "toilets=yes; toilets:wheelchair=no", confidence: 0.7 });
+      expect(fact(n, "kid_facilities")).toMatchObject({ evidenceClass: "published", value: { highchair: "yes" }, evidence: "highchair=yes" });
+      expect(fact(rec({ name: "Pies", amenity: "cafe" }), "restroom")).toBeUndefined();
+      expect(fact(rec({ name: "Shoes", shop: "shoes", toilets: "yes" }), "restroom")).toBeUndefined();
+    });
+  });
+
   describe("charge", () => {
     it("parses dollar amounts, ranges and several prices", () => {
       expect(parseCharge("12 USD")).toEqual({ min: 12, max: 12, basis: "per_person" });
@@ -392,12 +450,20 @@ describe("OSM normalization", () => {
 
 describe("who can go, and what it costs, when the tags don't say", () => {
   it("access=private or members-only: not open to the public", () => {
-    for (const access of ["private", "no", "members", "permit"]) {
+    // Hester Street Park on the LES capture is residents only (way/1077518596).
+    for (const access of ["private", "no", "members", "permit", "residents"]) {
       const a = fact(rec({ name: "Club", amenity: "bar", access }), "admission");
       expect(a, access).toMatchObject({ value: { requirement: "members_only" }, evidenceClass: "published", evidence: `access=${access}` });
     }
     // Customers only is how every café works; permissive is open.
     for (const access of ["customers", "permissive", "yes"]) expect(fact(rec({ name: "Cafe", amenity: "cafe", access }), "admission")?.value, access).toEqual({ requirement: "walk_in" });
+  });
+
+  it("step-free access as OSM documents it: designated (built for wheelchair users) is accessible", () => {
+    const step = (wheelchair: string) => fact(rec({ name: "M", tourism: "museum", wheelchair }), "wheelchair");
+    expect(step("designated")).toMatchObject({ value: { value: "yes" }, evidenceClass: "published", evidence: "wheelchair=designated" });
+    for (const v of ["yes", "limited", "no"]) expect(step(v)?.value, v).toEqual({ value: v });
+    for (const v of ["maybe", "__proto__", "unknown"]) expect(step(v), v).toBeUndefined();
   });
 
   it("a university or school's own library is members only; a public library is free to walk into", () => {

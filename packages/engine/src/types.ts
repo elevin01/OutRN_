@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.6.0";
-export const WEIGHTS_VERSION = "2026-09-29.3";
+export const WEIGHTS_VERSION = "2026-09-29.4";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -160,7 +160,19 @@ export type ReasonCode =
   /** Happy hour is on at the arrival, or starts soon after it. */
   | "HAPPY_HOUR"
   /** Tables outside, and the forecast is dry and mild. */
-  | "OUTDOOR_SEATING";
+  | "OUTDOOR_SEATING"
+  /** A wheelchair user is going, and its restroom is wheelchair accessible. */
+  | "ACCESSIBLE_RESTROOM"
+  /** A wheelchair user is going, and its record says its restroom is not wheelchair accessible. */
+  | "RESTROOM_NOT_ACCESSIBLE"
+  /** A wheelchair user is going, and its record says its restroom has limited wheelchair access. */
+  | "RESTROOM_ACCESS_LIMITED"
+  /** High chairs, and the youngest going is under 5 (or a family's ages are unknown). */
+  | "HIGH_CHAIRS"
+  /** A changing table, and the youngest going is under 3 (or a family's ages are unknown). */
+  | "CHANGING_TABLE"
+  /** A kids' area, and the youngest going is under 12 (or a family's ages are unknown). */
+  | "KIDS_AREA";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"

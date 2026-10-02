@@ -1,4 +1,4 @@
-import { DIETS, dietLabel, isFreshConfirmation, localClock, ownValue, type Diet, type LatLon } from "@outrn/core";
+import { DIETS, dietLabel, isFreshConfirmation, KID_FACILITIES, localClock, ownValue, type Diet, type KidFacility, type LatLon } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { fmtTime } from "./explain.js";
 
@@ -53,6 +53,8 @@ const LABEL: Record<string, string> = {
   last_entry_offset: "Last entry",
   min_useful_minutes: "Time to allow",
   wheelchair: "Wheelchair",
+  restroom: "Restroom",
+  kid_facilities: "For kids",
   takeout: "Takeout",
   subtype: "Kind",
   cuisine: "Cuisine",
@@ -63,8 +65,9 @@ const LABEL: Record<string, string> = {
   queue: "Line",
   open_state: "Open right now",
 };
+const KID_FACILITY_LIMITED: Readonly<Record<string, string>> = { changing_table: "somewhere to change a diaper, not a changing table", kids_area: "limited kids' area" };
 const NET_LABEL: Readonly<Record<string, string>> = { wlan: "Wi-Fi", yes: "Yes", wired: "Wired", terminal: "Computers to use", no: "None" };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "restroom", "kid_facilities", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
 
@@ -154,6 +157,26 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
     case "wheelchair": {
       const w = String(v["value"] ?? "unknown");
       return w === "yes" ? "Accessible" : w === "limited" ? "Limited access" : w === "no" ? "Not accessible" : "Unknown";
+    }
+    case "restroom": {
+      // "Yes, not wheelchair accessible"; "None for visitors"; only an access tag: "Wheelchair accessible".
+      if (v["available"] === "no") return "None for visitors";
+      const w = v["wheelchair"];
+      const access = w === "yes" ? "wheelchair accessible" : w === "limited" ? "limited wheelchair access" : w === "no" ? "not wheelchair accessible" : null;
+      if (v["available"] === "yes") return access ? `Yes, ${access}` : "Yes";
+      if (access) return sentenceCase(access);
+      break;
+    }
+    case "kid_facilities": {
+      // "High chairs; no changing table": each facility the record names, in card order. A limited
+      // one reads as what OSM means by it.
+      const parts = (Object.keys(KID_FACILITIES) as KidFacility[]).flatMap((k) => {
+        const name = KID_FACILITIES[k].toLowerCase();
+        if (v[k] === "limited") return [ownValue(KID_FACILITY_LIMITED, k) ?? `limited ${name}`];
+        return v[k] === "yes" ? [name] : v[k] === "no" ? [`no ${name}`] : [];
+      });
+      if (parts.length) return sentenceCase(parts.join("; "));
+      break;
     }
     case "subtype":
       return sentenceCase(String(v["value"] ?? "unknown"));
