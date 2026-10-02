@@ -21,8 +21,16 @@ describe("fact value schemas", () => {
       ["queue", { value: "short" }],
       ["age_limit", { minAge: 0 }],
       ["age_limit", { minAge: 21 }],
+      ["event_kind", { interests: ["live_music"] }],
+      ["event_kind", { interests: ["festivals", "outdoors", "food", "markets"] }],
     ];
     for (const [attribute, value] of ok) expect(validateFactValue(attribute, value), `${attribute} ${JSON.stringify(value)}`).toBeNull();
+  });
+
+  it("take an event's kinds only as one to four interests", () => {
+    for (const bad of [{ interests: [] }, { interests: ["teleportation"] }, { interests: ["__proto__"] }, { interests: ["constructor"] }, { interests: ["art", "film", "food", "books", "sports"] }, { interests: "art" }, { interests: ["art"], extra: 1 }]) {
+      expect(validateFactValue("event_kind", bad), JSON.stringify(bad)).not.toBeNull();
+    }
   });
 
   it("reject malformed values with a message naming the problem", () => {

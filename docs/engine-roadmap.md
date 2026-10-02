@@ -78,6 +78,72 @@ changelog.
 
 ## Next, in order
 
+### Batch 10: taste first, and what's happening (the product's center)
+The engine started as "what's open near me". It becomes "what should I do tonight": first what is
+only happening now (a band in the park, fireworks, a street fair, a pop-up market), then ranked by
+the person's taste, with places as the fallback and the "grab a bite after" stop.
+- **Part 1 (this PR): taste ranks** (contract 1.8, additive).
+  - **Interests:** sixteen, in the words people pick: live music, comedy, theatre & dance, movies,
+    art, museums & history, restaurants, cafés & sweets, bars & drinks, nightlife, parks & outdoors,
+    games & activities, markets & shopping, books & talks, sports, festivals & fairs
+    (`core/interests.ts`).
+    - Every place maps onto them by its category, or its subtype when that says more (a climbing gym
+      is sports).
+    - An event maps by what its title says ("Jazz on the Lawn" is live music), with the place it is
+      held at counting for half.
+  - **A taste** is a profile kept on the device and sent with each search: weights from -1 (skip) to
+    1 (love). With a taste or a mood, the match is the largest part of an option's merit (0.4, then
+    appeal 0.3, fit 0.2, novelty 0.1). Without either, ranking is exactly as before: the 23 earlier
+    golden scenarios are unchanged.
+    - A skip sinks an option, and variety never brings it back.
+    - Variety is among the kinds of thing the person likes first.
+    - A love (0.7 or more) is never left off the first page: when none of it is a love, the best love
+      takes its last slot, keeping its class and caveats.
+    - A love doesn't lift a poor idea for the hour (a park after dark).
+    - Suitability before preference: with a minor in the party, a like of drinks or nightlife is not
+      applied (a skip still is), and a place that is adult for them (a bar, a nightclub, a known or
+      estimated 18+ limit) is never lifted, claimed as their taste, or kept on the first page.
+    - The card says why: "matches your taste for live music".
+  - **A mood is a like for one search** (culture: art, museums, theatre, movies, live music, comedy,
+    at 0.6). Before, it moved a place about as much as a few minutes' walk; it never overrides a skip.
+  - **Events are pushed harder:** an event's appeal boost is 0.25 (was 0.15), plus 0.05 when it
+    starts within 90 minutes. Events and places compete on one list (the founder's choice: mixed by
+    score, not a separate lane).
+  - **Privacy:** runs keep how many interests a taste weighed, never which, and no option's match.
+  - Golden scenarios added: a music lover on a Saturday evening, an art lover who skips bars, a Friday
+    in the mood for culture, a Bronxville outdoors lover, a family with a 10-year-old whose taste
+    loves bars (no bar on their page).
+  - Seen on the captures: with no events loaded, the music lover's love is a music venue to "check
+    what's on" in slot 3. Bronxville's parks list no hours, so they are Check first, and the outdoors
+    lover sees one park on the first page. Both are data, not ranking: see parts 3 and 4.
+  - `outrn recommend --like live_music,art:0.5 --skip drinks` runs a search with a taste.
+- **Part 2: the apps.** Quick picks of interests on first open, then Go, Save and Dismiss sharpen the
+  taste on the device; it goes with every search. Nothing about the person is kept on the server.
+- **Part 3 (this PR): pop-ups without a venue.**
+  - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
+    held at an `event_site` venue, shown only through its events and never on its own. It is never
+    merged into a place nearby or made its child, and a site of the same name within 75 m is reused.
+  - **What an event is** (`event_kind`, up to 4 interests) comes from its source: schema.org types on
+    venues' own sites (a `MusicEvent` is live music), or an events file's `kinds`. Taste reads it
+    alongside the title.
+  - **`outrn ingest events --from-file`** loads any allowed source's events. The founder's own list
+    works today; every feed in part 4 converts to the same shape (see `docs/events.md`). Each event is
+    checked first: sensible times, a place inside the area, kinds that are interests, an https link,
+    no control characters. One that fails is left out with the reason, the rest are written.
+  - **Joining late:** a walk-in pop-up at its own site can be joined after it starts (a band on the
+    lawn), and the plan says so. A ticketed one still can't.
+  - **Age:** an age the event states, or "21+" in its title, is published. A drink event at a site of
+    its own with no age stated is probably 21+ (an estimate, so Check first for families).
+  - On the LES fixture: "Jazz on the Lawn" at 6pm is the first option at 5:45pm for someone who likes
+    live music.
+- **Part 4: every free event source** (needs network access and two free keys; see the decisions
+  below): NYC Parks events and NYC Open Data (concerts, outdoor movies, fireworks, street fairs),
+  library calendars (NYPL, Westchester), venues' own sites (the first-party job), Ticketmaster and
+  SeatGeek, and more.
+- **Small follow-ups seen while testing:** "open late" is said of any place that closes an hour
+  after the window ends, so a gallery closing at 6pm is "open late" at 2pm; it should mean late in the
+  evening.
+
 ### Batch 3b, the rest (no new vendors)
 - **More free photos:**
   - Commons categories a venue names (`wikimedia_commons=Category:…`), for more than one photo.
@@ -326,3 +392,8 @@ changelog.
 5. **Counter-service supply** (batch 3b): ingest `amenity=fast_food`, with chains ranked below independents?
 6. **Batch 5 provider and budget:** Google, Foursquare or Yelp; set their keys on the deployment.
    Also, whether live calls are acceptable when places are shown or opened.
+7. **Event sources (batch 10, part 4):** allow data.cityofnewyork.us, www.nycgovparks.org,
+   www.nypl.org, app.ticketmaster.com, api.seatgeek.com and venues' own sites in the environment's
+   network access, and create free Ticketmaster and SeatGeek keys.
+8. **Parks without hours:** treat a public park or garden with no listed hours as usually open dawn to
+   dusk (Ready, labelled as an estimate), so the outdoors lover sees more than one park?

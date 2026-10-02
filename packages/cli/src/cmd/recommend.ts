@@ -27,6 +27,8 @@ export function registerRecommend(program: Command): void {
     .option("--cuisines <list>", "comma-separated cuisines (japanese, pizza…): only food places serving one")
     .option("--diets <list>", "comma-separated diets (vegetarian, vegan, gluten_free, halal, kosher): only food places known to serve all")
     .option("--features <list>", "comma-separated must-haves (outdoor_seating, wifi, wheelchair)")
+    .option("--like <list>", "comma-separated interests this person likes, each optionally weighted (live_music, art:0.5…)")
+    .option("--skip <list>", "comma-separated interests this person skips (drinks, nightlife…)")
     .option("--wheelchair", "require wheelchair access")
     .option("--youngest <age>", "age of the youngest person going (age limits gate on it; family without it assumes a minor)", (v) => parseInt(v, 10))
     .option("--offset <n>", "skip this many options (\"More options\" pages by 3)", (v) => parseInt(v, 10), 0)
@@ -40,6 +42,13 @@ export function registerRecommend(program: Command): void {
         console.log(JSON.stringify(await page(db, String(o["cursor"])), null, 2));
         return;
       }
+      // A taste as the app would send it: likes weigh 1 (or the weight given), skips -1.
+      const weighed = (list: unknown, sign: 1 | -1) =>
+        list ? String(list).split(",").map((x) => x.trim()).filter(Boolean).map((x) => {
+          const [interest, w] = x.split(":") as [string, string | undefined];
+          return { interest, weight: sign * (w === undefined ? 1 : Number(w)) };
+        }) : [];
+      const taste = [...weighed(o["like"], 1), ...weighed(o["skip"], -1)];
       const budget: Budget | undefined = o["budget"] === undefined ? undefined : o["budget"] === "free" ? { kind: "free" } : { kind: "max", maxCents: Math.round(Number(o["budget"]) * 100), currency: "USD" };
       const parsed = RecommendationRequest.safeParse({
         areaId: String(o["area"]),
@@ -54,6 +63,7 @@ export function registerRecommend(program: Command): void {
         ...(o["diets"] ? { diets: String(o["diets"]).split(",").map((x) => x.trim()) } : {}),
         ...(o["features"] ? { features: String(o["features"]).split(",").map((x) => x.trim()) } : {}),
         ...(o["at"] ? { at: new Date(String(o["at"])).toISOString() } : {}),
+        ...(taste.length ? { taste } : {}),
       });
       if (!parsed.success) {
         for (const i of parsed.error.issues) console.error(`${i.path.join(".") || "request"}: ${i.message}`);
@@ -87,7 +97,7 @@ export function registerRecommend(program: Command): void {
         console.log(`   ${copy.factLine}`);
         if (copy.sentence) console.log(`   ${copy.sentence}`);
         if (copy.caveat) console.log(`   ${copy.caveat}`);
-        console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}`);
+        console.log(`   evidence ${e.scores.evidence} · fit ${e.scores.fit} · appeal ${e.scores.appeal} · novelty ${e.scores.novelty}${e.scores.taste === undefined ? "" : ` · taste ${e.scores.taste}`}`);
       });
       if (offset === 0 && s.fewerThanThree) console.log(`\nOnly ${s.items.length} qualified. Try: ${s.relaxations.map((r) => `${r.text} (+${r.admits})`).join(" · ") || "a different time"}`);
       if (s.ordered.length > offset + items.length && items.length) console.log(`\nMore options: --offset ${offset + items.length}`);

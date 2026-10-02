@@ -40,6 +40,7 @@ const TYPICAL_MINUTES: Record<Category, number> = {
   arcade: 45,
   nightclub: 120,
   activity: 75,
+  event_site: 90, // a pop-up with no end given: a street fair, a set in the park
   other: 45,
 };
 

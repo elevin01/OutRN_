@@ -6,7 +6,7 @@ import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationRequest, RecommendationResponse } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
-import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
+import { ingestEvents, ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -65,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.7.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.8.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -74,12 +74,65 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     // The limits a UI reads are the ones the request schema enforces.
     expect(areas.filters.diets.map((o) => o.id)).toEqual(["vegetarian", "vegan", "gluten_free", "halal", "kosher"]);
     expect(areas.filters.features).toEqual([{ id: "outdoor_seating", label: "Outdoor seating" }, { id: "wifi", label: "Wi-Fi" }, { id: "wheelchair", label: "Wheelchair accessible" }]);
+    expect(areas.filters.interests).toEqual(expect.arrayContaining([{ id: "live_music", label: "Live music" }, { id: "outdoors", label: "Parks & outdoors" }]));
+    const taste = (n: number) => Array.from({ length: n }, (_, i) => ({ interest: `interest_${i}`, weight: 1 }));
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, taste: taste(areas.limits.maxTaste) }).success).toBe(true);
+    expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, taste: taste(areas.limits.maxTaste + 1) }).success).toBe(false);
     for (const [field, max] of [["categories", areas.limits.maxCategories], ["cuisines", areas.limits.maxCuisines], ["diets", areas.limits.maxDiets], ["features", areas.limits.maxFeatures]] as const) {
       // Past the cap, repeating ids when there are fewer options than it (5 diets, 3 must-haves).
       const ids = Array.from({ length: max + 1 }, (_, i) => areas.filters[field][i % areas.filters[field].length]!.id);
       expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max) }).success, field).toBe(true);
       expect(RecommendationRequest.safeParse({ areaId: "les", windowMinutes: 120, [field]: ids.slice(0, max + 1) }).success, field).toBe(false);
     }
+  });
+
+  it("ranks by a taste from the device, applies only offered interests, and keeps it out of the run log", async () => {
+    now = SAT_EVENING;
+    const plain = await search({ areaId: "les", windowMinutes: 180 });
+    expect(plain.request.taste).toEqual([]);
+    const taste = [
+      { interest: "books", weight: 1 },
+      // A stored profile may name an interest no longer offered, or a weight of no view: ignored, not an error.
+      { interest: "teleportation", weight: 1 },
+      { interest: "__proto__", weight: 1 },
+      { interest: "constructor", weight: -1 },
+      { interest: "drinks", weight: 0 },
+    ];
+    const page = await search({ areaId: "les", windowMinutes: 180, taste });
+    expect(page.request.taste).toEqual([{ interest: "books", weight: 1 }]);
+    const loved = page.items.find((i) => i.reasons.some((r) => r.code === "TASTE_MATCH"));
+    expect(loved, JSON.stringify(page.items.map((i) => i.name))).toBeDefined();
+    expect(["bookshop", "library"]).toContain(loved!.category.id);
+    expect(loved!.reasons[0]).toMatchObject({ code: "TASTE_MATCH", text: "matches your taste for books & talks", params: { interest: "books" } });
+    expect(loved!.copy.sentence).toMatch(/^Matches your taste for books & talks/);
+    // The run log keeps how many interests were weighed, never which, nor any candidate's match.
+    const run = (await db.query<{ context: Record<string, unknown>; results: { scores: Record<string, unknown> }[] }>(`select context, results from recommendation_runs where id = $1`, [page.requestId])).rows[0]!;
+    expect(run.context["tasteCount"]).toBe(1);
+    expect(JSON.stringify(run.context)).not.toMatch(/books|taste"/);
+    expect(run.results.every((r) => !("taste" in r.scores))).toBe(true);
+    // A search stored before 1.8 had no taste.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'taste' where run_id = $1`, [page.requestId]);
+    expect((await search({ cursor: page.page.nextCursor! } as unknown as RecommendationRequest)).request.taste).toEqual([]);
+  });
+
+  it("never applies a like of drinking or nightlife for a party with a minor; a skip still applies", async () => {
+    now = SAT_EVENING;
+    const taste = [
+      { interest: "drinks", weight: 1 },
+      { interest: "nightlife", weight: 0.8 },
+      { interest: "books", weight: 0.5 },
+    ];
+    for (const party of [{ company: "family" }, { youngestAge: 15 }, { company: "friends", youngestAge: 10 }] as const) {
+      const page = await search({ areaId: "les", windowMinutes: 180, taste, ...party });
+      const label = JSON.stringify(party);
+      expect(page.request.taste, label).toEqual([{ interest: "books", weight: 0.5 }]);
+      expect(page.items.filter((i) => i.category.id === "bar" || i.category.id === "nightclub").map((i) => i.name), label).toEqual([]);
+      for (const i of page.items) expect(i.reasons.filter((r) => r.code === "TASTE_MATCH").map((r) => r.params?.["interest"]), label).not.toContain("drinks");
+    }
+    // A skip still applies to a family, and an adult party keeps every like.
+    const skip = [{ interest: "drinks", weight: -1 }];
+    expect((await search({ areaId: "les", windowMinutes: 180, company: "family", taste: skip })).request.taste).toEqual(skip);
+    expect((await search({ areaId: "les", windowMinutes: 180, company: "friends", youngestAge: 21, taste })).request.taste).toEqual(taste);
   });
 
   it("finds a diet or a must-have: only places whose record says so, each card listing them", async () => {
@@ -566,6 +619,10 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
       [{ areaId: "les", windowMinutes: 120, diets: ["vegan", "paleo"] }, "diets.1"],
       [{ areaId: "les", windowMinutes: 120, diets: ["constructor"] }, "diets.0"],
       [{ areaId: "les", windowMinutes: 120, features: ["jukebox"] }, "features.0"],
+      [{ areaId: "les", windowMinutes: 120, taste: [{ interest: "art", weight: 1 }, { interest: "art", weight: -1 }] }, "taste.1.interest"],
+      [{ areaId: "les", windowMinutes: 120, taste: [{ interest: "art", weight: 2 }] }, "taste.0.weight"],
+      [{ areaId: "les", windowMinutes: 120, taste: [{ interest: "art", weight: 1, extra: true }] }, "taste.0"],
+      [{ areaId: "les", windowMinutes: 120, taste: [{ interest: "x".repeat(41), weight: 1 }] }, "taste.0.interest"],
       [{ areaId: "les", windowMinutes: 120, features: ["wifi", "wifi", "wifi", "wifi"] }, "features"],
       [{ areaId: "les", windowMinutes: 120, cuisines: ["thai", "pizza", "sushi", "ramen", "korean", "indian"] }, "cuisines"],
       [{ areaId: "les", windowMinutes: 120, budget: { kind: "max", maxCents: 2500, currency: "EUR" } }, "budget.currency"],
@@ -668,3 +725,32 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(ApiError.parse(await res.json()).error).toMatchObject({ code: "UNAVAILABLE", retryable: true });
   });
 });
+
+describe.skipIf(!available)("pop-ups from the founder's list", () => {
+  it("shows a pop-up at a place of its own as a happening, ranked by taste, and never its site alone", async () => {
+    // Monday 6:30pm: no other test plans for then.
+    now = new Date("2026-10-05T22:30:00Z");
+    const s = await ingestEvents(
+      db,
+      { source: "founder", events: [{ id: "api-fireworks", title: "Fireworks over the East River", start: "2026-10-05T19:30:00-04:00", end: "2026-10-05T20:00:00-04:00", kinds: ["festivals"], admission: "walk_in", price: { free: true }, place: { name: "East River Esplanade at Grand St", lat: 40.7135, lon: -73.9775 }, evidence: "test fixture" }] },
+      { areaSlug: "les", now },
+    );
+    expect(s.rejected).toEqual([]);
+    const page = await search({ areaId: "les", windowMinutes: 120, taste: [{ interest: "festivals", weight: 1 }] });
+    const pop = page.items.find((i) => i.name === "Fireworks over the East River");
+    expect(pop, JSON.stringify(page.items.map((i) => i.name))).toMatchObject({ kind: "event", placeName: "East River Esplanade at Grand St", category: { id: "event_site", label: "Happening" }, price: { kind: "free" } });
+    expect(pop!.reasons[0]).toMatchObject({ code: "TASTE_MATCH", text: "matches your taste for festivals & fairs" });
+    // Its place has details like any other.
+    expect((await call("GET", `/v1/places/${pop!.placeId}`)).status).toBe(200);
+    // A pop-up's site is no kind of place to ask for.
+    const ask = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 120, categories: ["event_site"] });
+    expect(ask.status).toBe(400);
+    // After it, the site is nothing: never an option of its own.
+    now = new Date("2026-10-06T01:00:00Z");
+    const ev = OpsRunDetail.parse((await call("POST", "/ops/v1/evaluate", { areaId: "les", windowMinutes: 120 }, { authorization: `Bearer ${TOKEN}` })).json);
+    const site = ev.results.filter((r) => r.placeId === pop!.placeId);
+    expect(site.map((r) => [r.kind, r.class, r.excludedBy])).toEqual([["venue", "ineligible", "NO_PROGRAMME"]]);
+    now = SAT_EVENING;
+  });
+});
+
