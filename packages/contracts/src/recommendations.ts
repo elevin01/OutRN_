@@ -107,7 +107,7 @@ export const ResolvedRequest = z.object({
   backBy: IsoDateTime.nullable(),
   /** The request's `visitStyle`, or "dine_in". */
   visitStyle: z.enum(["dine_in", "takeout"]),
-  /** The taste applied: the request's weights for offered interests, without zeros. */
+  /** The taste applied: the request's weights for offered interests, without zeros, and without a like of drinks or nightlife when a minor is in the party. */
   taste: z.array(TasteWeight),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;

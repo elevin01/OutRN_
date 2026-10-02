@@ -27,13 +27,13 @@ export const ORDER_MINUTES = 15;
  * Youngest person in the party: a number when known, "minor" when company is family and no age was
  * given (a child of unknown age), undefined when there is no reason to assume a minor.
  */
-export function partyYoungest(ctx: RequestContext): number | "minor" | undefined {
+export function partyYoungest(ctx: Pick<RequestContext, "youngestAge" | "company">): number | "minor" | undefined {
   if (typeof ctx.youngestAge === "number") return ctx.youngestAge;
   return ctx.company === "family" ? "minor" : undefined;
 }
 
 /** Whether anyone under 18 is going: a family of unknown ages, or a youngest age under 18, whatever the company. */
-export function minorInParty(ctx: RequestContext): boolean {
+export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company">): boolean {
   const youngest = partyYoungest(ctx);
   return youngest === "minor" || (typeof youngest === "number" && youngest < 18);
 }

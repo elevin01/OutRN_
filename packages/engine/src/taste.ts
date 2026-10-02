@@ -1,4 +1,5 @@
 import { interestsOf, isInterest, type Interest, type InterestStrengths } from "@outrn/core";
+import { minorInParty } from "./feasibility.js";
 import type { Candidate, Mood, RequestContext } from "./types.js";
 
 /**
@@ -31,6 +32,13 @@ export const TASTE = {
   merit: { taste: 0.4, appeal: 0.3, fit: 0.2, novelty: 0.1 },
 } as const;
 
+/**
+ * Drinking and going out at night. With a minor in the party, a like of these is not applied (a skip
+ * still is): a taste never pushes a bar, or keeps one on the first page, for a party with a child, as
+ * HAPPY_HOUR is never offered to one. The place-level rule is in score.ts.
+ */
+export const ADULT_INTERESTS: ReadonlySet<Interest> = new Set<Interest>(["drinks", "nightlife"]);
+
 interface Weight {
   /** What the search ranks by: the person's weight, raised to the mood's where the mood likes it more. */
   weight: number;
@@ -39,10 +47,12 @@ interface Weight {
 }
 
 /** The weights a search ranks by, or null when it has neither a taste nor a mood. */
-export function tasteWeights(ctx: Pick<RequestContext, "taste" | "mood">): ReadonlyMap<Interest, Weight> | null {
+export function tasteWeights(ctx: Pick<RequestContext, "taste" | "mood" | "company" | "youngestAge">): ReadonlyMap<Interest, Weight> | null {
   const out = new Map<Interest, Weight>();
+  const minor = minorInParty(ctx);
   for (const [interest, weight] of ctx.taste ?? []) {
     if (weight === 0 || !Number.isFinite(weight)) continue;
+    if (minor && weight > 0 && ADULT_INTERESTS.has(interest)) continue;
     const w = Math.max(-1, Math.min(1, weight));
     out.set(interest, { weight: w, own: w });
   }
