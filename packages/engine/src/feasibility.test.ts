@@ -1817,4 +1817,20 @@ describe("pop-ups: an event site is nothing but its events", () => {
     // Kinds that are not interests say nothing.
     expect(one(show("Saturday on the Pier", ["__proto__", "constructor"]), ctx("2026-10-03 20:00", 180, { taste: music })).scores.taste).toBe(0.5);
   });
+
+  it("never lifts a drinking pop-up for a party with a minor, whether its kinds or its age limit say so", () => {
+    const loves = new Map([["drinks", 1], ["festivals", 1]]) as RequestContext["taste"];
+    const garden = show("Saturday on the Pier", ["drinks"]);
+    expect(one(garden, ctx("2026-10-03 20:00", 180, { taste: loves })).scores.taste).toBe(1);
+    const family = one(garden, ctx("2026-10-03 20:00", 180, { company: "family", taste: loves }));
+    expect(family.scores.taste).toBe(0.5);
+    expect(family.reasons).not.toContain("TASTE_MATCH");
+    // A festival estimated 21+ (a beer festival) is adult for them, whatever else they love it for.
+    const fest = show("Oktoberfest on the Pier", ["festivals"]);
+    fest.facts.age_limit = { value: { minAge: 21 }, confidence: 0.6, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    const kid = one(fest, ctx("2026-10-03 20:00", 180, { youngestAge: 12, taste: loves }));
+    expect(kid.scores.taste).toBe(0.5);
+    expect(kid.reasons).not.toContain("TASTE_MATCH");
+    expect(one(fest, ctx("2026-10-03 20:00", 180, { taste: loves })).scores.taste).toBe(1);
+  });
 });
