@@ -1,4 +1,4 @@
-import { ownValue, type WeeklyIntervals } from "@outrn/core";
+import { ownValue, type Interest, type WeeklyIntervals } from "@outrn/core";
 import { guardedFetch } from "./fetch.js";
 
 /**
@@ -19,8 +19,27 @@ export interface ExtractedFact {
   status: ExtractionStatus;
 }
 
+/** What schema.org says an event is, as interests: a MusicEvent is live music. Event, SocialEvent and the like say nothing. */
+export const EVENT_TYPE_INTERESTS: Readonly<Record<string, Interest>> = {
+  MusicEvent: "live_music",
+  ComedyEvent: "comedy",
+  TheaterEvent: "theatre",
+  DanceEvent: "theatre",
+  ScreeningEvent: "film",
+  VisualArtsEvent: "art",
+  ExhibitionEvent: "art",
+  LiteraryEvent: "books",
+  EducationEvent: "books",
+  Festival: "festivals",
+  FoodEvent: "food",
+  SportsEvent: "sports",
+  SaleEvent: "markets",
+};
+
 export interface ExtractedEvent {
   title: string;
+  /** What it is, from its schema.org types (empty when they say nothing). */
+  kinds: Interest[];
   start: Date;
   end: Date | null;
   status: "scheduled" | "cancelled" | "sold_out";
@@ -205,6 +224,7 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       const soldOut = Array.isArray(offers) ? offers.some((o) => typeof (o as Record<string, unknown>)?.["availability"] === "string" && String((o as Record<string, unknown>)["availability"]).endsWith("SoldOut")) : offers && typeof offers === "object" && String((offers as Record<string, unknown>)["availability"] ?? "").endsWith("SoldOut");
       events.push({
         title: typeof n["name"] === "string" ? n["name"] : "(untitled event)",
+        kinds: [...new Set(ts.map((t) => ownValue(EVENT_TYPE_INTERESTS, t)).filter((k): k is Interest => k !== undefined))].slice(0, 4),
         start,
         end: end && !Number.isNaN(end.getTime()) ? end : null,
         status: soldOut ? "sold_out" : status,

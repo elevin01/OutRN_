@@ -119,8 +119,23 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - `outrn recommend --like live_music,art:0.5 --skip drinks` runs a search with a taste.
 - **Part 2: the apps.** Quick picks of interests on first open, then Go, Save and Dismiss sharpen the
   taste on the device; it goes with every search. Nothing about the person is kept on the server.
-- **Part 3: pop-ups without a venue.** Fireworks over the river, a street fair, a parade: events with
-  their own place and kind, from any source, mapped to interests.
+- **Part 3 (this PR): pop-ups without a venue.**
+  - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
+    held at an `event_site` venue, shown only through its events and never on its own. It is never
+    merged into a place nearby or made its child, and a site of the same name within 75 m is reused.
+  - **What an event is** (`event_kind`, up to 4 interests) comes from its source: schema.org types on
+    venues' own sites (a `MusicEvent` is live music), or an events file's `kinds`. Taste reads it
+    alongside the title.
+  - **`outrn ingest events --from-file`** loads any allowed source's events. The founder's own list
+    works today; every feed in part 4 converts to the same shape (see `docs/events.md`). Each event is
+    checked first: sensible times, a place inside the area, kinds that are interests, an https link,
+    no control characters. One that fails is left out with the reason, the rest are written.
+  - **Joining late:** a walk-in pop-up at its own site can be joined after it starts (a band on the
+    lawn), and the plan says so. A ticketed one still can't.
+  - **Age:** an age the event states, or "21+" in its title, is published. A drink event at a site of
+    its own with no age stated is probably 21+ (an estimate, so Check first for families).
+  - On the LES fixture: "Jazz on the Lawn" at 6pm is the first option at 5:45pm for someone who likes
+    live music.
 - **Part 4: every free event source** (needs network access and two free keys; see the decisions
   below): NYC Parks events and NYC Open Data (concerts, outdoor movies, fireworks, street fairs),
   library calendars (NYPL, Westchester), venues' own sites (the first-party job), Ticketmaster and

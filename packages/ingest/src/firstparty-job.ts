@@ -80,15 +80,24 @@ export async function runFirstParty(db: Db, opts: { limit?: number; force?: bool
         await withTx(db, async (tx) => {
           const w = await writeFacts(tx, factsFromExtraction(x, site.venue_id).map((f) => ({ ...f, ingestionRunId: runId })));
           s.facts += w.inserted;
+          const kinded: string[] = [];
           for (const ev of x.events) {
-            const r = await tx.query(
+            const r = await tx.query<{ id: string }>(
               `insert into occurrences (venue_id, title, start_at, end_at, status, recurrence_key)
                values ($1, $2, $3, $4, $5, $6)
-               on conflict (recurrence_key) where recurrence_key is not null do update set end_at = excluded.end_at, status = excluded.status`,
+               on conflict (recurrence_key) where recurrence_key is not null do update set end_at = excluded.end_at, status = excluded.status
+               returning id`,
               [site.venue_id, ev.title, ev.start, ev.end, ev.status, `${new URL(x.url).hostname}:${ev.title}:${ev.start.toISOString()}`],
             );
             s.occurrences += r.rowCount ?? 0;
+            // What the venue's own page says the event is (a MusicEvent is live music): it ranks for taste.
+            const id = r.rows[0]?.id;
+            if (id && ev.kinds.length) {
+              await writeFacts(tx, [{ subjectKind: "occurrence", subjectId: id, attribute: "event_kind", value: { interests: ev.kinds }, evidenceClass: "published", sourceId: "firstparty", evidence: `${x.url} :: ${ev.evidence}`.slice(0, 1200), fetchedAt: x.fetchedAt, sourceUpdatedAt: null, confidence: 0.85, lineageGroup: `firstparty:${new URL(x.url).hostname}` }]);
+              kinded.push(id);
+            }
           }
+          if (kinded.length) await materializeSubjects(tx, "occurrence", kinded);
           await materializeSubjects(tx, "venue", [site.venue_id]);
         });
         s.ok++;

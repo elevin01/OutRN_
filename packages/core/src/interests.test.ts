@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "./categories.js";
-import { INTERESTS, interestsOf, interestsOfTitle, isInterest } from "./interests.js";
+import { INTERESTS, interestsOf, interestsOfTitle, isDrinkTitle, isInterest } from "./interests.js";
 
 describe("interests", () => {
   it("are the table's own keys only", () => {
@@ -44,6 +44,19 @@ describe("interests", () => {
     }
     expect(interestsOfTitle("Stand-up at Eight")).toEqual({ comedy: 1 });
     expect(interestsOfTitle("Open mic")).toEqual({ comedy: 0.5, live_music: 0.5 });
+  });
+
+  it("read drink as the outing, and a food tasting as food", () => {
+    for (const t of ["Wine Tasting", "Happy Hour", "Craft Brewery Night", "Beer Garden", "Pub Crawl", "Whiskey Flight", "Tasting Night"]) {
+      expect(interestsOfTitle(t).drinks, t).toBe(1);
+      expect(isDrinkTitle(t), t).toBe(true);
+    }
+    for (const t of ["Cheese Tasting", "Chocolate tasting", "Ice Cream Tasting", "Coffee Tasting", "Jazz Night", "Barbershop Quartet"]) {
+      expect(interestsOfTitle(t).drinks ?? 0, t).toBe(0);
+      expect(isDrinkTitle(t), t).toBe(false);
+    }
+    expect(interestsOfTitle("Cheese Tasting")).toEqual({ food: 1 });
+    expect(interestsOfTitle("Coffee Tasting")).toEqual({ cafes: 1 });
   });
 
   it("read a runaway title quickly, and only its start", () => {
