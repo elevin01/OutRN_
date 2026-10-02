@@ -4,8 +4,8 @@
   "createdAt": "2026-10-03T22:30:00.000Z",
   "candidateCount": 80,
   "durationMs": 42,
-  "engineVersion": "0.6.0",
-  "weightsVersion": "2026-09-29.4",
+  "engineVersion": "0.7.0",
+  "weightsVersion": "2026-10-02.1",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
     "mode": "walk",
@@ -17,6 +17,7 @@
     "sunset": "2026-10-03T22:36:53.632Z",
     "timezone": "America/New_York",
     "seenCount": 0,
+    "tasteCount": 0,
     "windowMinutes": 180,
     "dismissedCount": 0
   },
@@ -43,7 +44,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -63,7 +65,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -85,7 +88,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -107,7 +111,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -127,7 +132,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -149,7 +155,8 @@
         "evidence": 0.523,
         "fit": 0.688,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -172,7 +179,8 @@
         "evidence": 0.542,
         "fit": 0.74,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -195,7 +203,8 @@
         "evidence": 0.538,
         "fit": 0.586,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -217,7 +226,8 @@
         "evidence": 0.435,
         "fit": 0.675,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -240,7 +250,8 @@
         "evidence": 0.444,
         "fit": 0.549,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -262,7 +273,8 @@
         "evidence": 0.441,
         "fit": 0.561,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -287,7 +299,8 @@
         "evidence": 0.565,
         "fit": 0.586,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -309,7 +322,8 @@
         "evidence": 0.531,
         "fit": 0.549,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -333,7 +347,8 @@
         "evidence": 0.26,
         "fit": 0.499,
         "appeal": 0.317,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -355,7 +370,8 @@
         "evidence": 0.534,
         "fit": 0.588,
         "appeal": 0.35,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -375,7 +391,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -395,7 +412,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -419,7 +437,8 @@
         "evidence": 0.26,
         "fit": 0.575,
         "appeal": 0.283,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -442,7 +461,8 @@
         "evidence": 0.555,
         "fit": 0.578,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -465,7 +485,8 @@
         "evidence": 0.535,
         "fit": 0.515,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -488,7 +509,8 @@
         "evidence": 0.516,
         "fit": 0.629,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -511,7 +533,8 @@
         "evidence": 0.536,
         "fit": 0.642,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -534,7 +557,8 @@
         "evidence": 0.462,
         "fit": 0.515,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -559,7 +583,8 @@
         "evidence": 0.25,
         "fit": 0.634,
         "appeal": 0.533,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -581,7 +606,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -603,7 +629,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -625,7 +652,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -645,7 +673,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -665,7 +694,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -690,7 +720,8 @@
         "evidence": 0.19,
         "fit": 0.577,
         "appeal": 0.567,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -713,7 +744,8 @@
         "evidence": 0.525,
         "fit": 0.749,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": true
     },
@@ -739,7 +771,8 @@
         "evidence": 0.26,
         "fit": 0.578,
         "appeal": 0.7,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -763,7 +796,8 @@
         "evidence": 0.513,
         "fit": 0.668,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -783,7 +817,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -809,7 +844,8 @@
         "evidence": 0.215,
         "fit": 0.603,
         "appeal": 0.433,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -835,7 +871,8 @@
         "evidence": 0.56,
         "fit": 0.722,
         "appeal": 0.467,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -862,7 +899,8 @@
         "evidence": 0.26,
         "fit": 0.708,
         "appeal": 0.467,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -887,7 +925,8 @@
         "evidence": 0.462,
         "fit": 0.655,
         "appeal": 0.5,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -907,7 +946,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -932,7 +972,8 @@
         "evidence": 0.587,
         "fit": 0.624,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -957,7 +998,8 @@
         "evidence": 0.564,
         "fit": 0.649,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -980,7 +1022,8 @@
         "evidence": 0.512,
         "fit": 0.611,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1005,7 +1048,8 @@
         "evidence": 0.245,
         "fit": 0.649,
         "appeal": 0.55,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1028,7 +1072,8 @@
         "evidence": 0.535,
         "fit": 0.549,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1050,7 +1095,8 @@
         "evidence": 0.51,
         "fit": 0.675,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1073,7 +1119,8 @@
         "evidence": 0.528,
         "fit": 0.688,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1097,7 +1144,8 @@
         "evidence": 0.24,
         "fit": 0.624,
         "appeal": 0.55,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1122,7 +1170,8 @@
         "evidence": 0.564,
         "fit": 0.599,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1145,7 +1194,8 @@
         "evidence": 0.519,
         "fit": 0.675,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1169,7 +1219,8 @@
         "evidence": 0.195,
         "fit": 0.573,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1191,7 +1242,8 @@
         "evidence": 0.568,
         "fit": 0.68,
         "appeal": 0.35,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1211,7 +1263,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1231,7 +1284,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1251,7 +1305,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1274,7 +1329,8 @@
         "evidence": 0.52,
         "fit": 0.694,
         "appeal": 0.317,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1296,7 +1352,8 @@
         "evidence": 0.534,
         "fit": 0.537,
         "appeal": 0.35,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1316,7 +1373,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1339,7 +1397,8 @@
         "evidence": 0.565,
         "fit": 0.603,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1362,7 +1421,8 @@
         "evidence": 0.538,
         "fit": 0.54,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1385,7 +1445,8 @@
         "evidence": 0.561,
         "fit": 0.553,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1408,7 +1469,8 @@
         "evidence": 0.456,
         "fit": 0.54,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1431,7 +1493,8 @@
         "evidence": 0.568,
         "fit": 0.603,
         "appeal": 0.65,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1454,7 +1517,8 @@
         "evidence": 0.541,
         "fit": 0.553,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1476,7 +1540,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1496,7 +1561,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1520,7 +1586,8 @@
         "evidence": 0.225,
         "fit": 0.403,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1540,7 +1607,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1564,7 +1632,8 @@
         "evidence": 0.46,
         "fit": 0.597,
         "appeal": 0.6,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1584,7 +1653,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1611,7 +1681,8 @@
         "evidence": 0.538,
         "fit": 0.735,
         "appeal": 0.567,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1635,7 +1706,8 @@
         "evidence": 0.534,
         "fit": 0.519,
         "appeal": 0.6,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1659,7 +1731,8 @@
         "evidence": 0.26,
         "fit": 0.52,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1679,7 +1752,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1699,7 +1773,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1719,7 +1794,8 @@
         "evidence": 0,
         "fit": 0,
         "appeal": 0,
-        "novelty": 0
+        "novelty": 0,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1743,7 +1819,8 @@
         "evidence": 0.345,
         "fit": 0.586,
         "appeal": 0.583,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1767,7 +1844,8 @@
         "evidence": 0.71,
         "fit": 0.655,
         "appeal": 0.717,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": true
     },
@@ -1790,7 +1868,8 @@
         "evidence": 0.575,
         "fit": 0.616,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     },
@@ -1815,7 +1894,8 @@
         "evidence": 0.537,
         "fit": 0.781,
         "appeal": 0.617,
-        "novelty": 1
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": true
     },
@@ -1839,8 +1919,9 @@
       "scores": {
         "evidence": 0.72,
         "fit": 0.633,
-        "appeal": 0.683,
-        "novelty": 1
+        "appeal": 0.833,
+        "novelty": 1,
+        "taste": null
       },
       "shortlisted": false
     }

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.7.0",
+  "contract": "1.8.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -312,6 +312,26 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "interests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -324,7 +344,8 @@
               "categories",
               "cuisines",
               "diets",
-              "features"
+              "features",
+              "interests"
             ],
             "additionalProperties": false
           },
@@ -391,6 +412,11 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "maxTaste": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
               "pageSize": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -404,6 +430,7 @@
               "maxCuisines",
               "maxDiets",
               "maxFeatures",
+              "maxTaste",
               "pageSize"
             ],
             "additionalProperties": false
@@ -592,6 +619,30 @@
                   "dine_in",
                   "takeout"
                 ]
+              },
+              "taste": {
+                "maxItems": 32,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "interest": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": -1,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "interest",
+                    "weight"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -839,6 +890,29 @@
                   "dine_in",
                   "takeout"
                 ]
+              },
+              "taste": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "interest": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": -1,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "interest",
+                    "weight"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -859,7 +933,8 @@
               "origin",
               "originIsDefault",
               "backBy",
-              "visitStyle"
+              "visitStyle",
+              "taste"
             ],
             "additionalProperties": false
           },
@@ -2876,6 +2951,30 @@
               "dine_in",
               "takeout"
             ]
+          },
+          "taste": {
+            "maxItems": 32,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "interest": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "weight": {
+                  "type": "number",
+                  "minimum": -1,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "interest",
+                "weight"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -3068,13 +3167,24 @@
                     },
                     "novelty": {
                       "type": "number"
+                    },
+                    "taste": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
                   "required": [
                     "evidence",
                     "fit",
                     "appeal",
-                    "novelty"
+                    "novelty",
+                    "taste"
                   ],
                   "additionalProperties": false
                 },
@@ -3379,13 +3489,24 @@
                     },
                     "novelty": {
                       "type": "number"
+                    },
+                    "taste": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
                   "required": [
                     "evidence",
                     "fit",
                     "appeal",
-                    "novelty"
+                    "novelty",
+                    "taste"
                   ],
                   "additionalProperties": false
                 },
@@ -3636,6 +3757,30 @@
                   "dine_in",
                   "takeout"
                 ]
+              },
+              "taste": {
+                "maxItems": 32,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "interest": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": -1,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "interest",
+                    "weight"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
