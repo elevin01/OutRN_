@@ -4,6 +4,7 @@ import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
 import { dayPart, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
+import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 
 /**
@@ -125,6 +126,19 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
     appeal += OFFERS.appeal;
     extra.push("OUTDOOR_SEATING");
   }
+  // What it has for who is going: an accessible restroom for a wheelchair user, high chairs for a
+  // toddler (one lift, however many); no restroom counts against it with young children.
+  const restroom = restroomOf(c);
+  if (ctx.requireWheelchair && restroom.wheelchair === "yes") {
+    appeal += AMENITIES.appeal;
+    extra.push("ACCESSIBLE_RESTROOM");
+  }
+  const kids = kidFacilitiesFor(c, ctx);
+  if (kids.length) {
+    appeal += AMENITIES.appeal;
+    extra.push(...kids.map((k) => KID_FACILITY_REASON[k.facility]));
+  }
+  if (restroom.available === "no" && youngestUnder(ctx, AMENITIES.restroomNeededUnder)) appeal -= AMENITIES.appeal;
   if (outdoor) appeal += (rainy ? WEATHER_APPEAL.rainOutdoor : 0) + (cold ? WEATHER_APPEAL.coldOutdoor : 0);
   else if (rainy) appeal += WEATHER_APPEAL.rainIndoor;
   appeal += c.boost;

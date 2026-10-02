@@ -1,5 +1,5 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
@@ -391,6 +391,10 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
     if (w.value.value === "no") return bail("NOT_ACCESSIBLE");
     if (w.value.value === "limited") unresolved.push("ACCESS_LIMITED");
     if (w.value.value === "unknown") return bail("ACCESS_UNKNOWN");
+    // Step-free in, but its restroom may not be: worth knowing before going, never a reason to exclude.
+    const restroom = fact<Restroom>(c, "restroom")?.value.wheelchair;
+    if (restroom === "no") unresolved.push("RESTROOM_NOT_ACCESSIBLE");
+    else if (restroom === "limited") unresolved.push("RESTROOM_ACCESS_LIMITED");
   }
 
   // Admission

@@ -188,7 +188,7 @@ changelog.
   - Neither ever excludes a place or changes its class: an offer breaks a near-tie.
   - Golden: three places move up for their happy hour. Ten Bells is #2 on Saturday at 6:30pm.
     Superbueno (Tuesday) and Botantica Bar (Saturday) open straight into theirs at 4pm.
-- **Part 5 (this PR): diets and must-haves in the search** (contract 1.7).
+- **Part 5: diets and must-haves in the search** (contract 1.7).
   - **Diets** from OSM `diet:*` (vegetarian 66, vegan 58, gluten-free 18, kosher 10 and halal 9 places
     on the LES capture), or, only when it has no `diet:*` tags at all, the name ("Jisu Vegetarian",
     "East Side Glatt"), as an estimate. A place known only by its name is Check first
@@ -203,6 +203,41 @@ changelog.
     "Internet: Wi-Fi".
   - Golden scenarios added: a vegetarian Sunday lunch (74 options) and a Tuesday morning with wifi
     (37: cafés, restaurants, two public libraries).
+- **Part 6: restrooms and what a place has for children.** No contract change: reason
+  and caveat codes are open-ended.
+  - **Facts** from OSM, where mappers tag them:
+    - `restroom` from `toilets`, `toilets:access` and `toilets:wheelchair` (`designated` is
+      accessible). On the LES capture, 95 places say whether they have one, and 37 say whether it
+      is step-free (20 yes, 17 no).
+    - `kid_facilities` from `highchair`, `changing_table` and `kids_area`, as OSM documents them
+      (only a handful so far). "Limited" is kept, not dropped: somewhere to change a diaper that
+      isn't a table, a limited kids' area. `kids_area=designated` and `kids_area:indoor|outdoor=yes`
+      count; the documented mistake `kids_area=indoor|outdoor` counts only when nothing else says.
+  - **Who it matters to decides what the card says:**
+    - **A wheelchair user** (`features: ["wheelchair"]`): an inaccessible restroom is Check first
+      ("its restroom isn't wheelchair accessible", `RESTROOM_NOT_ACCESSIBLE`; limited access is
+      `RESTROOM_ACCESS_LIMITED`), never an exclusion. An accessible one is a reason ("an accessible
+      restroom") and lifts appeal 0.05.
+    - **Children:** high chairs when the youngest is under 5, a changing table under 3, a kids' area
+      under 12, all of them for a family whose ages we don't know (`HIGH_CHAIRS`, `CHANGING_TABLE`,
+      `KIDS_AREA`, param `level`). A limited one reads as what it is ("somewhere to change a
+      diaper", "a limited kids' area"). One lift of 0.05 however many. No restroom sinks a place 0.05 when the youngest
+      is under 10, with nothing on the card: it is on the place's details.
+  - Place details read "Restroom: Yes, not wheelchair accessible" and "For kids: High chairs; no
+    changing table".
+  - Golden scenarios added: a step-free Friday dinner (Ms. Yoo moves from #3 to #1 for its accessible
+    restroom) and a Sunday lunch with a 2-year-old (Van Leeuwen, with no restroom, moves from #2 to #7).
+  - **Next:** public restrooms in parks. OSM maps them as their own points (`amenity=toilets`),
+    which the captures don't fetch yet; a park with one nearby would be worth saying to a family.
+- **Part 7 (this PR): a community centre's time of day.** A relevance audit (364 searches over both
+  captures, every day of the week, 8am to 1am) found Tuckahoe Community Center (no hours, no site)
+  at #2 to #5 in Bronxville every night at 10pm and 1am. `community` had no time-of-day rule, so it
+  never took the off-hours sink a gallery or patisserie takes.
+  - `community` now has one: prime 9am to 9pm, off otherwise. Ranking only, like every day-part
+    rule: `amenity=community_centre` also covers drop-in centres (social support, youth and family,
+    public information), so published hours still decide whether one is open, and a centre with a
+    listed event keeps its own row. Tuckahoe now ranks #12 at 1am and about #40 at 10pm.
+  - Golden: unchanged.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

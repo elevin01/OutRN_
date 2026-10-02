@@ -63,6 +63,19 @@ describe.skipIf(!available)("loadCandidates", () => {
     expect(rows).toContain(`venue:${bar}`);
   });
 
+  it("keeps a community centre's own row when one of its events is loaded: it is also a place to drop in", async () => {
+    const origin = { lat: 40.941, lon: -73.835 };
+    const centre = await venue("Mixed-use Centre", "community", 40.9416, -73.8356);
+    const now = new Date("2026-09-27T16:00:00Z");
+    await db.query(
+      `insert into occurrences (venue_id, title, start_at, end_at, status) values ($1, 'Pottery class', '2026-09-27T17:00:00Z', '2026-09-27T18:30:00Z', 'scheduled')`,
+      [centre],
+    );
+    const rows = (await loadCandidates(db, origin, "drive", now, new Date(now.getTime() + 180 * 60_000))).map((c) => `${c.kind}:${c.venueId}`);
+    expect(rows).toContain(`occurrence:${centre}`);
+    expect(rows).toContain(`venue:${centre}`);
+  });
+
   it("carries the verification time of the winning value (a founder check), never a fetch time", async () => {
     const origin = { lat: 40.941, lon: -73.835 };
     const checked = await venue("Checked Tavern", "bar", 40.9413, -73.8353);

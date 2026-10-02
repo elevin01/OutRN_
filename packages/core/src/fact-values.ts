@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CATEGORIES } from "./categories.js";
+import { RESTROOM_AVAILABILITY, RESTROOM_WHEELCHAIR, type KidFacility, type Restroom } from "./amenities.js";
 import { DIET_LEVELS, type DIETS } from "./diets.js";
 import type { Attribute } from "./evidence.js";
 import { isPublicWebHost } from "./urls.js";
@@ -49,6 +50,8 @@ const price = z
   .refine((p) => p.free === true || p.unknown === true || p.min !== undefined || p.max !== undefined, "price needs free, unknown, or an amount");
 
 const dietLevel = z.enum(DIET_LEVELS).optional();
+const yesNo = z.enum(["yes", "no"]).optional();
+const yesLimitedNo = z.enum(["yes", "limited", "no"]).optional();
 
 const hours = z.union([
   z.object({ osm: z.string().trim().min(1).max(1000) }).strict(),
@@ -86,6 +89,15 @@ export const FACT_VALUE_SCHEMAS = {
     .object({ kind: z.enum(["lot", "street", "garage", "none", "unknown"]), cost: z.enum(["free", "paid", "unknown"]).optional(), note: z.string().max(300).optional() })
     .strict(),
   wheelchair: oneOf(["yes", "limited", "no", "unknown"]),
+  restroom: z
+    .object({ available: z.enum(RESTROOM_AVAILABILITY).optional(), wheelchair: z.enum(RESTROOM_WHEELCHAIR).optional() } satisfies Record<keyof Restroom, unknown>)
+    .strict()
+    .refine((r) => r.available !== undefined || r.wheelchair !== undefined, "restroom needs available or wheelchair")
+    .refine((r) => !(r.available === "no" && r.wheelchair !== undefined), "a place with no restroom has no restroom access to describe"),
+  kid_facilities: z
+    .object({ highchair: yesNo, changing_table: yesLimitedNo, kids_area: yesLimitedNo } satisfies Record<KidFacility, unknown>)
+    .strict()
+    .refine((k) => Object.keys(k).length > 0, "kid_facilities needs at least one facility"),
   subtype: z.object({ value: z.string().regex(/^[a-z0-9_]{2,40}$/, "subtype is a lowercase slug, e.g. miniature_golf") }).strict(),
   cuisine: z
     .object({ values: z.array(z.string().regex(/^[a-z0-9_]{2,40}$/, "a cuisine is a lowercase slug, e.g. italian")).min(1).max(8) })
