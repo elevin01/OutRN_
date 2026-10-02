@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { AreasResponse, RecommendationResponse } from "@outrn/contracts";
 import { ApiProblem } from "../components/ApiProblem";
+import { CategoryShortcuts } from "../components/CategoryShortcuts";
 import { PlaceCard } from "../components/PlaceCard";
 import { SearchForm } from "../components/SearchForm";
 import { api, ApiRequestError } from "../lib/api";
@@ -28,6 +29,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     failure = error;
   }
   const defaults = output && meta ? formFromResolved(output.request, meta) : Object.fromEntries(Object.entries(query).map(([key, value]) => [key, one(value)]));
+  // The shortcuts narrow (or widen) whatever search is on screen, or the default one.
+  const base = meta ? requestFromQuery(defaults, meta) : null;
 
   return (
     <>
@@ -48,6 +51,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <div><p className="eyebrow">Make a plan</p><h2 id="finder-title">What fits right now?</h2></div>
           <p>We check travel, hours, useful time, admission, and price before anything earns a card.</p>
         </div>
+        {meta && base && <CategoryShortcuts meta={meta} base={base} />}
         {meta && <SearchForm meta={meta} defaults={defaults} />}
       </section>
 

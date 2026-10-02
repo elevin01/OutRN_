@@ -3,6 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PlaceDetails, TravelMode } from "@outrn/contracts";
 import { ApiProblem } from "../../../components/ApiProblem";
+import { CategoryIcon } from "../../../components/CategoryIcon";
+import { PlacePhotos } from "../../../components/PlacePhotos";
+import { photosFor, representativeFor } from "../../../lib/categories";
 import { api, ApiRequestError } from "../../../lib/api";
 import { one, type Search } from "../../../lib/query";
 
@@ -35,9 +38,10 @@ export default async function PlacePage({ params, searchParams }: { params: Prom
   return (
     <section className="detail-shell">
       <Link className="back-link" href="/">← Back to the three</Link>
+      <PlacePhotos className="detail-photos" photos={photosFor(item.name, item.category, item.photos)} fallback={representativeFor(item.name, item.category)} />
       <div className="detail-hero">
         <div>
-          <p className="eyebrow">{item.category.label}</p>
+          <p className="eyebrow category-line"><CategoryIcon category={item.category.id} size={14} />{item.category.label}</p>
           <h1>{item.name}</h1>
           {item.address && <p className="detail-address">{item.address}</p>}
         </div>

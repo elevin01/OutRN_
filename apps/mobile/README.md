@@ -47,16 +47,20 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
   tab navigation but deliberately does not survive process restart. No location permission is used.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 
-The contract has no image field. Production uses original decorative category artwork. Demo mode
-uses bundled mood photography with an explicit “not the venue” label; see
-[photo sources](assets/photos/README.md). Accurate venue photography needs a separate data change.
+Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
+their credit linked to the source. Without any, representative photos of the kind of place, labelled
+"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)).
+When none of its own loads, the representative ones, labelled the same way. Without those, no photo:
+never the category artwork in place of one. Category
+shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
+culture, Movies & shows, Games & play, Books) narrow the search in one tap.
 DM Sans is bundled
 under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices
 
 Account sync, submission of venue corrections, taste-feedback services, persistent outings,
-device-location entry, accurate venue photography, community feeds, live conditions and a geographic map view need separate PRs.
+device-location entry, representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
 The mobile search currently starts from the area center. Contract-supplied origins are labeled correctly; the app does not request device location.
 Admission checks and booking happen with the venue; OutRN does not make a reservation.
@@ -69,7 +73,7 @@ corepack pnpm --filter @outrn/mobile lint
 corepack pnpm test
 corepack pnpm check:boundaries
 EXPO_PUBLIC_API_URL=https://YOUR_API_HOST EXPO_PUBLIC_DEMO_MODE=false corepack pnpm mobile:export
-# Exports clear the Metro cache and verify that demo photos do not ship in production.
+# Exports clear the Metro cache and check the build: the labelled representative photos ship, the demo text doesn't.
 ```
 
 CI checks mobile lint, typecheck, and all-platform export. Native device QA, VoiceOver/TalkBack,
