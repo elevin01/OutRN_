@@ -28,7 +28,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     if (error.code === "CURSOR_EXPIRED" && error.detail?.restart && meta) redirect(hrefForRequest(error.detail.restart, meta));
     failure = error;
   }
-  const defaults = output && meta ? formFromResolved(output.request, meta) : Object.fromEntries(Object.entries(query).map(([key, value]) => [key, one(value)]));
+  // Repeated parameters (the diet and must-have checkboxes) keep every value, comma-joined.
+  const defaults = output && meta ? formFromResolved(output.request, meta) : Object.fromEntries(Object.entries(query).map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : value]));
   // The shortcuts narrow (or widen) whatever search is on screen, or the default one.
   const base = meta ? requestFromQuery(defaults, meta) : null;
 
