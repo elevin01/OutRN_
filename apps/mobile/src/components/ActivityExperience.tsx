@@ -228,6 +228,8 @@ export function ActivityExperience({
       <ScrollView
         ref={scroll}
         testID="activity-stream"
+        directionalLockEnabled
+        nestedScrollEnabled
         showsVerticalScrollIndicator={false}
         onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > 180)}
         scrollEventThrottle={32}
@@ -245,6 +247,7 @@ export function ActivityExperience({
           }}
         >
           <ActivityProfile
+            key={placeId}
             item={expired ? undefined : item}
             place={place}
             name={name}
