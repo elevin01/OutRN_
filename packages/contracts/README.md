@@ -33,6 +33,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
     - Variety is among the kinds of thing the person likes first.
     - When the first page has nothing the person loves (a like of `0.7` or more), the best such option takes its last slot. It keeps its own status: a Check first option stays Check first, with its caveats.
     - A like does not lift a poor idea for the hour (a park after dark).
+    - With a minor in the party (`company: "family"` without an adult `youngestAge`, or a `youngestAge` under 18), a like of `drinks` or `nightlife` is not applied (a skip is), and a bar, a nightclub or a place with an 18+ limit is never lifted by a taste, claimed as one, or kept on the first page.
     - An id that is not offered is ignored, not an error, so a stored profile outlives a change to the list. A weight of `0` is no view. An id may appear once (`VALIDATION_FAILED` on `taste.<i>.interest`).
   - `ResolvedRequest.taste` lists the taste applied (`[]` by default).
   - The reason `TASTE_MATCH` ("matches your taste for live music", `params.interest`) leads the card's sentence when an option is one of the person's own likes. A mood alone never claims it.

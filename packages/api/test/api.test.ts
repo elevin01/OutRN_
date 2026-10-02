@@ -115,6 +115,26 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect((await search({ cursor: page.page.nextCursor! } as unknown as RecommendationRequest)).request.taste).toEqual([]);
   });
 
+  it("never applies a like of drinking or nightlife for a party with a minor; a skip still applies", async () => {
+    now = SAT_EVENING;
+    const taste = [
+      { interest: "drinks", weight: 1 },
+      { interest: "nightlife", weight: 0.8 },
+      { interest: "books", weight: 0.5 },
+    ];
+    for (const party of [{ company: "family" }, { youngestAge: 15 }, { company: "friends", youngestAge: 10 }] as const) {
+      const page = await search({ areaId: "les", windowMinutes: 180, taste, ...party });
+      const label = JSON.stringify(party);
+      expect(page.request.taste, label).toEqual([{ interest: "books", weight: 0.5 }]);
+      expect(page.items.filter((i) => i.category.id === "bar" || i.category.id === "nightclub").map((i) => i.name), label).toEqual([]);
+      for (const i of page.items) expect(i.reasons.filter((r) => r.code === "TASTE_MATCH").map((r) => r.params?.["interest"]), label).not.toContain("drinks");
+    }
+    // A skip still applies to a family, and an adult party keeps every like.
+    const skip = [{ interest: "drinks", weight: -1 }];
+    expect((await search({ areaId: "les", windowMinutes: 180, company: "family", taste: skip })).request.taste).toEqual(skip);
+    expect((await search({ areaId: "les", windowMinutes: 180, company: "friends", youngestAge: 21, taste })).request.taste).toEqual(taste);
+  });
+
   it("finds a diet or a must-have: only places whose record says so, each card listing them", async () => {
     now = SAT_EVENING;
     // A kitchen within reach whose record says vegan, as a mapper would tag it.

@@ -1824,6 +1824,84 @@
    "relaxations": []
   },
   {
+   "id": "les-sat-evening-family-loves-drinks",
+   "title": "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks",
+   "eligible": 1959,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Eden Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Soft Swerve",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Fan Szechuan",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
    "id": "les-fri-culture-mood",
    "title": "LES, Friday 7pm, 3 hours, in the mood for culture",
    "eligible": 2014,

@@ -1,7 +1,7 @@
 import type { Budget, RecommendationRequest, ResolvedRequest, TasteWeight } from "@outrn/contracts";
 import { CUISINE_FILTERS, DIETS, FEATURES, haversineMetres, isInterest, type Category, type Interest, type LatLon } from "@outrn/core";
 import { findArea, isServedArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
-import { loadParkingBuffer, loadWeather, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
+import { ADULT_INTERESTS, loadParkingBuffer, loadWeather, minorInParty, sunsetOn, type Company, type Mood, type RequestContext } from "@outrn/engine";
 import { COMPANIES, MOODS, REQUESTABLE_CATEGORIES } from "../config.js";
 import { invalid } from "../errors.js";
 
@@ -67,7 +67,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     if (seen.has(t.interest)) throw invalid(`taste.${i}.interest`, `"${t.interest}" appears twice`);
     seen.add(t.interest);
   });
-  const taste: TasteWeight[] = (request.taste ?? []).filter((t) => isInterest(t.interest) && t.weight !== 0);
+  const offered: TasteWeight[] = (request.taste ?? []).filter((t) => isInterest(t.interest) && t.weight !== 0);
   const budget: Budget = request.budget ?? { kind: "any" };
   if (budget.kind === "max" && budget.currency !== "USD") throw invalid("budget.currency", "only USD is supported");
 
@@ -106,6 +106,9 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
   if (request.visitStyle === "takeout") ctx.visitStyle = "takeout";
+  // With a minor in the party, a like of drinking or nightlife is not applied (a skip still is): the
+  // engine ignores it too, and the resolved request says what was applied.
+  const taste = minorInParty(ctx) ? offered.filter((t) => !(t.weight > 0 && ADULT_INTERESTS.has(t.interest as Interest))) : offered;
   if (taste.length) ctx.taste = new Map(taste.map((t) => [t.interest as Interest, t.weight]));
   // Enables the sunset window for viewpoints, waterfronts and parks.
   ctx.sunset = sunsetOn(origin, at, area.timezone);

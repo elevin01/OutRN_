@@ -1729,4 +1729,47 @@ describe("taste: what this person likes leads", () => {
     expect(jazz.scores.taste).toBe(0.5 + 0.5 * (1 - 0.2));
     expect(reasonNotes(jazz, TZ)[0]!.text).toBe("matches your taste for live music");
   });
+
+  it("never pushes a bar, or keeps one on the first page, as the taste of a party with a minor", () => {
+    const casino = () => {
+      const c = venue({ id: "casino", category: "activity", hours: "Mo-Su 10:00-04:00" });
+      c.facts.age_limit = { value: { minAge: 21 }, confidence: 0.7, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    const comedy = () => venue({ id: "comedy", kind: "occurrence", category: "bar", hours: null, admission: "walk_in", occurrence: { id: "o-comedy", title: "Comedy Night", start: fromLocal("2026-10-03", 20 * 60, TZ), end: fromLocal("2026-10-03", 22 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    const evening = () => [
+      venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:30" }),
+      venue({ id: "r2", category: "restaurant", hours: "Mo-Su 11:00-23:30" }),
+      venue({ id: "d1", category: "dessert", hours: "Mo-Su 12:00-23:30" }),
+      venue({ id: "k1", category: "bookshop", hours: "Mo-Su 10:00-22:00" }),
+      venue({ id: "b1", category: "bar", hours: "Mo-Su 12:00-02:00" }),
+      venue({ id: "n1", category: "nightclub", hours: "Mo-Su 18:00-04:00" }),
+      casino(),
+      comedy(),
+    ];
+    const adult = new Set(["b1", "n1", "casino", "comedy"]);
+    const loves = like([["drinks", 1], ["nightlife", 1], ["games", 1], ["comedy", 1]]);
+    for (const party of [{ company: "family" }, { company: "family", youngestAge: 10 }, { youngestAge: 15 }, { company: "friends", youngestAge: 15 }] as const) {
+      const label = JSON.stringify(party);
+      const s = recommend(evening(), ctx("2026-10-03 19:00", 180, { ...party, taste: loves }), POLICIES);
+      for (const e of s.all.filter((e) => adult.has(e.candidate.id) && e.class !== "ineligible")) {
+        expect(e.scores.taste, `${e.candidate.id} ${label}`).toBeLessThanOrEqual(0.5);
+        expect(e.reasons, `${e.candidate.id} ${label}`).not.toContain("TASTE_MATCH");
+      }
+      expect(s.items.map((e) => e.candidate.id).filter((id) => adult.has(id)), label).toEqual([]);
+      // A skip still sinks.
+      expect(one(venue({ id: "b2", category: "bar", hours: "Mo-Su 12:00-02:00" }), ctx("2026-10-03 19:00", 180, { ...party, taste: like([["drinks", -1]]) })).scores.taste, label).toBe(0);
+      // An event read as drinking from its title is no lift either: a wine tasting at a restaurant.
+      const tasting = venue({ id: "wine", kind: "occurrence", category: "restaurant", hours: null, admission: "ticket", occurrence: { id: "o-wine", title: "Wine Tasting", start: fromLocal("2026-10-03", 20 * 60, TZ), end: fromLocal("2026-10-03", 21 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      const w = one(tasting, ctx("2026-10-03 19:00", 180, { ...party, taste: loves }));
+      expect(w.scores.taste ?? 0.5, label).toBeLessThanOrEqual(0.5);
+      expect(w.reasons, label).not.toContain("TASTE_MATCH");
+    }
+    // Adults keep the lift, and the reason.
+    const grown = recommend(evening(), ctx("2026-10-03 19:00", 180, { company: "friends", taste: loves }), POLICIES);
+    const bar = grown.all.find((e) => e.candidate.id === "b1")!;
+    expect(bar.scores.taste).toBe(1);
+    expect(bar.reasons).toContain("TASTE_MATCH");
+    expect(grown.items.map((e) => e.candidate.id).some((id) => adult.has(id))).toBe(true);
+  });
 });

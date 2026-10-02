@@ -49,6 +49,8 @@ export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   // Taste: what the person likes leads, a skip sinks, a mood is a like for this search.
   { id: "les-sat-evening-music-lover", title: "LES, Saturday 6:30pm, 3 hours, loves live music", at: "2026-10-03T22:30:00Z", request: { areaId: "les", windowMinutes: 180, taste: [{ interest: "live_music", weight: 1 }] } },
   { id: "les-sat-afternoon-art-no-bars", title: "LES, Saturday 2pm, 2 hours, loves art, skips bars", at: "2026-10-03T18:00:00Z", request: { areaId: "les", windowMinutes: 120, taste: [{ interest: "art", weight: 1 }, { interest: "drinks", weight: -1 }] } },
+  // A taste never pushes a bar for a party with a child: the like of drinks is not applied.
+  { id: "les-sat-evening-family-loves-drinks", title: "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks", at: "2026-10-03T23:00:00Z", request: { areaId: "les", windowMinutes: 180, company: "family", youngestAge: 10, taste: [{ interest: "drinks", weight: 1 }] } },
   { id: "les-fri-culture-mood", title: "LES, Friday 7pm, 3 hours, in the mood for culture", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 180, mood: "culture" } },
   { id: "bronxville-sat-evening", title: "Bronxville, Saturday 7:30pm, 2 hours, driving", at: "2026-10-03T23:30:00Z", request: { areaId: "bronxville", windowMinutes: 120 } },
   { id: "bronxville-sun-family", title: "Bronxville, Sunday noon, 3 hours, family", at: "2026-10-04T16:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, company: "family" } },

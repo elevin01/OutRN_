@@ -100,6 +100,9 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     - A love (0.7 or more) is never left off the first page: when none of it is a love, the best love
       takes its last slot, keeping its class and caveats.
     - A love doesn't lift a poor idea for the hour (a park after dark).
+    - Suitability before preference: with a minor in the party, a like of drinks or nightlife is not
+      applied (a skip still is), and a place that is adult for them (a bar, a nightclub, a known or
+      estimated 18+ limit) is never lifted, claimed as their taste, or kept on the first page.
     - The card says why: "matches your taste for live music".
   - **A mood is a like for one search** (culture: art, museums, theatre, movies, live music, comedy,
     at 0.6). Before, it moved a place about as much as a few minutes' walk; it never overrides a skip.
@@ -108,7 +111,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     score, not a separate lane).
   - **Privacy:** runs keep how many interests a taste weighed, never which, and no option's match.
   - Golden scenarios added: a music lover on a Saturday evening, an art lover who skips bars, a Friday
-    in the mood for culture, a Bronxville outdoors lover.
+    in the mood for culture, a Bronxville outdoors lover, a family with a 10-year-old whose taste
+    loves bars (no bar on their page).
   - Seen on the captures: with no events loaded, the music lover's love is a music venue to "check
     what's on" in slot 3. Bronxville's parks list no hours, so they are Check first, and the outdoors
     lover sees one park on the first page. Both are data, not ranking: see parts 3 and 4.

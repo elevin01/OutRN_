@@ -60,14 +60,13 @@ export function scoreCandidate(
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
+  // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
+  // gets the family bonus its category would otherwise earn when a minor is in the party, nor a lift
+  // from their taste (below). Feasibility has already excluded published limits; this sinks estimated
+  // ones. A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
+  const adultForMinor = minorInParty(ctx) && ((ageLimitOf(c)?.minAge ?? 0) >= 18 || c.category === "bar" || c.category === "nightclub");
   if (ctx.company) {
-    // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
-    // gets the family bonus its category would otherwise earn when a minor is in the party. Feasibility
-    // has already excluded published limits; this sinks estimated ones.
-    const minorPresent = minorInParty(ctx);
-    const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
-    // A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
-    if (minorPresent && (adultLimit || c.category === "bar" || c.category === "nightclub")) chips -= 0.25;
+    if (adultForMinor) chips -= 0.25;
     else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
   }
   chips = Math.max(0, Math.min(1, chips));
@@ -158,6 +157,11 @@ export function scoreCandidate(
   // not lift a poor idea for the hour: a park after dark is no better for someone who loves parks.
   const taste = weights ? tasteMatch(c, weights) : null;
   if (taste && part === "off") taste.score = Math.min(taste.score, 0.5);
+  // Nor is an adult place lifted, claimed as their taste, or kept on the first page for a party with a minor.
+  if (taste && adultForMinor) {
+    taste.score = Math.min(taste.score, 0.5);
+    taste.lead = null;
+  }
   if (taste?.lead) extra.unshift("TASTE_MATCH");
 
   void policy;
