@@ -275,6 +275,9 @@ importers:
       opening_hours:
         specifier: ^3.8.0
         version: 3.15.0(typescript@6.0.3)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@types/pg':
         specifier: ^8.11.10

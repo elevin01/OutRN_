@@ -33,6 +33,7 @@ const POLICIES = new Map<string, CategoryPolicy>([
   ["activity", { category: "activity", minUsefulMinutes: 60, admissionBufferMinutes: 10, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["cinema", { category: "cinema", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
   ["theatre", { category: "theatre", minUsefulMinutes: 0, admissionBufferMinutes: 15, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
+  ["event_site", { category: "event_site", minUsefulMinutes: 0, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "entertainment" }],
 ]);
 
 let n = 0;
@@ -1728,5 +1729,49 @@ describe("taste: what this person likes leads", () => {
     const jazz = one(set(60, "Jazz Night"), ctx("2026-10-03 19:00", 240, { taste: like([["live_music", 1], ["drinks", -0.4]]) }));
     expect(jazz.scores.taste).toBe(0.5 + 0.5 * (1 - 0.2));
     expect(reasonNotes(jazz, TZ)[0]!.text).toBe("matches your taste for live music");
+  });
+});
+
+describe("pop-ups: an event site is nothing but its events", () => {
+  const site = (over: Partial<Candidate> = {}) => venue({ id: "site", category: "event_site", hours: null, ...over });
+  const show = (title: string, kinds?: string[]) => {
+    const c = venue({ kind: "occurrence", id: `o-${title}`, category: "event_site", hours: null, admission: "walk_in", occurrence: { id: `o-${title}`, title, start: fromLocal("2026-10-03", 21 * 60, TZ), end: fromLocal("2026-10-03", 21 * 60 + 30, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    c.venueId = "site";
+    if (kinds) c.facts.event_kind = { value: { interests: kinds }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    return c;
+  };
+
+  it("lets you join a walk-in pop-up late, as you would a band on the lawn, but not a ticketed one", () => {
+    const lawn = (admission: string) => {
+      const c = venue({ kind: "occurrence", id: `jazz-${admission}`, category: "event_site", hours: null, admission, occurrence: { id: `jazz-${admission}`, title: "Jazz on the Lawn", start: fromLocal("2026-10-10", 18 * 60, TZ), end: fromLocal("2026-10-10", 20 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      c.venueId = "site";
+      return c;
+    };
+    const walkIn = one(lawn("walk_in"), ctx("2026-10-10 18:20", 150));
+    expect(walkIn.excludedBy).toBeNull();
+    expect(walkIn.unresolved).not.toContain("LATE_ENTRY_UNCERTAIN");
+    expect(planSteps(walkIn, { timezone: TZ }).find((p) => p.kind === "arrive")!.text).toMatch(/started at 6pm; joining late/);
+    expect(one(lawn("ticket"), ctx("2026-10-10 18:20", 150)).excludedBy).toBe("EVENT_STARTED");
+  });
+
+  it("is never an option without an event, whatever it lists, even in the evening", () => {
+    const withSite = site();
+    withSite.facts.website = { value: { value: "https://example.org" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    for (const c of [site(), withSite]) expect(one(c, ctx("2026-10-03 20:00", 180)).excludedBy).toBe("NO_PROGRAMME");
+  });
+
+  it("offers the event, and reads what it is from its source's kinds before its title", () => {
+    const e = one(show("Fireworks over the East River"), ctx("2026-10-03 20:00", 180));
+    expect(e.excludedBy).toBeNull();
+    const lover = new Map([["festivals", 1]]) as RequestContext["taste"];
+    expect(one(show("Fireworks over the East River"), ctx("2026-10-03 20:00", 180, { taste: lover })).scores.taste).toBe(1);
+    // A title that says nothing, and a source that says it is music.
+    const music = new Map([["live_music", 1]]) as RequestContext["taste"];
+    expect(one(show("Saturday on the Pier"), ctx("2026-10-03 20:00", 180, { taste: music })).scores.taste).toBe(0.5);
+    const kinded = one(show("Saturday on the Pier", ["live_music"]), ctx("2026-10-03 20:00", 180, { taste: music }));
+    expect(kinded.scores.taste).toBe(1);
+    expect(reasonNotes(kinded, TZ)[0]!.text).toBe("matches your taste for live music");
+    // Kinds that are not interests say nothing.
+    expect(one(show("Saturday on the Pier", ["__proto__", "constructor"]), ctx("2026-10-03 20:00", 180, { taste: music })).scores.taste).toBe(0.5);
   });
 });

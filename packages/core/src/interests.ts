@@ -59,6 +59,8 @@ export const INTERESTS_OF_CATEGORY: Readonly<Record<Category, InterestStrengths>
   bowling: { games: 1, sports: 0.5 },
   arcade: { games: 1 },
   activity: { games: 1 },
+  // What happens there is the event's to say (its kinds, its title).
+  event_site: {},
   other: {},
 };
 

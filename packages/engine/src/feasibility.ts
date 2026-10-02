@@ -190,7 +190,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const unlistedProgramme = c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category);
   if (unlistedProgramme) {
     const site = (c.facts.website?.value as { value?: unknown } | undefined)?.value;
-    if (typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
+    // A pop-up's site has no programme to look up: without an event in the window it is nothing.
+    if (c.category === "event_site" || typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
     unresolved.push("PROGRAMME_UNLISTED");
   }
 
@@ -247,9 +248,12 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     const cutoff = o.entryCutoff ?? o.start;
     latestArrival = cutoff;
     if (arrival > cutoff) {
-      // Joining late qualifies only if the source says late entry is allowed.
-      if (o.lateEntry !== true) return out("EVENT_STARTED");
-      unresolved.push("LATE_ENTRY_UNCERTAIN");
+      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in pop-up
+      // in the open (a band on the lawn, a street fair, fireworks): no door to be late for. The plan
+      // still says it has started.
+      const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
+      if (o.lateEntry !== true && !walkInPopUp) return out("EVENT_STARTED");
+      if (!walkInPopUp) unresolved.push("LATE_ENTRY_UNCERTAIN");
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");

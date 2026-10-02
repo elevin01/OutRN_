@@ -1,4 +1,4 @@
-import { interestsOf, type Interest, type InterestStrengths } from "@outrn/core";
+import { interestsOf, isInterest, type Interest, type InterestStrengths } from "@outrn/core";
 import type { Candidate, Mood, RequestContext } from "./types.js";
 
 /**
@@ -55,9 +55,16 @@ export function tasteWeights(ctx: Pick<RequestContext, "taste" | "mood">): Reado
   return out.size ? out : null;
 }
 
+/**
+ * What an option is, by interest. An event's own kinds (event_kind: how its source classifies it,
+ * "MusicEvent" is live music) count in full alongside what its title says and half its place.
+ */
 export function candidateInterests(c: Candidate): InterestStrengths {
   const subtype = (c.facts.subtype?.value as { value?: unknown } | undefined)?.value;
-  return interestsOf({ category: c.category, subtype: typeof subtype === "string" ? subtype : null, title: c.kind === "occurrence" ? (c.occurrence?.title ?? c.name) : null });
+  const out = interestsOf({ category: c.category, subtype: typeof subtype === "string" ? subtype : null, title: c.kind === "occurrence" ? (c.occurrence?.title ?? c.name) : null });
+  const kinds = c.kind === "occurrence" ? (c.facts.event_kind?.value as { interests?: unknown } | undefined)?.interests : undefined;
+  if (Array.isArray(kinds)) for (const k of kinds) if (typeof k === "string" && isInterest(k)) out[k] = 1;
+  return out;
 }
 
 export interface TasteMatch {
