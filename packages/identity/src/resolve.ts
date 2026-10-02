@@ -50,6 +50,8 @@ async function candidatesNear(q: Queryable, p: LatLon): Promise<VenueCandidate[]
        select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon
          from venues v
         where v.publish_state <> 'merged'
+          -- A pop-up's site is never a real place's match or parent (eventSiteFor's own rule, mirrored).
+          and v.category <> 'event_site'
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
      )
      select n.*,

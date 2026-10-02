@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import { ingestEvents } from "../src/events.js";
-import { resolveVenueRef } from "../src/founder.js";
+import { addFounderVenue, resolveVenueRef } from "../src/founder.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /** Events from a file, against a real Postgres + PostGIS (outrn_test, reset per file). */
@@ -124,6 +124,10 @@ describe.skipIf(!available)("events from a file", () => {
           fireworks({ id: "ok-1", title: "Twice" }),
           { id: "extra", title: "x", start: "2026-10-03T21:00:00-04:00", place: PIER, evidence: "e", colour: "blue" },
           "not an event",
+          fireworks({ id: "c1", title: "Fire\u0085works" }),
+          fireworks({ id: "bidi", title: "Fireworks \u202eeerf" }),
+          fireworks({ id: "isolate", title: "Fire\u2066works\u2069" }),
+          fireworks({ id: "mark", evidence: "press\u200f release" }),
         ],
       },
       { areaSlug: "les", now: NOW },
@@ -144,8 +148,22 @@ describe.skipIf(!available)("events from a file", () => {
       "ok-1": "id: listed twice in this file",
       extra: expect.stringContaining("colour"),
       "#13": expect.any(String),
+      c1: expect.stringContaining("control characters"),
+      bidi: expect.stringContaining("control characters"),
+      isolate: expect.stringContaining("control characters"),
+      mark: expect.stringContaining("control characters"),
     });
     expect((await occurrence("founder:ok-1"))[0]!.title).toBe("Salsa on the Pier");
+  });
+
+  it("never offers a pop-up's site as the match for a real place next to it", async () => {
+    const lawn = { name: "Seward Park Lawn", lat: 40.7142, lon: -73.989 };
+    await ingestEvents(db, { source: "founder", events: [{ id: "lawn-1", title: "Concert on the Lawn", start: "2026-10-04T15:00:00-04:00", end: "2026-10-04T17:00:00-04:00", place: lawn, evidence: "flyer" }] }, { areaSlug: "les", now: NOW });
+    const site = (await occurrence("founder:lawn-1"))[0]!.venue_id;
+    // Not its match, and not its parent: a café by the lawn would otherwise sit inside the pop-up, held back while it is on.
+    const park = await addFounderVenue(db, { name: "Seward Park Lawn", category: "park", point: { lat: 40.71423, lon: -73.98903 }, evidence: "walked past it", areaSlug: "les" });
+    const cafe = await addFounderVenue(db, { name: "Seward Park Lawn Cafe", category: "cafe", point: { lat: 40.71418, lon: -73.98897 }, evidence: "walked past it", areaSlug: "les" });
+    for (const out of [park, cafe]) expect([out.venueId, out.matchedVenueId, out.parentVenueId], out.venueId).not.toContain(site);
   });
 
   it("refuses a file from a source not allowed to keep what it gives, or that is not an events file", async () => {

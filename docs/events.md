@@ -51,7 +51,8 @@ pnpm outrn ingest events --area les --from-file events.json
   the area), or a place of its own (`"name"`, `"lat"`, `"lon"`) inside the area.
   - A place of its own becomes an **event site**: a venue shown only through its events, never on
     its own. The same name within 75 m is the same site, so a weekly market's events share one.
-  - A site is never merged into a place nearby or made its child.
+  - A site is never merged into a place nearby or made its child, and a place nearby is never
+    matched to a site or made a site's child.
 - **`kinds`**: what it is, as interests (`live_music`, `comedy`, `theatre`, `film`, `art`,
   `museums`, `food`, `cafes`, `drinks`, `nightlife`, `outdoors`, `games`, `markets`, `books`,
   `sports`, `festivals`), at most 4. Without them the title is read ("Jazz on the Lawn" is live
@@ -60,12 +61,14 @@ pnpm outrn ingest events --area les --from-file events.json
   joined after it starts. Without it, the event is Check first.
 - **`price`**: `{ "free": true }`, or `{ "min": 10, "max": 25, "currency": "USD" }`.
 - **`minAge`**: the age to get in, as the event states it. A title's "21+" or "18+" counts too. A
-  drink event at a site of its own (a beer garden, a wine tasting) with no age stated is taken as
-  probably 21+, shown to families as Check first.
+  drink event (its kinds include `drinks`, or its title says so: a wine tasting, a beer garden, a
+  happy hour, a brewery night) with no age stated by it or its venue is taken as probably 21+,
+  wherever it is held: Check first for a party with a child, "usually 21+" for adults. A cheese or
+  coffee tasting is not a drink event. An all-ages event says `"minAge": 0`.
 - **`url`**: the event's own page, https only.
 - **`evidence`**: how you know. Required for the founder's own list.
 
 Every event is checked before anything is written: times that make sense (an end after the start,
 at most 14 days long, at most 400 days ahead, not over), a place inside the area, kinds that are
-interests, an https link, no control characters, an id once per file. One that fails is left out
+interests, an https link, no control or text-direction characters, an id once per file. One that fails is left out
 with the reason, and the rest are written; the command exits non-zero when anything was left out.

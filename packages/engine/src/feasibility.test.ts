@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromLocal } from "@outrn/core";
+import { fromLocal, type Category } from "@outrn/core";
 import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
@@ -1832,5 +1832,32 @@ describe("pop-ups: an event site is nothing but its events", () => {
     expect(kid.scores.taste).toBe(0.5);
     expect(kid.reasons).not.toContain("TASTE_MATCH");
     expect(one(fest, ctx("2026-10-03 20:00", 180, { taste: loves })).scores.taste).toBe(1);
+  });
+
+  it("takes a drink event with no age stated as probably 21+ wherever it is held", () => {
+    const held = (category: Category, title: string, kinds?: string[], minAge?: number) => {
+      const c = venue({ kind: "occurrence", id: `${category}-${title}`, category, hours: null, admission: "walk_in", occurrence: { id: `o-${category}-${title}`, title, start: fromLocal("2026-10-03", 19 * 60 + 30, TZ), end: fromLocal("2026-10-03", 21 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      if (kinds) c.facts.event_kind = { value: { interests: kinds }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      if (minAge !== undefined) c.facts.age_limit = { value: { minAge }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    const cafes = () => [1, 2, 3].map((i) => venue({ id: `cafe${i}`, category: "cafe", hours: "Mo-Su 07:00-23:00" }));
+    const family = ctx("2026-10-03 19:00", 180, { company: "family", youngestAge: 10 });
+    const adults = ctx("2026-10-03 19:00", 180, { company: "friends" });
+    const cases: [Category, string, string[]?][] = [["restaurant", "Wine Tasting"], ["cafe", "Happy Hour"], ["restaurant", "Thursday Social", ["drinks"]], ["bookshop", "Craft Brewery Night"]];
+    for (const [category, title, kinds] of cases) {
+      const label = `${category}-${title}`;
+      const kid = one(held(category, title, kinds), family);
+      expect(kid.class, label).toBe("check_first");
+      expect(kid.unresolved, label).toContain("AGE_LIMIT_LIKELY");
+      expect(explain(kid, TZ).caveat, label).toMatch(/probably 21\+ only/);
+      const grown = one(held(category, title, kinds), adults);
+      expect(grown.class, label).toBe("ready");
+      expect(explain(grown, TZ).factLine, label).toMatch(/usually 21\+/);
+      expect(recommend([...cafes(), held(category, title, kinds)], family, POLICIES).items[0]!.candidate.id, label).not.toBe(label);
+    }
+    // A stated age wins: an all-ages tasting is Ready. An event that is not about drink, or a food tasting, is unaffected.
+    expect(one(held("restaurant", "Wine Tasting", undefined, 0), family).class).toBe("ready");
+    for (const title of ["Jazz Night", "Cheese Tasting", "Ice Cream Tasting"]) expect(one(held("restaurant", title), family).class, title).toBe("ready");
   });
 });

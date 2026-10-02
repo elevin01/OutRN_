@@ -1,4 +1,4 @@
-import { contentHash, haversineMetres, isInterest, websiteUrl, type FactInput, type Interest, type LatLon } from "@outrn/core";
+import { contentHash, haversineMetres, isDrinkTitle, isInterest, websiteUrl, type FactInput, type Interest, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, audit, getArea, loadParkingRule, withTx, type Db, type Queryable } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { eventSiteFor, matchKey } from "@outrn/identity";
@@ -32,8 +32,9 @@ const text = (max: number) =>
     .trim()
     .min(1)
     .max(max)
-    // Control characters (a NUL fails a whole write; others hide what a title says) are not text.
-    .refine((s) => !/[\u0000-\u001f\u007f]/.test(s), "contains control characters");
+    // Control characters are not text: a NUL fails a whole write; the rest (C0, DEL, C1) hide what a
+    // title says, and direction marks, overrides and isolates make it read as something else.
+    .refine((s) => !/[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/.test(s), "contains control characters");
 
 const Place = z.union([
   z.object({ venue: text(120) }).strict(),
@@ -77,8 +78,6 @@ export interface EventsSummary {
 
 /** An event's own words for an age limit: "21+", "18 +". */
 const TITLE_AGE = /\b(18|21)\s?\+(?!\d)/;
-/** Drink is the event: at a site of its own, with no age stated, it is probably 21+. */
-const DRINK_EVENT = /\b(beer|wine|cocktails?|brew(?:ery|fest)|bar crawl|happy hour|tastings?)\b/i;
 
 interface Checked {
   index: number;
@@ -152,7 +151,9 @@ function eventFacts(c: Checked, occurrenceId: string, atSite: boolean, sourceId:
   const titleAge = TITLE_AGE.exec(e.title);
   if (e.minAge !== undefined) out.push(pub("age_limit", { minAge: e.minAge }, 0.9));
   else if (titleAge) out.push({ ...pub("age_limit", { minAge: Number(titleAge[1]) }, 0.8), evidence: `title: ${JSON.stringify(e.title)}` });
-  else if (atSite && DRINK_EVENT.test(e.title)) {
+  // Drink is the event: with no age stated, it is probably 21+ (the engine reads any event so, wherever
+  // it is held; a site of its own keeps the estimate on record).
+  else if (atSite && (isDrinkTitle(e.title) || e.kinds?.includes("drinks"))) {
     out.push({ ...pub("age_limit", { minAge: 21 }, 0.5), evidenceClass: "estimate", sourceId: "category_policy", lineageGroup: "category_policy", evidence: `drink event at a site of its own, no age stated: ${JSON.stringify(e.title)}` });
   }
   return out;
