@@ -165,11 +165,12 @@ export function sunsetOn(p: LatLon, at: Date, timezone: string): Date | null {
 
 /**
  * Persist a run for replay and the debug view. Context is coarsened: no precise coordinates, and a
- * device's seen/dismissed history is reduced to counts, so runs never become an activity log.
+ * device's seen/dismissed history and taste are reduced to counts, so runs never become an activity log.
  */
 export async function persistRun(q: Queryable, areaId: string | null, ctx: RequestContext, s: Shortlist, durationMs: number): Promise<string> {
-  const { seenIds, dismissedIds, ...rest } = ctx;
-  const coarse = { ...rest, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset, seenCount: seenIds?.length ?? 0, dismissedCount: dismissedIds?.length ?? 0 };
+  // A taste is learned from what this person did: a run keeps only how many interests it weighed.
+  const { seenIds, dismissedIds, taste, ...rest } = ctx;
+  const coarse = { ...rest, origin: { lat: +ctx.origin.lat.toFixed(2), lon: +ctx.origin.lon.toFixed(2) }, offset: s.offset, seenCount: seenIds?.length ?? 0, dismissedCount: dismissedIds?.length ?? 0, tasteCount: taste?.size ?? 0 };
   const results = s.all.map((e) => ({
     item_kind: e.candidate.kind,
     item_id: e.candidate.id,
@@ -177,7 +178,8 @@ export async function persistRun(q: Queryable, areaId: string | null, ctx: Reque
     excluded_by: e.excludedBy,
     reasons: e.reasons,
     unresolved: e.unresolved,
-    scores: e.scores,
+    // Without the taste match: across every candidate it would spell out the taste.
+    scores: { evidence: e.scores.evidence, fit: e.scores.fit, appeal: e.scores.appeal, novelty: e.scores.novelty },
     useful_minutes: e.timing?.usefulMinutes ?? null,
     travel_minutes: e.timing?.travel.minutes ?? null,
   }));

@@ -353,6 +353,72 @@
         "id": "wheelchair",
         "label": "Wheelchair accessible"
       }
+    ],
+    "interests": [
+      {
+        "id": "live_music",
+        "label": "Live music"
+      },
+      {
+        "id": "comedy",
+        "label": "Comedy"
+      },
+      {
+        "id": "theatre",
+        "label": "Theatre & dance"
+      },
+      {
+        "id": "film",
+        "label": "Movies"
+      },
+      {
+        "id": "art",
+        "label": "Art"
+      },
+      {
+        "id": "museums",
+        "label": "Museums & history"
+      },
+      {
+        "id": "food",
+        "label": "Restaurants"
+      },
+      {
+        "id": "cafes",
+        "label": "Cafés & sweets"
+      },
+      {
+        "id": "drinks",
+        "label": "Bars & drinks"
+      },
+      {
+        "id": "nightlife",
+        "label": "Nightlife"
+      },
+      {
+        "id": "outdoors",
+        "label": "Parks & outdoors"
+      },
+      {
+        "id": "games",
+        "label": "Games & activities"
+      },
+      {
+        "id": "markets",
+        "label": "Markets & shopping"
+      },
+      {
+        "id": "books",
+        "label": "Books & talks"
+      },
+      {
+        "id": "sports",
+        "label": "Sports"
+      },
+      {
+        "id": "festivals",
+        "label": "Festivals & fairs"
+      }
     ]
   },
   "limits": {
@@ -368,6 +434,7 @@
     "maxCuisines": 5,
     "maxDiets": 5,
     "maxFeatures": 3,
+    "maxTaste": 32,
     "pageSize": 3
   }
 }

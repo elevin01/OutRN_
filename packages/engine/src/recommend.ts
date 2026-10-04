@@ -2,6 +2,7 @@ import { DEFAULT_MAX_TRAVEL_MINUTES } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, RequestContext, Shortlist } from "./types.js";
 import { evaluateFeasibility } from "./feasibility.js";
 import { scoreCandidate } from "./score.js";
+import { tasteWeights } from "./taste.js";
 import { selectShortlist } from "./select.js";
 
 /**
@@ -12,14 +13,15 @@ import { selectShortlist } from "./select.js";
 export function evaluateAll(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>): Evaluation[] {
   const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   const fallback: CategoryPolicy = { category: "other", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" };
+  const weights = tasteWeights(ctx);
   return candidates.map((c) => {
     const policy = policies.get(c.category) ?? fallback;
     const f = evaluateFeasibility(c, ctx, policy);
     if (f.class === "ineligible" || !f.timing) {
       return { candidate: c, class: "ineligible", excludedBy: f.excludedBy, reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
     }
-    const { scores, extraReasons, dayPart } = scoreCandidate(c, ctx, f, policy, maxTravel);
-    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart };
+    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravel, weights);
+    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
   });
 }
 

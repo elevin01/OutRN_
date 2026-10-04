@@ -1,6 +1,7 @@
 import { ACTIVITY_OF_CATEGORY, cuisineGroups, ownValue } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
 import { compareEvaluations, merit } from "./score.js";
+import { TASTE } from "./taste.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
 /**
@@ -64,6 +65,24 @@ const PASSES: Pass[] = [
   { cls: "any", diverse: false, releaseChildren: true },
 ];
 
+/** Options on the first page, where a love is guaranteed a place (see keepLovedOnFirstPage). */
+export const FIRST_PAGE = 3;
+
+/**
+ * Something this person loves (or this search is in the mood for) is never left off the first page
+ * when there is one to show: if none of the first page is a love, the best love takes its last slot.
+ * It keeps its class (Check first stays Check first, with its caveat), and a poor idea for the hour
+ * is not promoted. The rest keep their order.
+ */
+function keepLovedOnFirstPage(ordered: Evaluation[]): void {
+  const loved = (e: Evaluation) => (e.scores.taste ?? 0) >= TASTE.loved;
+  if (ordered.length <= FIRST_PAGE || ordered.slice(0, FIRST_PAGE).some(loved)) return;
+  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off");
+  if (i < 0) return;
+  const [e] = ordered.splice(i, 1);
+  ordered.splice(FIRST_PAGE - 1, 0, e!);
+}
+
 /** Every eligible candidate in display order. Pages ("More options") are slices of this. */
 export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluation[] {
   const eligible = all.filter((e) => e.class !== "ineligible").sort(compareEvaluations);
@@ -81,14 +100,22 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     if (!k) kindCache.set(e, (k = kindsOf(e)));
     return k;
   };
+  // With a taste, variety is among what this person likes: one of each kind of outing they like
+  // first, then the rest by merit (which weighs the match). Without a like in that class, variety
+  // is across everything they don't skip, as without a taste.
+  const likes = (e: Evaluation) => (e.scores.taste ?? 0.5) > 0.5;
+  const likedIn = new Set(eligible.filter(likes).map((e) => e.class));
   const admissible = (e: Evaluation, pass: Pass): boolean => {
     if ((pass.cls !== "any" && e.class !== pass.cls) || taken.has(e)) return false;
     const parent = e.candidate.parentVenueId;
     if (usedVenues.has(e.candidate.venueId)) return false;
     if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;
     if (pass.diverse && usedActivities.has(ACTIVITY_OF_CATEGORY[e.candidate.category])) return false;
-    // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am): it waits for its score.
+    // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am), or what this
+    // person skips: it waits for its score.
     if (pass.diverse && e.dayPart === "off") return false;
+    if (pass.diverse && (e.scores.taste ?? 0.5) < 0.5) return false;
+    if (pass.diverse && likedIn.has(e.class) && !likes(e)) return false;
     return true;
   };
   const take = (e: Evaluation) => {
@@ -131,6 +158,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     }
     for (const e of eligible) if (admissible(e, pass)) take(e);
   }
+  keepLovedOnFirstPage(ordered);
   return ordered;
 }
 
