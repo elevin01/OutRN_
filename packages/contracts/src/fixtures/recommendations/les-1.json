@@ -31,7 +31,8 @@
     },
     "originIsDefault": true,
     "backBy": null,
-    "visitStyle": "dine_in"
+    "visitStyle": "dine_in",
+    "taste": []
   },
   "items": [
     {

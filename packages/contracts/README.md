@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.7.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.8.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,22 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.8.0** (additive). Taste:
+  - A request may carry a taste (`taste`): weights from `-1` (skip) to `1` (love) for interests from `AreasResponse.filters.interests` (live music, comedy, theatre & dance, movies, art, museums & history, restaurants, cafés & sweets, bars & drinks, nightlife, parks & outdoors, games & activities, markets & shopping, books & talks, sports, festivals & fairs), up to `limits.maxTaste`. It is a profile kept on the device and sent with each search, e.g. `[{ interest: "live_music", weight: 1 }, { interest: "drinks", weight: -1 }]`.
+    - Ranking only: a taste never hides a place.
+    - With a taste, or a mood, how well an option matches leads the ranking, ahead of how near it is.
+    - A skip sinks an option, and variety never brings it back to the first page.
+    - Variety is among the kinds of thing the person likes first.
+    - When the first page has nothing the person loves (a like of `0.7` or more), the best such option takes its last slot. It keeps its own status: a Check first option stays Check first, with its caveats.
+    - A like does not lift a poor idea for the hour (a park after dark).
+    - With a minor in the party (`company: "family"` without an adult `youngestAge`, or a `youngestAge` under 18), a like of `drinks` or `nightlife` is not applied (a skip is), and a bar, a nightclub or a place with an 18+ limit is never lifted by a taste, claimed as one, or kept on the first page.
+    - An id that is not offered is ignored, not an error, so a stored profile outlives a change to the list. A weight of `0` is no view. An id may appear once (`VALIDATION_FAILED` on `taste.<i>.interest`).
+  - `ResolvedRequest.taste` lists the taste applied (`[]` by default).
+  - The reason `TASTE_MATCH` ("matches your taste for live music", `params.interest`) leads the card's sentence when an option is one of the person's own likes. A mood alone never claims it.
+  - A mood is now a like for the search: what it is in the mood for (culture: art, museums, theatre, movies, live music, comedy) is weighed like a taste of `0.6`. It never overrides a skip.
+  - Events are pushed harder: an event competes with places on one list with a stronger boost, more when it starts soon.
+  - Runs stored for diagnostics keep only how many interests a taste weighed, never which, and no option's match. `OpsCandidate.scores.taste` is the match (`null` without a taste or mood, and in stored runs).
+  - Snapshots stored by a 1.7 API page with `taste: []`.
 - **1.7.0** (additive). Diets and must-haves:
   - A request may ask for diets (`diets`: `vegetarian`, `vegan`, `gluten_free`, `halal`, `kosher`, up to `limits.maxDiets`). Then only food places known to serve **all** of them are options, because one party eats together.
     - "Known" means the place's OpenStreetMap `diet:*` tags say `yes` or `only`.

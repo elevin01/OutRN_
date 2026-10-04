@@ -1649,6 +1649,339 @@
    "relaxations": []
   },
   {
+   "id": "les-sat-evening-music-lover",
+   "title": "LES, Saturday 6:30pm, 3 hours, loves live music",
+   "eligible": 2049,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Ten Bells",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "HAPPY_HOUR",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Ace Of Clubs",
+     "category": "live_music",
+     "status": "check_first",
+     "reasons": [
+      "TASTE_MATCH",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Eden Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sat-afternoon-art-no-bars",
+   "title": "LES, Saturday 2pm, 2 hours, loves art, skips bars",
+   "eligible": 2010,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Sperone Westwater",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Perrotin New York",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Empirical Nonsense",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "bitforms gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Krause Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Ki Smith Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-sat-evening-family-loves-drinks",
+   "title": "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks",
+   "eligible": 1959,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Eden Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Soft Swerve",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Fan Szechuan",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-fri-culture-mood",
+   "title": "LES, Friday 7pm, 3 hours, in the mood for culture",
+   "eligible": 2014,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Eden Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hauser & Wirth",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "The Grand Delancey",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Soft Swerve",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
    "eligible": 79,
@@ -1884,6 +2217,99 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-outdoors-lover",
+   "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
+   "eligible": 85,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Hunan III",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Scalini Osteria",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hunt's Woods Park",
+     "category": "park",
+     "status": "check_first",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": [
+      "HOURS_APPROXIMATE"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "J.C. Fogarty's",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Yonkers Public Library Grinton I. Will Branch",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Dumpling + Noodle",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
