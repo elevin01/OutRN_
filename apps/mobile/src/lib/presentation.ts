@@ -45,6 +45,49 @@ export const ageLabel = (age: AgeLimit) =>
   `${age.evidence === "estimate" ? "Usually " : age.evidence === "reported" ? "Reported: " : ""}${age.minAge}+`;
 export const travelLabel = (item: RecommendationItem) =>
   `${item.timing.travel.isEstimate ? "~" : ""}${item.timing.travel.minutes} min ${item.timing.travel.mode}`;
+/**
+ * What a card says the place offers, as the API states it: cuisines, then diets and must-haves.
+ * Each label once, at most four.
+ */
+export function tagLabels(
+  item: Pick<RecommendationItem, "cuisines" | "diets" | "features">,
+): string[] {
+  const labels = [
+    ...item.cuisines.map((c) => c.label),
+    ...item.diets.map((d) => d.label),
+    ...item.features.map((f) => f.label),
+  ];
+  return [...new Set(labels)].slice(0, 4);
+}
+/**
+ * What to expect there, briefly, for a card: a busy or quiet crowd, a wait's range, and weather that
+ * changes the plan (rain, cold, heat). Kinds and levels this app doesn't know are left to the full
+ * texts (`conditions[].text`).
+ */
+export function conditionBriefs(
+  item: Pick<RecommendationItem, "conditions">,
+): string[] {
+  const out: string[] = [];
+  for (const c of item.conditions) {
+    const reported = c.basis === "report";
+    if (c.kind === "crowd" && (c.level === "busy" || c.level === "quiet"))
+      out.push(`${reported ? "Reported" : "Usually"} ${c.level}`);
+    else if (c.kind === "wait" && c.minutes)
+      out.push(`~${c.minutes.min}–${c.minutes.max} min wait`);
+    else if (c.kind === "wait" && reported && c.level !== "none")
+      out.push(`${c.level === "long" ? "Long" : "Short"} line reported`);
+    else if (
+      c.kind === "weather" &&
+      (c.level === "rain" || c.level === "cold" || c.level === "hot")
+    )
+      out.push(c.text);
+  }
+  return out;
+}
+/** The Now card's extra chips: what to expect, then up to three tags. Each text once, so no chip repeats. */
+export const nowFacts = (
+  item: Pick<RecommendationItem, "conditions" | "cuisines" | "diets" | "features">,
+) => [...new Set([...conditionBriefs(item), ...tagLabels(item).slice(0, 3)])];
 /** Keep eligibility and admission separate: a feasible visit can still require booking. */
 export const actionLabel = (
   item: Pick<RecommendationItem, "status" | "callToAction">,

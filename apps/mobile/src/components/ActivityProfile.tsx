@@ -1,12 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Image,
-  PanResponder,
+  Linking,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
   type ImageSourcePropType,
 } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { PlaceDetails, RecommendationItem } from "@outrn/contracts";
@@ -15,10 +17,14 @@ import { RequiredNotes } from "./PlaceCard";
 import {
   actionLabel,
   clock,
+  nowFacts,
   priceLabel,
+  safeExternalUrl,
   travelLabel,
 } from "../lib/presentation";
 import { demoMode } from "../lib/api";
+import { categoryIcon } from "../lib/categories";
+import { photosToShow, type ShownPhoto } from "../lib/photos";
 
 export function ActivityProfile({
   item,
@@ -28,6 +34,8 @@ export function ActivityProfile({
   area,
   timezone,
   photos = [],
+  fallback = [],
+  strip,
   height,
   saved,
   saveDisabled,
@@ -44,7 +52,12 @@ export function ActivityProfile({
   category: string;
   area: string;
   timezone: string;
-  photos?: ImageSourcePropType[];
+  /** The place's photos, or representative ones when it has none. */
+  photos?: ShownPhoto<ImageSourcePropType>[];
+  /** Representative photos, shown (labelled) when none of the place's own loads. */
+  fallback?: ShownPhoto<ImageSourcePropType>[];
+  /** Category shortcuts, under the header. */
+  strip?: ReactNode;
   height: number;
   saved: boolean;
   saveDisabled: boolean;
@@ -56,32 +69,36 @@ export function ActivityProfile({
   onBack?: () => void;
 }) {
   const [photo, setPhoto] = useState(0);
+  const [photoWidth, setPhotoWidth] = useState(0);
+  const pager = useRef<ScrollView>(null);
+  const currentPhoto = useRef(0);
+  const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
+  const fail = (key: string) =>
+    setFailed((f) => (f.has(key) ? f : new Set(f).add(key)));
+  // A photo that fails to load drops out. When none of the place's own is left, the representative
+  // ones (labelled as such); when none of those loads either, no photo: never the category's icon.
+  const shown = photosToShow(photos, fallback, failed);
+  const current = shown[Math.min(photo, Math.max(0, shown.length - 1))];
+  const credit = current?.creditUrl ? safeExternalUrl(current.creditUrl) : undefined;
   const inset = useSafeAreaInsets();
-  const gesture = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) =>
-          photos.length > 1 &&
-          Math.abs(g.dx) > 18 &&
-          Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
-        onPanResponderRelease: (_, g) => {
-          if (Math.abs(g.dx) > 55 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5)
-            setPhoto(
-              (p) => (p + (g.dx < 0 ? 1 : photos.length - 1)) % photos.length,
-            );
-        },
-      }),
-    [photos.length],
-  );
+  // Keep the selected page aligned after a resize or a change in photo count.
+  useEffect(() => {
+    const index = Math.min(
+      currentPhoto.current,
+      Math.max(0, shown.length - 1),
+    );
+    currentPhoto.current = index;
+    setPhoto(index);
+    pager.current?.scrollTo({ x: index * photoWidth, animated: false });
+  }, [photoWidth, shown.length]);
+  const selectPhoto = (index: number) => {
+    currentPhoto.current = index;
+    setPhoto(index);
+    pager.current?.scrollTo({ x: index * photoWidth, animated: true });
+  };
   const categoryId = item?.category.id || place?.category.id || "";
-  const nature = /park|garden|waterfront|viewpoint/.test(categoryId);
-  const artIcon: IconName = nature
-    ? "sun"
-    : /museum|book|gallery|library|arts/.test(categoryId)
-      ? "book-open"
-      : /bar|music|night/.test(categoryId)
-        ? "music"
-        : "compass";
+  // An event's admission price can differ from the venue's usual price.
+  const price = item?.price ?? place?.price;
   const description =
     item?.kind === "event"
       ? `At ${item.placeName}`
@@ -101,38 +118,67 @@ export function ActivityProfile({
     <View
       testID="activity-hero"
       style={[styles.hero, { minHeight: height, paddingTop: inset.top + 16 }]}
-      {...gesture.panHandlers}
     >
-      {photos[photo] ? (
+      {shown.length > 1 ? (
+        <ScrollView
+          ref={pager}
+          testID="activity-photo-pager"
+          horizontal
+          pagingEnabled
+          directionalLockEnabled
+          nestedScrollEnabled
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="never"
+          style={StyleSheet.absoluteFill}
+          contentContainerStyle={styles.photoStrip}
+          onLayout={(e) => setPhotoWidth(e.nativeEvent.layout.width)}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const width = e.nativeEvent.layoutMeasurement.width;
+            // A resize can emit a scroll before the photo widths catch up.
+            if (!width || Math.abs(width - photoWidth) > 1) return;
+            const index = Math.max(
+              0,
+              Math.min(
+                shown.length - 1,
+                Math.round(e.nativeEvent.contentOffset.x / width),
+              ),
+            );
+            currentPhoto.current = index;
+            setPhoto(index);
+          }}
+        >
+          {shown.map((p, index) => (
+            <Image
+              key={p.key}
+              testID={index === photo ? "activity-photo" : undefined}
+              source={p.source}
+              style={{ width: photoWidth, height: "100%" }}
+              resizeMode="cover"
+              accessibilityLabel={p.alt}
+              onError={() => fail(p.key)}
+            />
+          ))}
+        </ScrollView>
+      ) : current ? (
         <Image
           testID="activity-photo"
-          source={photos[photo]}
+          source={current.source}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
-          accessibilityLabel={`Illustrative photo ${photo + 1} of ${photos.length}, not this venue`}
+          accessibilityLabel={current.alt}
+          onError={() => fail(current.key)}
         />
-      ) : (
-        <View
-          pointerEvents="none"
-          accessible={false}
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: nature ? "#607767" : "#62605E" },
-          ]}
-        >
-          <View style={styles.artCircle} />
-          <View style={styles.artArch}>
-            <Icon name={artIcon} size={76} color="#E0E9D8" />
-          </View>
-        </View>
-      )}
+      ) : null}
       <LinearGradient
         pointerEvents="none"
         colors={["#101b1455", "#101b1400", "#14281cbb", "#14281cf5"]}
         locations={[0, 0.27, 0.64, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.header}>
+      {/* Static overlays pass swipes through; buttons keep their hit targets. */}
+      <View pointerEvents="box-none" style={styles.header}>
         {onBack ? (
           <Pressable
             accessibilityRole="button"
@@ -143,36 +189,39 @@ export function ActivityProfile({
             <Icon name="arrow-left" color="white" />
           </Pressable>
         ) : (
-          <Copy style={styles.logo}>
+          <Copy pointerEvents="none" style={styles.logo}>
             OutRN<Copy style={{ color: "#F36B3F" }}>↗</Copy>
           </Copy>
         )}
-        <Copy style={styles.area}>{area}</Copy>
+        <Copy pointerEvents="none" style={styles.area}>
+          {area}
+        </Copy>
       </View>
-      <Copy style={styles.caption}>
+      {strip}
+      <Copy pointerEvents="none" style={styles.caption}>
         {demoMode
           ? "Demo places · illustrative photos and posts"
-          : photos.length
-            ? ""
-            : "Category artwork · venue photos not available"}
+          : current?.kind === "representative"
+            ? "Representative photo · not this place"
+            : ""}
       </Copy>
-      {photos.length > 0 && (
-        <Copy style={styles.counter}>
-          {photo + 1} / {photos.length}
+      {shown.length > 1 && (
+        <Copy pointerEvents="none" style={styles.counter}>
+          {Math.min(photo, shown.length - 1) + 1} / {shown.length}
         </Copy>
       )}
-      <View style={styles.spacer} />
-      <View style={styles.bottom}>
-        <View style={styles.copy}>
-          {photos.length > 1 && (
-            <View style={styles.dots}>
-              {photos.map((_, i) => (
+      <View pointerEvents="none" style={styles.spacer} />
+      <View pointerEvents="box-none" style={styles.bottom}>
+        <View pointerEvents="box-none" style={styles.copy}>
+          {shown.length > 1 && (
+            <View pointerEvents="box-none" style={styles.dots}>
+              {shown.map((_, i) => (
                 <Pressable
                   key={i}
                   accessibilityRole="button"
                   accessibilityLabel={`Show photo ${i + 1}`}
                   accessibilityState={{ selected: photo === i }}
-                  onPress={() => setPhoto(i)}
+                  onPress={() => selectPhoto(i)}
                   style={styles.dotHit}
                 >
                   <View
@@ -182,31 +231,57 @@ export function ActivityProfile({
               ))}
             </View>
           )}
-          <Copy style={styles.kind}>{category}</Copy>
+          <View pointerEvents="none" style={styles.kindRow}>
+            <MaterialCommunityIcons
+              name={categoryIcon(categoryId)}
+              size={16}
+              color="#F7F5EF"
+              accessible={false}
+            />
+            <Copy testID="activity-summary" style={styles.kind}>
+              {category}
+              {price ? ` · ${priceLabel(price)}` : ""}
+            </Copy>
+          </View>
           <Copy accessibilityRole="header" style={styles.title}>
             {name}
           </Copy>
           {!!description && (
             <Copy style={styles.description}>{description}</Copy>
           )}
-          <View style={styles.facts}>
-            {item && <Copy style={styles.fact}>{actionLabel(item)}</Copy>}
-            {item?.timing.closesAt && (
-              <Copy style={styles.fact}>
-                Closes {clock(item.timing.closesAt, timezone)}
-              </Copy>
-            )}
-            {item ? (
+          {item && (
+            <View style={styles.facts}>
+              <Copy style={styles.fact}>{actionLabel(item)}</Copy>
+              {item.timing.closesAt && (
+                <Copy style={styles.fact}>
+                  Closes {clock(item.timing.closesAt, timezone)}
+                </Copy>
+              )}
               <Copy style={styles.fact}>{travelLabel(item)}</Copy>
-            ) : (
-              place && (
-                <Copy style={styles.fact}>{priceLabel(place.price)}</Copy>
-              )
-            )}
-          </View>
+              {/* What to expect there (a wait, a busy room, rain), then what it offers: "Thai", "Vegan options". */}
+              {nowFacts(item).map((text) => (
+                <Copy key={text} style={styles.fact}>
+                  {text}
+                </Copy>
+              ))}
+            </View>
+          )}
           {item && <RequiredNotes item={item} light />}
+          {current && (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`Photo credit: ${current.credit}`}
+              disabled={!credit}
+              onPress={() => credit && void Linking.openURL(credit).catch(() => undefined)}
+              style={styles.creditHit}
+            >
+              <Copy style={styles.credit} numberOfLines={2}>
+                {current.kind === "representative" ? "Representative photo" : "Photo"}: {current.credit}
+              </Copy>
+            </Pressable>
+          )}
         </View>
-        <View style={styles.rail}>
+        <View pointerEvents="box-none" style={styles.rail}>
           <Rail
             name="bookmark"
             label={saved ? "Saved" : "Save"}
@@ -285,6 +360,7 @@ function Rail({
   );
 }
 const styles = StyleSheet.create({
+  photoStrip: { height: "100%" },
   hero: {
     backgroundColor: "#27392D",
     paddingHorizontal: 24,
@@ -313,6 +389,9 @@ const styles = StyleSheet.create({
     maxWidth: "58%",
   },
   caption: { color: "#F7F5EF", fontSize: 12, lineHeight: 18, marginTop: 10 },
+  kindRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  creditHit: { minHeight: 32, justifyContent: "center", marginTop: 4 },
+  credit: { color: "#D7E2D3", fontSize: 11, lineHeight: 16 },
   counter: {
     color: "white",
     fontSize: 12,
@@ -331,16 +410,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   copy: { flex: 1, gap: 12, minWidth: 0 },
-  kind: { color: "#CCD8C8", fontSize: 13, lineHeight: 18, fontWeight: "500" },
+  kind: {
+    pointerEvents: "none",
+    color: "#CCD8C8",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "500",
+  },
   title: {
+    pointerEvents: "none",
     fontSize: 28,
     lineHeight: 32,
     letterSpacing: -0.6,
     fontWeight: "600",
     color: "white",
   },
-  description: { color: "#F2F2E8", fontSize: 15, lineHeight: 22 },
-  facts: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  description: {
+    pointerEvents: "none",
+    color: "#F2F2E8",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  facts: {
+    pointerEvents: "none",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+  },
   fact: {
     fontSize: 13,
     lineHeight: 19,
@@ -387,25 +483,4 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   peekText: { fontSize: 13, lineHeight: 19, color: "#D7E2D3" },
-  artCircle: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "#9DAA8C",
-    position: "absolute",
-    top: 110,
-    right: -60,
-  },
-  artArch: {
-    position: "absolute",
-    left: 38,
-    top: 170,
-    width: 158,
-    height: 255,
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 100,
-    backgroundColor: "#263F35",
-    alignItems: "center",
-    justifyContent: "center",
-  },
 });

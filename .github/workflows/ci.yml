@@ -119,5 +119,5 @@ jobs:
         env:
           EXPO_PUBLIC_API_URL: https://api.example.invalid
           EXPO_PUBLIC_DEMO_MODE: 'false'
-      - name: Production export excludes demo photography
+      - name: Production export ships the representative photos, not the demo content
         run: node apps/mobile/scripts/check-demo-assets.mjs

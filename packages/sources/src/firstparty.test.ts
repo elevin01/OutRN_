@@ -26,6 +26,14 @@ describe("first-party JSON-LD extraction", () => {
   const blocks = extractJsonLdBlocks(html);
   const x = extractFromJsonLd(blocks, "https://example.org/", new Date("2026-09-26T12:00:00Z"));
 
+  it("reads what an event is from its schema.org type", () => {
+    expect(x.events.map((e) => [e.title, e.kinds])).toEqual([
+      ["Late Set", ["live_music"]],
+      ["Cancelled Thing", []],
+      ["Sold Out Thing", []],
+    ]);
+  });
+
   it("finds valid blocks and skips broken ones", () => {
     expect(blocks).toHaveLength(2);
     expect(x.types).toEqual(expect.arrayContaining(["Restaurant", "MusicEvent", "Event"]));

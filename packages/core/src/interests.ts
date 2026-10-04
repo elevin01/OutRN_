@@ -59,6 +59,8 @@ export const INTERESTS_OF_CATEGORY: Readonly<Record<Category, InterestStrengths>
   bowling: { games: 1, sports: 0.5 },
   arcade: { games: 1 },
   activity: { games: 1 },
+  // What happens there is the event's to say (its kinds, its title).
+  event_site: {},
   other: {},
 };
 
@@ -93,7 +95,11 @@ const TITLE_INTERESTS: readonly [RegExp, InterestStrengths][] = [
   [/\b(festivals?|fairs?|parades?|block party|carnival|celebration)\b/i, { festivals: 1 }],
   [/\bfireworks\b/i, { festivals: 1, outdoors: 0.5 }],
   [/\b(yoga|5k|10k|race|marathon|baseball|basketball|soccer|football|hockey|tennis)\b/i, { sports: 1 }],
-  [/\b(tastings?|wine|beer|cocktails?)\b/i, { drinks: 1 }],
+  // Drink is the outing (a wine tasting, a beer garden, a bar crawl); a tasting is one unless it says
+  // it is food or coffee. isDrinkTitle reads this row: such an event is probably 21+ (engine ageLimitOf).
+  [/\b(wine|beer|cocktails?|whisk(?:e)?y|bourbon|brew(?:ery|eries|fest)|(?:bar|pub) crawl|happy hour|(?<!\b(?:cheese|chocolate|ice cream|dessert|food|olive oil|honey|tea|coffee)\s)tastings?)\b/i, { drinks: 1 }],
+  [/\b(cheese|chocolate|ice cream|dessert|olive oil|honey) tastings?\b/i, { food: 1 }],
+  [/\b(tea|coffee) tastings?\b/i, { cafes: 1 }],
   [/\b(brunch|dinner|supper|food)\b/i, { food: 1 }],
 ];
 
@@ -109,6 +115,11 @@ export function interestsOfTitle(title: string): InterestStrengths {
   const out: InterestStrengths = {};
   for (const [re, strengths] of TITLE_INTERESTS) if (re.test(t)) add(out, strengths);
   return out;
+}
+
+/** Whether an event's title says drink is the outing: a wine tasting, a happy hour, a brewery night. */
+export function isDrinkTitle(title: string): boolean {
+  return (interestsOfTitle(title).drinks ?? 0) >= 1;
 }
 
 /**
