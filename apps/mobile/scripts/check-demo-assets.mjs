@@ -3,6 +3,13 @@ import { readdir, readFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/**
+ * Checks an export for what it must and must not contain.
+ *  - The demo module (invented posts and reviews) ships only when EXPO_PUBLIC_DEMO_MODE=true: its
+ *    text is looked for in every emitted script.
+ *  - The representative photos ship in every build: they stand in, labelled, for places without a
+ *    photo of their own (src/lib/representative.ts).
+ */
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const output = resolve(process.argv[2] || resolve(root, "dist"));
 const demo =
@@ -19,8 +26,14 @@ const photos = new Map(
     ),
   ),
 );
-const found = new Set();
-// These are intentional interest-picker illustrations, never venue photos.
+/** Text that exists only in src/lib/demo-content.ts. */
+const DEMO_MARKERS = [
+  "Found a seat by the window",
+  "Spent most of my visit with this one",
+];
+const foundPhotos = new Set();
+const foundMarkers = new Set();
+// Interest illustrations are separate from photographs of a recommendation.
 const onboarding = new Map(
   await Promise.all(
     ["food", "coffee", "walk", "pub", "art", "music", "games", "market"].map(
@@ -37,23 +50,39 @@ async function scan(path) {
     const file = resolve(path, entry.name);
     if (entry.isDirectory()) await scan(file);
     else {
-      const digest = hash(await readFile(file));
+      const bytes = await readFile(file);
+      const digest = hash(bytes);
       const name = photos.get(digest);
-      if (name) found.add(name);
+      if (name) foundPhotos.add(name);
       const interest = onboarding.get(digest);
       if (interest) onboardingFound.add(interest);
+      if (/\.(js|mjs|cjs|hbc|bundle|html)$/.test(entry.name)) {
+        const text = bytes.toString("latin1");
+        for (const m of DEMO_MARKERS) if (text.includes(m)) foundMarkers.add(m);
+      }
     }
   }
 }
 await scan(output);
+const problems = [];
 if (onboardingFound.size !== onboarding.size)
-  throw new Error(
-    `Missing onboarding photos: ${[...onboarding.values()].filter((name) => !onboardingFound.has(name)).join(", ")}`,
+  problems.push(
+    `onboarding illustrations missing: ${[...onboarding.values()].filter((name) => !onboardingFound.has(name)).join(", ")}`,
   );
-if (demo ? found.size !== photos.size : found.size !== 0)
+if (foundPhotos.size !== photos.size)
+  problems.push(
+    `representative photos missing: ${[...photos.values()].filter((n) => !foundPhotos.has(n)).join(", ")}`,
+  );
+if (demo && foundMarkers.size === 0)
+  problems.push("the demo export has no demo content");
+if (!demo && foundMarkers.size > 0)
+  problems.push(
+    `the production export contains demo content: ${[...foundMarkers].join(" / ")}`,
+  );
+if (problems.length)
   throw new Error(
-    `Unexpected demo assets in ${demo ? "demo" : "production"} export: ${[...found].join(", ") || "none"}`,
+    `${demo ? "Demo" : "Production"} export: ${problems.join("; ")}`,
   );
 console.log(
-  `${demo ? "Demo" : "Production"} export: ${found.size} demo photos, ${onboardingFound.size} onboarding illustrations. Asset isolation passed.`,
+  `${demo ? "Demo" : "Production"} export: ${foundPhotos.size} representative photos, ${onboardingFound.size} onboarding illustrations, ${foundMarkers.size ? "demo content included" : "no demo content"}. Asset check passed.`,
 );

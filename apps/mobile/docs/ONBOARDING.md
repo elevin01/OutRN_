@@ -72,13 +72,14 @@ Unit tests cover corrupt storage, offered-interest mapping/limits, unknown versu
 valid manual/device requests, origin validation errors, permission gating, disabled services,
 cancellation, timeouts and malformed fixes. Mobile lint/typecheck, boundary checks, repository unit
 tests and production iOS/Android/web exports are run for this change. The asset gate requires all
-eight onboarding illustrations and still excludes all four demo venue photos from production.
+eight onboarding illustrations alongside the existing labelled representative photos, while still
+excluding invented demo posts from production.
 
 Native-device permission dialogs, VoiceOver/TalkBack, system text scaling and keyboard/safe-area
 behavior still need device QA before release. Larger system text switches the interest grid to a
 single column; reduced-motion settings disable selection animation.
 
-The result handoff intentionally uses main's current activity view. PR #18's API photo rendering
-and compact navigation are separate work; reconcile the small `introduction` prop additions when
-those changes land. PR #41's future taste-learning/editor implementation must retain the same
-storage shape and the startup gate when integrating.
+The result handoff uses main's current activity view, including the API photo rendering, compact
+navigation and richer activity details merged from PRs #18 and #35 during implementation. PR #41's
+future taste-learning/editor implementation must retain the same storage shape and startup gate
+when integrating.

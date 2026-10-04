@@ -52,9 +52,13 @@ First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](do
   exact coordinates remain in memory, with no background tracking.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 
-Production result cards currently use original decorative category artwork. Demo mode
-uses bundled mood photography with an explicit “not the venue” label; see
-[photo sources](assets/photos/README.md). Rendering API venue photographs is a separate UI change.
+Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
+their credit linked to the source. Without any, representative photos of the kind of place, labelled
+"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)).
+When none of its own loads, the representative ones, labelled the same way. Without those, no photo:
+never the category artwork in place of one. Category
+shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
+culture, Movies & shows, Games & play, Books) narrow the search in one tap.
 The bundled [onboarding photographs](assets/onboarding/README.md) illustrate interests and are
 included in production. They are never used as photographs of a recommended venue.
 DM Sans is bundled
@@ -63,7 +67,7 @@ under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 ## Remaining product slices
 
 Account sync, submission of venue corrections, taste-feedback services, persistent outings,
-API venue-photo rendering, community feeds, live conditions and a geographic map view need separate PRs.
+representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
 Interests, area and travel mode persist. Manual entry starts from the area center; device entry
 passes a foreground fix to the API. A returning device-location user is never prompted on launch:
@@ -78,7 +82,7 @@ corepack pnpm --filter @outrn/mobile lint
 corepack pnpm test
 corepack pnpm check:boundaries
 EXPO_PUBLIC_API_URL=https://YOUR_API_HOST EXPO_PUBLIC_DEMO_MODE=false corepack pnpm mobile:export
-# Exports clear the Metro cache and verify that demo photos do not ship in production.
+# Exports clear the Metro cache and check the build: the labelled representative photos ship, the demo text doesn't.
 ```
 
 CI checks mobile lint, typecheck, and all-platform export. Native device QA, VoiceOver/TalkBack,

@@ -119,8 +119,23 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - `outrn recommend --like live_music,art:0.5 --skip drinks` runs a search with a taste.
 - **Part 2: the apps.** Quick picks of interests on first open, then Go, Save and Dismiss sharpen the
   taste on the device; it goes with every search. Nothing about the person is kept on the server.
-- **Part 3: pop-ups without a venue.** Fireworks over the river, a street fair, a parade: events with
-  their own place and kind, from any source, mapped to interests.
+- **Part 3 (this PR): pop-ups without a venue.**
+  - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
+    held at an `event_site` venue, shown only through its events and never on its own. It is never
+    merged into a place nearby or made its child, and a site of the same name within 75 m is reused.
+  - **What an event is** (`event_kind`, up to 4 interests) comes from its source: schema.org types on
+    venues' own sites (a `MusicEvent` is live music), or an events file's `kinds`. Taste reads it
+    alongside the title.
+  - **`outrn ingest events --from-file`** loads any allowed source's events. The founder's own list
+    works today; every feed in part 4 converts to the same shape (see `docs/events.md`). Each event is
+    checked first: sensible times, a place inside the area, kinds that are interests, an https link,
+    no control characters. One that fails is left out with the reason, the rest are written.
+  - **Joining late:** a walk-in pop-up at its own site can be joined after it starts (a band on the
+    lawn), and the plan says so. A ticketed one still can't.
+  - **Age:** an age the event states, or "21+" in its title, is published. A drink event at a site of
+    its own with no age stated is probably 21+ (an estimate, so Check first for families).
+  - On the LES fixture: "Jazz on the Lawn" at 6pm is the first option at 5:45pm for someone who likes
+    live music.
 - **Part 4: every free event source** (needs network access and two free keys; see the decisions
   below): NYC Parks events and NYC Open Data (concerts, outdoor movies, fireworks, street fairs),
   library calendars (NYPL, Westchester), venues' own sites (the first-party job), Ticketmaster and
@@ -150,8 +165,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Heat is not "good weather for it".
   - Indoors, nothing is shown.
   - No contract change: condition kinds and caveat codes are open-ended.
-  - Next, in the UIs: render `conditions` (crowd, wait and weather). Neither app shows them yet;
-    today the rain reaches users through the caveat, and cold or heat through the fact line.
+  - In the UIs: done. The web card lists every condition's text. The mobile Now card shows the
+    brief ones (a wait's range, a busy or quiet crowd, rain, cold or heat), and its details every text.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
@@ -293,7 +308,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
-  - In the apps: cuisine chips beside the category shortcuts, and `cuisines` on the card.
+  - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
+    offers (cuisines, diets, must-haves) on its card.
   - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)

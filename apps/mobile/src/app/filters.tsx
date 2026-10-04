@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 import { router } from "expo-router";
-import type { RecommendationRequest } from "@outrn/contracts";
+import type { Option, RecommendationRequest } from "@outrn/contracts";
 import { useApp } from "../state/app";
 import {
   Button,
@@ -197,6 +197,30 @@ export default function FiltersScreen() {
           Leave these unselected to explore every kind of place.
         </Copy>
       </Group>
+      <Choices
+        title={`Cuisine (up to ${areas.limits.maxCuisines})`}
+        hint="Only food places serving one of these."
+        options={filters.cuisines}
+        selected={draft.cuisines}
+        max={areas.limits.maxCuisines}
+        onChange={(cuisines) => set({ cuisines })}
+      />
+      <Choices
+        title="Diets"
+        hint="Only places known to serve every one you pick."
+        options={filters.diets}
+        selected={draft.diets}
+        max={areas.limits.maxDiets}
+        onChange={(diets) => set({ diets })}
+      />
+      <Choices
+        title="Must-haves"
+        hint="Only places whose listing says so."
+        options={filters.features}
+        selected={draft.features}
+        max={areas.limits.maxFeatures}
+        onChange={(features) => set({ features })}
+      />
       <Button
         label="Reset filters"
         secondary
@@ -227,5 +251,46 @@ function Group({
       </Copy>
       {children}
     </View>
+  );
+}
+/** Chips for a list the request caps at `max`; none selected sends nothing. */
+function Choices({
+  title,
+  hint,
+  options,
+  selected = [],
+  max,
+  onChange,
+}: {
+  title: string;
+  hint: string;
+  options: Option[];
+  selected?: string[];
+  max: number;
+  onChange: (ids: string[] | undefined) => void;
+}) {
+  return (
+    <Group title={title}>
+      <View style={s.wrap}>
+        {options.map((o) => {
+          const on = selected.includes(o.id);
+          return (
+            <Chip
+              key={o.id}
+              label={o.label}
+              selected={on}
+              disabled={!on && selected.length >= max}
+              onPress={() => {
+                const next = on
+                  ? selected.filter((id) => id !== o.id)
+                  : [...selected, o.id];
+                onChange(next.length ? next : undefined);
+              }}
+            />
+          );
+        })}
+      </View>
+      <Copy style={s.muted}>{hint}</Copy>
+    </Group>
   );
 }

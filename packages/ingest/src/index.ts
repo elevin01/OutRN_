@@ -6,3 +6,4 @@ export * from "./parking.js";
 export * from "./photos.js";
 export * from "./overture.js";
 export * from "./weather.js";
+export * from "./events.js";

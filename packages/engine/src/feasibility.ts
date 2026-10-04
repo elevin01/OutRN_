@@ -1,5 +1,5 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
@@ -49,7 +49,19 @@ export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, numbe
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
   const f = c.facts.age_limit;
   const minAge = (f?.value as { minAge?: unknown } | undefined)?.minAge;
-  return f && typeof minAge === "number" ? { minAge, isEstimate: f.evidenceClass === "estimate" } : null;
+  if (f && typeof minAge === "number") return { minAge, isEstimate: f.evidenceClass === "estimate" };
+  // A drink event with no age stated, by it or its venue, is probably 21+ wherever it is held: an
+  // estimate, so Check first for a party with a minor and never an exclusion, as HAPPY_HOUR is never
+  // offered to one.
+  return isDrinkEvent(c) ? { minAge: 21, isEstimate: true } : null;
+}
+
+/** Drink is the event (a wine tasting, a beer garden, a bar crawl), by its kinds or its title. */
+function isDrinkEvent(c: Candidate): boolean {
+  if (c.kind !== "occurrence") return false;
+  const kinds = (c.facts.event_kind?.value as { interests?: unknown } | undefined)?.interests;
+  if (Array.isArray(kinds) && kinds.includes("drinks")) return true;
+  return isDrinkTitle(c.occurrence?.title ?? c.name);
 }
 
 export function deadlineOf(ctx: RequestContext): Date {
@@ -190,7 +202,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const unlistedProgramme = c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category);
   if (unlistedProgramme) {
     const site = (c.facts.website?.value as { value?: unknown } | undefined)?.value;
-    if (typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
+    // A pop-up's site has no programme to look up: without an event in the window it is nothing.
+    if (c.category === "event_site" || typeof site !== "string" || !websiteUrl(site) || minorInParty(ctx)) return out("NO_PROGRAMME");
     unresolved.push("PROGRAMME_UNLISTED");
   }
 
@@ -247,9 +260,12 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     const cutoff = o.entryCutoff ?? o.start;
     latestArrival = cutoff;
     if (arrival > cutoff) {
-      // Joining late qualifies only if the source says late entry is allowed.
-      if (o.lateEntry !== true) return out("EVENT_STARTED");
-      unresolved.push("LATE_ENTRY_UNCERTAIN");
+      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in pop-up
+      // in the open (a band on the lawn, a street fair, fireworks): no door to be late for. The plan
+      // still says it has started.
+      const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
+      if (o.lateEntry !== true && !walkInPopUp) return out("EVENT_STARTED");
+      if (!walkInPopUp) unresolved.push("LATE_ENTRY_UNCERTAIN");
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");

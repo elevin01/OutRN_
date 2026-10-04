@@ -98,6 +98,8 @@ const ACCEPTS: Record<Category, ReadonlySet<string>> = {
   arcade: new Set(PLAY),
   activity: new Set([...PLAY, ...CULTURE]),
   bookshop: new Set(BOOKS),
+  // A pop-up's site is no business: nothing Overture lists is one.
+  event_site: new Set(),
   other: new Set([...EAT_DRINK, ...SHOWS, ...CULTURE, ...OUTDOORS, ...PLAY, ...BOOKS, ...COMMUNITY]),
 };
 

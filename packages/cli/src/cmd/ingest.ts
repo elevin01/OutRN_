@@ -1,7 +1,8 @@
 import type { Command } from "commander";
 import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
-import { ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
+import { readFileSync } from "node:fs";
+import { ingestEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -68,6 +69,21 @@ export function registerIngest(program: Command): void {
       }
       console.log(`  facts      ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
       console.log(`  current    ${s.materialized.subjects} venues materialized · ${s.materialized.conflicts} conflicts · ${s.materialized.tasks} verification tasks`);
+    });
+
+  ingest
+    .command("events")
+    .description("Add or update events from a file: what is happening, when and where (a venue we know, or a place of its own such as a pier for fireworks)")
+    .requiredOption("--area <slug>", "service area slug")
+    .requiredOption("--from-file <path>", 'JSON: { "source": "founder", "events": [{ "id", "title", "start", "end"?, "place": { "venue" } | { "name", "lat", "lon" }, "kinds"?, "url"?, "price"?, "admission"?, "minAge"?, "status"?, "evidence" }] }')
+    .action(async (o: { area: string; fromFile: string }) => {
+      const db = getDb();
+      const t0 = Date.now();
+      const s = await ingestEvents(db, JSON.parse(readFileSync(o.fromFile, "utf8")), { areaSlug: o.area });
+      console.log(`run ${s.runId} · area ${s.area} · source ${s.source} · ${Date.now() - t0} ms`);
+      console.log(`  events     ${s.written} of ${s.events} written · ${s.sitesCreated} new event sites · ${s.rejected.length} left out`);
+      for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
+      if (s.rejected.length) process.exitCode = 1;
     });
 
   program

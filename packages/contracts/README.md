@@ -72,7 +72,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 - **1.5.0** (additive). Photos:
   - `photos` on every item (up to 3) and on place details: freely licensed photos of the place itself, lead first. Each has `url` (a copy 800 px wide or a little more, from Wikimedia's image servers: thumb.wikimedia.org or upload.wikimedia.org), `width`, `height`, `alt` (null when the source doesn't describe it), `credit`, `author`, `license`, `licenseUrl` and `sourceUrl`.
   - **Always show `credit` with the photo, linked to `sourceUrl`.** The license requires it.
-  - A photo is always of the place, tied to it by its OSM record or its Wikidata item; never a stock or "places like this" photo. Empty means none is known, so keep the category artwork.
+  - A photo is always of the place, tied to it by its OSM record or its Wikidata item; never a stock or "places like this" photo. Empty means none is known: show no photo, or a representative one only if it is labelled as not the place.
   - `attributions` includes "Photos: Wikimedia Commons contributors (credited with each photo)" whenever photos are shown.
   - Items stored by a 1.4 API page with `photos: []`.
   - In the fixtures, the photos are synthetic: their URLs don't load, so handle an image that fails to load.
