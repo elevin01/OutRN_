@@ -1861,3 +1861,16 @@ describe("pop-ups: an event site is nothing but its events", () => {
     for (const title of ["Jazz Night", "Cheese Tasting", "Ice Cream Tasting"]) expect(one(held("restaurant", title), family).class, title).toBe("ready");
   });
 });
+
+describe("events only: what is on, for a happening-soon nudge", () => {
+  it("leaves places out entirely and ranks the events as any search does", () => {
+    const show = venue({ kind: "occurrence", id: "o-jazz", category: "event_site", hours: null, admission: "walk_in", occurrence: { id: "o-jazz", title: "Jazz on the Lawn", start: fromLocal("2026-10-03", 19 * 60 + 30, TZ), end: fromLocal("2026-10-03", 21 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    const places = [venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "k1", category: "bookshop", hours: "Mo-Su 10:00-22:00" })];
+    const both = recommend([...places, show], ctx("2026-10-03 19:00", 180), POLICIES);
+    expect(both.all.map((e) => e.candidate.id).sort()).toEqual(["k1", "o-jazz", "r1"]);
+    const only = recommend([...places, show], ctx("2026-10-03 19:00", 180, { eventsOnly: true }), POLICIES);
+    expect(only.all.map((e) => e.candidate.id)).toEqual(["o-jazz"]);
+    expect(only.items.map((e) => e.candidate.id)).toEqual(["o-jazz"]);
+    expect(only.items[0]!.reasons).toContain("EVENT_STARTS_SOON");
+  });
+});

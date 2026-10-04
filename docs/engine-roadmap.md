@@ -126,6 +126,10 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     session, nothing about which options were seen kept.
   - Web: "What you like" in the search form (a like of 0.8 each; `skips=` in a link).
   - A pop-up's site shows a "Happening" icon in both apps.
+  - Happening soon (contract 1.10, `eventsOnly`): beside each fresh search the apps run it again for
+    events only (places are not candidates at all), without the kind-of-place filters. Mobile shows the
+    soonest event within two hours (a love first) as a pill on the Now deck that opens what's on; the
+    web lists up to three above the results. In-app first, as chosen; push notifications later.
 - **Part 3 (this PR): pop-ups without a venue.**
   - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
     held at an `event_site` venue, shown only through its events and never on its own. It is never

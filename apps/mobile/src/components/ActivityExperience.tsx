@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   Linking,
   Pressable,
@@ -60,6 +67,7 @@ export function ActivityExperience({
   onPrevious,
   onRefresh,
   onBack,
+  banner,
 }: {
   placeId: string;
   item?: RecommendationItem;
@@ -69,6 +77,8 @@ export function ActivityExperience({
   onPrevious?: () => void;
   onRefresh?: () => void;
   onBack?: () => void;
+  /** Under the category shortcuts: "Happening soon" on the Now deck. */
+  banner?: ReactNode;
 }) {
   const {
     saved,
@@ -264,7 +274,14 @@ export function ActivityExperience({
             timezone={zone}
             photos={photos}
             fallback={fallback}
-            strip={strip}
+            strip={
+              strip || banner ? (
+                <>
+                  {strip}
+                  {banner}
+                </>
+              ) : undefined
+            }
             height={viewport}
             saved={saved.some((p) => p.id === placeId)}
             saveDisabled={!hydrated || !category}

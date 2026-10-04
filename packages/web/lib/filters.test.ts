@@ -27,7 +27,7 @@ describe("cuisine, diets and must-haves on the web", () => {
     expect(requestFromQuery(query, areas)).toMatchObject({ cuisines: ["thai", "vietnamese"], diets: ["vegan", "halal"], features: ["wheelchair"] });
     // One cuisine travels as the form's select.
     expect(Object.fromEntries(new URL(hrefForRequest({ ...request, cuisines: ["thai"] }, areas), "https://x.example").searchParams)["cuisine"]).toBe("thai");
-    const resolved: ResolvedRequest = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, youngestAge: null, categories: [], cuisines: ["thai"], diets: ["vegan", "halal"], features: ["wifi"], at: "2026-10-03T22:30:00.000Z", atIsExplicit: false, origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in", taste: [] };
+    const resolved: ResolvedRequest = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, youngestAge: null, categories: [], cuisines: ["thai"], diets: ["vegan", "halal"], features: ["wifi"], at: "2026-10-03T22:30:00.000Z", atIsExplicit: false, origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in", taste: [], eventsOnly: false };
     expect(formFromResolved(resolved, areas)).toMatchObject({ cuisine: "thai", diets: "vegan,halal", features: "wifi" });
   });
 
@@ -43,7 +43,7 @@ describe("cuisine, diets and must-haves on the web", () => {
     const query = Object.fromEntries(new URL(hrefForRequest({ areaId: "les", windowMinutes: 120, taste: r.taste }, areas), "https://x.example").searchParams);
     expect(query).toMatchObject({ likes: "art,live_music", skips: "drinks" });
     expect(requestFromQuery(query, areas).taste).toEqual(r.taste);
-    const resolved = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, youngestAge: null, categories: [], cuisines: [], diets: [], features: [], taste: r.taste!, at: "2026-10-03T22:30:00.000Z", atIsExplicit: false, origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" } satisfies ResolvedRequest;
+    const resolved = { areaId: "les", windowMinutes: 120, travelMode: "walk", travelModeIsDefault: true, budget: { kind: "any" }, mood: null, company: null, youngestAge: null, categories: [], cuisines: [], diets: [], features: [], taste: r.taste!, at: "2026-10-03T22:30:00.000Z", atIsExplicit: false, origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in", eventsOnly: false } satisfies ResolvedRequest;
     expect(formFromResolved(resolved, areas)).toMatchObject({ likes: "art,live_music", skips: "drinks" });
   });
 
