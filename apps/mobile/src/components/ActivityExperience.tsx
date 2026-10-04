@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Linking,
   Pressable,
@@ -30,7 +30,11 @@ import {
   travelLabel,
 } from "../lib/presentation";
 import { useApp } from "../state/app";
+import { activeGroup, groupsFor } from "../lib/categories";
+import { photosFor } from "../lib/photos";
+import { representativePhotos } from "../lib/representative";
 import { ActivityProfile } from "./ActivityProfile";
+import { CategoryStrip } from "./CategoryStrip";
 import { Community } from "./Community";
 import { ExternalButton } from "./ExternalButton";
 import { RequiredNotes } from "./PlaceCard";
@@ -75,6 +79,8 @@ export function ActivityExperience({
     query,
     search,
     initialize,
+    areas,
+    busy,
   } = useApp();
   const [resource, setResource] = useState<{
     id: string;
@@ -117,6 +123,42 @@ export function ActivityExperience({
       : undefined;
   /* eslint-enable @typescript-eslint/no-require-imports */
   const expired = !!response && !demoMode && isExpired(response, now);
+  // The place's own photos (the card's at once, the details' once loaded); else representative ones.
+  const representative = representativePhotos(category?.id || "");
+  const photos = useMemo(
+    () =>
+      photosFor(
+        name,
+        category?.label || "place",
+        item?.photos.length ? item.photos : place?.photos,
+        representative,
+        (uri) => ({ uri }),
+      ),
+    [name, category?.label, item?.photos, place?.photos, representative],
+  );
+  // When none of the place's own photos loads: the representative ones, labelled as such.
+  const fallback = useMemo(
+    () =>
+      photosFor(name, category?.label || "place", undefined, representative, (uri) => ({ uri })),
+    [name, category?.label, representative],
+  );
+  // Category shortcuts on the deck (not on a place opened from Saved).
+  const groups = useMemo(
+    () => (areas ? groupsFor(areas.filters.categories, areas.limits.maxCategories) : []),
+    [areas],
+  );
+  const strip =
+    item && response && query && groups.length > 1 ? (
+      <CategoryStrip
+        groups={groups}
+        active={activeGroup(groups, query.categories)}
+        disabled={busy}
+        onSelect={(g) => {
+          const { categories: _previous, ...rest } = query;
+          void search(g.categories.length ? { ...rest, categories: g.categories } : rest);
+        }}
+      />
+    ) : undefined;
   const closed =
     place?.status === "closed_permanently" ||
     place?.status === "closed_temporarily";
@@ -192,6 +234,8 @@ export function ActivityExperience({
       <ScrollView
         ref={scroll}
         testID="activity-stream"
+        directionalLockEnabled
+        nestedScrollEnabled
         showsVerticalScrollIndicator={false}
         onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > 180)}
         scrollEventThrottle={32}
@@ -209,13 +253,16 @@ export function ActivityExperience({
           }}
         >
           <ActivityProfile
+            key={placeId}
             item={expired ? undefined : item}
             place={place}
             name={name}
             category={category?.label || "Loading"}
             area={response?.area.name || "OutRN"}
             timezone={zone}
-            photos={demo?.photos}
+            photos={photos}
+            fallback={fallback}
+            strip={strip}
             height={viewport}
             saved={saved.some((p) => p.id === placeId)}
             saveDisabled={!hydrated || !category}
@@ -533,7 +580,7 @@ export function ActivityExperience({
                 ...(place?.attributions || []),
               ]),
             ].join(" · ")}
-            {demo ? " · Illustrative photos: Unsplash" : ""}
+            {demo ? " · Illustrative photos: Unsplash" : photos.some((p) => p.kind === "representative") ? " · Representative photos: Unsplash" : ""}
           </Copy>
         </View>
       </ScrollView>
