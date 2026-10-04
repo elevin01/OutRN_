@@ -53,12 +53,13 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
   scheduled cleanup or guaranteed deletion deadline. Going to an option nudges its interests up
   (+0.2), saving it a little (+0.1, undone by
   unsaving), and "Not for me" down (-0.15), through what the card says it is (contract 1.9
-  `interests`), once per option and action in a session.
-- Happening soon (contract 1.10 `eventsOnly`): beside each fresh search, the same search for events
-  only, without its kind-of-place filters. An event starting within two hours (one you love first, not
-  one already on the shortlist) shows as a pill under the category shortcuts; tapping it opens what's
-  on, one event per screen, and the cross hides it for the session. A failure shows nothing. "Not for me" also leaves that option out of
+  `interests`), once per option and action in a session. "Not for me" also leaves that option out of
   fresh searches for the rest of the session. Which options were seen or chosen is never stored.
+- Happening soon (contract 1.10 `eventsOnly`): beside each fresh search, the same search for events
+  only, without its kind-of-place filters. It sends your interests and is stored like any search. An
+  event starting within two hours (one you love first, not one already on the shortlist) shows as a
+  pill under the category shortcuts; tapping it opens what's on, one event per screen, and the cross
+  hides it for the session. A failure shows nothing.
 
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
