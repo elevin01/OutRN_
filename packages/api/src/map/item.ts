@@ -4,6 +4,9 @@ import { candidateInterests, caveatNotes, cuisinesOf, dietLevelsOf, dietsFromNam
 import { labelOf } from "../config.js";
 import { ageLimitFrom, cuisineOptions, dietOptions, directionsUrl, featureOptions, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "./values.js";
 
+/** Reasons that must stay on the card: a park's hours are inferred, so its times are estimates. */
+const REQUIRED_REASONS: ReadonlySet<string> = new Set(["DAWN_TO_DUSK"]);
+
 const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
 
 /**
@@ -49,7 +52,8 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
       arriveAt: t.arrival.toISOString(),
       usefulMinutes: t.usefulMinutes,
       finishBy: t.latestFinish.toISOString(),
-      closesAt: t.closesAt?.toISOString() ?? null,
+      // A closing time only when it is known: an inferred dusk is finishBy, named by DAWN_TO_DUSK.
+      closesAt: t.closesAt && !t.closesAtIsEstimate ? t.closesAt.toISOString() : null,
       visit: { style: t.visit.style, label: VISIT_LABEL[t.visit.style] ?? "Visit", minMinutes: t.visit.minMinutes, typicalMinutes: t.visit.typicalMinutes, isEstimate: t.visit.isEstimate },
     },
     plan: planSteps(e, ctx).map((s) => ({ kind: s.kind, at: s.at.toISOString(), isEstimate: s.isEstimate, text: s.text })),
@@ -57,7 +61,7 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
     conditions: t.conditions.map((x) => ({ kind: x.kind, level: x.level, basis: x.basis, isEstimate: x.isEstimate, minutes: x.minutes, reportedAt: x.reportedAt?.toISOString() ?? null, text: x.text })),
     price: priceOf(c.facts.price),
     ageLimit: ageLimitFrom(c.facts.age_limit),
-    reasons: reasonNotes(e, ctx.timezone).map((n) => ({ ...n, required: false })),
+    reasons: reasonNotes(e, ctx.timezone).map((n) => ({ ...n, required: REQUIRED_REASONS.has(n.code) })),
     caveats: caveatNotes(e).map((n) => ({ ...n, required: true })),
     copy: { summary: copy.factLine, sentence: copy.sentence || null, caveat: copy.caveat, action: copy.cta ?? "Check first" },
     actions: {

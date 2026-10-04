@@ -135,6 +135,8 @@ export type ReasonCode =
   | "SHORT_TRAVEL"
   | "ENOUGH_TIME"
   | "OPEN_LATE"
+  /** A park with no listed hours, in daylight: usually open dawn to dusk (an estimate). */
+  | "DAWN_TO_DUSK"
   | "CLOSES_SOON"
   | "FITS_BUDGET"
   | "FREE"
@@ -236,6 +238,11 @@ export interface TimingBase {
   minUsefulMinutes: number;
   minUsefulIsEstimate: boolean;
   closesAt: Date | null;
+  /**
+   * True when `closesAt` is inferred, not published: a park with no listed hours closes at dusk.
+   * Plans and copy say so; it is never shown as a confirmed closing time.
+   */
+  closesAtIsEstimate: boolean;
   deadline: Date;
   returnTravel: TravelEstimate | null;
   /**

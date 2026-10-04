@@ -30,4 +30,10 @@ describe("happening soon on the web", () => {
     expect(happeningSoon(page([at(20), at(90, true), at(SOON_MINUTES + 30)]), asOf).map((i) => i.id)).toEqual(["90-true", "20-false"]);
     expect(happeningSoon(null, asOf)).toEqual([]);
   });
+
+  it("never labels an expired search or an ended event as happening now", () => {
+    expect(happeningSoon(events, Date.parse(events.expiresAt))).toEqual([]);
+    const ended = { ...at(-20), event: { ...show.event!, startsAt: new Date(asOf - 20 * 60_000).toISOString(), endsAt: new Date(asOf).toISOString() } };
+    expect(happeningSoon(page([ended]), asOf)).toEqual([]);
+  });
 });

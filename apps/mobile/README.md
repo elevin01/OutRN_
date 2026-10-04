@@ -47,8 +47,11 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
   tab navigation but deliberately does not survive process restart. No location permission is used.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 - Your interests (contract 1.8 `taste`): quick picks on first open, and any time from You (tap once
-  for a like, twice for not for you). Kept on the device and sent with each fresh search, never kept
-  by the API. Going to an option nudges its interests up (+0.2), saving it a little (+0.1, undone by
+  for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
+  stores sent weights with its paging snapshot. Results expire after 20 minutes; snapshots become
+  eligible for deletion 24 hours after expiry and are removed by a later search. There is no
+  scheduled cleanup or guaranteed deletion deadline. Going to an option nudges its interests up
+  (+0.2), saving it a little (+0.1, undone by
   unsaving), and "Not for me" down (-0.15), through what the card says it is (contract 1.9
   `interests`), once per option and action in a session.
 - Happening soon (contract 1.10 `eventsOnly`): beside each fresh search, the same search for events

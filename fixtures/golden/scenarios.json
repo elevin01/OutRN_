@@ -145,12 +145,13 @@
     },
     {
      "rank": 5,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
       "FREE",
       "LANDMARK"
      ],
@@ -219,6 +220,20 @@
     },
     {
      "rank": 4,
+     "name": "Peretz Square",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Perrotin New York",
      "category": "gallery",
      "status": "ready",
@@ -231,28 +246,16 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Petrosino Square",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Empirical Nonsense",
-     "category": "gallery",
+     "name": "Sara D. Roosevelt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -558,23 +561,25 @@
     },
     {
      "rank": 5,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
+      "FREE",
       "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Lombardi's Pizza",
-     "category": "restaurant",
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
       "LANDMARK"
@@ -651,13 +656,14 @@
     },
     {
      "rank": 6,
-     "name": "Taikii Cafe",
-     "category": "cafe",
+     "name": "Sara D. Roosevelt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -736,14 +742,15 @@
     },
     {
      "rank": 6,
-     "name": "Perrotin New York",
-     "category": "gallery",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -2093,6 +2100,19 @@
     },
     {
      "rank": 3,
+     "name": "Bicentennial Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
      "name": "Slave To the Grind",
      "category": "cafe",
      "status": "ready",
@@ -2104,7 +2124,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 5,
      "name": "Bronxville Public Library",
      "category": "library",
      "status": "ready",
@@ -2114,18 +2134,6 @@
       "ENOUGH_TIME",
       "OPEN_LATE",
       "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Scalini Osteria",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
      ],
      "caveats": []
     },
@@ -2189,6 +2197,20 @@
     },
     {
      "rank": 4,
+     "name": "Bicentennial Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "CLOSES_SOON",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Häagen-Dazs",
      "category": "dessert",
      "status": "ready",
@@ -2200,19 +2222,8 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Hunan III",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Scalini Osteria",
+     "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -2231,6 +2242,20 @@
    "top": [
     {
      "rank": 1,
+     "name": "Bicentennial Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
@@ -2243,60 +2268,44 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Scalini Osteria",
-     "category": "restaurant",
+     "rank": 3,
+     "name": "Andrus Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
       "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Hunt's Woods Park",
-     "category": "park",
-     "status": "check_first",
-     "reasons": [
-      "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": [
-      "HOURS_APPROXIMATE"
-     ]
-    },
-    {
      "rank": 4,
-     "name": "J.C. Fogarty's",
-     "category": "restaurant",
+     "name": "Main Street Playground",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
       "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Yonkers Public Library Grinton I. Will Branch",
-     "category": "library",
+     "name": "Maltby Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
+      "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },

@@ -92,8 +92,8 @@ export default function InterestsScreen() {
       <Row>
         <Icon name="shield" size={18} color={colors.muted} />
         <Copy style={[s.muted, { flex: 1, fontSize: 13 }]}>
-          Your interests stay on this device. Each search sends them to rank
-          what’s open; OutRN doesn’t keep them.
+          Your interests are saved on this device and sent with searches.
+          OutRN also stores them with your search results, without an account.
         </Copy>
       </Row>
     </Screen>

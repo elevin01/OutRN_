@@ -33,4 +33,10 @@ describe("happening soon", () => {
   it("keeps one on now that the engine still offers (a walk-in pop-up joined late)", () => {
     expect(happeningSoon(withItems([startingIn(show, -20)]), asOf)).not.toBeNull();
   });
+
+  it("stops nudging expired searches and events that have ended", () => {
+    expect(happeningSoon(events, Date.parse(events.expiresAt))).toBeNull();
+    const ended = { ...startingIn(show, -20), event: { ...show.event!, startsAt: new Date(asOf - 20 * 60_000).toISOString(), endsAt: new Date(asOf).toISOString() } };
+    expect(happeningSoon(withItems([ended]), asOf)).toBeNull();
+  });
 });

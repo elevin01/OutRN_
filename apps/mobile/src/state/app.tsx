@@ -131,6 +131,11 @@ function useAppState() {
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
   ) {
+    if ("areaId" in body) {
+      // A new area or party must never show the previous search's event nudge while loading.
+      happeningController.current?.abort();
+      setHappening(undefined);
+    }
     searchController.current?.abort();
     const controller = new AbortController();
     searchController.current = controller;

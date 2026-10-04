@@ -1,6 +1,6 @@
 import { contentHash, haversineMetres, isDrinkTitle, isInterest, websiteUrl, type FactInput, type Interest, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, audit, getArea, loadParkingRule, withTx, type Db, type Queryable } from "@outrn/db";
-import { materializeSubjects, writeFacts } from "@outrn/facts";
+import { materializeSubjects, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { eventSiteFor, matchKey } from "@outrn/identity";
 import { finishRun, startRun } from "@outrn/sources";
 import { z } from "zod";
@@ -223,8 +223,14 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
         );
         const occurrenceId = occ.rows[0]!.id;
         occurrences.push(occurrenceId);
-        const w = await writeFacts(tx, eventFacts(c, occurrenceId, atSite, source, runId, now));
+        const facts = eventFacts(c, occurrenceId, atSite, source, runId, now);
+        const w = await writeFacts(tx, facts);
         if (w.rejected.length) throw new Error(`event ${e.id}: facts rejected: ${w.rejected.map((r) => `${r.attribute}: ${r.reason}`).join("; ")}`);
+        // This source's record replaces its previous claims, including derived age estimates.
+        // Other sources and events omitted from the file keep their own facts.
+        for (const from of new Set([source, "category_policy"])) {
+          await retractSourceFactsExcept(tx, "occurrence", occurrenceId, from, facts.filter((f) => f.sourceId === from).map((f) => f.attribute));
+        }
         summary.written++;
       }
       if (occurrences.length) await materializeSubjects(tx, "occurrence", occurrences, now);

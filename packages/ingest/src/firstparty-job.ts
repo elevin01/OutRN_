@@ -1,6 +1,6 @@
 import type { Attribute, FactInput } from "@outrn/core";
 import { assertSourceAllowed, withTx, type Db } from "@outrn/db";
-import { materializeSubjects, writeFacts } from "@outrn/facts";
+import { materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
 import { fetchAndExtract, finishRun, startRun, FetchBlocked, FetchFailed, type FirstPartyExtraction } from "@outrn/sources";
 
 /**
@@ -94,6 +94,9 @@ export async function runFirstParty(db: Db, opts: { limit?: number; force?: bool
             const id = r.rows[0]?.id;
             if (id && ev.kinds.length) {
               await writeFacts(tx, [{ subjectKind: "occurrence", subjectId: id, attribute: "event_kind", value: { interests: ev.kinds }, evidenceClass: "published", sourceId: "firstparty", evidence: `${x.url} :: ${ev.evidence}`.slice(0, 1200), fetchedAt: x.fetchedAt, sourceUpdatedAt: null, confidence: 0.85, lineageGroup: `firstparty:${new URL(x.url).hostname}` }]);
+              kinded.push(id);
+            } else if (id && (await retractSourceFacts(tx, "occurrence", id, "firstparty"))) {
+              // This path only writes event_kind: a plain Event withdraws the old MusicEvent kind.
               kinded.push(id);
             }
           }

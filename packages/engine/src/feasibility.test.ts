@@ -104,7 +104,8 @@ describe("feasibility: opening hours", () => {
   });
 
   it("no hours at all → Check first with HOURS_UNKNOWN, never claimed open", () => {
-    const e = one(venue({ category: "park", hours: null }), ctx("2026-10-03 15:00", 120));
+    // (A park in daylight is the exception: usually open dawn to dusk, below.)
+    const e = one(venue({ category: "cafe", hours: null }), ctx("2026-10-03 15:00", 120));
     expect(e.class).toBe("check_first");
     expect(e.unresolved).toContain("HOURS_UNKNOWN");
     expect(e.cta).toBe("check");
@@ -1690,13 +1691,14 @@ describe("taste: what this person likes leads", () => {
     expect(galleries(ctx("2026-10-03 15:00", 180, { taste: like([["art", 1]]) }))).toBe(2);
   });
 
-  it("keeps a love on the first page past mild likes: someone who loves parks and likes food sees a park", () => {
+  it("keeps a love on the first page past mild likes: someone who loves the outdoors and likes food sees a garden", () => {
+    // A garden with no hours is Check first (a park in daylight would be Ready, dawn to dusk).
     const cands = [
       venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:00" }),
       venue({ id: "r2", category: "restaurant", hours: "Mo-Su 11:00-23:00" }),
       venue({ id: "r3", category: "restaurant", hours: "Mo-Su 11:00-23:00" }),
       venue({ id: "r4", category: "restaurant", hours: "Mo-Su 11:00-23:00" }),
-      venue({ id: "p1", category: "park", hours: null }),
+      venue({ id: "p1", category: "garden", hours: null }),
     ];
     const s = recommend(cands, ctx("2026-10-03 12:00", 180, { taste: like([["outdoors", 1], ["food", 0.5]]) }), POLICIES);
     expect(s.all.find((e) => e.candidate.id === "r1")!.scores.taste).toBeLessThan(TASTE.loved);
@@ -1772,6 +1774,69 @@ describe("taste: what this person likes leads", () => {
     expect(bar.scores.taste).toBe(1);
     expect(bar.reasons).toContain("TASTE_MATCH");
     expect(grown.items.map((e) => e.candidate.id).some((id) => adult.has(id))).toBe(true);
+  });
+});
+
+describe("parks without hours: usually open dawn to dusk", () => {
+  const park = (over: Partial<Candidate> & { hours?: string | null } = {}) => venue({ id: "p", category: "park", hours: null, ...over });
+
+  it("is an option in daylight on sunrise-to-sunset hours, says so, and ends by dusk", () => {
+    const noon = one(park(), ctx("2026-10-03 12:00", 180));
+    expect(noon.class).toBe("ready");
+    expect(noon.unresolved).not.toContain("HOURS_UNKNOWN");
+    expect(noon.reasons).toContain("DAWN_TO_DUSK");
+    expect(reasonNotes(noon, TZ).find((n) => n.code === "DAWN_TO_DUSK")?.text).toBe("usually open dawn to dusk");
+    // Late in the afternoon the visit ends at dusk, which the card names.
+    const late = one(park(), ctx("2026-10-03 17:30", 180));
+    const dusk = late.timing!.closesAt!;
+    expect(dusk.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 18 * 60 + 20, TZ).getTime());
+    expect(dusk.getTime()).toBeLessThan(fromLocal("2026-10-03", 18 * 60 + 50, TZ).getTime());
+    expect(late.timing!.latestFinish.getTime()).toBeLessThanOrEqual(dusk.getTime());
+    // Dusk is an estimate wherever it shows: the fact line, the wrap-up, and the timing itself.
+    expect(late.timing!.closesAtIsEstimate).toBe(true);
+    expect(explain(late, TZ).factLine).toMatch(/until dusk \(~6:\d\dpm\)/);
+    const wrap = planSteps(late, { timezone: TZ }).find((s) => s.kind === "wrap_up")!;
+    expect(wrap).toMatchObject({ at: late.timing!.latestFinish, isEstimate: true });
+    expect(wrap.text).toMatch(/, around dusk$/);
+  });
+
+  it("closes at a published closure before dusk, named as a closing, not as dusk", () => {
+    const c = park();
+    const sixPm = fromLocal("2026-10-03", 18 * 60, TZ);
+    c.facts.scheduled_closure = { value: { at: sixPm.toISOString() }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    const e = one(c, ctx("2026-10-03 17:00", 180));
+    expect(e.reasons).toContain("DAWN_TO_DUSK");
+    expect(e.timing!.latestFinish.getTime()).toBe(sixPm.getTime());
+    expect(e.timing!.closesAt!.getTime()).toBe(sixPm.getTime());
+    expect(e.timing!.closesAtIsEstimate).toBe(false);
+    expect(explain(e, TZ).factLine).toMatch(/until 6pm/);
+    expect(explain(e, TZ).factLine).not.toMatch(/dusk/);
+    expect(planSteps(e, { timezone: TZ }).find((s) => s.kind === "wrap_up")).toMatchObject({ isEstimate: false, text: "Wrap up by 6pm, when it closes" });
+  });
+
+  it("waits for sunrise when the window allows, and keeps unknown hours otherwise", () => {
+    const early = one(park(), ctx("2026-10-03 06:00", 180));
+    expect(early.reasons).toEqual(expect.arrayContaining(["WAIT_FOR_OPENING", "DAWN_TO_DUSK"]));
+    expect(early.timing!.arrival.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 6 * 60 + 45, TZ).getTime());
+    // Sunrise is inferred too: the opening and the arrival say "around".
+    expect(reasonNotes(early, TZ).find((n) => n.code === "WAIT_FOR_OPENING")?.text).toMatch(/^opens around sunrise \(~6:\d\dam\)$/);
+    expect(planSteps(early, { timezone: TZ }).find((s) => s.kind === "arrive")).toMatchObject({ isEstimate: true, text: expect.stringMatching(/^Arrive around sunrise, 6:\d\dam$/) });
+    // After dark it says nothing it does not know: a park open till 1am is still an option to check.
+    const night = one(park(), ctx("2026-10-03 21:00", 120));
+    expect(night.reasons).not.toContain("DAWN_TO_DUSK");
+    expect(night.unresolved).toContain("HOURS_UNKNOWN");
+    // Too little daylight left for a visit: unknown hours, not a promise.
+    const dusk = one(park(), ctx("2026-10-03 18:20", 120));
+    expect(dusk.reasons).not.toContain("DAWN_TO_DUSK");
+  });
+
+  it("leaves a garden, and a park with hours of its own, as they were", () => {
+    const garden = one(venue({ id: "g", category: "garden", hours: null }), ctx("2026-10-03 12:00", 180));
+    expect(garden.reasons).not.toContain("DAWN_TO_DUSK");
+    expect(garden.unresolved).toContain("HOURS_UNKNOWN");
+    const listed = one(park({ hours: "Mo-Su 06:00-22:00" }), ctx("2026-10-03 12:00", 180));
+    expect(listed.reasons).not.toContain("DAWN_TO_DUSK");
+    expect(listed.timing!.closesAt!.getTime()).toBe(fromLocal("2026-10-03", 22 * 60, TZ).getTime());
   });
 });
 

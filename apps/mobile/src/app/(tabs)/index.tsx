@@ -62,6 +62,7 @@ export default function NowScreen() {
   const expired = result && !demoMode && isExpired(result, now);
   // Happening soon: an event starting within two hours, one this person loves first; not one already
   // on the shortlist, and not one hidden this session.
+  const happeningNow = demoMode && happening ? Date.parse(happening.asOf) : now;
   const nudge = happeningSoon(
     happening && {
       ...happening,
@@ -70,7 +71,7 @@ export default function NowScreen() {
           !hiddenNudges.has(i.id) && !result?.items.some((r) => r.id === i.id),
       ),
     },
-    now,
+    happeningNow,
   );
   if (!busy && !error && result && !expired && areas?.areas.length)
     return (
@@ -84,8 +85,8 @@ export default function NowScreen() {
             <HappeningPill
               item={nudge}
               timezone={happening.area.timezone}
-              now={now}
-              onOpen={() => router.push("/happening")}
+              now={happeningNow}
+              onOpen={() => router.push({ pathname: "/happening", params: { id: nudge.id } })}
               onHide={() => hideNudge(nudge.id)}
             />
           ) : undefined

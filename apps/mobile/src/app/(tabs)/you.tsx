@@ -62,10 +62,10 @@ export default function YouScreen() {
         <Icon name="shield" />
         <Copy style={{ fontWeight: "700" }}>On this device</Copy>
         <Copy>
-          No account needed. Saved places and your interests stay on this
-          device; each search sends your interests to rank what’s open, and
-          OutRN doesn’t keep them. OutRN doesn’t request or track your device
-          location.
+          No account needed. Saved places and your interests are saved on this
+          device. Searches send your interests to OutRN, which also stores them
+          with your search results. They aren’t linked to an account. OutRN
+          doesn’t request or track your device location.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>

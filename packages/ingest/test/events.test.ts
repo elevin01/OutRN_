@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
+import { writeFacts, materializeSubjects } from "@outrn/facts";
 import { ingestEvents } from "../src/events.js";
 import { addFounderVenue, resolveVenueRef } from "../src/founder.js";
 import { ingestOsmArea } from "../src/pipeline.js";
@@ -101,6 +102,45 @@ describe.skipIf(!available)("events from a file", () => {
     await ingestEvents(db, { source: "founder", events: [{ id: "beer-1", title: "Beer Garden on the Pier", start: "2026-10-03T15:00:00-04:00", end: "2026-10-03T20:00:00-04:00", place: PIER, evidence: "flyer" }] }, { areaSlug: "les", now: NOW });
     const [occ] = await occurrence("founder:beer-1");
     expect(await fact("occurrence", occ!.id, "age_limit")).toMatchObject({ value: { minAge: 21 }, evidence_class: "estimate", source_ids: ["category_policy"] });
+  });
+
+  it("withdraws what the next file no longer says, and an age estimate the event no longer justifies", async () => {
+    const tasting = (over: Record<string, unknown> = {}) => ({ id: "tasting-1", title: "Wine Tasting", start: "2026-10-10T19:00:00-04:00", end: "2026-10-10T21:00:00-04:00", place: PIER, evidence: "flyer", ...over });
+    const ingest = (over: Record<string, unknown> = {}) => ingestEvents(db, { source: "founder", events: [tasting(over)] }, { areaSlug: "les", now: NOW });
+    await ingest({ minAge: 0, price: { free: true }, admission: "walk_in", kinds: ["drinks"], url: "https://www.eventbrite.com/e/tasting-1" });
+    const [occ] = await occurrence("founder:tasting-1");
+    expect(await fact("occurrence", occ!.id, "age_limit")).toMatchObject({ value: { minAge: 0 }, evidence_class: "published" });
+    // The next file says none of it: none of it stands, and a drink event with no age stated is probably 21+ again.
+    await ingest();
+    for (const attribute of ["price", "admission", "event_kind", "website"]) expect(await fact("occurrence", occ!.id, attribute)).toBeUndefined();
+    expect(await fact("occurrence", occ!.id, "age_limit")).toMatchObject({ value: { minAge: 21 }, evidence_class: "estimate", source_ids: ["category_policy"] });
+    // No longer a drink event: the estimate goes.
+    await ingest({ title: "Jazz on the Pier" });
+    expect(await fact("occurrence", occ!.id, "age_limit")).toBeUndefined();
+    // An age the title stated goes with the words.
+    await ingest({ title: "Jazz on the Pier (18+)" });
+    expect(await fact("occurrence", occ!.id, "age_limit")).toMatchObject({ value: { minAge: 18 }, evidence_class: "published" });
+    await ingest({ title: "Jazz on the Pier" });
+    expect(await fact("occurrence", occ!.id, "age_limit")).toBeUndefined();
+  });
+
+  it("keeps other sources, event-site facts, and events absent from an update", async () => {
+    const updating = fireworks({ id: "scope-updated" });
+    await ingestEvents(db, { source: "founder", events: [updating, fireworks({ id: "scope-absent" })] }, { areaSlug: "les", now: NOW });
+    const [updated] = await occurrence("founder:scope-updated");
+    const [absent] = await occurrence("founder:scope-absent");
+    const written = await writeFacts(db, [{
+      subjectKind: "occurrence", subjectId: updated!.id, attribute: "price",
+      value: { currency: "USD", min: 9, max: 9 }, evidenceClass: "published",
+      sourceId: "firstparty", evidence: "organizer's ticket page", fetchedAt: NOW,
+      sourceUpdatedAt: null, confidence: 0.9, lineageGroup: "firstparty:test",
+    }]);
+    expect(written.rejected).toEqual([]);
+    await materializeSubjects(db, "occurrence", [updated!.id], NOW);
+    await ingestEvents(db, { source: "founder", events: [{ ...updating, price: undefined }] }, { areaSlug: "les", now: NOW });
+    expect(await fact("occurrence", updated!.id, "price")).toMatchObject({ value: { min: 9 }, source_ids: ["firstparty"] });
+    expect(await fact("occurrence", absent!.id, "price")).toMatchObject({ value: { free: true }, source_ids: ["founder"] });
+    expect(await fact("venue", updated!.venue_id, "category")).toMatchObject({ value: { value: "event_site" } });
   });
 
   it("leaves out what fails a check, says why, and writes the rest", async () => {

@@ -12,10 +12,12 @@ export function happeningSoon(
   response: RecommendationResponse | undefined,
   now: number,
 ): RecommendationItem | null {
-  if (!response) return null;
+  if (!response || !(Date.parse(response.expiresAt) > now)) return null;
   const soon = response.items.filter((i) => {
     if (i.kind !== "event" || !i.event) return false;
     const starts = Date.parse(i.event.startsAt);
+    const ends = Date.parse(i.event.endsAt ?? i.timing.finishBy);
+    if (!Number.isFinite(ends) || ends <= now) return false;
     return Number.isFinite(starts) && starts - now <= SOON_MINUTES * 60_000;
   });
   return (

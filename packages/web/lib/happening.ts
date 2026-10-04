@@ -17,10 +17,12 @@ export function eventsOnlyOf(request: RecommendationRequest): RecommendationRequ
  * the engine has checked), loves first, at most `max`.
  */
 export function happeningSoon(response: RecommendationResponse | null | undefined, now: number, max = 3): RecommendationItem[] {
-  if (!response) return [];
+  if (!response || !(Date.parse(response.expiresAt) > now)) return [];
   const soon = response.items.filter((i) => {
     if (i.kind !== "event" || !i.event) return false;
     const starts = Date.parse(i.event.startsAt);
+    const ends = Date.parse(i.event.endsAt ?? i.timing.finishBy);
+    if (!Number.isFinite(ends) || ends <= now) return false;
     return Number.isFinite(starts) && starts - now <= SOON_MINUTES * 60_000;
   });
   const loved = (i: RecommendationItem) => i.reasons.some((r) => r.code === "TASTE_MATCH");
