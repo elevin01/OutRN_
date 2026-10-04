@@ -4,7 +4,9 @@ import type { TasteWeight } from "@outrn/contracts";
  * What this person likes doing, kept on this device and sent with each search (`request.taste`).
  * Quick picks on first open set it; what they do with an option nudges it: going, saving, and turning
  * one down ("Not for me"), through the interests the card says it is (`item.interests`). The API
- * never keeps it, and nothing here records which options were seen or chosen.
+ * stores the sent weights in paging snapshots alongside each search's results. Expired snapshots
+ * become eligible for cleanup after another 24 hours; cleanup runs on subsequent searches.
+ * Nothing here records which options were seen or chosen.
  */
 export interface Taste {
   /** Whether the quick picks were shown (answered or skipped), so they are offered once. */
