@@ -45,6 +45,7 @@ export function ActivityProfile({
   onNext,
   onDetails,
   onBack,
+  introduction,
 }: {
   item?: RecommendationItem;
   place?: PlaceDetails;
@@ -67,6 +68,7 @@ export function ActivityProfile({
   onNext?: () => void;
   onDetails: () => void;
   onBack?: () => void;
+  introduction?: string;
 }) {
   const [photo, setPhoto] = useState(0);
   const [photoWidth, setPhotoWidth] = useState(0);
@@ -79,14 +81,13 @@ export function ActivityProfile({
   // ones (labelled as such); when none of those loads either, no photo: never the category's icon.
   const shown = photosToShow(photos, fallback, failed);
   const current = shown[Math.min(photo, Math.max(0, shown.length - 1))];
-  const credit = current?.creditUrl ? safeExternalUrl(current.creditUrl) : undefined;
+  const credit = current?.creditUrl
+    ? safeExternalUrl(current.creditUrl)
+    : undefined;
   const inset = useSafeAreaInsets();
   // Keep the selected page aligned after a resize or a change in photo count.
   useEffect(() => {
-    const index = Math.min(
-      currentPhoto.current,
-      Math.max(0, shown.length - 1),
-    );
+    const index = Math.min(currentPhoto.current, Math.max(0, shown.length - 1));
     currentPhoto.current = index;
     setPhoto(index);
     pager.current?.scrollTo({ x: index * photoWidth, animated: false });
@@ -198,6 +199,14 @@ export function ActivityProfile({
         </Copy>
       </View>
       {strip}
+      {introduction && (
+        <Copy
+          pointerEvents="none"
+          style={[styles.caption, { fontSize: 13, lineHeight: 19 }]}
+        >
+          {introduction}
+        </Copy>
+      )}
       <Copy pointerEvents="none" style={styles.caption}>
         {demoMode
           ? "Demo places · illustrative photos and posts"
@@ -272,11 +281,16 @@ export function ActivityProfile({
               accessibilityRole="link"
               accessibilityLabel={`Photo credit: ${current.credit}`}
               disabled={!credit}
-              onPress={() => credit && void Linking.openURL(credit).catch(() => undefined)}
+              onPress={() =>
+                credit && void Linking.openURL(credit).catch(() => undefined)
+              }
               style={styles.creditHit}
             >
               <Copy style={styles.credit} numberOfLines={2}>
-                {current.kind === "representative" ? "Representative photo" : "Photo"}: {current.credit}
+                {current.kind === "representative"
+                  ? "Representative photo"
+                  : "Photo"}
+                : {current.credit}
               </Copy>
             </Pressable>
           )}

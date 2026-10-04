@@ -31,11 +31,15 @@ environment variables are bundled into the app; never put secrets in them. Relea
 production APIs must allow the web preview's origin if web access is required.
 
 Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROVED.md).
+First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](docs/ONBOARDING.md).
 
 ## Included
 
 - Warm paper, DM Sans, orange actions, category artwork, accessible 44+ point controls, safe areas,
   native stack navigation, and Now / Saved / You tabs.
+- A two-step first run: photo interest choices (or “Surprise me”), then foreground location or a
+  supported area. Choices and progress are saved locally; the first result uses the existing API.
+  Interests can be changed from You → What you like.
 - One activity per screen, a right-side Save / Maps / Next rail, swipes between photos, scrolling details, hidden filters, API-generated
   area choices, frozen cursor paging, pull to refresh,
   low-supply explanations, expired searches, connection errors, and loading states.
@@ -44,10 +48,11 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
 - Saved place identities in device storage; current details are fetched when opened. Saving does not
   cache eligibility, hours, or a recommendation. Storage failures are visible.
 - Session-only outing, directions handoff, manual arrival, and finish. A selected outing survives
-  tab navigation but deliberately does not survive process restart. No location permission is used.
+  tab navigation but deliberately does not survive process restart. Foreground location is optional;
+  exact coordinates remain in memory, with no background tracking.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
-- Your interests (contract 1.8 `taste`): quick picks on first open, and any time from You (tap once
-  for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
+- Your interests (contract 1.8 `taste`): photo choices during setup and detailed controls from You
+  (tap once for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
   stores sent weights with its paging snapshot. Results expire after 20 minutes; snapshots become
   eligible for deletion 24 hours after expiry and are removed by a later search. There is no
   scheduled cleanup or guaranteed deletion deadline. Going to an option nudges its interests up
@@ -68,15 +73,19 @@ When none of its own loads, the representative ones, labelled the same way. With
 never the category artwork in place of one. Category
 shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
 culture, Movies & shows, Games & play, Books) narrow the search in one tap.
+The bundled [onboarding photographs](assets/onboarding/README.md) illustrate interests and are
+included in production. They are never used as photographs of a recommended venue.
 DM Sans is bundled
 under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices
 
 Account sync, submission of venue corrections, persistent outings,
-device-location entry, representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
+representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
-The mobile search currently starts from the area center. Contract-supplied origins are labeled correctly; the app does not request device location.
+Interests, area and travel mode persist. Manual entry starts from the area center; device entry
+passes a foreground fix to the API. A returning device-location user is never prompted on launch:
+the app checks existing permission and offers manual entry if it is unavailable.
 Admission checks and booking happen with the venue; OutRN does not make a reservation.
 
 ## Validate

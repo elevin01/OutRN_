@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { router } from "expo-router";
 import type { RecommendationResponse } from "@outrn/contracts";
 import { useApp } from "../../state/app";
@@ -19,6 +19,7 @@ import { HappeningPill } from "../../components/HappeningPill";
 import { happeningSoon } from "../../lib/happening";
 import { demoMode } from "../../lib/api";
 import { isExpired } from "../../lib/presentation";
+import { FirstPickLoading } from "../../components/OnboardingChrome";
 
 export default function NowScreen() {
   const {
@@ -29,26 +30,12 @@ export default function NowScreen() {
     error,
     search,
     initialize,
-    taste,
-    tasteHydrated,
+    firstArrival,
     happening,
     hiddenNudges,
     hideNudge,
   } = useApp();
   const [backPage, setBackPage] = useState<string>();
-  // Quick picks, once, on first open: what this person likes leads from the first search on.
-  const offeredPicks = useRef(false);
-  useEffect(() => {
-    if (
-      offeredPicks.current ||
-      !tasteHydrated ||
-      taste.asked ||
-      !areas?.filters.interests.length
-    )
-      return;
-    offeredPicks.current = true;
-    router.push("/interests");
-  }, [tasteHydrated, taste.asked, areas]);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 15_000);
@@ -60,6 +47,7 @@ export default function NowScreen() {
     else void initialize();
   };
   const expired = result && !demoMode && isExpired(result, now);
+  if (busy && firstArrival) return <FirstPickLoading />;
   // Happening soon: an event starting within two hours, one this person loves first; not one already
   // on the shortlist, and not one hidden this session.
   const happeningNow = demoMode && happening ? Date.parse(happening.asOf) : now;
@@ -86,7 +74,12 @@ export default function NowScreen() {
               item={nudge}
               timezone={happening.area.timezone}
               now={happeningNow}
-              onOpen={() => router.push({ pathname: "/happening", params: { id: nudge.id } })}
+              onOpen={() =>
+                router.push({
+                  pathname: "/happening",
+                  params: { id: nudge.id },
+                })
+              }
               onHide={() => hideNudge(nudge.id)}
             />
           ) : undefined
@@ -162,6 +155,7 @@ function ActivityDeck({
   refresh: () => void;
   banner?: ReactNode;
 }) {
+  const { firstArrival, dismissArrival } = useApp();
   const [index, setIndex] = useState(
     startAtEnd ? Math.max(0, result.items.length - 1) : 0,
   );
@@ -173,6 +167,7 @@ function ActivityDeck({
         ? () => page(result.page.prevCursor!, true)
         : undefined;
   const next = () => {
+    dismissArrival();
     if (index < result.items.length - 1) setIndex((i) => i + 1);
     else if (result.page.nextCursor) page(result.page.nextCursor, false);
     else setIndex(result.items.length);
@@ -180,6 +175,11 @@ function ActivityDeck({
   if (item)
     return (
       <ActivityExperience
+        introduction={
+          firstArrival && index === 0 && result.page.offset === 0
+            ? "Here’s a good place to start."
+            : undefined
+        }
         key={item.id}
         placeId={item.placeId}
         item={item}
@@ -196,7 +196,7 @@ function ActivityDeck({
       <Heading>
         {result.items.length
           ? "That’s your shortlist"
-          : "Nothing fits this search"}
+          : "Let’s try a little differently."}
       </Heading>
       <Copy>
         {result.items.length
@@ -211,6 +211,11 @@ function ActivityDeck({
         label="Plans & preferences"
         secondary
         onPress={() => router.push("/filters")}
+      />
+      <Button
+        label="Try another area"
+        secondary
+        onPress={() => router.push("/areas")}
       />
       {result.insufficient?.relaxations.map((r) => (
         <Copy key={r.code}>

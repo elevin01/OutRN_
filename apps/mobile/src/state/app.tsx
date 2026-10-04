@@ -15,14 +15,17 @@ import type {
   RecommendationsBody,
 } from "@outrn/contracts";
 import { api, RequestError } from "../lib/api";
+import { usePreferences } from "./preferences";
 import {
-  EMPTY_TASTE,
-  learn as learnFrom,
-  parseTaste,
+  initialQuery,
+  nearestArea,
   requestTaste,
-  type Signal,
+  type Setup,
   type Taste,
-} from "../lib/taste";
+} from "../lib/onboarding";
+import { deviceOrigin } from "../lib/device-location";
+import { LocationProblem } from "../lib/location-request";
+import { learn as learnFrom, type Signal } from "../lib/taste";
 export type SavedPlace = { id: string; name: string; category: string };
 export type Outing = {
   item: RecommendationItem;
@@ -31,12 +34,16 @@ export type Outing = {
   arrived: boolean;
 };
 const KEY = "outrn.saved.v1";
-const TASTE_KEY = "outrn.taste.v1";
-/** Ids the API takes as dismissed (UUIDs), and how many it takes. */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_DISMISSED = 200;
 function useAppState() {
+  const preferences = usePreferences();
   const [areas, setAreas] = useState<AreasResponse>();
+  const areasRef = useRef<AreasResponse | undefined>(undefined);
+  const [initialized, setInitialized] = useState(false);
+  const [needsSetup, setNeedsSetup] = useState(true);
+  const [setupNotice, setSetupNotice] = useState<string>();
+  const [firstArrival, setFirstArrival] = useState(false);
   const [query, setQuery] = useState<RecommendationRequest>();
   const [result, setResult] = useState<RecommendationResponse>();
   const [error, setError] = useState<RequestError>();
@@ -50,18 +57,17 @@ function useAppState() {
   const writes = useRef(Promise.resolve());
   const savedLoaded = useRef(false);
   const [saveRevision, setSaveRevision] = useState(0);
-  const [taste, setTasteState] = useState<Taste>(EMPTY_TASTE);
-  const [tasteHydrated, setTasteHydrated] = useState(false);
-  const tasteRef = useRef<Taste>(EMPTY_TASTE);
-  const tasteWrites = useRef(Promise.resolve());
-  // This session only, never stored: what was already learned from (one nudge per option and action),
-  // and what was turned down (left out of fresh searches for the rest of it).
+  // Keep the existing feedback behavior, with one shared preference writer.
   const learned = useRef(new Set<string>());
   const dismissed = useRef<string[]>([]);
-  const areasRef = useRef<AreasResponse | undefined>(undefined);
+  function setTaste(taste: Taste) {
+    void preferences.update({ taste });
+  }
   // Happening soon: the same search, events only, beside the main one. Optional: a failure shows nothing.
   const [happening, setHappening] = useState<RecommendationResponse>();
-  const [hiddenNudges, setHiddenNudges] = useState<ReadonlySet<string>>(new Set());
+  const [hiddenNudges, setHiddenNudges] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
   const happeningController = useRef<AbortController | null>(null);
   function refreshHappening(request: RecommendationRequest) {
     happeningController.current?.abort();
@@ -89,35 +95,29 @@ function useAppState() {
   function hideNudge(id: string) {
     setHiddenNudges((old) => new Set([...old, id]));
   }
-  /** A fresh search carries the taste and what was turned down; a cursor replays its own. */
+  /** Current preferences on fresh searches; frozen cursors remain unchanged. */
   function withTaste(body: RecommendationsBody): RecommendationsBody {
-    if (!("areaId" in body)) return body;
-    const offered = areasRef.current?.filters.interests.map((i) => i.id);
-    const max = areasRef.current?.limits.maxTaste;
-    const t = requestTaste(tasteRef.current, offered).slice(0, max ?? undefined);
-    const ids = dismissed.current.slice(-MAX_DISMISSED);
+    const offered = areasRef.current;
+    if (!("areaId" in body) || !offered) return body;
     return {
       ...body,
-      ...(t.length ? { taste: t } : { taste: undefined }),
-      ...(ids.length ? { dismissedIds: ids } : {}),
+      taste: requestTaste(preferences.current.current.taste, offered),
+      ...(dismissed.current.length
+        ? { dismissedIds: dismissed.current.slice(-MAX_DISMISSED) }
+        : {}),
     };
   }
-  function updateTaste(next: Taste) {
-    if (next === tasteRef.current) return;
-    tasteRef.current = next;
-    setTasteState(next);
-    tasteWrites.current = tasteWrites.current
-      .then(() => AsyncStorage.setItem(TASTE_KEY, JSON.stringify(next)))
-      .catch(() =>
-        setStorageError("Your interests could not be saved on this device."),
-      );
-  }
-  /** Going, saving or turning down an option nudges the interests it is, once per option and action. */
-  function learn(item: Pick<RecommendationItem, "id" | "interests">, signal: Signal) {
-    if (!tasteHydrated) return;
-    if (signal === "not_for_me" && UUID.test(item.id) && !dismissed.current.includes(item.id))
+  function learn(
+    item: Pick<RecommendationItem, "id" | "interests">,
+    signal: Signal,
+  ) {
+    if (!preferences.ready) return;
+    if (
+      signal === "not_for_me" &&
+      UUID.test(item.id) &&
+      !dismissed.current.includes(item.id)
+    )
       dismissed.current = [...dismissed.current, item.id].slice(-MAX_DISMISSED);
-    // Saving and unsaving undo each other; the rest count once.
     const key = `${signal === "unsave" ? "save" : signal}:${item.id}`;
     if (signal === "unsave") {
       if (!learned.current.delete(key)) return;
@@ -125,7 +125,9 @@ function useAppState() {
       if (learned.current.has(key)) return;
       learned.current.add(key);
     }
-    updateTaste(learnFrom(tasteRef.current, item.interests, signal));
+    const current = preferences.current.current.taste;
+    const next = learnFrom(current, item.interests, signal);
+    if (next !== current) setTaste(next);
   }
   async function search(
     body: RecommendationsBody,
@@ -142,16 +144,45 @@ function useAppState() {
     setBusy(true);
     setError(undefined);
     setResult(undefined);
-    if (nextQuery) setQuery(nextQuery);
-    else if ("areaId" in body) setQuery(body);
+    const offered = areasRef.current;
+    const request = withTaste(body);
+    if ("areaId" in request) {
+      setQuery(request);
+      const setup = preferences.current.current.setup;
+      if (setup.completed && offered) {
+        void preferences.update({
+          setup: {
+            ...setup,
+            areaId: request.areaId,
+            travelMode:
+              request.travelMode ||
+              offered.areas.find((area) => area.id === request.areaId)
+                ?.defaultTravelMode,
+            originSource: request.origin ? "device" : "area",
+          },
+        });
+      }
+    } else if (nextQuery) setQuery(nextQuery);
     try {
-      const data = await api.recommend(withTaste(body), controller.signal);
+      const data = await api.recommend(request, controller.signal);
       if (!controller.signal.aborted) {
         setResult(data);
-        if ("areaId" in body) refreshHappening(body);
+        if ("areaId" in request) refreshHappening(request);
       }
     } catch (e) {
-      if (!controller.signal.aborted) setError(e as RequestError);
+      if (!controller.signal.aborted) {
+        const failure = e as RequestError;
+        setError(failure);
+        if (failure.fields?.some((field) => field.path === "origin")) {
+          setSetupNotice(
+            "Your location isn’t in this area’s coverage. Choose an area to explore.",
+          );
+          void preferences.update({
+            setup: { ...preferences.current.current.setup, step: "area" },
+          });
+          setNeedsSetup(true);
+        }
+      }
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
@@ -164,41 +195,61 @@ function useAppState() {
       .areas(controller.signal)
       .then(async (data) => {
         if (controller.signal.aborted) return;
-        areasRef.current = data;
         setAreas(data);
+        areasRef.current = data;
         setError(undefined);
-        const first = {
-          areaId: data.defaultAreaId,
-          windowMinutes: data.filters.defaultWindowMinutes,
-        };
-        if (!data.areas.length) {
+        const setup = preferences.current.current.setup;
+        if (!setup.completed || !data.areas.length) {
           setBusy(false);
           return;
         }
-        await search(first, first);
+        let origin: RecommendationRequest["origin"];
+        let restoredSetup = setup;
+        if (setup.originSource === "device") {
+          try {
+            // Check existing authorization, never show a permission prompt on launch.
+            origin = await deviceOrigin(false, controller.signal);
+            const area = nearestArea(data.areas, origin);
+            if (area) restoredSetup = { ...setup, areaId: area.id };
+          } catch (error) {
+            if (!controller.signal.aborted) {
+              setSetupNotice(
+                error instanceof LocationProblem
+                  ? error.message
+                  : "Choose a starting area.",
+              );
+              void preferences.update({ setup: { ...setup, step: "nearby" } });
+              setNeedsSetup(true);
+              setBusy(false);
+            }
+            return;
+          }
+        }
+        if (controller.signal.aborted) return;
+        const first = initialQuery(data, restoredSetup, origin);
+        if (!first) {
+          setSetupNotice(
+            "Your previous area is no longer available. Choose another starting point.",
+          );
+          void preferences.update({ setup: { ...setup, step: "area" } });
+          setNeedsSetup(true);
+          setBusy(false);
+          return;
+        }
+        setNeedsSetup(false);
+        void search(first, first);
       })
       .catch((error: RequestError) => {
         if (!controller.signal.aborted) {
           setError(error);
           setBusy(false);
         }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setInitialized(true);
       });
   }
   useEffect(() => {
-    // The taste first, so the first search already carries it.
-    AsyncStorage.getItem(TASTE_KEY)
-      .then((raw) => {
-        const t = raw ? parseTaste(JSON.parse(raw)) : EMPTY_TASTE;
-        tasteRef.current = t;
-        setTasteState(t);
-      })
-      .catch(() =>
-        setStorageError("Your interests couldn’t be loaded on this device."),
-      )
-      .finally(() => {
-        setTasteHydrated(true);
-        void initialize();
-      });
     AsyncStorage.getItem(KEY)
       .then((raw) => {
         if (!raw) return;
@@ -228,9 +279,12 @@ function useAppState() {
       loadController.current?.abort();
       happeningController.current?.abort();
     };
-    // Initialization is intentionally once per mounted provider.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (preferences.ready) void initialize();
+    // Wait for the stored taste before the first request. Later changes are explicit searches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences.ready]);
   useEffect(() => {
     if (!savedLoaded.current || saveRevision === 0) return;
     writes.current = writes.current
@@ -248,6 +302,33 @@ function useAppState() {
         : [place, ...old].slice(0, 200),
     );
   }
+  async function completeSetup(
+    areaId: string,
+    travelMode: Setup["travelMode"],
+    origin?: RecommendationRequest["origin"],
+  ) {
+    const data = areasRef.current;
+    if (!data?.areas.some((area) => area.id === areaId)) return;
+    const setup: Setup = {
+      version: 1,
+      completed: true,
+      step: "nearby",
+      areaId,
+      travelMode,
+      originSource: origin ? "device" : "area",
+    };
+    const first = initialQuery(data, setup, origin);
+    if (!first) return;
+    await preferences.update({
+      setup,
+      taste: { ...preferences.current.current.taste, asked: true },
+    });
+    setSetupNotice(undefined);
+    setFirstArrival(true);
+    // Setup and result loading are separate. A failed search retries without replaying the wizard.
+    void search(first, first);
+    setNeedsSetup(false);
+  }
   return {
     areas,
     query,
@@ -263,13 +344,21 @@ function useAppState() {
     saved,
     toggleSaved,
     hydrated,
-    storageError,
+    storageError: preferences.error || storageError,
     outing,
     setOuting,
-    taste,
-    tasteHydrated,
-    setTaste: updateTaste,
+    initialized,
+    needsSetup,
+    taste: preferences.taste,
+    setup: preferences.setup,
+    setupNotice,
+    updatePreferences: preferences.update,
+    completeSetup,
+    tasteHydrated: preferences.ready,
+    setTaste,
     learn,
+    firstArrival,
+    dismissArrival: () => setFirstArrival(false),
     happening,
     hiddenNudges,
     hideNudge,

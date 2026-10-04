@@ -12,13 +12,14 @@ import {
   s,
 } from "../../components/ui";
 export default function YouScreen() {
-  const { areas, query, outing, taste } = useApp();
+  const { areas, query, outing, taste, storageError } = useApp();
   const likes = (areas?.filters.interests ?? []).filter(
     (i) => pickOf(taste, i.id) === "like",
   );
   return (
     <Screen>
       <Heading>You</Heading>
+      {storageError && <Copy accessibilityRole="alert">{storageError}</Copy>}
       {outing && (
         <Button
           label="Your current outing"
@@ -64,8 +65,9 @@ export default function YouScreen() {
         <Copy>
           No account needed. Saved places and your interests are saved on this
           device. Searches send your interests to OutRN, which also stores them
-          with your search results. They aren’t linked to an account. OutRN
-          doesn’t request or track your device location.
+          with your search results. They aren’t linked to an account. Location
+          is optional and used for foreground searches. You can choose an area
+          instead. Exact coordinates aren’t saved on this device.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>
