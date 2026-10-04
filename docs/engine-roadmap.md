@@ -417,5 +417,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
    daylight left, its hours stay unknown (Check first), because a city park open until 1am is still an
    option. Gardens are not assumed: a community garden opens on the days it posts. On the captures,
    the Bronxville outdoors lover now sees four parks Ready, where before there was one, Check first.
-   Sun times come from SunCalc. The hours library reads OSM `sunrise-sunset` rules as 06:00–18:00
-   local time, a separate fix.
+   Sun times come from SunCalc. Published sun-relative hours use the real sun too: the hours library
+   read OSM `sunrise-sunset`, `dawn-dusk` and offsets like `(sunset-01:00)` as a fixed 06:00–18:00
+   (05:30–18:30 for dawn and dusk), flagged approximate. `evaluateHours` now puts each day's real times
+   at the place into the rule before the library reads it, so a December park closes at 4:32pm, and
+   such hours are no longer approximate.

@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import opening_hours from "opening_hours";
 import { describe, expect, it } from "vitest";
-import { fromLocal } from "@outrn/core";
-import { clearHoursCaches, evaluateHours } from "./hours.js";
+import { fromLocal, localClock } from "@outrn/core";
+import { clearHoursCaches, evaluateHours, withSunTimes } from "./hours.js";
 
 /**
  * The cached evaluation must match evaluating from scratch, exactly. The reference below is the
@@ -11,6 +11,8 @@ import { clearHoursCaches, evaluateHours } from "./hours.js";
  */
 
 function reference(rule: string, at: Date, timeZone: string, lat: number, lon: number) {
+  // A sun-relative rule is read with that day's sun times where the place is (see withSunTimes).
+  if (/sunrise|sunset|dawn|dusk/.test(rule)) rule = withSunTimes(rule, localClock(at, timeZone).date, timeZone, lat, lon)!;
   let oh: opening_hours;
   try {
     oh = new opening_hours(rule, { lat, lon, address: { country_code: "us", state: "New York" } }, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
