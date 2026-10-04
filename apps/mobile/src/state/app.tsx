@@ -59,6 +59,36 @@ function useAppState() {
   const learned = useRef(new Set<string>());
   const dismissed = useRef<string[]>([]);
   const areasRef = useRef<AreasResponse | undefined>(undefined);
+  // Happening soon: the same search, events only, beside the main one. Optional: a failure shows nothing.
+  const [happening, setHappening] = useState<RecommendationResponse>();
+  const [hiddenNudges, setHiddenNudges] = useState<ReadonlySet<string>>(new Set());
+  const happeningController = useRef<AbortController | null>(null);
+  function refreshHappening(request: RecommendationRequest) {
+    happeningController.current?.abort();
+    const controller = new AbortController();
+    happeningController.current = controller;
+    // Who is going, when, how and for how much, and the taste; not the kind of place asked for.
+    const {
+      categories: _categories,
+      cuisines: _cuisines,
+      diets: _diets,
+      features: _features,
+      visitStyle: _visitStyle,
+      ...rest
+    } = request;
+    api
+      .recommend(withTaste({ ...rest, eventsOnly: true }), controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setHappening(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setHappening(undefined);
+      });
+  }
+  /** Hide a nudge for this session (never stored). */
+  function hideNudge(id: string) {
+    setHiddenNudges((old) => new Set([...old, id]));
+  }
   /** A fresh search carries the taste and what was turned down; a cursor replays its own. */
   function withTaste(body: RecommendationsBody): RecommendationsBody {
     if (!("areaId" in body)) return body;
@@ -101,6 +131,11 @@ function useAppState() {
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
   ) {
+    if ("areaId" in body) {
+      // A new area or party must never show the previous search's event nudge while loading.
+      happeningController.current?.abort();
+      setHappening(undefined);
+    }
     searchController.current?.abort();
     const controller = new AbortController();
     searchController.current = controller;
@@ -111,7 +146,10 @@ function useAppState() {
     else if ("areaId" in body) setQuery(body);
     try {
       const data = await api.recommend(withTaste(body), controller.signal);
-      if (!controller.signal.aborted) setResult(data);
+      if (!controller.signal.aborted) {
+        setResult(data);
+        if ("areaId" in body) refreshHappening(body);
+      }
     } catch (e) {
       if (!controller.signal.aborted) setError(e as RequestError);
     } finally {
@@ -188,6 +226,7 @@ function useAppState() {
     return () => {
       searchController.current?.abort();
       loadController.current?.abort();
+      happeningController.current?.abort();
     };
     // Initialization is intentionally once per mounted provider.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -231,6 +270,9 @@ function useAppState() {
     tasteHydrated,
     setTaste: updateTaste,
     learn,
+    happening,
+    hiddenNudges,
+    hideNudge,
   };
 }
 const Context = createContext<ReturnType<typeof useAppState> | null>(null);

@@ -63,6 +63,7 @@ function echo(page: RecommendationResponse, body: RecommendationRequest): Recomm
     originIsDefault: body.origin === undefined,
     backBy: body.backBy ?? null,
     visitStyle: body.visitStyle ?? "dine_in",
+    eventsOnly: body.eventsOnly === true,
   };
   return { ...page, request };
 }
@@ -101,7 +102,10 @@ export function createMockApp(opts: { log?: (line: string) => void } = {}): Hono
     const scenario = scenarios.find((s) => s.area.id === body.areaId);
     if (!scenario) return fail(c, "unknown-area", { message: `areaId: unknown area "${body.areaId}"`, fields: [{ path: "areaId", message: `unknown area "${body.areaId}"` }] });
     if (scenario.error) return fail(c, scenario.error);
-    return c.json(echo(scenario.pages[0]!, body));
+    const first = scenario.pages[0]!;
+    // Events only: the scenario's events, on one page.
+    const page = body.eventsOnly ? { ...first, items: first.items.filter((i) => i.kind === "event"), page: { ...first.page, nextCursor: null, prevCursor: null } } : first;
+    return c.json(echo(page, body));
   });
 
   app.get("/v1/places/:id", (c) => {

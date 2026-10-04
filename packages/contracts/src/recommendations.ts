@@ -67,6 +67,11 @@ export const RecommendationRequest = z.strictObject({
    * the list; `request.taste` in the response lists what was applied. An id may appear once.
    */
   taste: z.array(TasteWeight).max(32).optional(),
+  /**
+   * Only events (`kind: "event"`), ranked as any search is: what is on, for a "happening soon"
+   * nudge beside the main search. Omit for places and events together.
+   */
+  eventsOnly: z.boolean().optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
@@ -109,6 +114,8 @@ export const ResolvedRequest = z.object({
   visitStyle: z.enum(["dine_in", "takeout"]),
   /** The taste applied: the request's weights for offered interests, without zeros, and without a like of drinks or nightlife when a minor is in the party. */
   taste: z.array(TasteWeight),
+  /** The request's `eventsOnly`, or false. */
+  eventsOnly: z.boolean(),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;
 
