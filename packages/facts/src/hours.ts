@@ -1,4 +1,5 @@
 import opening_hours from "opening_hours";
+import SunCalc from "suncalc";
 import { fromLocal, localClock, type OpenInterval, type WeeklyIntervals } from "@outrn/core";
 
 /**
@@ -13,10 +14,11 @@ import { fromLocal, localClock, type OpenInterval, type WeeklyIntervals } from "
 
 export type HoursValue = { osm: string } | { weekly: WeeklyIntervals };
 
-// NYC-centric nominatim stub the library uses for holiday/sunset rules. Sunset-based rules need lat/lon.
-function nominatim(lat: number, lon: number) {
-  return { lat, lon, address: { country_code: "us", state: "New York" } };
-}
+// NYC-centric nominatim stub the library uses for holiday rules. Its sun times are unusable here: it
+// reads coordinates only as strings (these numbers, as its types declare them, leave it on its fixed
+// 06:00 and 18:00) and would report the times in the server's timezone, not the venue's. So
+// evaluateHours puts the real ones into the rule first (withSunTimes).
+const NOMINATIM = { lat: 40.7185, lon: -73.988, address: { country_code: "us", state: "New York" } };
 
 export interface HoursEvaluation {
   /** Is the venue open at `at`? null when the rule string is unparseable. */
@@ -27,9 +29,9 @@ export interface HoursEvaluation {
   always: boolean;
   parseError: string | null;
   /**
-   * The answer may not match the venue: the rule uses sunset or school-holiday syntax the library
-   * approximates, or it has public-holiday rules and `at` falls on (or the day before) one, when
-   * venues read "PH" differently. A PH rule on an ordinary day is exact.
+   * The answer may not match the venue: the rule uses school-holiday syntax the library approximates,
+   * or it has public-holiday rules and `at` falls on (or the day before) one, when venues read "PH"
+   * differently. A PH rule on an ordinary day is exact, and so is a sun-relative one (the real sun).
    */
   approximate: boolean;
 }
@@ -43,8 +45,8 @@ export function isHoursValue(v: unknown): v is HoursValue {
 /**
  * Parsing a rule costs ~0.5 ms and evaluating it over a window as much again, for every candidate on
  * every request, while most venues share a handful of rule strings. Parsed rules are cached by rule
- * (and, for sun-relative rules, a ~10 km location bucket), and each rule's open intervals by local
- * day. Both caches are bounded LRUs; the results are identical to evaluating from scratch.
+ * (a sun-relative one once its times are filled in for the day), and each rule's open intervals by
+ * local day. The caches are bounded LRUs; the results are identical to evaluating from scratch.
  */
 const PARSED_MAX = 5_000;
 const INTERVALS_MAX = 20_000;
@@ -74,18 +76,44 @@ function remember<V>(cache: Map<string, V>, key: string, max: number, make: () =
 }
 
 const SUN_RELATIVE = /sunrise|sunset|dawn|dusk/;
+// A sun time alone, or with an offset as OSM writes it: "sunset", "(sunset-01:00)", "(sunrise+00:30)".
+const SUN_TIME = /\(\s*(sunrise|sunset|dawn|dusk)\s*([+-])\s*(\d{1,2}):(\d{2})\s*\)|\b(sunrise|sunset|dawn|dusk)\b/g;
+type SunEvent = "sunrise" | "sunset" | "dawn" | "dusk";
 
-/** Cache key for a rule: the rule alone, unless it depends on where the sun is. */
-function ruleKey(rule: string, lat: number, lon: number): string {
-  return SUN_RELATIVE.test(rule) ? `${rule}\u0000${lat.toFixed(1)},${lon.toFixed(1)}` : rule;
+const sunTimes = new Map<string, Record<SunEvent, Date>>();
+
+/**
+ * The rule with each sun-relative time replaced by its wall-clock time on `localDate` where the place
+ * is, to the minute: sunrise and sunset, and dawn and dusk as civil twilight, as OSM means them. Null
+ * when one does not occur that day (polar day or night). Evaluated over the days either side, the
+ * day's times are within a couple of minutes of theirs.
+ */
+export function withSunTimes(rule: string, localDate: string, timeZone: string, lat: number, lon: number): string | null {
+  // At the ~1 km bucket the place is in (the sun times differ by seconds within one), so the answer
+  // does not depend on which place in it was asked about first.
+  const [la, lo] = [lat.toFixed(2), lon.toFixed(2)];
+  const sun = remember(sunTimes, `${localDate}\u0000${timeZone}\u0000${la},${lo}`, 2_000, () => SunCalc.getTimes(fromLocal(localDate, 12 * 60, timeZone), Number(la), Number(lo)));
+  let missing = false;
+  const out = rule.replace(SUN_TIME, (match, withOffset: SunEvent | undefined, sign: string | undefined, hh: string | undefined, mm: string | undefined, bare: SunEvent | undefined) => {
+    const t = sun[(withOffset ?? bare)!];
+    if (Number.isNaN(t.getTime())) {
+      missing = true;
+      return match;
+    }
+    const clock = localClock(new Date(Math.round(t.getTime() / 60_000) * 60_000), timeZone);
+    const offset = withOffset ? (sign === "-" ? -1 : 1) * (Number(hh) * 60 + Number(mm)) : 0;
+    const minutes = Math.max(0, clock.minutes + offset);
+    return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+  });
+  return missing ? null : out;
 }
 
-export function parseOsmHours(rule: string, lat = 40.7185, lon = -73.988): ParsedRule {
-  return remember(parsed, ruleKey(rule, lat, lon), PARSED_MAX, () => {
+export function parseOsmHours(rule: string): ParsedRule {
+  return remember(parsed, rule, PARSED_MAX, () => {
     try {
-      const oh = new opening_hours(rule, nominatim(lat, lon), { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
+      const oh = new opening_hours(rule, NOMINATIM, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
       const warnings = oh.getWarnings();
-      return { oh, error: null, approximate: warnings.length > 0 || /sunrise|sunset|dawn|dusk|SH/.test(rule), publicHolidays: /\bPH\b/.test(rule) };
+      return { oh, error: null, approximate: warnings.length > 0 || /SH/.test(rule), publicHolidays: /\bPH\b/.test(rule) };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false, publicHolidays: false };
@@ -107,6 +135,7 @@ export function isPublicHolidayOn(localDate: string): boolean {
 
 export function clearHoursCaches(): void {
   parsed.clear();
+  sunTimes.clear();
   intervals.clear();
   holidays.clear();
 }
@@ -118,9 +147,10 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
       return { openNow: true, interval: { open: new Date(at.getTime() - 86_400_000), close: new Date(at.getTime() + 86_400_000 * 365) }, always: true, parseError: null, approximate: false };
     }
     if (rule === "off" || rule === "closed") return { openNow: false, interval: null, always: false, parseError: null, approximate: false };
-    const lat = geo?.lat ?? 40.7185;
-    const lon = geo?.lon ?? -73.988;
-    const { oh, error, approximate: ruleApproximate, publicHolidays } = parseOsmHours(rule, lat, lon);
+    // A sun-relative rule is read with the day's real sun times where the place is.
+    const local = SUN_RELATIVE.test(rule) ? withSunTimes(rule, localClock(at, timeZone).date, timeZone, geo?.lat ?? 40.7185, geo?.lon ?? -73.988) : rule;
+    if (local === null) return { openNow: null, interval: null, always: false, parseError: "no sunrise or sunset that day", approximate: false };
+    const { oh, error, approximate: ruleApproximate, publicHolidays } = parseOsmHours(local);
     if (!oh) return { openNow: null, interval: null, always: false, parseError: error, approximate: false };
     // opening_hours works in the JS runtime's local timezone. We evaluate with a shifted "wall clock" Date
     // so that the library's local-time arithmetic matches the venue's timezone.
@@ -131,7 +161,7 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
     const day = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
     const nextDay = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate() + 1);
     const approximate = ruleApproximate || (publicHolidays && (isPublicHoliday(day) || isPublicHoliday(nextDay)));
-    const wide = remember(intervals, `${ruleKey(rule, lat, lon)}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
+    const wide = remember(intervals, `${local}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
       oh.getOpenIntervals(new Date(day.getTime() - 24 * 3_600_000), new Date(day.getTime() + 61 * 3_600_000)),
     );
     const lo = shifted.getTime() - 24 * 3_600_000;
