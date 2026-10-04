@@ -61,7 +61,10 @@ export function Sheet({
             </Copy>
             <IconButton name="x" label={`Close ${title}`} onPress={close} />
           </View>
-          <ScrollView contentContainerStyle={styles.body}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.body}
+          >
             {children}
           </ScrollView>
         </View>

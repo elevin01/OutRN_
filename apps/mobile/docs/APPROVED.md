@@ -1,5 +1,8 @@
 # Approved OutRN mobile direction
 
+The Saved page now follows the compact photo and collection direction approved on October 4.
+See [Saved design and validation](SAVED.md) for that UI-only addition and its screenshots.
+
 This implements the Social discovery prototype approved on September 28, including its final typography pass. It replaces the screen designs in PRs #5 and #6. The new branch starts from main including engine PR #7 and carries forward their API client, local saves, navigation, error states and workspace boundary checks.
 
 ## Compact navigation and upfront cost
