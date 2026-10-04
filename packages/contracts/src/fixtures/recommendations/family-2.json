@@ -59,6 +59,9 @@
           "label": "Outdoor seating"
         }
       ],
+      "interests": [
+        "drinks"
+      ],
       "id": "00000000-0000-4000-8000-000000000023",
       "copy": {
         "action": "Check first",
@@ -177,6 +180,9 @@
           "id": "wheelchair",
           "label": "Wheelchair accessible"
         }
+      ],
+      "interests": [
+        "drinks"
       ],
       "id": "00000000-0000-4000-8000-000000000026",
       "copy": {

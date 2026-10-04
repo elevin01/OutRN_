@@ -2,16 +2,18 @@ import type {
   Area,
   AreasResponse,
   RecommendationRequest,
-  TasteWeight,
 } from "@outrn/contracts";
+
+import {
+  EMPTY_TASTE,
+  parseTaste,
+  requestTaste as tasteForRequest,
+  type Taste,
+} from "./taste";
+export { EMPTY_TASTE, parseTaste, type Taste };
 
 export const TASTE_KEY = "outrn.taste.v1";
 export const SETUP_KEY = "outrn.onboarding.v1";
-// Compatible with the taste editor in PR #41. Unpicked interests are unknown, never dislikes.
-export type Taste = {
-  asked: boolean;
-  weights: Readonly<Record<string, number>>;
-};
 export type Setup = {
   version: 1;
   step: "interests" | "nearby" | "area";
@@ -20,36 +22,11 @@ export type Setup = {
   travelMode?: NonNullable<RecommendationRequest["travelMode"]>;
   originSource?: "device" | "area";
 };
-export const EMPTY_TASTE: Taste = { asked: false, weights: {} };
 export const EMPTY_SETUP: Setup = {
   version: 1,
   step: "interests",
   completed: false,
 };
-const ID = /^[a-z][a-z_]{0,39}$/;
-
-export function parseTaste(raw: unknown): Taste {
-  if (!raw || typeof raw !== "object") return EMPTY_TASTE;
-  const value = raw as Partial<Taste>;
-  const weights: Record<string, number> = Object.create(null);
-  if (
-    value.weights &&
-    typeof value.weights === "object" &&
-    !Array.isArray(value.weights)
-  ) {
-    for (const [id, weight] of Object.entries(value.weights).slice(0, 32)) {
-      if (
-        ID.test(id) &&
-        typeof weight === "number" &&
-        Number.isFinite(weight) &&
-        weight !== 0
-      )
-        weights[id] = Math.max(-1, Math.min(1, weight));
-    }
-  }
-  return { asked: value.asked === true, weights };
-}
-
 export function parseSetup(raw: unknown): Setup {
   if (!raw || typeof raw !== "object") return EMPTY_SETUP;
   const value = raw as Partial<Setup>;
@@ -168,16 +145,11 @@ export function toggleChoice(taste: Taste, choice: InterestChoice): Taste {
   return parseTaste({ ...taste, weights });
 }
 
-export function requestTaste(
-  taste: Taste,
-  areas: AreasResponse,
-): TasteWeight[] {
-  const offered = new Set(areas.filters.interests.map((option) => option.id));
-  return Object.entries(taste.weights)
-    .filter(([id, weight]) => offered.has(id) && weight !== 0)
-    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]) || a[0].localeCompare(b[0]))
-    .slice(0, Math.min(32, areas.limits.maxTaste))
-    .map(([interest, weight]) => ({ interest, weight }));
+export function requestTaste(taste: Taste, areas: AreasResponse) {
+  return tasteForRequest(
+    taste,
+    areas.filters.interests.map((option) => option.id),
+  ).slice(0, areas.limits.maxTaste);
 }
 
 /** Selects which area's API to ask. The backend alone validates coverage and feasibility. */

@@ -25,6 +25,7 @@ import {
 } from "../lib/onboarding";
 import { deviceOrigin } from "../lib/device-location";
 import { LocationProblem } from "../lib/location-request";
+import { learn as learnFrom, type Signal } from "../lib/taste";
 export type SavedPlace = { id: string; name: string; category: string };
 export type Outing = {
   item: RecommendationItem;
@@ -33,6 +34,8 @@ export type Outing = {
   arrived: boolean;
 };
 const KEY = "outrn.saved.v1";
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_DISMISSED = 200;
 function useAppState() {
   const preferences = usePreferences();
   const [areas, setAreas] = useState<AreasResponse>();
@@ -54,6 +57,34 @@ function useAppState() {
   const writes = useRef(Promise.resolve());
   const savedLoaded = useRef(false);
   const [saveRevision, setSaveRevision] = useState(0);
+  // Keep the existing feedback behavior, with one shared preference writer.
+  const learned = useRef(new Set<string>());
+  const dismissed = useRef<string[]>([]);
+  function setTaste(taste: Taste) {
+    void preferences.update({ taste });
+  }
+  function learn(
+    item: Pick<RecommendationItem, "id" | "interests">,
+    signal: Signal,
+  ) {
+    if (!preferences.ready) return;
+    if (
+      signal === "not_for_me" &&
+      UUID.test(item.id) &&
+      !dismissed.current.includes(item.id)
+    )
+      dismissed.current = [...dismissed.current, item.id].slice(-MAX_DISMISSED);
+    const key = `${signal === "unsave" ? "save" : signal}:${item.id}`;
+    if (signal === "unsave") {
+      if (!learned.current.delete(key)) return;
+    } else {
+      if (learned.current.has(key)) return;
+      learned.current.add(key);
+    }
+    const current = preferences.current.current.taste;
+    const next = learnFrom(current, item.interests, signal);
+    if (next !== current) setTaste(next);
+  }
   async function search(
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
@@ -70,6 +101,9 @@ function useAppState() {
         ? {
             ...body,
             taste: requestTaste(preferences.current.current.taste, offered),
+            ...(dismissed.current.length
+              ? { dismissedIds: dismissed.current.slice(-MAX_DISMISSED) }
+              : {}),
           }
         : body;
     if ("areaId" in request) {
@@ -251,10 +285,6 @@ function useAppState() {
     void search(first, first);
     setNeedsSetup(false);
   }
-  async function saveInterests(taste: Taste) {
-    await preferences.update({ taste: { ...taste, asked: true } });
-    if (query) void search(query);
-  }
   return {
     areas,
     query,
@@ -280,7 +310,9 @@ function useAppState() {
     setupNotice,
     updatePreferences: preferences.update,
     completeSetup,
-    saveInterests,
+    tasteHydrated: preferences.ready,
+    setTaste,
+    learn,
     firstArrival,
     dismissArrival: () => setFirstArrival(false),
   };

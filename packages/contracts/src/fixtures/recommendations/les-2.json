@@ -75,6 +75,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "outdoors"
+      ],
       "id": "00000000-0000-4000-8000-000000000005",
       "copy": {
         "action": "Go now",
@@ -230,6 +233,9 @@
       ],
       "diets": [],
       "features": [],
+      "interests": [
+        "food"
+      ],
       "id": "00000000-0000-4000-8000-000000000006",
       "copy": {
         "action": "Go now",
@@ -345,6 +351,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "drinks"
       ],
       "id": "00000000-0000-4000-8000-000000000007",
       "copy": {

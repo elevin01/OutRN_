@@ -51,6 +51,15 @@ First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](do
   tab navigation but deliberately does not survive process restart. Foreground location is optional;
   exact coordinates remain in memory, with no background tracking.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
+- Your interests (contract 1.8 `taste`): photo choices during setup and detailed controls from You
+  (tap once for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
+  stores sent weights with its paging snapshot. Results expire after 20 minutes; snapshots become
+  eligible for deletion 24 hours after expiry and are removed by a later search. There is no
+  scheduled cleanup or guaranteed deletion deadline. Going to an option nudges its interests up
+  (+0.2), saving it a little (+0.1, undone by
+  unsaving), and "Not for me" down (-0.15), through what the card says it is (contract 1.9
+  `interests`), once per option and action in a session. "Not for me" also leaves that option out of
+  fresh searches for the rest of the session. Which options were seen or chosen is never stored.
 
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
@@ -66,7 +75,7 @@ under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices
 
-Account sync, submission of venue corrections, taste-feedback services, persistent outings,
+Account sync, submission of venue corrections, persistent outings,
 representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
 Interests, area and travel mode persist. Manual entry starts from the area center; device entry

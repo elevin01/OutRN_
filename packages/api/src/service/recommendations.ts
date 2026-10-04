@@ -147,9 +147,9 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
 /**
  * Fields later versions added to items, with what an older search computed for them: none. A 1.2
  * item has no conditions; a 1.3 item names no parking; a 1.4 item has no photos; a 1.5 item lists no
- * cuisines; a 1.6 item lists no diets or features.
+ * cuisines; a 1.6 item lists no diets or features; a 1.8 item lists no interests.
  */
-const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [], cuisines: [], diets: [], features: [] };
+const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [], cuisines: [], diets: [], features: [], interests: [] };
 function upgradeItems(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
   return items.map((i: unknown) => (i && typeof i === "object" ? { ...ITEM_DEFAULTS, ...i } : i));

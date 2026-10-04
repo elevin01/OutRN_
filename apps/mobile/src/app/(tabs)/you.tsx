@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useApp } from "../../state/app";
+import { pickOf } from "../../lib/taste";
 import {
   Button,
   Copy,
@@ -11,16 +12,13 @@ import {
   s,
 } from "../../components/ui";
 export default function YouScreen() {
-  const { areas, query, outing, storageError } = useApp();
+  const { areas, query, outing, taste, storageError } = useApp();
+  const likes = (areas?.filters.interests ?? []).filter(
+    (i) => pickOf(taste, i.id) === "like",
+  );
   return (
     <Screen>
       <Heading>You</Heading>
-      <Button
-        label="What you like"
-        secondary
-        icon="heart"
-        onPress={() => router.push("/interests")}
-      />
       {storageError && <Copy accessibilityRole="alert">{storageError}</Copy>}
       {outing && (
         <Button
@@ -41,8 +39,22 @@ export default function YouScreen() {
           onPress={() => router.push("/areas")}
         />
       </Panel>
+      <Panel>
+        <Icon name="heart" />
+        <Eyebrow>What you like</Eyebrow>
+        <Copy>
+          {likes.length
+            ? likes.map((i) => i.label).join(", ")
+            : "Tell us what you like doing, and it comes first."}
+        </Copy>
+        <Button
+          label="Your interests"
+          secondary
+          onPress={() => router.push("/interests")}
+        />
+      </Panel>
       <Button
-        label="Time, budget & interests"
+        label="Time, budget & mood"
         secondary
         icon="sliders"
         onPress={() => router.push("/filters")}
@@ -51,9 +63,11 @@ export default function YouScreen() {
         <Icon name="shield" />
         <Copy style={{ fontWeight: "700" }}>On this device</Copy>
         <Copy>
-          No account needed. Saved places and interests stay on this device.
-          Location is optional and used only for a foreground search. You can
-          choose an area instead. Exact coordinates aren’t saved on this device.
+          No account needed. Saved places and your interests are saved on this
+          device. Searches send your interests to OutRN, which also stores them
+          with your search results. They aren’t linked to an account. Location
+          is optional and used for foreground searches. You can choose an area
+          instead. Exact coordinates aren’t saved on this device.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>

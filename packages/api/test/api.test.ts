@@ -65,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.8.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.9.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -113,6 +113,23 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     // A search stored before 1.8 had no taste.
     await db.query(`update recommendation_snapshots set resolved = resolved - 'taste' where run_id = $1`, [page.requestId]);
     expect((await search({ cursor: page.page.nextCursor! } as unknown as RecommendationRequest)).request.taste).toEqual([]);
+  });
+
+  it("says what kind of outing each option is, in the interests a taste weighs", async () => {
+    now = SAT_EVENING;
+    const offered = AreasResponse.parse((await call("GET", "/v1/areas")).json).filters.interests.map((i) => i.id);
+    const page = await search({ areaId: "les", windowMinutes: 180 });
+    expect(page.items.length).toBeGreaterThan(0);
+    for (const i of page.items) {
+      expect(i.interests.length, i.name).toBeLessThanOrEqual(4);
+      for (const id of i.interests) expect(offered, i.name).toContain(id);
+    }
+    const of = (category: string) => page.items.find((i) => i.category.id === category)?.interests;
+    if (of("restaurant")) expect(of("restaurant")).toEqual(["food"]);
+    if (of("bookshop")) expect(of("bookshop")).toEqual(["books"]);
+    // What a taste matches is what the card says it is.
+    const loved = (await search({ areaId: "les", windowMinutes: 180, taste: [{ interest: "books", weight: 1 }] })).items.find((i) => i.reasons.some((r) => r.code === "TASTE_MATCH"));
+    expect(loved?.interests).toContain("books");
   });
 
   it("never applies a like of drinking or nightlife for a party with a minor; a skip still applies", async () => {
@@ -431,6 +448,11 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
+    // Stored by a 1.8 API: items say nothing of what kind of outing they are.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'interests') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    const before19 = await search(next);
+    expect(before19.items.map((i) => i.id)).toEqual(expected);
+    expect(before19.items.map((i) => i.interests)).toEqual(expected.map(() => []));
     // Stored by a 1.6 API: no diets or must-haves asked for, and none listed on the items.
     await db.query(`update recommendation_snapshots set resolved = resolved - 'diets' - 'features', items = (select jsonb_agg(i - 'diets' - 'features') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     const before17 = await search(next);

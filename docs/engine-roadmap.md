@@ -119,6 +119,13 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - `outrn recommend --like live_music,art:0.5 --skip drinks` runs a search with a taste.
 - **Part 2: the apps.** Quick picks of interests on first open, then Go, Save and Dismiss sharpen the
   taste on the device; it goes with every search. Nothing about the person is kept on the server.
+  - Contract 1.9: each card says what kind of outing it is (`interests`), the engine's own reading
+    (an event by its kinds or title, a place by what it is). The apps learn through it.
+  - Mobile: quick picks (like / not for you) on first open and from You; Go +0.2, Save +0.1 (unsave
+    undoes it), "Not for me" -0.15 and left out of fresh searches that session; once per option and action in a
+    session, nothing about which options were seen kept.
+  - Web: "What you like" in the search form (a like of 0.8 each; `skips=` in a link).
+  - A pop-up's site shows a "Happening" icon in both apps.
 - **Part 3 (this PR): pop-ups without a venue.**
   - **Event sites:** an event at a place of its own (a pier for fireworks, a street fair's block) is
     held at an `event_site` venue, shown only through its events and never on its own. It is never
@@ -395,5 +402,16 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
 7. **Event sources (batch 10, part 4):** allow data.cityofnewyork.us, www.nycgovparks.org,
    www.nypl.org, app.ticketmaster.com, api.seatgeek.com and venues' own sites in the environment's
    network access, and create free Ticketmaster and SeatGeek keys.
-8. **Parks without hours:** treat a public park or garden with no listed hours as usually open dawn to
-   dusk (Ready, labelled as an estimate), so the outdoors lover sees more than one park?
+8. ~~**Parks without hours:** treat a public park or garden with no listed hours as usually open dawn to
+   dusk (Ready, labelled as an estimate), so the outdoors lover sees more than one park?~~ Done for
+   parks (`DAWN_TO_DUSK`). In daylight, a park with no listed hours is an option on sunrise-to-sunset
+   hours: "usually open dawn to dusk" on the card (a required note), "until dusk (~6:36pm)" in its fact
+   line, and the visit ends by sunset. Both times stay estimates everywhere: the item's `closesAt` is
+   null (dusk is `finishBy`), the wrap-up reads "around dusk" and is flagged an estimate, and a sunrise
+   opening reads "opens around sunrise". A published closure before dusk is the closing time, as for
+   any place. Before sunrise it waits for it if the window allows. After dark, or with too little
+   daylight left, its hours stay unknown (Check first), because a city park open until 1am is still an
+   option. Gardens are not assumed: a community garden opens on the days it posts. On the captures,
+   the Bronxville outdoors lover now sees four parks Ready, where before there was one, Check first.
+   Sun times come from SunCalc. The hours library reads OSM `sunrise-sunset` rules as 06:00–18:00
+   local time, a separate fix.

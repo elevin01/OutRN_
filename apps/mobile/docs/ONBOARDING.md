@@ -11,7 +11,7 @@ optional, and one primary action advances each step.
 | “Now, let’s keep it close.” | Pick an API-offered travel mode; use foreground location or choose a supported area. |
 | Manual area | Search actual API areas. Denial, disabled services, timeout and rejected coverage lead here. Travel starts from the area center. |
 | First activity | Existing recommendation loading, result, error and empty states. The first result has a brief welcome line; no invented recommendation is inserted. |
-| You → What you like | Edit the original choices and the remaining API-offered interests. Saving refreshes recommendations. |
+| You → Your interests | Existing detailed editor for likes, skips and neutral preferences across every offered interest. Finishing refreshes recommendations. |
 
 ## Data and handoff
 
@@ -31,14 +31,14 @@ are omitted. The editor also renders future/other interests using the server lab
 - Switching to a manual area clears any old device origin. Resetting activity filters retains
   the chosen origin and travel mode.
 
-No engine, API, contract or web-app change is included. This is compatible with main's v1.8 contract.
+No engine, API, contract or web-app change is included. Uses main's v1.8 taste and v1.9 item interests.
 The mock verifies request transport and rendering, but does not rank results by taste.
 
 ## Persistence and recovery
 
 | Key | Stored data |
 | --- | --- |
-| `outrn.taste.v1` | `{ asked, weights }`, compatible with the existing taste proposal in PR #41. No learning/feedback service is added. |
+| `outrn.taste.v1` | `{ asked, weights }`, shared by setup, the detailed editor and existing Go/Save/Not for me learning. |
 | `outrn.onboarding.v1` | Version, current step, completion, area ID, travel mode and `device`/`area` source. No coordinates. |
 
 Storage is validated on load and writes are serialized. Unfinished setup resumes at its saved step;
@@ -67,6 +67,8 @@ deselection, zero-choice entry, reload/resume, persisted completion and editable
 geolocation, selected travel mode, denial/manual fallback, no saved coordinates, manual area clearing
 the origin, backend coverage rejection, a late fix after manual selection, failed metadata retry,
 failed recommendation retry, and no horizontal overflow at 320px. No browser runtime errors.
+After integrating taste learning, the browser checks also verify Save/Unsave round-trips, “Not for
+me” preference changes, and session dismissals reaching the next fresh search.
 
 Unit tests cover corrupt storage, offered-interest mapping/limits, unknown versus disliked interests,
 valid manual/device requests, origin validation errors, permission gating, disabled services,
@@ -80,6 +82,6 @@ behavior still need device QA before release. Larger system text switches the in
 single column; reduced-motion settings disable selection animation.
 
 The result handoff uses main's current activity view, including the API photo rendering, compact
-navigation and richer activity details merged from PRs #18 and #35 during implementation. PR #41's
-future taste-learning/editor implementation must retain the same storage shape and startup gate
-when integrating.
+navigation and richer activity details merged from PRs #18 and #35 during implementation. The
+learning and detailed editor from #41 share the same preference store. Their duplicate startup
+prompt is replaced by this wizard; learning, skips, session dismissals and frozen paging stay intact.

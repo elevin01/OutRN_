@@ -57,6 +57,9 @@
           "label": "Outdoor seating"
         }
       ],
+      "interests": [
+        "drinks"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -183,6 +186,9 @@
           "label": "Outdoor seating"
         }
       ],
+      "interests": [
+        "drinks"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -296,6 +302,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "drinks"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
