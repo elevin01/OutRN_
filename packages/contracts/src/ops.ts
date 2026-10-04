@@ -20,7 +20,8 @@ export const OpsCandidate = z.object({
   unresolved: z.array(z.string()),
   travelMinutes: z.int().nullable(),
   usefulMinutes: z.int().nullable(),
-  scores: z.object({ evidence: z.number(), fit: z.number(), appeal: z.number(), novelty: z.number() }),
+  /** `taste`: the match with the request's taste and mood (0.5 neutral); null when it had neither, and in stored runs. */
+  scores: z.object({ evidence: z.number(), fit: z.number(), appeal: z.number(), novelty: z.number(), taste: z.number().nullable() }),
   shortlisted: z.boolean(),
 });
 export type OpsCandidate = z.infer<typeof OpsCandidate>;

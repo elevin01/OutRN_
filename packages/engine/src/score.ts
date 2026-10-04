@@ -1,4 +1,4 @@
-import { ACTIVITY_OF_CATEGORY, isFreshConfirmation, localClock, minutesBetween } from "@outrn/core";
+import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
@@ -6,6 +6,7 @@ import { dayPart, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
 import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
+import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -15,7 +16,11 @@ import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 /** What a 9pm+ window is for: bars and late food. */
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25 } as const;
+/**
+ * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
+ * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
+ */
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -24,12 +29,6 @@ export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } 
  * In appeal, where it outweighs a short walk: a park 3 minutes away in a downpour is not the pick.
  */
 export const WEATHER_APPEAL = { rainOutdoor: -0.25, rainIndoor: 0.05, coldOutdoor: -0.15, rainChance: WEATHER_LIMITS.rainChance, coldF: WEATHER_LIMITS.coldF } as const;
-const MOOD_ACTIVITY: Record<NonNullable<RequestContext["mood"]>, string[]> = {
-  relaxed: ["food", "outdoors", "browse"],
-  active: ["outdoors", "entertainment"],
-  food: ["food", "drink"],
-  culture: ["culture", "entertainment"],
-};
 const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, string[]> = {
   alone: ["cafe", "bookshop", "library", "gallery", "museum", "park", "cinema"],
   date: ["restaurant", "bar", "viewpoint", "waterfront", "cinema", "live_music", "gallery", "bowling", "activity"],
@@ -37,12 +36,18 @@ const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, str
   family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
 
-export function scoreCandidate(c: Candidate, ctx: RequestContext, f: FeasibilityOutcome, policy: CategoryPolicy, maxTravel: number): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null } {
+export function scoreCandidate(
+  c: Candidate,
+  ctx: RequestContext,
+  f: FeasibilityOutcome,
+  policy: CategoryPolicy,
+  maxTravel: number,
+  weights: ReturnType<typeof tasteWeights> = tasteWeights(ctx),
+): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null; tasteLead: Interest | null } {
   const extra: ReasonCode[] = [];
   const t = f.timing!;
-  const activity = ACTIVITY_OF_CATEGORY[c.category];
 
-  // Fit: travel slack, time slack, chips, weather.
+  // Fit: travel slack, time slack, who is going, weather. (A mood is taste: see below.)
   // Travel counts against the time the user has: a 15-minute walk is nothing in an evening, a lot in an hour.
   const windowMinutes = Math.max(1, minutesBetween(ctx.now, deadlineOf(ctx)));
   const reach = Math.min(maxTravel, Math.max(10, windowMinutes * 0.25));
@@ -55,15 +60,13 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
-  if (ctx.mood) chips += MOOD_ACTIVITY[ctx.mood].includes(activity) ? 0.25 : -0.15;
+  // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
+  // gets the family bonus its category would otherwise earn when a minor is in the party, nor a lift
+  // from their taste (below). Feasibility has already excluded published limits; this sinks estimated
+  // ones. A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
+  const adultForMinor = minorInParty(ctx) && ((ageLimitOf(c)?.minAge ?? 0) >= 18 || c.category === "bar" || c.category === "nightclub");
   if (ctx.company) {
-    // Suitability before preference: a venue with an adult age limit (a casino inside "activity") never
-    // gets the family bonus its category would otherwise earn when a minor is in the party. Feasibility
-    // has already excluded published limits; this sinks estimated ones.
-    const minorPresent = minorInParty(ctx);
-    const adultLimit = (ageLimitOf(c)?.minAge ?? 0) >= 18;
-    // A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
-    if (minorPresent && (adultLimit || c.category === "bar" || c.category === "nightclub")) chips -= 0.25;
+    if (adultForMinor) chips -= 0.25;
     else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
   }
   chips = Math.max(0, Math.min(1, chips));
@@ -90,7 +93,7 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   }
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
-  if (c.kind === "occurrence") appeal += 0.15;
+  if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
   // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
@@ -150,13 +153,31 @@ export function scoreCandidate(c: Candidate, ctx: RequestContext, f: Feasibility
   if (ctx.seenIds?.includes(c.venueId) && c.kind === "occurrence") novelty -= 0.3;
   novelty = Math.max(0, novelty);
 
+  // Taste: what this person likes, and what this search is in the mood for (taste.ts). A love does
+  // not lift a poor idea for the hour: a park after dark is no better for someone who loves parks.
+  const taste = weights ? tasteMatch(c, weights) : null;
+  if (taste && part === "off") taste.score = Math.min(taste.score, 0.5);
+  // Nor is an adult place lifted, claimed as their taste, or kept on the first page for a party with a minor.
+  if (taste && adultForMinor) {
+    taste.score = Math.min(taste.score, 0.5);
+    taste.lead = null;
+  }
+  if (taste?.lead) extra.unshift("TASTE_MATCH");
+
   void policy;
-  return { scores: { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) }, extraReasons: extra, dayPart: part };
+  const scores: Scores = { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) };
+  if (taste) scores.taste = taste.score;
+  return { scores, extraReasons: extra, dayPart: part, tasteLead: taste?.lead ?? null };
 }
 
-/** One number for how good an option is within its class: appeal, then fit, novelty least. */
+/**
+ * One number for how good an option is within its class: appeal, then fit, novelty least. With a
+ * taste or a mood, how well it matches leads: what someone loves comes before what is merely near.
+ */
 export function merit(e: Evaluation): number {
-  return e.scores.appeal * 0.5 + e.scores.fit * 0.35 + e.scores.novelty * 0.15;
+  const s = e.scores;
+  if (s.taste !== undefined) return s.taste * TASTE.merit.taste + s.appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty;
+  return s.appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
 }
 
 /** Ordering within the eligible set: class, then merit. */

@@ -170,6 +170,8 @@ async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> 
   // Before 1.7 it could not ask for diets or must-haves.
   if (!("diets" in r)) r = { ...r, diets: [] };
   if (!("features" in r)) r = { ...r, features: [] };
+  // Before 1.8 a search had no taste.
+  if (!("taste" in r)) r = { ...r, taste: [] };
   return r;
 }
 

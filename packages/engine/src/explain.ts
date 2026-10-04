@@ -1,4 +1,4 @@
-import { addMinutes } from "@outrn/core";
+import { addMinutes, INTERESTS } from "@outrn/core";
 import { waitCeilingMinutes } from "./conditions.js";
 import { kidFacilityLevels } from "./amenities.js";
 import { leadCuisine } from "./cuisine.js";
@@ -61,6 +61,8 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   const out: Note[] = [];
   const has = (code: ReasonCode) => e.reasons.includes(code);
   const add = (code: ReasonCode, text: string, params: Note["params"] = {}) => out.push({ code, text, params });
+  // What this person likes comes first: it is why this option is on their list.
+  if (has("TASTE_MATCH") && e.tasteLead) add("TASTE_MATCH", `matches your taste for ${INTERESTS[e.tasteLead].toLowerCase()}`, { interest: e.tasteLead });
   if (has("EVENT_STARTS_SOON")) add("EVENT_STARTS_SOON", "starts soon", { startsAt: iso(e.candidate.occurrence?.start) });
   if (has("SHORT_TRAVEL")) add("SHORT_TRAVEL", t.travel.mode === "walk" ? "a short walk" : t.travel.mode === "drive" ? "a short drive" : "a short trip", { mode: t.travel.mode, minutes: t.travel.minutes });
   const happy = has("HAPPY_HOUR") ? happyHourAt(e.candidate, t.arrival, t.latestFinish) : null;
