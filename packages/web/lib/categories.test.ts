@@ -25,6 +25,8 @@ describe("category shortcuts on the web", () => {
   it("give every kind an icon, and anything unknown a map pin", () => {
     for (const c of areas.filters.categories) expect(categoryIconPath(c.id), c.id).not.toBe(categoryIconPath("unknown"));
     expect(categoryIconPath("__proto__")).toBe(categoryIconPath("unknown"));
+    // A pop-up's own site is a "Happening", with an icon of its own.
+    expect(categoryIconPath("event_site")).not.toBe(categoryIconPath("unknown"));
   });
 
   it("show the place's own photos with their credit, else a labelled representative one", () => {

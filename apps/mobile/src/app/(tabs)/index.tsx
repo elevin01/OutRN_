@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { router } from "expo-router";
 import type { RecommendationResponse } from "@outrn/contracts";
 import { useApp } from "../../state/app";
@@ -19,8 +19,22 @@ import { demoMode } from "../../lib/api";
 import { isExpired } from "../../lib/presentation";
 
 export default function NowScreen() {
-  const { areas, query, result, busy, error, search, initialize } = useApp();
+  const { areas, query, result, busy, error, search, initialize, taste, tasteHydrated } =
+    useApp();
   const [backPage, setBackPage] = useState<string>();
+  // Quick picks, once, on first open: what this person likes leads from the first search on.
+  const offeredPicks = useRef(false);
+  useEffect(() => {
+    if (
+      offeredPicks.current ||
+      !tasteHydrated ||
+      taste.asked ||
+      !areas?.filters.interests.length
+    )
+      return;
+    offeredPicks.current = true;
+    router.push("/interests");
+  }, [tasteHydrated, taste.asked, areas]);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 15_000);

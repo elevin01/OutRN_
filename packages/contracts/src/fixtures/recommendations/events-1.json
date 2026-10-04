@@ -52,6 +52,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "theatre"
+      ],
       "status": "check_first",
       "callToAction": "book",
       "location": {
@@ -176,6 +179,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "theatre"
+      ],
       "status": "check_first",
       "callToAction": "book",
       "location": {

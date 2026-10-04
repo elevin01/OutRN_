@@ -76,6 +76,9 @@
           "label": "Outdoor seating"
         }
       ],
+      "interests": [
+        "food"
+      ],
       "id": "00000000-0000-4000-8000-000000000009",
       "copy": {
         "action": "Go now",
@@ -190,6 +193,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "drinks"
       ],
       "id": "00000000-0000-4000-8000-00000000001c",
       "copy": {
@@ -325,6 +331,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "food"
       ],
       "id": "00000000-0000-4000-8000-00000000000c",
       "copy": {

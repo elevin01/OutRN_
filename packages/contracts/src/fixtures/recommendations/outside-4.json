@@ -80,6 +80,9 @@
           "label": "Wheelchair accessible"
         }
       ],
+      "interests": [
+        "food"
+      ],
       "id": "00000000-0000-4000-8000-00000000002d",
       "copy": {
         "action": "Go now",
@@ -195,6 +198,9 @@
           "label": "Outdoor seating"
         }
       ],
+      "interests": [
+        "cafes"
+      ],
       "id": "00000000-0000-4000-8000-00000000002e",
       "copy": {
         "action": "Go now",
@@ -306,6 +312,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "food"
       ],
       "id": "00000000-0000-4000-8000-00000000002f",
       "copy": {

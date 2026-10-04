@@ -57,6 +57,9 @@
       ],
       "diets": [],
       "features": [],
+      "interests": [
+        "food"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -184,6 +187,9 @@
       ],
       "diets": [],
       "features": [],
+      "interests": [
+        "food"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -315,6 +321,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "food"
       ],
       "status": "check_first",
       "callToAction": "check",

@@ -81,6 +81,7 @@ export function ActivityExperience({
     initialize,
     areas,
     busy,
+    learn,
   } = useApp();
   const [resource, setResource] = useState<{
     id: string;
@@ -214,6 +215,7 @@ export function ActivityExperience({
       expiresAt: response.expiresAt,
       arrived: false,
     });
+    learn(item, "go");
     router.push("/outing");
   };
   const layout = (e: LayoutChangeEvent) =>
@@ -267,14 +269,19 @@ export function ActivityExperience({
             saved={saved.some((p) => p.id === placeId)}
             saveDisabled={!hydrated || !category}
             mapsDisabled={!directions || !safeExternalUrl(directions)}
-            onSave={() =>
-              category &&
+            onSave={() => {
+              if (!category) return;
+              if (item)
+                learn(
+                  item,
+                  saved.some((p) => p.id === placeId) ? "unsave" : "save",
+                );
               toggleSaved({
                 id: placeId,
                 name: place?.name || name,
                 category: category.id,
-              })
-            }
+              });
+            }}
             onMaps={maps}
             onNext={onNext}
             onBack={onBack}
@@ -551,6 +558,18 @@ export function ActivityExperience({
               label="See the next activity"
               icon="arrow-right"
               onPress={onNext}
+            />
+          )}
+          {onNext && item && (
+            <Button
+              secondary
+              label="Not for me"
+              icon="thumbs-down"
+              onPress={() => {
+                // Less of this kind of thing, and not this one again this session.
+                learn(item, "not_for_me");
+                onNext();
+              }}
             />
           )}
           {onPrevious && (

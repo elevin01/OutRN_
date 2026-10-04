@@ -50,6 +50,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "cafes"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -200,6 +203,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "drinks"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -346,6 +352,9 @@
       ],
       "diets": [],
       "features": [],
+      "interests": [
+        "food"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {

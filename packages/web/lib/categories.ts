@@ -1,5 +1,5 @@
 import {
-  mdiAccountGroupOutline, mdiBankOutline, mdiBinoculars, mdiBookshelf, mdiBowling, mdiCoffeeOutline, mdiCompassOutline, mdiDramaMasks,
+  mdiAccountGroupOutline, mdiBankOutline, mdiBinoculars, mdiBookshelf, mdiBowling, mdiCalendarStar, mdiCoffeeOutline, mdiCompassOutline, mdiDramaMasks,
   mdiFlowerOutline, mdiGamepadVariantOutline, mdiGlassCocktail, mdiIceCream, mdiLibrary, mdiMapMarkerOutline, mdiMovieOpenOutline, mdiMusic,
   mdiMusicNote, mdiPaletteOutline, mdiPineTree, mdiRun, mdiSilverwareForkKnife, mdiStarOutline, mdiStorefrontOutline, mdiTicketOutline, mdiWaves,
 } from "@mdi/js";
@@ -37,6 +37,8 @@ const ICONS: Readonly<Record<string, string>> = {
   live_music: mdiMusicNote, community: mdiAccountGroupOutline, market: mdiStorefrontOutline, park: mdiPineTree, garden: mdiFlowerOutline,
   waterfront: mdiWaves, viewpoint: mdiBinoculars, attraction: mdiStarOutline, library: mdiLibrary, bookshop: mdiBookshelf,
   bowling: mdiBowling, arcade: mdiGamepadVariantOutline, activity: mdiRun,
+  // A pop-up's own site (a band on the lawn, a street fair): a "Happening".
+  event_site: mdiCalendarStar,
 };
 
 const own = <T,>(table: Readonly<Record<string, T>>, key: string): T | undefined => (Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined);
