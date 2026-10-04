@@ -50,6 +50,8 @@ async function candidatesNear(q: Queryable, p: LatLon): Promise<VenueCandidate[]
        select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon
          from venues v
         where v.publish_state <> 'merged'
+          -- A pop-up's site is never a real place's match or parent (eventSiteFor's own rule, mirrored).
+          and v.category <> 'event_site'
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
      )
      select n.*,
@@ -132,6 +134,34 @@ export async function createIfNew(q: Queryable, input: ResolveInput): Promise<{ 
   const venueId = await createVenue(q, input, parentId);
   await link(q, input.sourceEntityId, venueId, best?.s.score ?? 0, "auto", { new_venue: true, ...(child ? { child_of: child.c.id, ...child.s.evidence } : {}), ...(best ? { nearest: best.c.id, nearest_score: best.s.score } : {}) });
   return { venueId, parentVenueId: parentId, nearest: best ? { venueId: best.c.id, score: best.s.score } : null };
+}
+
+/** How near a pop-up's site of the same name must be to be the same site. */
+export const EVENT_SITE_REUSE_M = 75;
+
+/**
+ * Where a pop-up happens that is no place of its own: a pier for fireworks, a street fair's block.
+ * Its own venue (category event_site), never merged into a place nearby or made its child: fireworks
+ * over the river are not held inside the restaurant on the corner. A site of the same name within
+ * EVENT_SITE_REUSE_M is the same site, so a weekly market's events share one.
+ */
+export async function eventSiteFor(q: Queryable, input: ResolveInput): Promise<{ venueId: string; created: boolean }> {
+  const existing = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null and decision <> 'rejected'`, [input.sourceEntityId]);
+  if (existing.rows[0]) return { venueId: existing.rows[0].venue_id, created: false };
+  const same = await q.query<{ id: string }>(
+    `select id from venues
+      where publish_state <> 'merged' and category = 'event_site' and name_key = $1
+        and ST_DWithin(geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4)
+      order by ST_Distance(geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography) limit 1`,
+    [matchKey(input.record.name), input.record.point.lon, input.record.point.lat, EVENT_SITE_REUSE_M],
+  );
+  if (same.rows[0]) {
+    await link(q, input.sourceEntityId, same.rows[0].id, 1, "auto", { event_site: true, same_site: same.rows[0].id });
+    return { venueId: same.rows[0].id, created: false };
+  }
+  const venueId = await createVenue(q, { ...input, record: { ...input.record, category: "event_site" } }, null);
+  await link(q, input.sourceEntityId, venueId, 0, "auto", { new_venue: true, event_site: true });
+  return { venueId, created: true };
 }
 
 /** Human decision: merge venue `from` into `to`. Re-points links and facts; reversible via audit + superseded links. */

@@ -19,13 +19,14 @@
   "dependencies": {
     "@outrn/core": "workspace:*",
     "@outrn/db": "workspace:*",
+    "@outrn/facts": "workspace:*",
+    "@outrn/identity": "workspace:*",
     "@outrn/sources": "workspace:*",
     "opening_hours": "^3.8.0",
-    "@outrn/identity": "workspace:*",
-    "@outrn/facts": "workspace:*"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "pg": "^8.13.0",
-    "@types/pg": "^8.11.10"
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.0"
   }
 }

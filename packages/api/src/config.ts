@@ -17,14 +17,20 @@ export const SNAPSHOT_RETENTION_HOURS = 24;
 
 export const DEFAULT_AREA_ID = "les";
 
+/** Labels a category's id does not spell out. */
+const CATEGORY_LABELS: Readonly<Record<string, string>> = { event_site: "Happening" };
+
 export function labelOf(id: string): string {
+  const own = Object.hasOwn(CATEGORY_LABELS, id) ? CATEGORY_LABELS[id] : undefined;
+  if (own) return own;
   const t = id.replace(/_/g, " ");
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 export const MOODS: Record<Mood, string> = { relaxed: "Relaxed", active: "Active", food: "Food", culture: "Culture" };
 export const COMPANIES: Record<Company, string> = { alone: "Just me", date: "Date", friends: "Friends", family: "Family" };
-export const REQUESTABLE_CATEGORIES = CATEGORIES.filter((c) => c !== "other");
+// A pop-up's site is no kind of place to ask for: its events show in any search they fit.
+export const REQUESTABLE_CATEGORIES = CATEGORIES.filter((c) => c !== "other" && c !== "event_site");
 
 const options = (labels: Record<string, string>): Option[] => Object.entries(labels).map(([id, label]) => ({ id, label }));
 

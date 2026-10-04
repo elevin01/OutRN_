@@ -6,7 +6,7 @@ import pg from "pg";
 import { ApiError, AreasResponse, OpsRunDetail, OpsRunList, PlaceDetails, RecommendationRequest, RecommendationResponse } from "@outrn/contracts";
 import { getArea, loadParkingRule, reset, setLaunchState, testDatabaseAvailable } from "@outrn/db";
 import { materializeSubjects, refreshFactDocs, writeFacts } from "@outrn/facts";
-import { ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
+import { ingestEvents, ingestExtentFor, ingestOsmArea, ingestPhotos } from "@outrn/ingest";
 import { createApp } from "../src/http/app.js";
 import { runEngine } from "../src/service/recommendations.js";
 
@@ -725,3 +725,32 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(ApiError.parse(await res.json()).error).toMatchObject({ code: "UNAVAILABLE", retryable: true });
   });
 });
+
+describe.skipIf(!available)("pop-ups from the founder's list", () => {
+  it("shows a pop-up at a place of its own as a happening, ranked by taste, and never its site alone", async () => {
+    // Monday 6:30pm: no other test plans for then.
+    now = new Date("2026-10-05T22:30:00Z");
+    const s = await ingestEvents(
+      db,
+      { source: "founder", events: [{ id: "api-fireworks", title: "Fireworks over the East River", start: "2026-10-05T19:30:00-04:00", end: "2026-10-05T20:00:00-04:00", kinds: ["festivals"], admission: "walk_in", price: { free: true }, place: { name: "East River Esplanade at Grand St", lat: 40.7135, lon: -73.9775 }, evidence: "test fixture" }] },
+      { areaSlug: "les", now },
+    );
+    expect(s.rejected).toEqual([]);
+    const page = await search({ areaId: "les", windowMinutes: 120, taste: [{ interest: "festivals", weight: 1 }] });
+    const pop = page.items.find((i) => i.name === "Fireworks over the East River");
+    expect(pop, JSON.stringify(page.items.map((i) => i.name))).toMatchObject({ kind: "event", placeName: "East River Esplanade at Grand St", category: { id: "event_site", label: "Happening" }, price: { kind: "free" } });
+    expect(pop!.reasons[0]).toMatchObject({ code: "TASTE_MATCH", text: "matches your taste for festivals & fairs" });
+    // Its place has details like any other.
+    expect((await call("GET", `/v1/places/${pop!.placeId}`)).status).toBe(200);
+    // A pop-up's site is no kind of place to ask for.
+    const ask = await call("POST", "/v1/recommendations", { areaId: "les", windowMinutes: 120, categories: ["event_site"] });
+    expect(ask.status).toBe(400);
+    // After it, the site is nothing: never an option of its own.
+    now = new Date("2026-10-06T01:00:00Z");
+    const ev = OpsRunDetail.parse((await call("POST", "/ops/v1/evaluate", { areaId: "les", windowMinutes: 120 }, { authorization: `Bearer ${TOKEN}` })).json);
+    const site = ev.results.filter((r) => r.placeId === pop!.placeId);
+    expect(site.map((r) => [r.kind, r.class, r.excludedBy])).toEqual([["venue", "ineligible", "NO_PROGRAMME"]]);
+    now = SAT_EVENING;
+  });
+});
+
