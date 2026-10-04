@@ -125,7 +125,7 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 | Field | Values today |
 | --- | --- |
-| `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `HAPPY_HOUR` (params `from`, `until`; `from` is null when it is on at the arrival), `OUTDOOR_SEATING`, `FRESH_REPORT`, `LANDMARK` |
+| `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `DAWN_TO_DUSK` (a park with no listed hours, in daylight: "usually open dawn to dusk"; `closesAt` is sunset, an estimate), `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `HAPPY_HOUR` (params `from`, `until`; `from` is null when it is on at the arrival), `OUTDOOR_SEATING`, `FRESH_REPORT`, `LANDMARK` |
 | `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`), `DIET_FROM_NAME` |
 | `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `any_cuisine`, `without_features`, `takeout`, `dine_in`, `stay_later` |
 | `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |

@@ -71,6 +71,7 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   if (has("ENOUGH_TIME")) add("ENOUGH_TIME", "plenty of time", { usefulMinutes: t.usefulMinutes });
   else if (has("CLOSES_SOON")) add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
   if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
+  if (has("DAWN_TO_DUSK")) add("DAWN_TO_DUSK", "usually open dawn to dusk", { closesAt: iso(t.closesAt) });
   if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
   if (has("FREE")) add("FREE", e.price.isEstimate ? "usually free" : "free");
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
@@ -129,7 +130,7 @@ export function explain(e: Evaluation, tz: string, cuisines: readonly string[] =
     const wait = t.conditions.find((x) => x.kind === "wait");
     if (wait?.minutes) parts.push(`~${wait.minutes.min}–${wait.minutes.max} min wait`);
     else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
-    if (t.closesAt) parts.push(`until ${fmtTime(t.closesAt, tz)}`);
+    if (t.closesAt) parts.push(e.reasons.includes("DAWN_TO_DUSK") ? `until dusk (${fmtTime(t.closesAt, tz)})` : `until ${fmtTime(t.closesAt, tz)}`);
   }
   // Cold or heat outdoors is worth knowing before leaving; rain is a caveat of its own.
   const weather = t.conditions.find((x) => x.kind === "weather" && (x.level === "cold" || x.level === "hot"));

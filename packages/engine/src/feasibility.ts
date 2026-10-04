@@ -1,6 +1,7 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
+import SunCalc from "suncalc";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
@@ -22,6 +23,30 @@ import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from
 
 /** Minutes a table needs to get its order in before the kitchen closes. */
 export const ORDER_MINUTES = 15;
+
+/**
+ * A public park with no listed hours is usually open dawn to dusk (roadmap decision 8). How sure that
+ * is: an estimate from the kind of place, not its own record.
+ */
+export const DAWN_TO_DUSK_CONFIDENCE = 0.4;
+
+/** Sunrise and sunset where the place is, on the local day of `at`. */
+function daylightOn(c: Candidate, at: Date): { rise: Date; set: Date } | null {
+  const t = SunCalc.getTimes(fromLocal(localClock(at, c.timezone).date, 12 * 60, c.timezone), c.point.lat, c.point.lon);
+  return Number.isNaN(t.sunrise.getTime()) || Number.isNaN(t.sunset.getTime()) ? null : { rise: t.sunrise, set: t.sunset };
+}
+
+/**
+ * A daylight visit to a park with no hours of its own: from arrival (or sunrise, if that still fits)
+ * to sunset or the user's deadline. Null when the visit does not fit in daylight.
+ */
+function daylightVisit(c: Candidate, arrival: Date, deadline: Date, minUsefulMinutes: number): { opensAt: Date | null; dusk: Date } | null {
+  const sun = daylightOn(c, arrival);
+  if (!sun || arrival >= sun.set) return null;
+  const opensAt = arrival < sun.rise ? sun.rise : null;
+  const end = sun.set < deadline ? sun.set : deadline;
+  return minutesBetween(opensAt ?? arrival, end) >= minUsefulMinutes ? { opensAt, dusk: sun.set } : null;
+}
 
 /**
  * Youngest person in the party: a number when known, "minor" when company is family and no age was
@@ -284,6 +309,21 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   const hoursFact = fact(c, "opening_hours");
   if (!hoursFact || !isHoursValue(hoursFact.value)) {
+    // A park with no listed hours is usually open dawn to dusk: in daylight those are its hours, an
+    // estimate the card names, and the visit ends by dusk. After dark, or with too little daylight left,
+    // its hours stay unknown: a city park open till 1am is still an option to check. A garden is not
+    // assumed open: a community garden opens on the days it posts.
+    const daylight = c.category === "park" ? daylightVisit(c, arrival, deadline, minUsefulMinutes) : null;
+    if (daylight) {
+      if (daylight.opensAt) reasons.push("WAIT_FOR_OPENING");
+      reasons.push("DAWN_TO_DUSK");
+      const at = daylight.opensAt ?? arrival;
+      const finishAt = daylight.dusk < deadline ? daylight.dusk : deadline;
+      const useful = minutesBetween(at, finishAt);
+      if (useful < minUsefulMinutes + 20 && finishAt < userDeadline) reasons.push("CLOSES_SOON");
+      const timing: TimingBase = { travel, departAt: leaveFor(at), arrival: at, latestArrival: null, latestArrivalIsEstimate: false, latestArrivalKind: null, latestFinish: finishAt, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: daylight.dusk, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
+      return finish(c, ctx, reasons, unresolved, timing, DAWN_TO_DUSK_CONFIDENCE);
+    }
     unresolved.push("HOURS_UNKNOWN");
     const kitchen = kitchenGate();
     if (typeof kitchen === "string") return out(kitchen);

@@ -133,6 +133,8 @@ export type ReasonCode =
   | "SHORT_TRAVEL"
   | "ENOUGH_TIME"
   | "OPEN_LATE"
+  /** A park with no listed hours, in daylight: usually open dawn to dusk (an estimate). */
+  | "DAWN_TO_DUSK"
   | "CLOSES_SOON"
   | "FITS_BUDGET"
   | "FREE"
