@@ -204,6 +204,8 @@ export default function FiltersScreen() {
           setDraft({
             areaId: draft.areaId,
             windowMinutes: filters.defaultWindowMinutes,
+            origin: draft.origin,
+            travelMode: draft.travelMode,
           });
           setAge("");
         }}

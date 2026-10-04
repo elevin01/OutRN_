@@ -31,11 +31,15 @@ environment variables are bundled into the app; never put secrets in them. Relea
 production APIs must allow the web preview's origin if web access is required.
 
 Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROVED.md).
+First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](docs/ONBOARDING.md).
 
 ## Included
 
 - Warm paper, DM Sans, orange actions, category artwork, accessible 44+ point controls, safe areas,
   native stack navigation, and Now / Saved / You tabs.
+- A two-step first run: photo interest choices (or “Surprise me”), then foreground location or a
+  supported area. Choices and progress are saved locally; the first result uses the existing API.
+  Interests can be changed from You → What you like.
 - One activity per screen, a right-side Save / Maps / Next rail, swipes between photos, scrolling details, hidden filters, API-generated
   area choices, frozen cursor paging, pull to refresh,
   low-supply explanations, expired searches, connection errors, and loading states.
@@ -44,21 +48,26 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
 - Saved place identities in device storage; current details are fetched when opened. Saving does not
   cache eligibility, hours, or a recommendation. Storage failures are visible.
 - Session-only outing, directions handoff, manual arrival, and finish. A selected outing survives
-  tab navigation but deliberately does not survive process restart. No location permission is used.
+  tab navigation but deliberately does not survive process restart. Foreground location is optional;
+  exact coordinates remain in memory, with no background tracking.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 
-The contract has no image field. Production uses original decorative category artwork. Demo mode
+Production result cards currently use original decorative category artwork. Demo mode
 uses bundled mood photography with an explicit “not the venue” label; see
-[photo sources](assets/photos/README.md). Accurate venue photography needs a separate data change.
+[photo sources](assets/photos/README.md). Rendering API venue photographs is a separate UI change.
+The bundled [onboarding photographs](assets/onboarding/README.md) illustrate interests and are
+included in production. They are never used as photographs of a recommended venue.
 DM Sans is bundled
 under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
 ## Remaining product slices
 
 Account sync, submission of venue corrections, taste-feedback services, persistent outings,
-device-location entry, accurate venue photography, community feeds, live conditions and a geographic map view need separate PRs.
+API venue-photo rendering, community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
-The mobile search currently starts from the area center. Contract-supplied origins are labeled correctly; the app does not request device location.
+Interests, area and travel mode persist. Manual entry starts from the area center; device entry
+passes a foreground fix to the API. A returning device-location user is never prompted on launch:
+the app checks existing permission and offers manual entry if it is unavailable.
 Admission checks and booking happen with the venue; OutRN does not make a reservation.
 
 ## Validate

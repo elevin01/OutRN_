@@ -15,6 +15,16 @@ import type {
   RecommendationsBody,
 } from "@outrn/contracts";
 import { api, RequestError } from "../lib/api";
+import { usePreferences } from "./preferences";
+import {
+  initialQuery,
+  nearestArea,
+  requestTaste,
+  type Setup,
+  type Taste,
+} from "../lib/onboarding";
+import { deviceOrigin } from "../lib/device-location";
+import { LocationProblem } from "../lib/location-request";
 export type SavedPlace = { id: string; name: string; category: string };
 export type Outing = {
   item: RecommendationItem;
@@ -24,7 +34,13 @@ export type Outing = {
 };
 const KEY = "outrn.saved.v1";
 function useAppState() {
+  const preferences = usePreferences();
   const [areas, setAreas] = useState<AreasResponse>();
+  const areasRef = useRef<AreasResponse | undefined>(undefined);
+  const [initialized, setInitialized] = useState(false);
+  const [needsSetup, setNeedsSetup] = useState(true);
+  const [setupNotice, setSetupNotice] = useState<string>();
+  const [firstArrival, setFirstArrival] = useState(false);
   const [query, setQuery] = useState<RecommendationRequest>();
   const [result, setResult] = useState<RecommendationResponse>();
   const [error, setError] = useState<RequestError>();
@@ -48,13 +64,48 @@ function useAppState() {
     setBusy(true);
     setError(undefined);
     setResult(undefined);
-    if (nextQuery) setQuery(nextQuery);
-    else if ("areaId" in body) setQuery(body);
+    const offered = areasRef.current;
+    const request =
+      "areaId" in body && offered
+        ? {
+            ...body,
+            taste: requestTaste(preferences.current.current.taste, offered),
+          }
+        : body;
+    if ("areaId" in request) {
+      setQuery(request);
+      const setup = preferences.current.current.setup;
+      if (setup.completed && offered) {
+        void preferences.update({
+          setup: {
+            ...setup,
+            areaId: request.areaId,
+            travelMode:
+              request.travelMode ||
+              offered.areas.find((area) => area.id === request.areaId)
+                ?.defaultTravelMode,
+            originSource: request.origin ? "device" : "area",
+          },
+        });
+      }
+    } else if (nextQuery) setQuery(nextQuery);
     try {
-      const data = await api.recommend(body, controller.signal);
+      const data = await api.recommend(request, controller.signal);
       if (!controller.signal.aborted) setResult(data);
     } catch (e) {
-      if (!controller.signal.aborted) setError(e as RequestError);
+      if (!controller.signal.aborted) {
+        const failure = e as RequestError;
+        setError(failure);
+        if (failure.fields?.some((field) => field.path === "origin")) {
+          setSetupNotice(
+            "Your location isn’t in this area’s coverage. Choose an area to explore.",
+          );
+          void preferences.update({
+            setup: { ...preferences.current.current.setup, step: "area" },
+          });
+          setNeedsSetup(true);
+        }
+      }
     } finally {
       if (!controller.signal.aborted) setBusy(false);
     }
@@ -68,26 +119,60 @@ function useAppState() {
       .then(async (data) => {
         if (controller.signal.aborted) return;
         setAreas(data);
+        areasRef.current = data;
         setError(undefined);
-        const first = {
-          areaId: data.defaultAreaId,
-          windowMinutes: data.filters.defaultWindowMinutes,
-        };
-        if (!data.areas.length) {
+        const setup = preferences.current.current.setup;
+        if (!setup.completed || !data.areas.length) {
           setBusy(false);
           return;
         }
-        await search(first, first);
+        let origin: RecommendationRequest["origin"];
+        let restoredSetup = setup;
+        if (setup.originSource === "device") {
+          try {
+            // Check existing authorization, never show a permission prompt on launch.
+            origin = await deviceOrigin(false, controller.signal);
+            const area = nearestArea(data.areas, origin);
+            if (area) restoredSetup = { ...setup, areaId: area.id };
+          } catch (error) {
+            if (!controller.signal.aborted) {
+              setSetupNotice(
+                error instanceof LocationProblem
+                  ? error.message
+                  : "Choose a starting area.",
+              );
+              void preferences.update({ setup: { ...setup, step: "nearby" } });
+              setNeedsSetup(true);
+              setBusy(false);
+            }
+            return;
+          }
+        }
+        if (controller.signal.aborted) return;
+        const first = initialQuery(data, restoredSetup, origin);
+        if (!first) {
+          setSetupNotice(
+            "Your previous area is no longer available. Choose another starting point.",
+          );
+          void preferences.update({ setup: { ...setup, step: "area" } });
+          setNeedsSetup(true);
+          setBusy(false);
+          return;
+        }
+        setNeedsSetup(false);
+        void search(first, first);
       })
       .catch((error: RequestError) => {
         if (!controller.signal.aborted) {
           setError(error);
           setBusy(false);
         }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setInitialized(true);
       });
   }
   useEffect(() => {
-    void initialize();
     AsyncStorage.getItem(KEY)
       .then((raw) => {
         if (!raw) return;
@@ -116,9 +201,12 @@ function useAppState() {
       searchController.current?.abort();
       loadController.current?.abort();
     };
-    // Initialization is intentionally once per mounted provider.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (preferences.ready) void initialize();
+    // Wait for the stored taste before the first request. Later changes are explicit searches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences.ready]);
   useEffect(() => {
     if (!savedLoaded.current || saveRevision === 0) return;
     writes.current = writes.current
@@ -136,6 +224,37 @@ function useAppState() {
         : [place, ...old].slice(0, 200),
     );
   }
+  async function completeSetup(
+    areaId: string,
+    travelMode: Setup["travelMode"],
+    origin?: RecommendationRequest["origin"],
+  ) {
+    const data = areasRef.current;
+    if (!data?.areas.some((area) => area.id === areaId)) return;
+    const setup: Setup = {
+      version: 1,
+      completed: true,
+      step: "nearby",
+      areaId,
+      travelMode,
+      originSource: origin ? "device" : "area",
+    };
+    const first = initialQuery(data, setup, origin);
+    if (!first) return;
+    await preferences.update({
+      setup,
+      taste: { ...preferences.current.current.taste, asked: true },
+    });
+    setSetupNotice(undefined);
+    setFirstArrival(true);
+    // Setup and result loading are separate. A failed search retries without replaying the wizard.
+    void search(first, first);
+    setNeedsSetup(false);
+  }
+  async function saveInterests(taste: Taste) {
+    await preferences.update({ taste: { ...taste, asked: true } });
+    if (query) void search(query);
+  }
   return {
     areas,
     query,
@@ -151,9 +270,19 @@ function useAppState() {
     saved,
     toggleSaved,
     hydrated,
-    storageError,
+    storageError: preferences.error || storageError,
     outing,
     setOuting,
+    initialized,
+    needsSetup,
+    taste: preferences.taste,
+    setup: preferences.setup,
+    setupNotice,
+    updatePreferences: preferences.update,
+    completeSetup,
+    saveInterests,
+    firstArrival,
+    dismissArrival: () => setFirstArrival(false),
   };
 }
 const Context = createContext<ReturnType<typeof useAppState> | null>(null);

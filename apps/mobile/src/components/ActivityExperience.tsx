@@ -56,6 +56,7 @@ export function ActivityExperience({
   onPrevious,
   onRefresh,
   onBack,
+  introduction,
 }: {
   placeId: string;
   item?: RecommendationItem;
@@ -65,6 +66,7 @@ export function ActivityExperience({
   onPrevious?: () => void;
   onRefresh?: () => void;
   onBack?: () => void;
+  introduction?: string;
 }) {
   const {
     saved,
@@ -209,6 +211,7 @@ export function ActivityExperience({
           }}
         >
           <ActivityProfile
+            introduction={introduction}
             item={expired ? undefined : item}
             place={place}
             name={name}

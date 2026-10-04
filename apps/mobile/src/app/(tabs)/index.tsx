@@ -17,9 +17,19 @@ import {
 import { ActivityExperience } from "../../components/ActivityExperience";
 import { demoMode } from "../../lib/api";
 import { isExpired } from "../../lib/presentation";
+import { FirstPickLoading } from "../../components/OnboardingChrome";
 
 export default function NowScreen() {
-  const { areas, query, result, busy, error, search, initialize } = useApp();
+  const {
+    areas,
+    query,
+    result,
+    busy,
+    error,
+    search,
+    initialize,
+    firstArrival,
+  } = useApp();
   const [backPage, setBackPage] = useState<string>();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -32,6 +42,7 @@ export default function NowScreen() {
     else void initialize();
   };
   const expired = result && !demoMode && isExpired(result, now);
+  if (busy && firstArrival) return <FirstPickLoading />;
   if (!busy && !error && result && !expired && areas?.areas.length)
     return (
       <ActivityDeck
@@ -108,6 +119,7 @@ function ActivityDeck({
   page: (cursor: string, backwards: boolean) => void;
   refresh: () => void;
 }) {
+  const { firstArrival, dismissArrival } = useApp();
   const [index, setIndex] = useState(
     startAtEnd ? Math.max(0, result.items.length - 1) : 0,
   );
@@ -119,6 +131,7 @@ function ActivityDeck({
         ? () => page(result.page.prevCursor!, true)
         : undefined;
   const next = () => {
+    dismissArrival();
     if (index < result.items.length - 1) setIndex((i) => i + 1);
     else if (result.page.nextCursor) page(result.page.nextCursor, false);
     else setIndex(result.items.length);
@@ -126,6 +139,11 @@ function ActivityDeck({
   if (item)
     return (
       <ActivityExperience
+        introduction={
+          firstArrival && index === 0 && result.page.offset === 0
+            ? "Here’s a good place to start."
+            : undefined
+        }
         key={item.id}
         placeId={item.placeId}
         item={item}
@@ -141,7 +159,7 @@ function ActivityDeck({
       <Heading>
         {result.items.length
           ? "That’s your shortlist"
-          : "Nothing fits this search"}
+          : "Let’s try a little differently."}
       </Heading>
       <Copy>
         {result.items.length
@@ -156,6 +174,11 @@ function ActivityDeck({
         label="Plans & preferences"
         secondary
         onPress={() => router.push("/filters")}
+      />
+      <Button
+        label="Try another area"
+        secondary
+        onPress={() => router.push("/areas")}
       />
       {result.insufficient?.relaxations.map((r) => (
         <Copy key={r.code}>

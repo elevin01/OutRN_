@@ -20,21 +20,40 @@ const photos = new Map(
   ),
 );
 const found = new Set();
+// These are intentional interest-picker illustrations, never venue photos.
+const onboarding = new Map(
+  await Promise.all(
+    ["food", "coffee", "walk", "pub", "art", "music", "games", "market"].map(
+      async (name) => [
+        hash(await readFile(resolve(root, "assets/onboarding", `${name}.jpg`))),
+        name,
+      ],
+    ),
+  ),
+);
+const onboardingFound = new Set();
 async function scan(path) {
   for (const entry of await readdir(path, { withFileTypes: true })) {
     const file = resolve(path, entry.name);
     if (entry.isDirectory()) await scan(file);
     else {
-      const name = photos.get(hash(await readFile(file)));
+      const digest = hash(await readFile(file));
+      const name = photos.get(digest);
       if (name) found.add(name);
+      const interest = onboarding.get(digest);
+      if (interest) onboardingFound.add(interest);
     }
   }
 }
 await scan(output);
+if (onboardingFound.size !== onboarding.size)
+  throw new Error(
+    `Missing onboarding photos: ${[...onboarding.values()].filter((name) => !onboardingFound.has(name)).join(", ")}`,
+  );
 if (demo ? found.size !== photos.size : found.size !== 0)
   throw new Error(
     `Unexpected demo assets in ${demo ? "demo" : "production"} export: ${[...found].join(", ") || "none"}`,
   );
 console.log(
-  `${demo ? "Demo" : "Production"} export: ${found.size} demo photos. Asset isolation passed.`,
+  `${demo ? "Demo" : "Production"} export: ${found.size} demo photos, ${onboardingFound.size} onboarding illustrations. Asset isolation passed.`,
 );

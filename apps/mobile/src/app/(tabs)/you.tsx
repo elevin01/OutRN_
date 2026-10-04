@@ -11,10 +11,17 @@ import {
   s,
 } from "../../components/ui";
 export default function YouScreen() {
-  const { areas, query, outing } = useApp();
+  const { areas, query, outing, storageError } = useApp();
   return (
     <Screen>
       <Heading>You</Heading>
+      <Button
+        label="What you like"
+        secondary
+        icon="heart"
+        onPress={() => router.push("/interests")}
+      />
+      {storageError && <Copy accessibilityRole="alert">{storageError}</Copy>}
       {outing && (
         <Button
           label="Your current outing"
@@ -44,8 +51,9 @@ export default function YouScreen() {
         <Icon name="shield" />
         <Copy style={{ fontWeight: "700" }}>On this device</Copy>
         <Copy>
-          No account needed. Saved places stay on this device. OutRN doesn’t
-          request or track your device location.
+          No account needed. Saved places and interests stay on this device.
+          Location is optional and used only for a foreground search. You can
+          choose an area instead. Exact coordinates aren’t saved on this device.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>

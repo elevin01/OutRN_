@@ -12,6 +12,7 @@ export class RequestError extends Error {
     readonly code = "UNREACHABLE",
     readonly retryable = true,
     readonly restart?: RecommendationsBody,
+    readonly fields?: { path: string; message: string }[],
   ) {
     super(message);
   }
@@ -48,7 +49,13 @@ export function createApi(baseUrl: string, transport: typeof fetch = fetch) {
         const parsed = ApiError.safeParse(json);
         if (parsed.success) {
           const e = parsed.data.error;
-          throw new RequestError(e.message, e.code, e.retryable, e.restart);
+          throw new RequestError(
+            e.message,
+            e.code,
+            e.retryable,
+            e.restart,
+            e.fields,
+          );
         }
         throw new RequestError(
           "Something went wrong. Please try again.",

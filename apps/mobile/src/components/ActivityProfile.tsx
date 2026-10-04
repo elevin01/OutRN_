@@ -37,6 +37,7 @@ export function ActivityProfile({
   onNext,
   onDetails,
   onBack,
+  introduction,
 }: {
   item?: RecommendationItem;
   place?: PlaceDetails;
@@ -54,6 +55,7 @@ export function ActivityProfile({
   onNext?: () => void;
   onDetails: () => void;
   onBack?: () => void;
+  introduction?: string;
 }) {
   const [photo, setPhoto] = useState(0);
   const inset = useSafeAreaInsets();
@@ -149,6 +151,11 @@ export function ActivityProfile({
         )}
         <Copy style={styles.area}>{area}</Copy>
       </View>
+      {introduction && (
+        <Copy style={[styles.caption, { fontSize: 13, lineHeight: 19 }]}>
+          {introduction}
+        </Copy>
+      )}
       <Copy style={styles.caption}>
         {demoMode
           ? "Demo places · illustrative photos and posts"
