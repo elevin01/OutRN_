@@ -150,8 +150,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Heat is not "good weather for it".
   - Indoors, nothing is shown.
   - No contract change: condition kinds and caveat codes are open-ended.
-  - Next, in the UIs: render `conditions` (crowd, wait and weather). Neither app shows them yet;
-    today the rain reaches users through the caveat, and cold or heat through the fact line.
+  - In the UIs: done. The web card lists every condition's text. The mobile Now card shows the
+    brief ones (a wait's range, a busy or quiet crowd, rain, cold or heat), and its details every text.
 - **Traffic:** 511NY incidents, closures and construction, for NYC and Westchester.
 - **Transit:** MTA subway, bus and Metro-North realtime delays and service alerts.
 - **Events:** Ticketmaster Discovery for events with images and on-sale status, and for big games
@@ -293,7 +293,8 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
-  - In the apps: cuisine chips beside the category shortcuts, and `cuisines` on the card.
+  - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
+    offers (cuisines, diets, must-haves) on its card.
   - Add golden scenarios for the new areas once their real data is ingested.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)

@@ -17,6 +17,7 @@ import { RequiredNotes } from "./PlaceCard";
 import {
   actionLabel,
   clock,
+  nowFacts,
   priceLabel,
   safeExternalUrl,
   travelLabel,
@@ -257,6 +258,12 @@ export function ActivityProfile({
                 </Copy>
               )}
               <Copy style={styles.fact}>{travelLabel(item)}</Copy>
+              {/* What to expect there (a wait, a busy room, rain), then what it offers: "Thai", "Vegan options". */}
+              {nowFacts(item).map((text) => (
+                <Copy key={text} style={styles.fact}>
+                  {text}
+                </Copy>
+              ))}
             </View>
           )}
           {item && <RequiredNotes item={item} light />}
