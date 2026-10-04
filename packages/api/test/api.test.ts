@@ -65,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.9.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.10.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -448,6 +448,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(upgraded.items.map((i) => i.id)).toEqual(expected);
     expect(upgraded.request).toMatchObject({ origin: { lat: 40.7185, lon: -73.988 }, originIsDefault: true, backBy: null, visitStyle: "dine_in" });
 
+    // Stored by a 1.9 API: no search asked for events only.
+    await db.query(`update recommendation_snapshots set resolved = resolved - 'eventsOnly' where run_id = $1`, [first.requestId]);
+    expect((await search(next)).request.eventsOnly).toBe(false);
     // Stored by a 1.8 API: items say nothing of what kind of outing they are.
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'interests') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     const before19 = await search(next);
@@ -762,6 +765,13 @@ describe.skipIf(!available)("pop-ups from the founder's list", () => {
     const pop = page.items.find((i) => i.name === "Fireworks over the East River");
     expect(pop, JSON.stringify(page.items.map((i) => i.name))).toMatchObject({ kind: "event", placeName: "East River Esplanade at Grand St", category: { id: "event_site", label: "Happening" }, price: { kind: "free" } });
     expect(pop!.reasons[0]).toMatchObject({ code: "TASTE_MATCH", text: "matches your taste for festivals & fairs" });
+    expect(page.request.eventsOnly).toBe(false);
+    // Happening soon: the same search, events only. Places are not candidates at all.
+    const events = await search({ areaId: "les", windowMinutes: 120, taste: [{ interest: "festivals", weight: 1 }], eventsOnly: true });
+    expect(events.request.eventsOnly).toBe(true);
+    expect(events.items.length).toBeGreaterThan(0);
+    expect(events.items.every((i) => i.kind === "event"), JSON.stringify(events.items.map((i) => [i.kind, i.name]))).toBe(true);
+    expect(events.items[0]!.name).toBe("Fireworks over the East River");
     // Its place has details like any other.
     expect((await call("GET", `/v1/places/${pop!.placeId}`)).status).toBe(200);
     // A pop-up's site is no kind of place to ask for.

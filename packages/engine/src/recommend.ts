@@ -14,7 +14,9 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
   const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   const fallback: CategoryPolicy = { category: "other", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" };
   const weights = tasteWeights(ctx);
-  return candidates.map((c) => {
+  // Events only: places are not candidates at all, so nothing about them is weighed or logged.
+  const pool = ctx.eventsOnly ? candidates.filter((c) => c.kind === "occurrence") : candidates;
+  return pool.map((c) => {
     const policy = policies.get(c.category) ?? fallback;
     const f = evaluateFeasibility(c, ctx, policy);
     if (f.class === "ineligible" || !f.timing) {

@@ -63,6 +63,50 @@ function useAppState() {
   function setTaste(taste: Taste) {
     void preferences.update({ taste });
   }
+  // Happening soon: the same search, events only, beside the main one. Optional: a failure shows nothing.
+  const [happening, setHappening] = useState<RecommendationResponse>();
+  const [hiddenNudges, setHiddenNudges] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
+  const happeningController = useRef<AbortController | null>(null);
+  function refreshHappening(request: RecommendationRequest) {
+    happeningController.current?.abort();
+    const controller = new AbortController();
+    happeningController.current = controller;
+    // Who is going, when, how and for how much, and the taste; not the kind of place asked for.
+    const {
+      categories: _categories,
+      cuisines: _cuisines,
+      diets: _diets,
+      features: _features,
+      visitStyle: _visitStyle,
+      ...rest
+    } = request;
+    api
+      .recommend(withTaste({ ...rest, eventsOnly: true }), controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setHappening(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setHappening(undefined);
+      });
+  }
+  /** Hide a nudge for this session (never stored). */
+  function hideNudge(id: string) {
+    setHiddenNudges((old) => new Set([...old, id]));
+  }
+  /** Current preferences on fresh searches; frozen cursors remain unchanged. */
+  function withTaste(body: RecommendationsBody): RecommendationsBody {
+    const offered = areasRef.current;
+    if (!("areaId" in body) || !offered) return body;
+    return {
+      ...body,
+      taste: requestTaste(preferences.current.current.taste, offered),
+      ...(dismissed.current.length
+        ? { dismissedIds: dismissed.current.slice(-MAX_DISMISSED) }
+        : {}),
+    };
+  }
   function learn(
     item: Pick<RecommendationItem, "id" | "interests">,
     signal: Signal,
@@ -89,6 +133,11 @@ function useAppState() {
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
   ) {
+    if ("areaId" in body) {
+      // A new area or party must never show the previous search's event nudge while loading.
+      happeningController.current?.abort();
+      setHappening(undefined);
+    }
     searchController.current?.abort();
     const controller = new AbortController();
     searchController.current = controller;
@@ -96,16 +145,7 @@ function useAppState() {
     setError(undefined);
     setResult(undefined);
     const offered = areasRef.current;
-    const request =
-      "areaId" in body && offered
-        ? {
-            ...body,
-            taste: requestTaste(preferences.current.current.taste, offered),
-            ...(dismissed.current.length
-              ? { dismissedIds: dismissed.current.slice(-MAX_DISMISSED) }
-              : {}),
-          }
-        : body;
+    const request = withTaste(body);
     if ("areaId" in request) {
       setQuery(request);
       const setup = preferences.current.current.setup;
@@ -125,7 +165,10 @@ function useAppState() {
     } else if (nextQuery) setQuery(nextQuery);
     try {
       const data = await api.recommend(request, controller.signal);
-      if (!controller.signal.aborted) setResult(data);
+      if (!controller.signal.aborted) {
+        setResult(data);
+        if ("areaId" in request) refreshHappening(request);
+      }
     } catch (e) {
       if (!controller.signal.aborted) {
         const failure = e as RequestError;
@@ -234,6 +277,7 @@ function useAppState() {
     return () => {
       searchController.current?.abort();
       loadController.current?.abort();
+      happeningController.current?.abort();
     };
   }, []);
   useEffect(() => {
@@ -315,6 +359,9 @@ function useAppState() {
     learn,
     firstArrival,
     dismissArrival: () => setFirstArrival(false),
+    happening,
+    hiddenNudges,
+    hideNudge,
   };
 }
 const Context = createContext<ReturnType<typeof useAppState> | null>(null);

@@ -37,6 +37,7 @@ function AppNavigation() {
         <Stack.Screen name="filters" options={{ presentation: "modal" }} />
         <Stack.Screen name="areas" options={{ presentation: "modal" }} />
         <Stack.Screen name="interests" options={{ presentation: "modal" }} />
+        <Stack.Screen name="happening" />
         <Stack.Screen name="outing" />
         <Stack.Screen name="place/[id]" />
       </Stack.Protected>

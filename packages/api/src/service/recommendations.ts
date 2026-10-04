@@ -172,6 +172,8 @@ async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> 
   if (!("features" in r)) r = { ...r, features: [] };
   // Before 1.8 a search had no taste.
   if (!("taste" in r)) r = { ...r, taste: [] };
+  // Before 1.10 a search could not ask for events only.
+  if (!("eventsOnly" in r)) r = { ...r, eventsOnly: false };
   return r;
 }
 

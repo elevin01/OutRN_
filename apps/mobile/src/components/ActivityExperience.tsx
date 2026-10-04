@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   Linking,
   Pressable,
@@ -61,6 +68,7 @@ export function ActivityExperience({
   onRefresh,
   onBack,
   introduction,
+  banner,
 }: {
   placeId: string;
   item?: RecommendationItem;
@@ -71,6 +79,8 @@ export function ActivityExperience({
   onRefresh?: () => void;
   onBack?: () => void;
   introduction?: string;
+  /** Under the category shortcuts: "Happening soon" on the Now deck. */
+  banner?: ReactNode;
 }) {
   const {
     saved,
@@ -142,12 +152,21 @@ export function ActivityExperience({
   // When none of the place's own photos loads: the representative ones, labelled as such.
   const fallback = useMemo(
     () =>
-      photosFor(name, category?.label || "place", undefined, representative, (uri) => ({ uri })),
+      photosFor(
+        name,
+        category?.label || "place",
+        undefined,
+        representative,
+        (uri) => ({ uri }),
+      ),
     [name, category?.label, representative],
   );
   // Category shortcuts on the deck (not on a place opened from Saved).
   const groups = useMemo(
-    () => (areas ? groupsFor(areas.filters.categories, areas.limits.maxCategories) : []),
+    () =>
+      areas
+        ? groupsFor(areas.filters.categories, areas.limits.maxCategories)
+        : [],
     [areas],
   );
   const strip =
@@ -158,7 +177,9 @@ export function ActivityExperience({
         disabled={busy}
         onSelect={(g) => {
           const { categories: _previous, ...rest } = query;
-          void search(g.categories.length ? { ...rest, categories: g.categories } : rest);
+          void search(
+            g.categories.length ? { ...rest, categories: g.categories } : rest,
+          );
         }}
       />
     ) : undefined;
@@ -267,7 +288,14 @@ export function ActivityExperience({
             timezone={zone}
             photos={photos}
             fallback={fallback}
-            strip={strip}
+            strip={
+              strip || banner ? (
+                <>
+                  {strip}
+                  {banner}
+                </>
+              ) : undefined
+            }
             height={viewport}
             saved={saved.some((p) => p.id === placeId)}
             saveDisabled={!hydrated || !category}
@@ -608,7 +636,11 @@ export function ActivityExperience({
                 ...(place?.attributions || []),
               ]),
             ].join(" · ")}
-            {demo ? " · Illustrative photos: Unsplash" : photos.some((p) => p.kind === "representative") ? " · Representative photos: Unsplash" : ""}
+            {demo
+              ? " · Illustrative photos: Unsplash"
+              : photos.some((p) => p.kind === "representative")
+                ? " · Representative photos: Unsplash"
+                : ""}
           </Copy>
         </View>
       </ScrollView>

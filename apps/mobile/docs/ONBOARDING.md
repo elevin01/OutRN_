@@ -85,3 +85,5 @@ The result handoff uses main's current activity view, including the API photo re
 navigation and richer activity details merged from PRs #18 and #35 during implementation. The
 learning and detailed editor from #41 share the same preference store. Their duplicate startup
 prompt is replaced by this wizard; learning, skips, session dismissals and frozen paging stay intact.
+The Happening Soon feature from #43 remains on the result screen, with its optional event request
+starting only after a successful main search. It shares current taste, travel mode and origin.

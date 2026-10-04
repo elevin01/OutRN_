@@ -32,7 +32,8 @@
     "originIsDefault": true,
     "backBy": null,
     "visitStyle": "dine_in",
-    "taste": []
+    "taste": [],
+    "eventsOnly": false
   },
   "items": [
     {
