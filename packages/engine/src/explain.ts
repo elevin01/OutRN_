@@ -67,11 +67,20 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   if (has("SHORT_TRAVEL")) add("SHORT_TRAVEL", t.travel.mode === "walk" ? "a short walk" : t.travel.mode === "drive" ? "a short drive" : "a short trip", { mode: t.travel.mode, minutes: t.travel.minutes });
   const happy = has("HAPPY_HOUR") ? happyHourAt(e.candidate, t.arrival, t.latestFinish) : null;
   if (happy) add("HAPPY_HOUR", happy.from ? `happy hour from ${fmtTime(happy.from, tz)}` : `happy hour until ${fmtTime(happy.until, tz)}`, { from: iso(happy.from), until: iso(happy.until) });
-  if (has("WAIT_FOR_OPENING")) add("WAIT_FOR_OPENING", `opens at ${fmtTime(t.arrival, tz)}`, { opensAt: iso(t.arrival) });
+  // A park's dawn to dusk is inferred: its opening is sunrise and its close dusk, both estimates
+  // that say so, never a posted time.
+  const dawnToDusk = has("DAWN_TO_DUSK");
+  if (has("WAIT_FOR_OPENING")) {
+    if (dawnToDusk) add("WAIT_FOR_OPENING", `opens around sunrise (~${fmtTime(t.arrival, tz)})`, { opensAt: iso(t.arrival), isEstimate: true });
+    else add("WAIT_FOR_OPENING", `opens at ${fmtTime(t.arrival, tz)}`, { opensAt: iso(t.arrival) });
+  }
   if (has("ENOUGH_TIME")) add("ENOUGH_TIME", "plenty of time", { usefulMinutes: t.usefulMinutes });
-  else if (has("CLOSES_SOON")) add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
+  else if (has("CLOSES_SOON")) {
+    if (t.closesAtIsEstimate) add("CLOSES_SOON", "dusk soon", { duskAt: iso(t.closesAt), isEstimate: true });
+    else add("CLOSES_SOON", "closes soon", { closesAt: iso(t.closesAt) });
+  }
   if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
-  if (has("DAWN_TO_DUSK")) add("DAWN_TO_DUSK", "usually open dawn to dusk", { closesAt: iso(t.closesAt) });
+  if (dawnToDusk) add("DAWN_TO_DUSK", "usually open dawn to dusk", { duskAt: t.closesAtIsEstimate ? iso(t.closesAt) : null, isEstimate: true });
   if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
   if (has("FREE")) add("FREE", e.price.isEstimate ? "usually free" : "free");
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
@@ -130,7 +139,7 @@ export function explain(e: Evaluation, tz: string, cuisines: readonly string[] =
     const wait = t.conditions.find((x) => x.kind === "wait");
     if (wait?.minutes) parts.push(`~${wait.minutes.min}–${wait.minutes.max} min wait`);
     else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
-    if (t.closesAt) parts.push(e.reasons.includes("DAWN_TO_DUSK") ? `until dusk (${fmtTime(t.closesAt, tz)})` : `until ${fmtTime(t.closesAt, tz)}`);
+    if (t.closesAt) parts.push(t.closesAtIsEstimate ? `until dusk (~${fmtTime(t.closesAt, tz)})` : `until ${fmtTime(t.closesAt, tz)}`);
   }
   // Cold or heat outdoors is worth knowing before leaving; rain is a caveat of its own.
   const weather = t.conditions.find((x) => x.kind === "weather" && (x.level === "cold" || x.level === "hot"));
@@ -173,13 +182,15 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
   // A drive with public parking nearby: the car is parked the walk before arriving.
   if (t.parking && t.travel.mode === "drive") steps.push({ kind: "park", at: addMinutes(t.departAt, t.travel.minutes - t.parking.walkMinutes), isEstimate: true, text: parkStepText(t.parking) });
   const opensThen = e.reasons.includes("WAIT_FOR_OPENING");
+  // A park's sunrise opening is inferred, so arriving then is an estimate too.
+  const atSunrise = opensThen && e.reasons.includes("DAWN_TO_DUSK");
   const o = e.candidate.kind === "occurrence" ? e.candidate.occurrence : undefined;
   // A start or cutoff already behind the arrival is not an instruction: it becomes a note on arriving.
   const startedBefore = o !== undefined && o.start < t.arrival;
   const la = t.latestArrival && t.latestArrival >= t.arrival ? t.latestArrival : null;
   const missed = t.latestArrival && !la ? t.latestArrivalKind : null;
   const note = startedBefore ? ` (it started at ${at(o!.start)}; joining late)` : missed === "last_entry" ? " (last entry may have passed)" : missed === "event_entry" ? " (the entry cutoff may have passed)" : "";
-  steps.push({ kind: "arrive", at: t.arrival, isEstimate: t.travel.isEstimate, text: opensThen ? `Arrive as it opens at ${at(t.arrival)}` : `Arrive around ${at(t.arrival)}${note}` });
+  steps.push({ kind: "arrive", at: t.arrival, isEstimate: atSunrise || t.travel.isEstimate, text: atSunrise ? `Arrive around sunrise, ${at(t.arrival)}` : opensThen ? `Arrive as it opens at ${at(t.arrival)}` : `Arrive around ${at(t.arrival)}${note}` });
   if (o && !startedBefore) steps.push({ kind: "event_starts", at: o.start, isEstimate: false, text: `Starts at ${at(o.start)}` });
   if (la && t.latestArrivalKind) {
     if (t.latestArrivalKind === "last_order") steps.push({ kind: "order_by", at: la, isEstimate: t.latestArrivalIsEstimate, text: `Order by ${at(la)}` });
@@ -191,9 +202,9 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
   // With a back-by time, the deadline already leaves room for the (estimated) trip back.
   const forTripBack = !byClose && Boolean(ctx.backBy && t.returnTravel) && f < ctx.backBy!;
   const byDeadline = f.getTime() === t.deadline.getTime();
-  const why = byClose ? (o ? ", when it ends" : ", when it closes") : forTripBack ? " to get back in time" : "";
+  const why = byClose ? (o ? ", when it ends" : t.closesAtIsEstimate ? ", around dusk" : ", when it closes") : forTripBack ? " to get back in time" : "";
   // Otherwise the finish is a guess, like a kitchen's usual last orders before a posted close.
-  const isEstimate = byClose ? false : forTripBack ? t.returnTravel!.isEstimate : !byDeadline;
+  const isEstimate = byClose ? t.closesAtIsEstimate : forTripBack ? t.returnTravel!.isEstimate : !byDeadline;
   steps.push({ kind: "wrap_up", at: f, isEstimate, text: `Wrap up by ${at(f)}${why}` });
   if (ctx.backBy && t.returnTravel) steps.push({ kind: "back_by", at: ctx.backBy, isEstimate: t.returnTravel.isEstimate, text: `Back by ${at(ctx.backBy)}` });
   // In time order, always (a stable sort keeps the listed order for steps at the same minute).

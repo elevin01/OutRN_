@@ -236,6 +236,11 @@ export interface TimingBase {
   minUsefulMinutes: number;
   minUsefulIsEstimate: boolean;
   closesAt: Date | null;
+  /**
+   * True when `closesAt` is inferred, not published: a park with no listed hours closes at dusk.
+   * Plans and copy say so; it is never shown as a confirmed closing time.
+   */
+  closesAtIsEstimate: boolean;
   deadline: Date;
   returnTravel: TravelEstimate | null;
   /**
