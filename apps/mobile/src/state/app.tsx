@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   useContext,
@@ -15,29 +14,26 @@ import type {
   RecommendationsBody,
 } from "@outrn/contracts";
 import { api, RequestError } from "../lib/api";
-export type SavedPlace = { id: string; name: string; category: string };
+import { useSavedLibrary } from "./saved-library";
+import type { SavedMatch } from "../lib/saved-now";
+export type { SavedPlace } from "../lib/saved-library";
 export type Outing = {
   item: RecommendationItem;
   timezone: string;
   expiresAt: string;
   arrived: boolean;
 };
-const KEY = "outrn.saved.v1";
 function useAppState() {
   const [areas, setAreas] = useState<AreasResponse>();
   const [query, setQuery] = useState<RecommendationRequest>();
   const [result, setResult] = useState<RecommendationResponse>();
   const [error, setError] = useState<RequestError>();
   const [busy, setBusy] = useState(true);
-  const [saved, setSaved] = useState<SavedPlace[]>([]);
-  const [storageError, setStorageError] = useState<string>();
-  const [hydrated, setHydrated] = useState(false);
+  const library = useSavedLibrary();
+  const [savedPlan, setSavedPlan] = useState<SavedMatch>();
   const [outing, setOuting] = useState<Outing>();
   const searchController = useRef<AbortController | null>(null);
   const loadController = useRef<AbortController | null>(null);
-  const writes = useRef(Promise.resolve());
-  const savedLoaded = useRef(false);
-  const [saveRevision, setSaveRevision] = useState(0);
   async function search(
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
@@ -88,30 +84,6 @@ function useAppState() {
   }
   useEffect(() => {
     void initialize();
-    AsyncStorage.getItem(KEY)
-      .then((raw) => {
-        if (!raw) return;
-        const data: unknown = JSON.parse(raw);
-        if (Array.isArray(data))
-          setSaved(
-            data
-              .filter(
-                (x): x is SavedPlace =>
-                  !!x &&
-                  typeof x.id === "string" &&
-                  typeof x.name === "string" &&
-                  typeof x.category === "string",
-              )
-              .slice(0, 200),
-          );
-      })
-      .catch(() =>
-        setStorageError("Saved places couldn’t be loaded on this device."),
-      )
-      .finally(() => {
-        savedLoaded.current = true;
-        setHydrated(true);
-      });
     return () => {
       searchController.current?.abort();
       loadController.current?.abort();
@@ -119,23 +91,6 @@ function useAppState() {
     // Initialization is intentionally once per mounted provider.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => {
-    if (!savedLoaded.current || saveRevision === 0) return;
-    writes.current = writes.current
-      .then(() => AsyncStorage.setItem(KEY, JSON.stringify(saved)))
-      .catch(() =>
-        setStorageError("Your changes could not be saved on this device."),
-      );
-  }, [saved, saveRevision]);
-  function toggleSaved(place: SavedPlace) {
-    if (!hydrated) return;
-    setSaveRevision((revision) => revision + 1);
-    setSaved((old) =>
-      old.some((x) => x.id === place.id)
-        ? old.filter((x) => x.id !== place.id)
-        : [place, ...old].slice(0, 200),
-    );
-  }
   return {
     areas,
     query,
@@ -148,10 +103,9 @@ function useAppState() {
       setError(undefined);
       return initialize();
     },
-    saved,
-    toggleSaved,
-    hydrated,
-    storageError,
+    ...library,
+    savedPlan,
+    setSavedPlan,
     outing,
     setOuting,
   };

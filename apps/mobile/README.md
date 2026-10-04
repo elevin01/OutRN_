@@ -41,8 +41,9 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
   low-supply explanations, expired searches, connection errors, and loading states.
 - Details with every required caveat, age restriction, unknown price, per-fact evidence, and source
   attribution. Estimates remain estimates. Clock times use the response area's timezone.
-- Saved place identities in device storage; current details are fetched when opened. Saving does not
-  cache eligibility, hours, or a recommendation. Storage failures are visible.
+- Compact Saved photo grid and device-local collections, with search, sort, a Fits now filter,
+  collection editing, and removal with Undo. Existing identity-only saves are retained. Visible
+  cards fetch current details; saving never persists eligibility or hours. Storage failures are visible.
 - Session-only outing, directions handoff, manual arrival, and finish. A selected outing survives
   tab navigation but deliberately does not survive process restart. No location permission is used.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
@@ -54,6 +55,7 @@ When none of its own loads, the representative ones, labelled the same way. With
 never the category artwork in place of one. Category
 shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
 culture, Movies & shows, Games & play, Books) narrow the search in one tap.
+Saved design and validation: [SAVED.md](docs/SAVED.md).
 DM Sans is bundled
 under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 
