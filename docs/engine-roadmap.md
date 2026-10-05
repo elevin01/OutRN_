@@ -325,7 +325,11 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.
-- **Drive profiles.** Speed by time of day per area, then a self-hosted routing adapter (OSRM) with cached travel times.
+- **Drive profiles.** First step done: a drive goes at town speed for its first 4 km of road, then at road
+  speed (peak 40, off-peak 60, night 70 km/h) with straighter routing beyond 5 km. Bronxville to Croton
+  Point (27.6 km) is now ~47 min at noon instead of 75, so a 30-40 minute drive out of town is an option
+  again; trips around town are unchanged. Ingest still sweeps the town-speed reach around an area.
+  Next: speed by time of day per area, then a self-hosted routing adapter (OSRM) with cached travel times.
 - **Parking.** Check the new areas' parking estimates the way Bronxville's evening rule was checked.
 
 ### Batch 8: supply breadth

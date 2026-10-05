@@ -44,13 +44,15 @@ export interface IngestSummary {
 }
 
 /**
- * How far to ingest around an area: its origin catchment plus the farthest the engine could ever
- * call reachable within the mode's max travel time (with the area's parking rule), rounded up to
- * 100 m. For a drive catchment this is kilometres, not the walkable village center.
+ * How far to ingest around an area: its origin catchment plus the farthest the mode's max travel
+ * time reaches at town speed (with the area's parking rule), rounded up to 100 m. For a drive
+ * catchment this is kilometres, not the walkable village center. A drive reaches farther out of
+ * town at road speed, but the everyday catalog stays this size: a wide drive area's Overpass read
+ * stays under its 25 MB limit, and what is worth the longer drive is not every corner deli on the way.
  */
 export function ingestExtentFor(area: Pick<ServiceAreaRow, "radius_m" | "travel_mode">, parking: ParkingRule | null): { catchmentM: number; reachM: number; radiusM: number } {
   const catchmentM = area.radius_m ?? 1500;
-  const reachM = Math.round(maxReachMetres(area.travel_mode, DEFAULT_MAX_TRAVEL_MINUTES[area.travel_mode], { parkingBufferForHour: (h) => parkingBufferAt(parking, h) }));
+  const reachM = Math.round(maxReachMetres(area.travel_mode, DEFAULT_MAX_TRAVEL_MINUTES[area.travel_mode], { parkingBufferForHour: (h) => parkingBufferAt(parking, h), townSpeed: true }));
   return { catchmentM, reachM, radiusM: Math.ceil((catchmentM + reachM) / 100) * 100 };
 }
 
