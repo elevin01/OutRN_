@@ -377,6 +377,8 @@ const BARE_TAGS: Readonly<Partial<Record<Category, Record<string, string>>>> = {
   restaurant: { amenity: "restaurant" }, cafe: { amenity: "cafe" }, dessert: { amenity: "ice_cream" }, bar: { amenity: "bar" }, gallery: { tourism: "gallery" },
   live_music: { amenity: "music_venue" }, nightclub: { amenity: "nightclub" }, arcade: { leisure: "amusement_arcade" }, market: { amenity: "marketplace" },
   activity: { amenity: "karaoke_box" },
+  // What a destination becomes (see ingestDestinations): walk-in, and free unless it is a beach.
+  park: { leisure: "park" }, garden: { leisure: "garden" }, viewpoint: { tourism: "viewpoint" }, waterfront: { natural: "beach" },
 };
 
 /**
@@ -645,7 +647,7 @@ async function chainNames(q: Queryable): Promise<Set<string>> {
 }
 
 /** The place as a source record (source_entities), for identity links: its id, and whether it is new. */
-async function upsertPlace(q: Queryable, runId: string, p: OverturePlace, fetchedAt: Date): Promise<{ id: string; inserted: boolean }> {
+export async function upsertPlace(q: Queryable, runId: string, p: OverturePlace, fetchedAt: Date): Promise<{ id: string; inserted: boolean }> {
   const r = await q.query<{ id: string; inserted: boolean }>(
     `insert into source_entities (source_id, external_id, kind, raw, content_hash, geom, first_seen_run_id, last_seen_run_id, source_updated_at, fetched_at)
      values ('overture', $1, 'venue', $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6, $6, $7, $8)

@@ -1939,3 +1939,54 @@ describe("events only: what is on, for a happening-soon nudge", () => {
     expect(only.items[0]!.reasons).toContain("EVENT_STARTS_SOON");
   });
 });
+
+describe("destinations worth the drive", () => {
+  // ~25 km north: ~43 min by car in the afternoon, past the everyday 30.
+  const PRESERVE = { lat: ORIGIN.lat + 0.225, lon: ORIGIN.lon };
+  const destination = (over: Parameters<typeof venue>[0], dest: { kind: string; note?: string }) => {
+    const c = venue({ category: "park", hours: null, point: PRESERVE, ...over });
+    c.facts.destination = { value: dest, confidence: 0.7, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    return c;
+  };
+  const drive = (date: string, minutes: number, over: Partial<RequestContext> = {}) => ctx(date, minutes, { mode: "drive", ...over });
+
+  it("a long window reaches a destination an everyday outing cannot, and the card says it is worth the drive", () => {
+    const preserve = destination({ id: "pre", name: "Swan Lake Preserve" }, { kind: "nature", note: "carriage roads around a lake" });
+    expect(one(preserve, drive("2026-10-03 13:00", 120)).excludedBy).toBe("TOO_FAR");
+    const e = one(preserve, drive("2026-10-03 13:00", 240));
+    expect(e.class).toBe("ready");
+    expect(e.timing!.travel.minutes).toBeGreaterThan(30);
+    expect(e.reasons).toContain("DESTINATION");
+    expect(reasonNotes(e, TZ).find((n) => n.code === "DESTINATION")?.text).toBe("worth the drive: carriage roads around a lake");
+    expect(e.timing!.visit).toMatchObject({ style: "walk", typicalMinutes: 90 });
+    expect(explain(e, TZ).factLine).toMatch(/a walk, about 1h30/);
+    // Nobody drives that far for a coffee.
+    expect(one(venue({ id: "cafe", category: "cafe", point: PRESERVE }), drive("2026-10-03 13:00", 240)).excludedBy).toBe("TOO_FAR");
+    // Nearby, a destination is just what it is for.
+    const near = one(destination({ id: "pre2", point: NEAR }, { kind: "nature", note: "carriage roads around a lake" }), ctx("2026-10-03 13:00", 120));
+    expect(reasonNotes(near, TZ).find((n) => n.code === "DESTINATION")?.text).toBe("carriage roads around a lake");
+  });
+
+  it("a destination one walks is open dawn to dusk like a park; a garden keeps to its posted hours", () => {
+    const shore = destination({ id: "shore", category: "waterfront", point: NEAR }, { kind: "waterfront", note: "a peninsula in the river" });
+    expect(one(shore, ctx("2026-10-03 12:00", 120)).reasons).toContain("DAWN_TO_DUSK");
+    const garden = one(destination({ id: "garden", category: "garden", point: NEAR }, { kind: "garden", note: "walled gardens" }), ctx("2026-10-03 12:00", 120));
+    expect(garden.reasons).not.toContain("DAWN_TO_DUSK");
+    expect(garden.unresolved).toContain("HOURS_UNKNOWN");
+  });
+
+  it("in a long window, a destination outranks a small park and a café down the road", () => {
+    const preserve = destination({ id: "pre" }, { kind: "nature", note: "carriage roads around a lake" });
+    const cands = [venue({ id: "pocket", category: "park", hours: null, point: NEAR }), venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-22:00", point: NEAR }), preserve];
+    const s = recommend(cands, drive("2026-10-03 13:00", 240), POLICIES);
+    expect(s.items[0]!.candidate.id).toBe("pre");
+  });
+
+  it("a lookout at sunset puts the sunset in the plan", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 37, TZ);
+    const lookout = destination({ id: "look", category: "viewpoint", point: NEAR }, { kind: "viewpoint", note: "clifftop views over the river" });
+    const e = one(lookout, ctx("2026-10-03 18:00", 90, { sunset }));
+    expect(e.reasons).toContain("SUNSET_WINDOW");
+    expect(planSteps(e, { timezone: TZ, sunset }).find((s) => s.kind === "sunset")).toMatchObject({ text: "Sunset at 6:37pm", at: sunset });
+  });
+});

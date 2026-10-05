@@ -1,4 +1,5 @@
 import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
+import { destinationOf } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
@@ -20,7 +21,7 @@ const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
  * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
  * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -94,6 +95,14 @@ export function scoreCandidate(
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
+  // A place worth going out of the way for (a preserve, gardens, a lookout): more so with the time to
+  // go out of the way, where it outweighs the longer trip that fit holds against it, and a little more
+  // when it is one anyone local would name (the curated list, which says why).
+  const dest = c.kind === "venue" ? destinationOf(c) : null;
+  if (dest) {
+    appeal += APPEAL_WEIGHTS.destination + longWindow * APPEAL_WEIGHTS.destinationLongWindow + (dest.note ? APPEAL_WEIGHTS.destinationNamed : 0);
+    extra.push("DESTINATION");
+  }
   // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;

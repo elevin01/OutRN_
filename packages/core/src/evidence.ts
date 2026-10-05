@@ -40,6 +40,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - cuisine            : { values: string[] }  what a place serves, as OSM cuisine slugs ("italian", "pizza")
  *  - age_limit          : { minAge: number }  minimum admission age; 0 = no age limit; absent = unknown
  *  - event_kind         : { interests: Interest[] }  what an event is (1–4 interests), as its source classifies it
+ *  - destination        : { kind: DestinationKind, note?: string }  a place worth going out of the way for (a
+ *                         preserve, gardens, a beach, a lookout, an estate) and, in a line, why
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -73,6 +75,7 @@ export const ATTRIBUTES = [
   "cuisine",
   "age_limit",
   "event_kind",
+  "destination",
   "crowd_level",
   "queue",
   "open_state",

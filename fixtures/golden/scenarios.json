@@ -1991,7 +1991,7 @@
   {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 79,
+   "eligible": 99,
    "top": [
     {
      "rank": 1,
@@ -2070,10 +2070,24 @@
   {
    "id": "bronxville-sun-family",
    "title": "Bronxville, Sunday noon, 3 hours, family",
-   "eligible": 85,
+   "eligible": 125,
    "top": [
     {
      "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Yonkers Public Library Grinton I. Will Branch",
      "category": "library",
      "status": "ready",
@@ -2087,7 +2101,7 @@
      "caveats": []
     },
     {
-     "rank": 2,
+     "rank": 3,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
@@ -2099,12 +2113,12 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Bicentennial Park",
+     "rank": 4,
+     "name": "Greenburgh Nature Center",
      "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
       "FREE"
@@ -2112,40 +2126,27 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Slave To the Grind",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 5,
-     "name": "Bronxville Public Library",
-     "category": "library",
+     "name": "Van Cortlandt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
       "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Dumpling + Noodle",
-     "category": "restaurant",
+     "name": "Orchard Beach",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     }
@@ -2155,7 +2156,7 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 76,
+   "eligible": 91,
    "top": [
     {
      "rank": 1,
@@ -2185,6 +2186,20 @@
     },
     {
      "rank": 3,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
      "name": "Growlers",
      "category": "bar",
      "status": "ready",
@@ -2196,12 +2211,12 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Bicentennial Park",
+     "rank": 5,
+     "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "CLOSES_SOON",
       "DAWN_TO_DUSK",
       "FREE",
@@ -2210,7 +2225,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 6,
      "name": "Häagen-Dazs",
      "category": "dessert",
      "status": "ready",
@@ -2220,14 +2235,263 @@
       "OPEN_LATE"
      ],
      "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-afternoon",
+   "title": "Bronxville, Saturday 1pm, 4 hours, driving",
+   "eligible": 149,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 2,
+     "name": "Yonkers Public Library Grinton I. Will Branch",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Orchard Beach",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Van Cortlandt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-afternoon-outdoors",
+   "title": "Bronxville, Saturday 1pm, 4 hours, loves the outdoors",
+   "eligible": 149,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Orchard Beach",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Van Cortlandt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Playland",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-sunset",
+   "title": "Bronxville, Saturday 5pm, 3 hours, driving",
+   "eligible": 120,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Ernie's Wine Bar & Eats",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hunan III",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Whistling Rail",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
@@ -2238,15 +2502,16 @@
   {
    "id": "bronxville-sat-outdoors-lover",
    "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
-   "eligible": 85,
+   "eligible": 125,
    "top": [
     {
      "rank": 1,
-     "name": "Bicentennial Park",
+     "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
+      "DESTINATION",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
@@ -2269,26 +2534,25 @@
     },
     {
      "rank": 3,
-     "name": "Andrus Park",
-     "category": "park",
+     "name": "Orchard Beach",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     },
     {
      "rank": 4,
-     "name": "Main Street Playground",
-     "category": "park",
+     "name": "State Line Lookout",
+     "category": "viewpoint",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
       "FREE"
@@ -2297,12 +2561,12 @@
     },
     {
      "rank": 5,
-     "name": "Maltby Park",
+     "name": "Greenburgh Nature Center",
      "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
       "FREE"
@@ -2311,15 +2575,15 @@
     },
     {
      "rank": 6,
-     "name": "Dumpling + Noodle",
-     "category": "restaurant",
+     "name": "Van Cortlandt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     }

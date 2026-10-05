@@ -1,4 +1,5 @@
-import { localClock, minutesBetween, type Category } from "@outrn/core";
+import { localClock, minutesBetween, WALK_DESTINATIONS, type Category, type DestinationKind } from "@outrn/core";
+import { destinationOf } from "./destination.js";
 import type { Candidate, RequestContext, TimingBase, Visit } from "./types.js";
 
 /**
@@ -44,6 +45,18 @@ const TYPICAL_MINUTES: Record<Category, number> = {
   other: 45,
 };
 
+/** How long people typically spend at a destination of each kind: a walk in a preserve, an afternoon at the zoo. */
+const DESTINATION_TYPICAL_MINUTES: Record<DestinationKind, number> = {
+  nature: 90,
+  park: 75,
+  garden: 90,
+  beach: 90,
+  waterfront: 60,
+  viewpoint: 30,
+  estate: 120,
+  zoo: 180,
+};
+
 /** A sit-down dinner runs longer than lunch or a late bite. */
 function restaurantTypical(hourLocal: number): number {
   return hourLocal >= 17 && hourLocal < 22 ? 80 : TYPICAL_MINUTES.restaurant;
@@ -70,6 +83,9 @@ export function visitFor(c: Candidate, ctx: RequestContext, t: TimingBase): Visi
     return { style: "event", minMinutes: min, typicalMinutes: Math.max(min, length), isEstimate: !o.end };
   }
   if (isTakeout(c, ctx)) return { style: "takeout", minMinutes: min, typicalMinutes: Math.max(min, TAKEOUT_TYPICAL_MINUTES), isEstimate: true };
+  // A destination's visit is what it is for: a walk on its trails, an afternoon at the zoo.
+  const dest = destinationOf(c);
+  if (dest) return { style: WALK_DESTINATIONS.has(dest.kind) ? "walk" : "visit", minMinutes: min, typicalMinutes: Math.max(min, DESTINATION_TYPICAL_MINUTES[dest.kind]), isEstimate: true };
   const hour = localClock(t.arrival, ctx.timezone).hour;
   const typical = c.category === "restaurant" ? restaurantTypical(hour) : TYPICAL_MINUTES[c.category];
   const style = c.category === "restaurant" ? "dine_in" : c.category === "cafe" || c.category === "dessert" ? "counter" : "visit";

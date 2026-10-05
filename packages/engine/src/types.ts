@@ -135,6 +135,7 @@ export type ReasonCode =
   | "SHORT_TRAVEL"
   | "ENOUGH_TIME"
   | "OPEN_LATE"
+  | "DESTINATION"
   /** A park with no listed hours, in daylight: usually open dawn to dusk (an estimate). */
   | "DAWN_TO_DUSK"
   | "CLOSES_SOON"
@@ -217,7 +218,7 @@ export type ExclusionCode =
 
 /** How a visit is done, what it needs at least, and how long it typically takes. */
 export interface Visit {
-  style: "dine_in" | "counter" | "takeout" | "visit" | "event";
+  style: "dine_in" | "counter" | "takeout" | "visit" | "event" | "walk";
   /** The minimum the engine required for the visit to be worthwhile. */
   minMinutes: number;
   /** How long people typically spend; never less than the minimum. */

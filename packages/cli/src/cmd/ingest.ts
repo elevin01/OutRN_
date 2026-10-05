@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
-import { ingestEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
+import { ingestDestinations, ingestEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -69,6 +69,25 @@ export function registerIngest(program: Command): void {
       }
       console.log(`  facts      ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
       console.log(`  current    ${s.materialized.subjects} venues materialized · ${s.materialized.conflicts} conflicts · ${s.materialized.tasks} verification tasks`);
+    });
+
+  ingest
+    .command("destinations")
+    .description("Add the places worth going out of the way for around an area (preserves, gardens, beaches, lookouts, estates), from the curated list and Overture Maps places (or replay a saved read)")
+    .requiredOption("--area <slug>", "service area slug")
+    .option("--from-file <path>", "replay a saved read instead of reading the Overture bucket")
+    .option("--save <path>", "save what was read for later replay")
+    .option("--release <name>", "an Overture release, e.g. 2026-09-23.1 (default: the newest)")
+    .action(async (o: { area: string; fromFile?: string; save?: string; release?: string }) => {
+      const db = getDb();
+      const t0 = Date.now();
+      const s = await ingestDestinations(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.release ? { release: o.release } : {}), log: (l) => console.log(l) });
+      console.log("");
+      console.log(`run ${s.runId} · area ${s.area} · Overture ${s.release} · ${Date.now() - t0} ms`);
+      console.log(`  places       ${s.places} Overture places in reach · ${s.destinations.curated} curated destinations · ${s.destinations.gated} by their records`);
+      console.log(`  venues       ${s.venues.added} added · ${s.venues.existing} already known · ${s.venues.removed} no longer destinations · ${s.venues.possibleDuplicates} left out as possible duplicates`);
+      if (s.missing.length) console.log(`  not found    ${s.missing.join(", ")}`);
+      console.log(`  facts        ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
     });
 
   ingest

@@ -333,6 +333,18 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
 - **Parking.** Check the new areas' parking estimates the way Bronxville's evening rule was checked.
 
 ### Batch 8: supply breadth
+- **Destinations worth the drive: first step done** (`outrn ingest destinations`). The places worth
+  going out of the way for (preserves, gardens, beaches, lookouts, estates) come from Overture around
+  an area, out to a 60-minute drive: a curated list of about 35 around southern Westchester and the
+  Bronx, each with a line on why, and records that say they are a preserve, sanctuary, reservation,
+  nature center or arboretum. A long window reaches farther for them (half again from 2½ hours,
+  double from 3½), the card says "worth the drive: …", a walk reads as one ("a walk, about 1h30"),
+  and a lookout at sunset puts the sunset in the plan. Outdoor ones are usually open dawn to dusk.
+  On the captures, a 4-hour Saturday from Bronxville now leads with Twin Lakes, Orchard Beach, State
+  Line Lookout, Greenburgh Nature Center, Van Cortlandt Park and Playland, and a Monday after work
+  suggests State Line Lookout for the sunset. Next: OSM for their hours, size and trails (gardens,
+  estates and the zoo stay Check first until their hours are known), Wikidata for what is notable,
+  and lists for the other areas.
 - **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
