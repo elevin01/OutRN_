@@ -3,6 +3,7 @@ import { CATEGORIES } from "./categories.js";
 import { RESTROOM_AVAILABILITY, RESTROOM_WHEELCHAIR, type KidFacility, type Restroom } from "./amenities.js";
 import { DIET_LEVELS, type DIETS } from "./diets.js";
 import type { Attribute } from "./evidence.js";
+import { DESTINATION_KINDS } from "./destinations.js";
 import { isInterest } from "./interests.js";
 import { isPublicWebHost } from "./urls.js";
 
@@ -107,6 +108,8 @@ export const FACT_VALUE_SCHEMAS = {
   // One number, so it cannot contradict itself: 0 = no age limit, 16 = 16+, 21 = 21+.
   age_limit: z.object({ minAge: z.number().int().min(0).max(25) }).strict(),
   event_kind: z.object({ interests: z.array(z.string().refine(isInterest, "not an interest")).min(1).max(4) }).strict(),
+  // Why, in a line ("carriage roads around a lake"): lower case, to sit in a sentence on the card.
+  destination: z.object({ kind: z.enum(DESTINATION_KINDS), note: z.string().min(3).max(120).optional() }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

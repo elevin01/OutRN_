@@ -1,7 +1,8 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import SunCalc from "suncalc";
+import { maxTravelFor, openDawnToDusk } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
@@ -238,8 +239,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const parkingMinutes = ctx.mode === "drive" ? parkingMinutesFor(lot, ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null;
   const parking = parkingMinutes === null ? {} : { parkingBufferMinutes: parkingMinutes };
   const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
-  if (travel.minutes > maxTravel) return out("TOO_FAR");
+  // A destination may be farther when there is time for it (see maxTravelFor).
+  if (travel.minutes > maxTravelFor(c, ctx)) return out("TOO_FAR");
   const departAt = ctx.now;
   let arrival = addMinutes(departAt, travel.minutes + policy.admissionBufferMinutes);
   // Waiting outside for an opening (the venue's or its kitchen's) is not a plan: when the visit starts
@@ -325,11 +326,12 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   const hoursFact = fact(c, "opening_hours");
   if (!hoursFact || !isHoursValue(hoursFact.value)) {
-    // A park with no listed hours is usually open dawn to dusk: in daylight those are its hours, an
-    // estimate the card names, and the visit ends by dusk. After dark, or with too little daylight left,
+    // A park with no listed hours is usually open dawn to dusk, and so is a destination one walks (a
+    // preserve, a beach: see openDawnToDusk): in daylight those are its hours, an estimate the card
+    // names, and the visit ends by dusk. After dark, or with too little daylight left,
     // its hours stay unknown: a city park open till 1am is still an option to check. A garden is not
     // assumed open: a community garden opens on the days it posts.
-    const daylight = c.category === "park" ? daylightVisit(c, arrival, deadline, minUsefulMinutes) : null;
+    const daylight = openDawnToDusk(c) ? daylightVisit(c, arrival, deadline, minUsefulMinutes) : null;
     if (daylight) {
       if (daylight.opensAt) reasons.push("WAIT_FOR_OPENING");
       reasons.push("DAWN_TO_DUSK");

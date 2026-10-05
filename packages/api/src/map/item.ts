@@ -7,7 +7,7 @@ import { ageLimitFrom, cuisineOptions, dietOptions, directionsUrl, featureOption
 /** Reasons that must stay on the card: a park's hours are inferred, so its times are estimates. */
 const REQUIRED_REASONS: ReadonlySet<string> = new Set(["DAWN_TO_DUSK"]);
 
-const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event" };
+const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter: "Counter service", takeout: "Takeout", visit: "Visit", event: "Event", walk: "A walk" };
 
 /**
  * Engine evaluation → public item. The engine's `Evaluation` never crosses the boundary: only what

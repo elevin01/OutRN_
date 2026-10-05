@@ -1,4 +1,4 @@
-import { DEFAULT_MAX_TRAVEL_MINUTES } from "@outrn/core";
+import { maxTravelFor } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, RequestContext, Shortlist } from "./types.js";
 import { evaluateFeasibility } from "./feasibility.js";
 import { scoreCandidate } from "./score.js";
@@ -11,7 +11,6 @@ import { selectShortlist } from "./select.js";
  */
 
 export function evaluateAll(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>): Evaluation[] {
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   const fallback: CategoryPolicy = { category: "other", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" };
   const weights = tasteWeights(ctx);
   // Events only: places are not candidates at all, so nothing about them is weighed or logged.
@@ -22,7 +21,7 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
     if (f.class === "ineligible" || !f.timing) {
       return { candidate: c, class: "ineligible", excludedBy: f.excludedBy, reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
     }
-    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravel, weights);
+    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravelFor(c, ctx), weights);
     return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
   });
 }

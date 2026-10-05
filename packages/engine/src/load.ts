@@ -46,10 +46,12 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   return out;
 }
 
-export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number, parkingBufferMinutes?: number): Promise<Candidate[]> {
-  // Search exactly as far as the travel estimate could ever call reachable (the same bound ingest uses), plus 5%.
+export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number, parkingBufferMinutes?: number, destinationMaxTravelMinutes?: number): Promise<Candidate[]> {
+  // Search exactly as far as the travel estimate could ever call reachable, plus 5%; for destinations
+  // (a venue with a destination fact) as far as the window lets one be (see maxTravelFor).
   const buffer = parkingBufferMinutes === undefined ? {} : { parkingBufferForHour: () => parkingBufferMinutes };
   const radius = maxReachMetres(mode, maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[mode], buffer) * 1.05;
+  const destinationRadius = Math.max(radius, destinationMaxTravelMinutes ? maxReachMetres(mode, destinationMaxTravelMinutes, buffer) * 1.05 : 0);
   const venues = (
     await q.query<VenueRow>(
       // facts_doc is the venue's current facts, kept by materialization (VENUE_FACTS_DOC_SQL): one read per venue.
@@ -61,8 +63,9 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
               (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'brand' limit 1) as brand
          from venues v
         where v.publish_state = 'eligible'
-          and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
-      [origin.lon, origin.lat, radius, now],
+          and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $5)
+          and (ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3) or v.facts_doc ? 'destination')`,
+      [origin.lon, origin.lat, radius, now, destinationRadius],
     )
   ).rows;
   const byVenue = new Map(venues.map((v) => [v.id, v]));

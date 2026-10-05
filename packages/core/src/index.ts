@@ -11,3 +11,4 @@ export * from "./cuisine.js";
 export * from "./diets.js";
 export * from "./amenities.js";
 export * from "./interests.js";
+export * from "./destinations.js";

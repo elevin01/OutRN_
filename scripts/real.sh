@@ -9,8 +9,9 @@
 # 54329), which it drops and recreates on every run. It takes no database URL.
 #
 # Each fixtures/live/<area>.json is ingested and the area switched on (served); a
-# fixtures/live/<area>-photos.json next to it brings its photos, and <area>-overture.json checks its
-# places against Overture Maps (still operating, closed, websites and phones). A capture named after something
+# fixtures/live/<area>-photos.json next to it brings its photos, <area>-overture.json checks its
+# places against Overture Maps (still operating, closed, websites and phones), and
+# <area>-destinations.json adds the places worth a longer outing around it (preserves, gardens, lookouts). A capture named after something
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
 # before the API starts, so what is served is never a silent subset. Capture more with `pnpm capture`.
 #
@@ -68,7 +69,7 @@ shopt -s nullglob
 served=""
 for file in fixtures/live/*.json; do
   slug="$(basename "$file" .json)"
-  case "$slug" in *-photos | *-overture) continue ;; esac
+  case "$slug" in *-photos | *-overture | *-destinations) continue ;; esac
   echo
   echo "== ${slug}"
   known="$(area_count "$slug")" || fail "could not look up ${slug} in ${DB_NAME}"
@@ -107,6 +108,15 @@ for file in fixtures/live/*.json; do
       fail "${slug}: ${overture} did not replay (see above), so nothing is served. Re-record it with pnpm capture ${slug}, or move it out of fixtures/live."
     fi
     summary "$out" "places|claims"
+  fi
+
+  destinations="fixtures/live/${slug}-destinations.json"
+  if [ -f "$destinations" ]; then
+    if ! out="$(pnpm -s outrn ingest destinations --area "$slug" --from-file "$destinations")"; then
+      if [ -n "$out" ]; then printf '%s\n' "$out" >&2; fi
+      fail "${slug}: ${destinations} did not replay (see above), so nothing is served. Re-record it with pnpm capture ${slug}, or move it out of fixtures/live."
+    fi
+    summary "$out" "places|venues"
   fi
 
   # `areas launch` refuses an area with no eligible venues; any other failure is a real one.

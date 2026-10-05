@@ -1,4 +1,4 @@
-import { DIETS, dietLabel, isFreshConfirmation, KID_FACILITIES, localClock, ownValue, type Diet, type KidFacility, type LatLon } from "@outrn/core";
+import { DESTINATION_LABEL, DIETS, dietLabel, isDestinationKind, isFreshConfirmation, KID_FACILITIES, localClock, ownValue, type Diet, type KidFacility, type LatLon } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { fmtTime } from "./explain.js";
 
@@ -39,6 +39,7 @@ export interface FactRow {
 }
 
 const LABEL: Record<string, string> = {
+  destination: "Worth the trip",
   opening_hours: "Hours",
   kitchen_hours: "Kitchen",
   happy_hours: "Happy hour",
@@ -67,7 +68,7 @@ const LABEL: Record<string, string> = {
 };
 const KID_FACILITY_LIMITED: Readonly<Record<string, string>> = { changing_table: "somewhere to change a diaper, not a changing table", kids_area: "limited kids' area" };
 const NET_LABEL: Readonly<Record<string, string>> = { wlan: "Wi-Fi", yes: "Yes", wired: "Wired", terminal: "Computers to use", no: "None" };
-const ORDER = ["opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "restroom", "kid_facilities", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
+const ORDER = ["destination", "opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "restroom", "kid_facilities", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
 const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
 
@@ -203,6 +204,12 @@ export function formatFactValue(attribute: string, value: unknown, isEstimate = 
       // "Italian, pizza": the mapper's words, in their order.
       const values = Array.isArray(v["values"]) ? v["values"].filter((x): x is string => typeof x === "string") : [];
       if (values.length) return sentenceCase(values.join(", "));
+      break;
+    }
+    case "destination": {
+      // Why it is worth the trip, as the list says; else what kind of place it is.
+      if (typeof v["note"] === "string") return sentenceCase(v["note"]);
+      if (isDestinationKind(v["kind"])) return sentenceCase(DESTINATION_LABEL[v["kind"]]);
       break;
     }
     case "age_limit": {

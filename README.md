@@ -66,7 +66,7 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
-checks their places against Overture Maps, switches those areas on, fetches their weather from the
+checks their places against Overture Maps, adds the destinations around them, switches those areas on, fetches their weather from the
 National Weather Service (optional: without it, plans ignore the weather, and it says so), and starts
 the API.
 Recommendations are for right now, as they would be for someone there. The only database it
@@ -75,11 +75,11 @@ URL. A capture named after something that isn't an area is skipped. A capture of
 fails to replay stops it with an error before the API starts.
 
 `pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
-photos and their Overture places into `fixtures/live`, on a machine that can reach overpass-api.de,
+photos, their Overture places and their destinations into `fixtures/live`, on a machine that can reach overpass-api.de,
 www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com.
 `pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT` first. Each area is
-recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json` and
-`<area>-overture.json` only once every step for it has succeeded, so a failed capture keeps the
+recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json`,
+`<area>-overture.json` and `<area>-destinations.json` only once every step for it has succeeded, so a failed capture keeps the
 previous set as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
 `pnpm real` again afterwards and the new areas are served too.
 
@@ -116,6 +116,28 @@ Such a venue has no hours, so it is always Check first. It loses its claims when
 longer supports it, and a venue OSM later maps at the same spot joins it rather than duplicating
 it. The Lower East Side capture adds 1,130 places, leaving out 526 as possible duplicates, 125
 chains and 212 stale records. Bronxville goes from 63 venues to 94. `--no-new-places` turns this off.
+
+**Destinations** are the places worth going out of the way for: a preserve, gardens, a beach, a
+lookout over the Hudson, an estate. `outrn ingest destinations --area <slug>` reads Overture's parks,
+nature reserves, beaches, gardens, museums and historic sites around the area, out to the farthest a
+long window may travel for one (a 60-minute drive from a drive area: about 50 km at night, six
+half-degree reads, two and a half minutes from Bronxville). A place is a destination when:
+- **It is on the curated list** (`CURATED_DESTINATIONS`, about 35 around southern Westchester and
+  the Bronx): the places anyone local would name, each with a line on why. The record of that name
+  nearest where the list puts it (within 4 km) is the place; its name, point and contact details
+  are the record's.
+- **Or its record says what it is:** a nature reserve or park whose name says preserve, sanctuary,
+  reservation, nature center or arboretum, that Overture is sure of (0.9), with a website, and not
+  across the Sound on Long Island. Beaches and state parks come only from the list: Overture files
+  some far away under local points.
+
+A destination a venue already has gets the destination fact on that venue; any other becomes a venue
+of its own. In a search, a destination may be farther than the everyday limit when there is time: half
+again from 2½ hours, double from 3½ (a 4-hour Saturday reaches a 60-minute drive), and the card says
+it is worth the drive. One you walk (a preserve, a beach, a waterfront, a lookout) is usually open dawn
+to dusk, as a park is; gardens, estates and the zoo stay Check first until their hours are known.
+Around Bronxville the read adds about 100. `--save` keeps only the few hundred records the selection
+reads, so a capture replays the same destinations.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.
