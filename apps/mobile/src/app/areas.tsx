@@ -69,6 +69,7 @@ export default function AreasScreen() {
                 windowMinutes:
                   query?.windowMinutes || areas.filters.defaultWindowMinutes,
                 travelMode: undefined,
+                origin: undefined,
               };
               void search(next, next);
               router.back();
