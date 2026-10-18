@@ -1,4 +1,4 @@
-import { guardedFetch, FetchBlocked, FetchFailed } from "./fetch.js";
+import { guardedFetch, FetchBlocked, FetchFailed, RequestRefused, type RequestGate } from "./fetch.js";
 
 /**
  * robots.txt (RFC 9309), for venues' own sites: we read a page only where the site's robots.txt lets
@@ -77,6 +77,24 @@ export function parseRobots(text: string, token: string): { rules: RobotsRule[];
   return { rules: usOwn ? ours : star, crawlDelayS: delay === null ? null : Math.min(delay, MAX_CRAWL_DELAY_S) };
 }
 
+/**
+ * A path or a rule as RFC 9309 (2.2.2) compares them: a percent-encoded unreserved character
+ * (A-Z a-z 0-9 - . _ ~) is decoded, any other stays encoded with upper-case hex (so "%2f" and "%2F"
+ * are one thing, and neither is "/"), and characters outside ASCII are percent-encoded as UTF-8.
+ * The rule's own "*" and "$" are left as they are.
+ */
+export function normalizeRobotsPath(s: string): string {
+  let out = "";
+  for (const ch of s) {
+    const code = ch.codePointAt(0)!;
+    out += code > 0x7e || code < 0x21 ? encodeURIComponent(ch) : ch;
+  }
+  return out.replace(/%([0-9a-fA-F]{2})/g, (_, hex: string) => {
+    const c = String.fromCharCode(parseInt(hex, 16));
+    return /[A-Za-z0-9\-._~]/.test(c) ? c : `%${hex.toUpperCase()}`;
+  });
+}
+
 function patternMatches(pattern: string, path: string): boolean {
   const anchored = pattern.endsWith("$");
   const parts = (anchored ? pattern.slice(0, -1) : pattern).split("*");
@@ -102,21 +120,28 @@ function patternMatches(pattern: string, path: string): boolean {
 export function robotsAllows(policy: RobotsPolicy, pathAndQuery: string): boolean {
   if (policy.status === "none") return true;
   if (policy.status === "unreachable") return false;
-  if (pathAndQuery === "/robots.txt") return true;
-  let best: RobotsRule | null = null;
+  const path = normalizeRobotsPath(pathAndQuery);
+  if (path === "/robots.txt") return true;
+  let best: { allow: boolean; length: number } | null = null;
   for (const r of policy.rules) {
-    if (!patternMatches(r.path, pathAndQuery)) continue;
-    if (!best || r.path.length > best.path.length || (r.path.length === best.path.length && r.allow && !best.allow)) best = r;
+    const rule = normalizeRobotsPath(r.path);
+    if (!patternMatches(rule, path)) continue;
+    if (!best || rule.length > best.length || (rule.length === best.length && r.allow && !best.allow)) best = { allow: r.allow, length: rule.length };
   }
   return best ? best.allow : true;
 }
 
-/** Read a site's robots.txt (`origin` is scheme://host[:port]). */
-export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string } ): Promise<RobotsPolicy> {
+/**
+ * Read a site's robots.txt (`origin` is scheme://host[:port]). `beforeRequest` sees each request it
+ * sends, redirects included (a host's daily allowance counts them); its refusal is passed on, not
+ * taken for an unreachable robots.txt.
+ */
+export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string; beforeRequest?: RequestGate }): Promise<RobotsPolicy> {
   try {
     const res = await guardedFetch(`${origin}/robots.txt`, {
       sourceId: "firstparty",
       ...(opts.throttleKey ? { throttleKey: opts.throttleKey } : {}),
+      ...(opts.beforeRequest ? { beforeRequest: opts.beforeRequest } : {}),
       accept: "text/plain, */*;q=0.5",
       maxBytes: MAX_ROBOTS_BYTES,
       minIntervalMs: 1000,
@@ -128,6 +153,7 @@ export async function fetchRobots(origin: string, opts: { userAgent: string; thr
     const parsed = parseRobots(res.text, productToken(opts.userAgent));
     return { status: "ok", ...parsed };
   } catch (e) {
+    if (e instanceof RequestRefused) throw e;
     if (e instanceof FetchFailed && e.status !== undefined && e.status >= 400 && e.status < 500) return { status: "none", rules: [], crawlDelayS: null };
     // Too large to read is read as far as it goes elsewhere; here it is a site we won't guess at.
     if (e instanceof FetchBlocked) return { status: "unreachable", rules: [], crawlDelayS: null };

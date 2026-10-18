@@ -1,6 +1,6 @@
 import { ownValue, type Interest, type WeeklyIntervals } from "@outrn/core";
-import { guardedFetch } from "./fetch.js";
-import { hoursFromText, hoursLinks, microdataHours, visibleLines } from "./sitehours.js";
+import { guardedFetch, type RequestGate } from "./fetch.js";
+import { hoursFromText, hoursLinks, microdataHours, visibleText } from "./sitehours.js";
 
 /**
  * First-party extraction from a venue's own page. Rung 1: schema.org JSON-LD. Rung 2, for opening
@@ -271,7 +271,8 @@ export function extractPage(html: string, url: string, fetchedAt: Date, opts: { 
     return x;
   }
   // A page's own words for its hours only where they are its venue's (not a town's site, or a chain's).
-  const text = opts.text === false ? null : hoursFromText(visibleLines(html));
+  const visible = opts.text === false ? null : visibleText(html);
+  const text = visible ? hoursFromText(visible.lines, visible) : null;
   if (text) {
     x.facts.push({ attribute: "opening_hours", value: { weekly: text.weekly }, evidence: `page text: ${JSON.stringify(text.evidence)}`, status: "stated", method: "text" });
     return x;
@@ -280,10 +281,11 @@ export function extractPage(html: string, url: string, fetchedAt: Date, opts: { 
 }
 
 /** A venue page: same-host pacing (throttleKey) is the caller's, at least `minIntervalMs` apart. */
-export async function fetchAndExtract(url: string, opts: { throttleKey?: string; minIntervalMs?: number; text?: boolean } = {}): Promise<FirstPartyExtraction> {
+export async function fetchAndExtract(url: string, opts: { throttleKey?: string; minIntervalMs?: number; text?: boolean; beforeRequest?: RequestGate } = {}): Promise<FirstPartyExtraction> {
   const res = await guardedFetch(url, {
     sourceId: "firstparty",
     ...(opts.throttleKey ? { throttleKey: opts.throttleKey } : {}),
+    ...(opts.beforeRequest ? { beforeRequest: opts.beforeRequest } : {}),
     accept: "text/html, application/xhtml+xml",
     allowedContentTypes: ["text/html", "application/xhtml+xml"],
     maxBytes: 3 * 1024 * 1024,

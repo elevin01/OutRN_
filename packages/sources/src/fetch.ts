@@ -28,6 +28,22 @@ export interface GuardedFetchOptions {
   allowCrossHostRedirect?: boolean;
   /** Follow a redirect between a host and its www. form (a site moving to or from www.), and no further. */
   sameSiteRedirects?: boolean;
+  /**
+   * Called before every request this fetch sends: the first, each retry and each redirect hop, with
+   * the URL it is about to ask for. It may refuse (throw: robots.txt, a spent allowance) and nothing is
+   * sent; what it returns paces the request in place of throttleKey and minIntervalMs.
+   */
+  beforeRequest?: RequestGate;
+}
+
+/** What a caller checks before each request (see GuardedFetchOptions.beforeRequest). */
+export type RequestGate = (url: URL) => Promise<{ throttleKey: string; minIntervalMs: number } | void>;
+
+/** A gate's refusal (robots.txt, a host's spent allowance, a host's back-off): nothing was sent, and it is not the site's error. */
+export class RequestRefused extends Error {
+  constructor(message: string, public readonly reason: "robots" | "allowance" | "backoff", public readonly host: string) {
+    super(message);
+  }
 }
 
 export interface GuardedResponse {
@@ -52,6 +68,8 @@ export function sameSite(a: string, b: string): boolean {
   return a.replace(/^www\./i, "").toLowerCase() === b.replace(/^www\./i, "").toLowerCase();
 }
 export class FetchFailed extends Error {
+  /** The host that answered, when it did (after redirects, not always the one first asked). */
+  host?: string;
   /** retryAfterS: how long a 429 or 503 asked to be left alone, in seconds, when it said. */
   constructor(message: string, public readonly status?: number, public readonly retryAfterS?: number) {
     super(message);
@@ -173,7 +191,9 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
   let lastErr: unknown;
   while (attempt <= retries) {
     attempt++;
-    await throttle(opts.throttleKey ?? opts.sourceId, opts.minIntervalMs ?? 1000);
+    // The caller's say on this very request (its robots.txt, its allowance) before anything is sent.
+    const pace = opts.beforeRequest ? await opts.beforeRequest(url) : undefined;
+    await throttle(pace ? pace.throttleKey : (opts.throttleKey ?? opts.sourceId), pace ? pace.minIntervalMs : (opts.minIntervalMs ?? 1000));
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
@@ -208,7 +228,9 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
       }
       if (res.status === 429 || res.status >= 500) {
         const retryAfter = Number(res.headers.get("retry-after"));
-        lastErr = new FetchFailed(`${res.status} from ${url.host}`, res.status, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined);
+        const failed = new FetchFailed(`${res.status} from ${url.host}`, res.status, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined);
+        failed.host = url.host.toLowerCase();
+        lastErr = failed;
         const waitMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * 2 ** (attempt - 1);
         // No wait after the last attempt, and none past a minute: a site asking for an hour is asked again another day.
         if (attempt > retries || waitMs > MAX_RETRY_AFTER_MS) break;
@@ -229,7 +251,11 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
       }
       const { buf, over } = await readUpTo(res, maxBytes);
       if (over) throw new FetchBlocked(`response too large (over ${maxBytes} bytes${status}) from ${url.host}`);
-      if (res.status >= 400) throw new FetchFailed(`${res.status} from ${url.host}: ${buf.subarray(0, 800).toString("utf8").slice(0, 200)}`, res.status);
+      if (res.status >= 400) {
+        const failed = new FetchFailed(`${res.status} from ${url.host}: ${buf.subarray(0, 800).toString("utf8").slice(0, 200)}`, res.status);
+        failed.host = url.host.toLowerCase();
+        throw failed;
+      }
       // Decoded on first use: a binary reply (a parquet range) is never read as text.
       let text: string | undefined;
       return { status: res.status, url: url.toString(), contentType, get text() { return (text ??= buf.toString("utf8")); }, body: buf, bytes: buf.byteLength, fetchedAt: new Date(), attempts: attempt };

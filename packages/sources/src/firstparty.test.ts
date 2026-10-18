@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractFromJsonLd, extractJsonLdBlocks, openingHoursFromSpec } from "./firstparty.js";
+import { extractFromJsonLd, extractJsonLdBlocks, extractPage, openingHoursFromSpec } from "./firstparty.js";
 
 const html = `<html><head>
 <script type="application/ld+json">
@@ -25,6 +25,13 @@ const html = `<html><head>
 describe("first-party JSON-LD extraction", () => {
   const blocks = extractJsonLdBlocks(html);
   const x = extractFromJsonLd(blocks, "https://example.org/", new Date("2026-09-26T12:00:00Z"));
+
+  it("reads no opening hours from under a delivery or seasonal heading, with copy in between (PR #57 review)", () => {
+    for (const heading of ["Delivery Hours", "Summer Hours"]) {
+      const html = `<html><body><section><h2>${heading}</h2><p>See our schedule below</p><p>Mon-Sun 9am-9pm</p></section></body></html>`;
+      expect(extractPage(html, "https://venue.example.com/", new Date("2026-10-18T12:00:00Z")).facts.filter((f) => f.attribute === "opening_hours"), heading).toEqual([]);
+    }
+  });
 
   it("reads what an event is from its schema.org type", () => {
     expect(x.events.map((e) => [e.title, e.kinds])).toEqual([

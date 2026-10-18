@@ -171,16 +171,23 @@ export function registerOps(program: Command): void {
     .option("--limit <n>", "max sites this run", (v) => parseInt(v, 10), 50)
     .option("--force", "ignore fetch intervals")
     .option("--save <path>", "save what each site stated (never its HTML) for replay")
+    .option("--keep <path>", "with --save: an earlier capture whose reads are kept for sites this run could not read")
     .option("--from-file <path>", "replay a saved run instead of fetching")
-    .action(async (o: { area?: string; limit: number; force?: boolean; save?: string; fromFile?: string }) => {
+    .action(async (o: { area?: string; limit: number; force?: boolean; save?: string; keep?: string; fromFile?: string }) => {
       const s = await runFirstParty(getDb(), {
         limit: o.limit,
         force: o.force ?? false,
         ...(o.area ? { areaSlug: o.area } : {}),
         ...(o.save ? { saveTo: o.save } : {}),
+        ...(o.keep ? { keep: o.keep } : {}),
         ...(o.fromFile ? { fromFile: o.fromFile } : {}),
         log: (l) => console.log(l),
       });
       console.log(`sites ${s.sites} · ok ${s.ok} · hours ${s.hours} · no JSON-LD ${s.noJsonLd} · robots.txt ${s.robots} · blocked ${s.blocked} · failed ${s.failed} · later ${s.deferred} · facts ${s.facts} · occurrences ${s.occurrences}`);
+      // None could be read: say so to whoever ran it (a capture keeps its previous file then).
+      if (s.outcome === "failed") {
+        console.error("no site could be read: nothing saved");
+        process.exitCode = 1;
+      }
     });
 }
