@@ -2100,13 +2100,13 @@
     },
     {
      "rank": 3,
-     "name": "Bicentennial Park",
+     "name": "Hunt's Woods Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
+      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -2155,10 +2155,23 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 76,
+   "eligible": 77,
    "top": [
     {
      "rank": 1,
+     "name": "Hunt's Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Yonkers Public Library Grinton I. Will Branch",
      "category": "library",
      "status": "ready",
@@ -2172,7 +2185,7 @@
      "caveats": []
     },
     {
-     "rank": 2,
+     "rank": 3,
      "name": "Slave To the Grind",
      "category": "cafe",
      "status": "ready",
@@ -2184,7 +2197,7 @@
      "caveats": []
     },
     {
-     "rank": 3,
+     "rank": 4,
      "name": "Growlers",
      "category": "bar",
      "status": "ready",
@@ -2196,7 +2209,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 5,
      "name": "Bicentennial Park",
      "category": "park",
      "status": "ready",
@@ -2210,24 +2223,13 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 6,
      "name": "Häagen-Dazs",
      "category": "dessert",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Hunan III",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
       "OPEN_LATE"
      ],
      "caveats": []
@@ -2242,14 +2244,14 @@
    "top": [
     {
      "rank": 1,
-     "name": "Bicentennial Park",
+     "name": "Hunt's Woods Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
+      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -2269,7 +2271,7 @@
     },
     {
      "rank": 3,
-     "name": "Andrus Park",
+     "name": "Bicentennial Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2283,7 +2285,7 @@
     },
     {
      "rank": 4,
-     "name": "Main Street Playground",
+     "name": "Andrus Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2297,7 +2299,7 @@
     },
     {
      "rank": 5,
-     "name": "Maltby Park",
+     "name": "Main Street Playground",
      "category": "park",
      "status": "ready",
      "reasons": [
