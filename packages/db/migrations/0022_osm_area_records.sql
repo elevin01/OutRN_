@@ -1,10 +1,9 @@
--- Which areas' OpenStreetMap snapshots hold a record (`outrn ingest osm`). A snapshot speaks for
--- everything inside its circle: a record stored there that it no longer has is gone. A way or
--- relation whose point lies a little outside the circle (a park meeting it, its middle beyond) is
--- kept too, held "from outside" a circle of that radius; a later snapshot at least as wide that could
--- have kept it and doesn't lets go of it (it may no longer reach this circle and still reach another
--- area's), as does any snapshot of an area for a record beyond what the area could ever keep. It is
--- withdrawn once no area holds it. A smaller snapshot says nothing of what a wider one held.
+-- Which areas' OpenStreetMap snapshots hold a record (`outrn ingest osm`). A snapshot lets go of
+-- what it held and no longer has: inside its circle, where it speaks for everything; held "from
+-- outside" a circle no wider than this one (a way meeting the circle, its point a little beyond),
+-- where it could have kept it; and beyond anything the area keeps. A record is withdrawn once no
+-- area holds it: another area's snapshot, from a mirror of another age say, may still have it. A
+-- smaller snapshot says nothing of what a wider one held.
 -- Numbered 0022: 0020 is the destinations source, 0021 NYC Parks.
 --
 -- Safe to re-apply (migrate --reapply 0022_osm_area_records.sql): the backfill only adds what is

@@ -518,12 +518,15 @@ interface VenueRow {
 async function areaVenues(q: Queryable, areaId: string): Promise<VenueRow[]> {
   return (
     await q.query<VenueRow>(
-      // A venue no source speaks for any more (its record withdrawn) is no venue of the area: it
-      // neither widens the read nor takes Overture's claims.
+      // A venue of the area is one a live record speaks for: an OpenStreetMap record this area's
+      // snapshot holds (osm_area_records), or a record of another source. One whose records are
+      // withdrawn, or held only by other areas (a relation another area keeps, filed here before),
+      // neither widens this area's read nor takes Overture's claims for it.
       `select id, name_key, category, ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues v
         where area_id = $1 and publish_state <> 'merged'
           and exists (select 1 from entity_links l join source_entities s on s.id = l.source_entity_id
-                       where l.venue_id = v.id and l.superseded_by is null and l.decision <> 'rejected' and s.deleted_at is null)
+                       where l.venue_id = v.id and l.superseded_by is null and l.decision <> 'rejected' and s.deleted_at is null
+                         and (s.source_id <> 'osm' or exists (select 1 from osm_area_records o where o.source_entity_id = s.id and o.area_id = $1)))
         order by id`,
       [areaId],
     )
