@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
-import type { CalendarEvent, CalendarRead } from "@outrn/sources";
+import { readCalendar, type CalendarEvent, type CalendarRead, type CalendarReadOptions } from "@outrn/sources";
 import { calendarEventInput, ingestCalendars, type CalendarFeed } from "../src/calendars.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -64,10 +64,13 @@ const TOWN: CalendarEvent[] = [
 
 const reads = (over: Partial<Record<string, Partial<CalendarRead>>> = {}): Map<string, CalendarRead> =>
   new Map([
-    ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "ok", pages: 1, events: LIBRARY, ...over["suffolk-library"] }],
-    ["town", { feed: "town", url: FEEDS[1]!.url, status: "ok", pages: 1, events: TOWN, ...over["town"] }],
+    ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "ok", pages: 1, events: LIBRARY, complete: true, ...over["suffolk-library"] }],
+    ["town", { feed: "town", url: FEEDS[1]!.url, status: "ok", pages: 1, events: TOWN, complete: true, ...over["town"] }],
   ]);
 const fake = (r: Map<string, CalendarRead>) => async (feed: { id: string }) => r.get(feed.id)!;
+/** The feeds in `bodies` read by readCalendar itself, answering with that body; the rest as `r` has them. */
+const answering = (bodies: Record<string, string>, r: Map<string, CalendarRead>) => async (feed: CalendarFeed, o: Omit<CalendarReadOptions, "get" | "robotsFor">) =>
+  feed.id in bodies ? readCalendar(feed, { ...o, robotsFor: async () => ({ status: "none", rules: [], crawlDelayS: null }), get: async () => bodies[feed.id]! }) : r.get(feed.id)!;
 
 const occurrences = async () =>
   (await db.query<{ title: string; status: string; venue: string; key: string }>(`select o.title, o.status, v.canonical_name as venue, o.recurrence_key as key from occurrences o join venues v on v.id = o.venue_id where o.recurrence_key like 'calendars:%' order by o.start_at, o.title`)).rows;
@@ -89,6 +92,13 @@ describe("calendar events, one at a time", () => {
     expect(calendarEventInput(lib, LIBRARY[6]!, NOW, until)).toMatchObject({ kinds: ["art"] });
     // A stated cost; a price in passing ("members $5") is not one. An http link is left off, not the event.
     expect(calendarEventInput(FEEDS[1]!, TOWN[0]!, NOW, until)).toMatchObject({ price: { min: 5, currency: "USD" } });
+    // "Free" with a condition is free for some: unknown, whatever the description says. Every amount named is the range.
+    const costing = (cost: string, text = "") => calendarEventInput(lib, event({ title: "Gallery Talk", start: "2026-10-04T18:00:00.000Z", cost, text }), NOW, until) as { price?: unknown };
+    for (const cost of ["Free", "Free admission", "FREE!", "Free and open to the public"]) expect(costing(cost).price).toEqual({ free: true });
+    for (const cost of ["Free for members", "Members only, free", "Free for children", "Free with paid admission", "Free for members; $15 general admission", "Free (children under 12)", "See website"])
+      expect(costing(cost, "A free evening of art.").price).toBeUndefined();
+    expect(costing("$10 members / $15 non-members").price).toEqual({ min: 10, max: 15, currency: "USD" });
+    expect(costing("$12").price).toEqual({ min: 12, currency: "USD" });
     const movie = calendarEventInput(FEEDS[1]!, TOWN[2]!, NOW, until);
     expect(movie).toMatchObject({ status: "cancelled" });
     expect(movie).not.toHaveProperty("url");
@@ -123,23 +133,40 @@ describe.skipIf(!available)("calendars into an area", () => {
     expect(await occurrences()).toHaveLength(5);
   });
 
-  it("withdraws an event a complete read no longer lists, and withdraws nothing when a feed that reaches the area failed", async () => {
+  it("withdraws an event a complete read no longer lists, and nothing when a feed that reaches the area failed, was read in part, or answered with something not a feed", async () => {
+    const statusOf = async (title: string) => (await occurrences()).find((o) => o.title === title)!.status;
+    // Harvest Fair is gone from the town's read below; each time but the last, that says nothing.
     const dropped = reads({ town: { events: TOWN.filter((e) => e.uid !== "t-1") } });
-    const failed = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: fake(new Map([...dropped, ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "failed", error: "503", pages: 0, events: [] }]])) as never, now: NOW });
-    expect(failed.areas[0]).toMatchObject({ withdrawn: 0 });
-    expect((await occurrences()).find((o) => o.title === "Harvest Fair")!.status).toBe("scheduled");
+    const keeps = async (read: unknown, why: string) => {
+      const s = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: read as never, now: NOW, log: () => {} });
+      expect(s.areas[0], why).toMatchObject({ withdrawn: 0 });
+      expect(await statusOf("Harvest Fair"), why).toBe("scheduled");
+    };
+    await keeps(fake(new Map([...dropped, ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "failed", error: "503", pages: 0, events: [], complete: false }]])), "the library's read failed");
+    // Harvest Fair on a page not read: the page limit, a page robots.txt keeps us from, one on another site.
+    await keeps(fake(reads({ town: { events: TOWN.filter((e) => e.uid !== "t-1"), pages: 12, complete: false, incomplete: "more than 12 pages" } })), "the town's read stopped at the page limit");
+    // A read saved before reads said whether they were whole is not known to be whole.
+    await keeps(fake(reads({ town: { events: TOWN.filter((e) => e.uid !== "t-1"), complete: undefined as never } })), "the town's read does not say it is whole");
+    // A maintenance page or an error document is not an empty calendar.
+    await keeps(answering({ town: "<error>Maintenance</error>" }, dropped), "the town's feed answered with an error document");
+    await keeps(answering({ "suffolk-library": "Temporarily unavailable" }, dropped), "the library's feed answered with text");
     const complete = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: fake(dropped) as never, now: NOW });
     expect(complete.areas[0]).toMatchObject({ withdrawn: 1 });
-    expect((await occurrences()).find((o) => o.title === "Harvest Fair")!.status).toBe("withdrawn");
+    expect(await statusOf("Harvest Fair")).toBe("withdrawn");
+    // A calendar that is read whole and has nothing on it does withdraw what it had.
+    const empty = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: answering({ "suffolk-library": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n" }, dropped) as never, now: NOW });
+    expect(empty.reads.find((r) => r.feed === "suffolk-library")).toMatchObject({ status: "ok", events: 0 });
+    expect(empty.areas[0]).toMatchObject({ withdrawn: 3 });
+    expect(await statusOf("Baby Lap Time")).toBe("withdrawn");
   });
 
   it("places by a name's own words, by the address an event gives, and a library's event held at another place it names", async () => {
     const r = new Map<string, CalendarRead>([
-      ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "ok", pages: 1, events: [
+      ["suffolk-library", { feed: "suffolk-library", url: FEEDS[0]!.url, status: "ok", pages: 1, complete: true, events: [
         event({ uid: "off-1", title: "Comedy Open Mic", start: "2026-10-03T23:00:00.000Z", end: "2026-10-04T01:00:00.000Z", location: ["Attorney Arts Center"] }),
         event({ uid: "off-2", title: "Board Game Club for Kids", start: "2026-10-03T20:00:00.000Z", end: "2026-10-03T21:00:00.000Z", location: ["Community Room"], categories: ["Games & Hobbies"] }),
       ] }],
-      ["town", { feed: "town", url: FEEDS[1]!.url, status: "ok", pages: 1, events: [
+      ["town", { feed: "town", url: FEEDS[1]!.url, status: "ok", pages: 1, complete: true, events: [
         event({ uid: "t-10", title: "Open Studio", start: "2026-10-04T15:00:00.000Z", end: "2026-10-04T17:00:00.000Z", location: ["Hester St. Community House", "New York, NY 10002"] }),
         event({ uid: "t-11", title: "Pumpkin Painting", start: "2026-10-04T16:00:00.000Z", end: "2026-10-04T17:00:00.000Z", location: ["88 Rivington St.", "New York, NY 10002"] }),
         event({ uid: "t-12", title: "Bake Sale", start: "2026-10-04T16:00:00.000Z", end: "2026-10-04T17:00:00.000Z", location: ["Town Hall"] }),
@@ -156,7 +183,7 @@ describe.skipIf(!available)("calendars into an area", () => {
 
   it("leaves out a library's events when it has no venue of that name near where the list puts it", async () => {
     const elsewhere: CalendarFeed = { ...FEEDS[0]!, id: "elsewhere", venue: { aliases: ["Suffolk Library"], at: { lat: 40.74, lon: -73.99 } } };
-    const r = new Map([["elsewhere", { feed: "elsewhere", url: elsewhere.url, status: "ok" as const, pages: 1, events: [LIBRARY[0]!] }]]);
+    const r = new Map([["elsewhere", { feed: "elsewhere", url: elsewhere.url, status: "ok" as const, pages: 1, events: [LIBRARY[0]!], complete: true }]]);
     const lines: string[] = [];
     const s = await ingestCalendars(db, { areaSlug: "les", feeds: [elsewhere], read: fake(r) as never, now: NOW, log: (l) => lines.push(l) });
     expect(s.skipped.no_place).toBe(1);

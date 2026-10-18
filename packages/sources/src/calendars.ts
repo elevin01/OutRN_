@@ -1,5 +1,5 @@
 import { fromLocal } from "@outrn/core";
-import { currentUserAgent, FetchBlocked, FetchFailed, guardedFetch } from "./fetch.js";
+import { currentUserAgent, FetchBlocked, FetchFailed, guardedFetch, RequestRefused, type RequestGate } from "./fetch.js";
 import { fetchRobots, robotsAllows, type RobotsPolicy } from "./robots.js";
 
 /**
@@ -71,6 +71,20 @@ function knownZone(tz: string | undefined): tz is string {
   } catch {
     return false;
   }
+}
+
+/** A response that is not the feed it should be (a maintenance page, an error document, a truncated body). */
+export class FeedInvalid extends Error {}
+
+/** An iCalendar object from its BEGIN to its END: a body cut short, or a page of text, is not one. */
+export function isICalendar(text: string): boolean {
+  const t = text.replace(/^\uFEFF/, "").trimStart();
+  return /^BEGIN:VCALENDAR\r?$/im.test(t.slice(0, 200)) && /^END:VCALENDAR\s*$/im.test(t.slice(-200));
+}
+
+/** An RSS document with its channel closed: an error document or a body cut short is not one. */
+export function isRss(xml: string): boolean {
+  return /<rss[\s>]/i.test(xml) && /<channel[\s>]/i.test(xml) && /<\/channel>\s*<\/rss>\s*$/i.test(xml);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -173,7 +187,7 @@ function icsEvent(props: Map<string, IcsProperty[]>, timeZone: string): Calendar
   };
 }
 
-/** The events of an iCalendar feed (VEVENTs; anything nested in one, an alarm, is not the event). */
+/** The events of an iCalendar feed (VEVENTs; anything nested in one, an alarm, is not the event), at most MAX_EVENTS. */
 export function parseICalendar(text: string, timeZone: string): CalendarEvent[] {
   const out: CalendarEvent[] = [];
   let props: Map<string, IcsProperty[]> | null = null;
@@ -227,10 +241,15 @@ function tecUtc(s: unknown): Date | null {
 
 const str = (v: unknown, max = 500): string => (typeof v === "string" ? v.slice(0, max * 4) : "");
 
-/** One page of /wp-json/tribe/events/v1/events: its events, and the next page's URL. */
-export function parseTecPage(json: unknown): { events: CalendarEvent[]; next: string | null } {
-  const o = json && typeof json === "object" ? (json as Record<string, unknown>) : {};
-  const rows = Array.isArray(o["events"]) ? (o["events"] as unknown[]).slice(0, MAX_EVENTS) : [];
+/**
+ * One page of /wp-json/tribe/events/v1/events: its events, and the next page's URL. A body without
+ * an events list is not a page of the feed (FeedInvalid), nor is one whose every entry is unreadable.
+ */
+export function parseTecPage(json: unknown): { events: CalendarEvent[]; next: string | null; truncated: boolean } {
+  if (!json || typeof json !== "object" || Array.isArray(json) || !Array.isArray((json as Record<string, unknown>)["events"])) throw new FeedInvalid("not a page of The Events Calendar's events (no events list)");
+  const o = json as Record<string, unknown>;
+  const all = o["events"] as unknown[];
+  const rows = all.slice(0, MAX_EVENTS);
   const events: CalendarEvent[] = [];
   for (const raw of rows) {
     if (!raw || typeof raw !== "object") continue;
@@ -259,8 +278,9 @@ export function parseTecPage(json: unknown): { events: CalendarEvent[]; next: st
       text: plain(str(r["description"], 20_000)),
     });
   }
+  if (rows.length && !events.length) throw new FeedInvalid("no entry of the page could be read");
   const next = typeof o["next_rest_url"] === "string" ? (o["next_rest_url"] as string) : null;
-  return { events, next };
+  return { events, next, truncated: all.length > rows.length };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -354,11 +374,18 @@ export interface CalendarFeedRef {
 export interface CalendarRead {
   feed: string;
   url: string;
-  /** ok: read; robots: robots.txt keeps our agent out (or could not be read); failed: an error. */
+  /** ok: read; robots: robots.txt keeps our agent out (or could not be read); failed: an error, or not the feed. */
   status: "ok" | "robots" | "failed";
   error?: string;
   pages: number;
   events: CalendarEvent[];
+  /**
+   * The feed was read to its end: no page left unread (the page limit, robots.txt, a next page on
+   * another site) and nothing cut off. Only a complete read may say an event is gone.
+   */
+  complete: boolean;
+  /** Why it is not complete. */
+  incomplete?: string;
 }
 
 /** What `ingest calendars --save` writes and a replay reads: each feed's events as parsed, no raw bodies. */
@@ -371,7 +398,8 @@ export interface CalendarCapture {
 export function parseCalendarCapture(data: unknown, label: string): CalendarCapture {
   const d = data as Partial<CalendarCapture> | null;
   if (!d || d.outrn_capture !== "calendars" || typeof d.fetchedAt !== "string" || !Array.isArray(d.reads)) throw new Error(`${label} is not a calendars capture (outrn ingest calendars --save)`);
-  return d as CalendarCapture;
+  // A read saved before reads said whether they were whole is not known to be whole.
+  return { ...d, reads: d.reads.map((r) => ({ ...r, complete: r.complete === true })) } as CalendarCapture;
 }
 
 /** The least time between requests to one host; a robots.txt crawl delay longer than this is kept. */
@@ -400,30 +428,46 @@ export interface CalendarReadOptions {
   /** robots.txt policies by origin, shared across the feeds of a run. */
   robots: Map<string, RobotsPolicy>;
   /** For tests: what reads a URL (default: guardedFetch). */
-  get?: (url: string, opts: { accept: string; contentTypes: string[]; throttleKey: string; minIntervalMs: number }) => Promise<string>;
+  get?: (url: string, opts: { accept: string; contentTypes: string[]; gate: RequestGate }) => Promise<string>;
   /** For tests: what reads a robots.txt (default: fetchRobots). */
   robotsFor?: (origin: string) => Promise<RobotsPolicy>;
 }
 
 const day = (d: Date) => d.toISOString().slice(0, 10);
 
-/** Read one feed (every page of a paged one, up to CALENDAR_MAX_PAGES) as robots.txt allows. */
+/**
+ * Read one feed (every page of a paged one, up to CALENDAR_MAX_PAGES) as robots.txt allows. Every
+ * request, redirects and retries included, is checked against its host's robots.txt for that very
+ * path first and paced by that host's crawl delay.
+ */
 export async function readCalendar(feed: CalendarFeedRef, opts: CalendarReadOptions): Promise<CalendarRead> {
-  const read: CalendarRead = { feed: feed.id, url: feed.url, status: "ok", pages: 0, events: [] };
+  const read: CalendarRead = { feed: feed.id, url: feed.url, status: "ok", pages: 0, events: [], complete: true };
+  const incomplete = (why: string) => {
+    read.complete = false;
+    read.incomplete ??= why;
+  };
   const first = new URL(feed.url);
-  const throttleKey = isCivicPlus(feed) ? "calendars:civicplus" : `calendars:${first.host}`;
+  const civic = isCivicPlus(feed);
   const robotsOf = async (u: URL): Promise<RobotsPolicy> => {
     let policy = opts.robots.get(u.origin);
     if (!policy) {
+      const throttleKey = civic ? "calendars:civicplus" : `calendars:${u.host}`;
       policy = await (opts.robotsFor ?? ((origin: string) => fetchRobots(origin, { userAgent: currentUserAgent(), throttleKey, sourceId: "calendars" })))(u.origin);
       opts.robots.set(u.origin, policy);
     }
     return policy;
   };
+  // Asked before each request: its host's robots.txt for its path, then that host's pace.
+  const gate: RequestGate = async (u) => {
+    const policy = await robotsOf(u);
+    if (!robotsAllows(policy, u.pathname + u.search)) throw new RequestRefused(policy.status === "unreachable" ? `robots.txt for ${u.host} could not be read` : `robots.txt disallows ${u.pathname}${u.search} on ${u.host}`, "robots", u.host);
+    return { throttleKey: civic ? "calendars:civicplus" : `calendars:${u.host}`, minIntervalMs: Math.max(CALENDAR_MIN_INTERVAL_MS, (policy.crawlDelayS ?? 0) * 1000) };
+  };
   const get =
     opts.get ??
-    (async (url: string, o: { accept: string; contentTypes: string[]; throttleKey: string; minIntervalMs: number }) =>
-      (await guardedFetch(url, { sourceId: "calendars", throttleKey: o.throttleKey, minIntervalMs: o.minIntervalMs, accept: o.accept, allowedContentTypes: o.contentTypes, maxBytes: MAX_FEED_BYTES, timeoutMs: 30_000, retries: 1, sameSiteRedirects: true })).text);
+    (async (url: string, o: { accept: string; contentTypes: string[]; gate: RequestGate }) =>
+      (await guardedFetch(url, { sourceId: "calendars", beforeRequest: o.gate, accept: o.accept, allowedContentTypes: o.contentTypes, maxBytes: MAX_FEED_BYTES, timeoutMs: 30_000, retries: 1, sameSiteRedirects: true })).text);
+  const accept = feed.format === "tec" ? "application/json" : feed.format === "ical" ? "text/calendar, text/plain;q=0.5" : "application/rss+xml, text/xml;q=0.9";
   try {
     // A paged feed is asked for the run's range, fifty to a page; where robots.txt forbids query
     // strings (some sites do), only its bare address.
@@ -435,31 +479,45 @@ export async function readCalendar(feed: CalendarFeedRef, opts: CalendarReadOpti
       ranged.searchParams.set("end_date", day(opts.until));
       if (robotsAllows(await robotsOf(ranged), ranged.pathname + ranged.search)) url = ranged.toString();
     }
-    for (let page = 0; page < CALENDAR_MAX_PAGES && url; page++) {
-      const u = new URL(url);
-      // A next page elsewhere is not this feed's.
-      if (u.origin !== first.origin) break;
-      const policy = await robotsOf(u);
-      if (!robotsAllows(policy, u.pathname + u.search)) {
-        if (page === 0) {
-          read.status = "robots";
-          read.error = policy.status === "unreachable" ? "robots.txt could not be read" : "robots.txt disallows it";
-        }
+    for (let page = 0; url; page++) {
+      if (page >= CALENDAR_MAX_PAGES) {
+        incomplete(`more than ${CALENDAR_MAX_PAGES} pages`);
         break;
       }
-      const minIntervalMs = Math.max(CALENDAR_MIN_INTERVAL_MS, (policy.crawlDelayS ?? 0) * 1000);
-      const body = await get(url, { accept: feed.format === "tec" ? "application/json" : feed.format === "ical" ? "text/calendar, text/plain;q=0.5" : "application/rss+xml, text/xml;q=0.9", contentTypes: CONTENT_TYPES[feed.format], throttleKey, minIntervalMs });
+      const u = new URL(url);
+      // A next page elsewhere is not this feed's: not read, and the read is not the whole feed.
+      if (u.origin !== first.origin) {
+        incomplete(`a next page on ${u.host}`);
+        break;
+      }
+      let body: string;
+      try {
+        body = await get(url, { accept, contentTypes: CONTENT_TYPES[feed.format], gate });
+      } catch (e) {
+        if (!(e instanceof RequestRefused) || page === 0) throw e;
+        incomplete(e.message);
+        break;
+      }
       read.pages++;
-      if (feed.format === "ical") read.events.push(...parseICalendar(body, opts.timeZone));
-      else if (feed.format === "civicplus") read.events.push(...parseCivicPlusRss(body, opts.timeZone));
-      else {
+      if (feed.format === "ical") {
+        if (!isICalendar(body)) throw new FeedInvalid("not an iCalendar feed (no VCALENDAR from BEGIN to END)");
+        const events = parseICalendar(body, opts.timeZone);
+        if (events.length >= MAX_EVENTS) incomplete(`more than ${MAX_EVENTS} events`);
+        read.events.push(...events);
+      } else if (feed.format === "civicplus") {
+        if (!isRss(body)) throw new FeedInvalid("not an RSS feed (no closed channel)");
+        const events = parseCivicPlusRss(body, opts.timeZone);
+        if (events.length >= MAX_EVENTS) incomplete(`more than ${MAX_EVENTS} events`);
+        read.events.push(...events);
+      } else {
         let json: unknown;
         try {
           json = JSON.parse(body);
         } catch {
-          throw new FetchFailed(`not JSON from ${u.host}`);
+          throw new FeedInvalid(`not JSON from ${u.host}`);
         }
         const p = parseTecPage(json);
+        if (p.truncated) incomplete(`more than ${MAX_EVENTS} events on a page`);
         read.events.push(...p.events);
         url = p.next ?? "";
         continue;
@@ -467,9 +525,20 @@ export async function readCalendar(feed: CalendarFeedRef, opts: CalendarReadOpti
       break;
     }
   } catch (e) {
-    read.status = "failed";
-    read.error = e instanceof FetchBlocked || e instanceof FetchFailed ? e.message : String((e as Error).message ?? e);
+    if (e instanceof RequestRefused && read.pages === 0) {
+      read.status = "robots";
+      read.error = e.message.includes("could not be read") ? "robots.txt could not be read" : "robots.txt disallows it";
+    } else {
+      read.status = "failed";
+      read.error = e instanceof FetchBlocked || e instanceof FetchFailed || e instanceof FeedInvalid || e instanceof RequestRefused ? e.message : String((e as Error).message ?? e);
+    }
+    read.complete = false;
+    read.events = [];
+    return read;
   }
-  read.events = read.events.slice(0, MAX_EVENTS);
+  if (read.events.length > MAX_EVENTS) {
+    incomplete(`more than ${MAX_EVENTS} events`);
+    read.events = read.events.slice(0, MAX_EVENTS);
+  }
   return read;
 }

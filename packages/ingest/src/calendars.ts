@@ -109,15 +109,21 @@ function clip(s: string, max: number): string {
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max / 2)).trimEnd()}…`;
 }
 
-/** "$5", "$10 - $15", "Free"; anything else says nothing. */
-function statedPrice(cost: string | null): EventInput["price"] | undefined {
-  if (!cost) return undefined;
-  if (/^\s*free\b/i.test(cost)) return { free: true };
-  const m = /\$\s?(\d{1,4}(?:\.\d{1,2})?)(?:\s*[-–]\s*\$?\s?(\d{1,4}(?:\.\d{1,2})?))?/.exec(cost);
-  if (!m) return undefined;
-  const min = Number(m[1]);
-  const max = m[2] ? Number(m[2]) : undefined;
-  return max !== undefined && max >= min ? { min, max, currency: "USD" } : { min, currency: "USD" };
+/** A cost that is "Free" and nothing more ("Free admission", "Free event!", "Free and open to the public"). */
+const JUST_FREE = /^\s*free(?:\s+(?:admission|entry|event|program|of charge))?(?:\s+(?:and|&)\s+open to (?:the public|all|everyone))?\s*[.!]?\s*$/i;
+
+/**
+ * "$5", "$10 - $15", "Free"; anything else says nothing. A "free" with anything more ("Free for
+ * members", "Free with paid admission", "Free for kids; $15 adults") is free for some, not for
+ * whoever is going: unknown. Every amount named is the range ("$10 members / $15 non-members").
+ */
+function statedPrice(cost: string): EventInput["price"] | undefined {
+  if (/(?<![\w-])free\b(?!-)/i.test(cost)) return JUST_FREE.test(cost) ? { free: true } : undefined;
+  const amounts = [...cost.matchAll(/\$\s?(\d{1,4}(?:\.\d{1,2})?)/g)].map((m) => Number(m[1]));
+  if (!amounts.length) return undefined;
+  const min = Math.min(...amounts);
+  const max = Math.max(...amounts);
+  return max > min ? { min, max, currency: "USD" } : { min, currency: "USD" };
 }
 
 export type CalendarSkip = "over" | "later" | "all_day" | "long" | "online" | "not_an_outing" | "no_place" | "duplicate";
@@ -140,7 +146,8 @@ export function calendarEventInput(feed: CalendarFeed, e: CalendarEvent, now: Da
   const forKids = FOR_KIDS.test(title) || FOR_KIDS.test(about);
   const words = `${title}. ${e.text}`;
   const admission = REGISTER_NOT_NEEDED.test(words) ? "walk_in" : REGISTER.test(words) ? "reservation" : undefined;
-  const price = statedPrice(e.cost) ?? (listedFree(words) ? { free: true as const } : undefined);
+  // A feed's own cost field decides; only without one is its description read for "free".
+  const price = e.cost?.trim() ? statedPrice(e.cost) : listedFree(words) ? { free: true as const } : undefined;
   const url = e.url && /^https:\/\//i.test(e.url) && e.url.length <= 2000 ? e.url : undefined;
   return {
     id: `${feed.id}/${createHash("sha256").update(`${e.uid}|${e.start}`).digest("hex").slice(0, 20)}`,
@@ -329,7 +336,9 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
     summary.reads.push({ feed: r.feed, status: r.status, events: r.events.length, ...(r.error ? { error: r.error } : {}) });
     const feed = byId.get(r.feed);
     if (!feed || r.status !== "ok") continue;
-    ok.add(feed.id);
+    // Its events are kept either way; only a read of the whole feed may say one is gone.
+    if (r.complete === true) ok.add(feed.id);
+    else log(`  ${feed.name}: not read to its end (${r.incomplete ?? "unknown"}); none of its events are withdrawn`);
     const own = feed.venue ? await venueNamed(db, feed.venue.aliases, feed.venue.at, VENUE_MATCH_M) : null;
     if (feed.venue && !own) log(`  ${feed.name}: no venue named ${feed.venue.aliases.join(" or ")} near where it is; its events are left out`);
     const memo = new Map<string, Placed | null>();
@@ -359,8 +368,9 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
     }
   }
   for (const s of scopes) {
-    // The read is the area's whole listing when every feed that reaches it was read: then an event
-    // it no longer has is withdrawn (see ingestEvents). A feed that failed says nothing of its events.
+    // The read is the area's whole listing when every feed that reaches it was read to its end: then
+    // an event it no longer has is withdrawn (see ingestEvents). A feed that failed, or was read only
+    // in part, says nothing of the events it did not give.
     const reaching = feeds.filter((f) => feedReaches(f, s));
     let complete = reaching.length > 0 && reaching.every((f) => ok.has(f.id));
     let events = byArea.get(s.area.slug) ?? [];
