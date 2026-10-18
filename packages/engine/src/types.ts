@@ -150,6 +150,8 @@ export type ReasonCode =
   | "FRESH_REPORT"
   | "HOURS_UNVERIFIED"
   | "HOURS_UNKNOWN"
+  /** Hours listed that look mistyped for the kind of place (a gallery "10:00-06:00"): read as unknown. */
+  | "HOURS_DOUBTFUL"
   | "HOURS_APPROXIMATE"
   | "ADMISSION_UNCONFIRMED"
   | "ADMISSION_UNKNOWN"

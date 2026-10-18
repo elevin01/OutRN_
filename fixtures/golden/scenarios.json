@@ -1901,18 +1901,6 @@
     },
     {
      "rank": 3,
-     "name": "Hauser & Wirth",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "The Grand Delancey",
      "category": "bar",
      "status": "ready",
@@ -1924,7 +1912,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Soft Swerve",
      "category": "dessert",
      "status": "ready",
@@ -1936,7 +1924,7 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
@@ -1944,6 +1932,17 @@
       "ENOUGH_TIME",
       "OPEN_LATE",
       "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
