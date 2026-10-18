@@ -105,6 +105,29 @@ describe("sun-relative hours: the real sun where the place is", () => {
     near(civil.close, at("2026-10-03", 19, 4));
   });
 
+  it("reads each day with its own sun, across a DST change too", () => {
+    const sunrise = (date: string) => SunCalc.getTimes(fromLocal(date, 12 * 60, TZ), park.lat, park.lon).sunrise;
+    // The evening before each change: tomorrow's sunrise is an hour from today's on the clock.
+    for (const [date, next] of [["2026-10-31", "2026-11-01"], ["2026-03-07", "2026-03-08"], ["2026-06-20", "2026-06-21"]] as const) {
+      near(evaluateHours({ osm: "sunrise-sunset" }, at(date, 23), TZ, park).interval!.open, sunrise(next));
+      // A rule running overnight closes at the next morning's sunrise, not this one's.
+      const night = evaluateHours({ osm: "sunset-sunrise" }, at(date, 23), TZ, park);
+      expect(night.openNow, date).toBe(true);
+      near(night.interval!.close, sunrise(next));
+      // And read from the morning side, the same interval.
+      const early = evaluateHours({ osm: "sunset-sunrise" }, new Date(sunrise(next).getTime() - 30 * 60_000), TZ, park);
+      expect(early.openNow, next).toBe(true);
+      expect(early.interval, next).toEqual(night.interval);
+    }
+  });
+
+  it("leaves a quoted comment alone: it is not a sun time", () => {
+    const tromso = { lat: 69.6492, lon: 18.9553 };
+    const ev = evaluateHours({ osm: 'Mo-Su 09:00-17:00 "after sunset"' }, fromLocal("2026-06-21", 12 * 60, "Europe/Oslo"), "Europe/Oslo", tromso);
+    expect(ev.parseError).toBeNull();
+    expect(ev.interval!.open.getTime()).toBe(fromLocal("2026-06-21", 9 * 60, "Europe/Oslo").getTime());
+  });
+
   it("uses the place's own position and timezone, whatever the server's", () => {
     const la = { lat: 34.0522, lon: -118.2437 };
     const LA = "America/Los_Angeles";

@@ -11,19 +11,39 @@ import { clearHoursCaches, evaluateHours, withSunTimes } from "./hours.js";
  */
 
 function reference(rule: string, at: Date, timeZone: string, lat: number, lon: number) {
-  // A sun-relative rule is read with that day's sun times where the place is (see withSunTimes).
-  if (/sunrise|sunset|dawn|dusk/.test(rule)) rule = withSunTimes(rule, localClock(at, timeZone).date, timeZone, lat, lon)!;
-  let oh: opening_hours;
-  try {
-    oh = new opening_hours(rule, { lat, lon, address: { country_code: "us", state: "New York" } }, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
-  } catch {
-    return { openNow: null, interval: null };
-  }
+  const parse = (r: string) => new opening_hours(r, { lat, lon, address: { country_code: "us", state: "New York" } }, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
   const fmt = new Intl.DateTimeFormat("en-US", { timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const p = Object.fromEntries(fmt.formatToParts(at).map((x) => [x.type, x.value]));
   const shifted = new Date(+p["year"]!, +p["month"]! - 1, +p["day"]!, +p["hour"]!, +p["minute"]!, +p["second"]!);
-  const back = (w: Date) => fromLocal(`${w.getFullYear()}-${String(w.getMonth() + 1).padStart(2, "0")}-${String(w.getDate()).padStart(2, "0")}`, w.getHours() * 60 + w.getMinutes(), timeZone).toISOString();
-  const its = oh.getOpenIntervals(new Date(shifted.getTime() - 24 * 3_600_000), new Date(shifted.getTime() + 36 * 3_600_000));
+  const ymd = (w: Date) => `${w.getFullYear()}-${String(w.getMonth() + 1).padStart(2, "0")}-${String(w.getDate()).padStart(2, "0")}`;
+  const back = (w: Date) => fromLocal(ymd(w), w.getHours() * 60 + w.getMinutes(), timeZone).toISOString();
+  const from = new Date(shifted.getTime() - 24 * 3_600_000);
+  const to = new Date(shifted.getTime() + 36 * 3_600_000);
+  let oh: opening_hours;
+  let its: [Date, Date, boolean, string | undefined][];
+  try {
+    if (/sunrise|sunset|dawn|dusk/.test(rule)) {
+      // A sun-relative rule: each local day read with that day's sun times where the place is (see
+      // withSunTimes), a fresh parse per day, joined at midnight.
+      oh = parse(withSunTimes(rule, localClock(at, timeZone).date, timeZone, lat, lon)!);
+      its = [];
+      for (let start = from; start < to; ) {
+        const midnight = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+        const end = midnight < to ? midnight : to;
+        for (const [f, t, unknown, comment] of parse(withSunTimes(rule, ymd(start), timeZone, lat, lon)!).getOpenIntervals(start, end)) {
+          const last = its[its.length - 1];
+          if (last && f.getTime() === start.getTime() && last[1].getTime() === f.getTime() && last[2] === unknown && last[3] === comment) last[1] = t;
+          else its.push([f, t, unknown, comment]);
+        }
+        start = midnight;
+      }
+    } else {
+      oh = parse(rule);
+      its = oh.getOpenIntervals(from, to);
+    }
+  } catch {
+    return { openNow: null, interval: null };
+  }
   const current = its.find(([f, t]) => f <= shifted && shifted < t);
   const next = current ?? its.find(([f]) => f > shifted);
   return { openNow: oh.getState(shifted), interval: next ? { open: back(next[0]), close: back(next[1]) } : null };
@@ -43,6 +63,8 @@ const RULES = [
     "Mo-Th 17:00-01:00; Fr-Sa 17:00-03:00; Su off",
     "Mo-Fr 08:00-12:00,13:00-18:00; PH off",
     "Mo-Su sunrise-sunset",
+    "sunset-sunrise",
+    "Mo-Fr (sunrise+00:30)-(sunset-01:00); Sa,Su dawn-dusk",
     "Mo-Su 10:00-22:00; Tu off \"closed for private events\"",
     "Mo-Su 12:00-24:00",
     "Jun-Aug Mo-Su 10:00-20:00; Sep-May Sa,Su 11:00-17:00",

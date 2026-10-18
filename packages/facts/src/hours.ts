@@ -59,8 +59,11 @@ interface ParsedRule {
   publicHolidays: boolean;
 }
 
+type Interval = [Date, Date, boolean, string | undefined];
+
 const parsed = new Map<string, ParsedRule>();
-const intervals = new Map<string, [Date, Date, boolean, string | undefined][]>();
+const intervals = new Map<string, Interval[]>();
+const sunWindows = new Map<string, Interval[] | null>();
 
 function remember<V>(cache: Map<string, V>, key: string, max: number, make: () => V): V {
   const hit = cache.get(key);
@@ -76,8 +79,16 @@ function remember<V>(cache: Map<string, V>, key: string, max: number, make: () =
 }
 
 const SUN_RELATIVE = /sunrise|sunset|dawn|dusk/;
-// A sun time alone, or with an offset as OSM writes it: "sunset", "(sunset-01:00)", "(sunrise+00:30)".
-const SUN_TIME = /\(\s*(sunrise|sunset|dawn|dusk)\s*([+-])\s*(\d{1,2}):(\d{2})\s*\)|\b(sunrise|sunset|dawn|dusk)\b/g;
+// A quoted comment ("after sunset") says nothing about the hours.
+const QUOTED = /"[^"]*"/g;
+// A sun time alone, or with an offset as OSM writes it: "sunset", "(sunset-01:00)", "(sunrise+00:30)";
+// quoted comments are matched first so they are left as they are.
+const SUN_TIME = /"[^"]*"|\(\s*(sunrise|sunset|dawn|dusk)\s*([+-])\s*(\d{1,2}):(\d{2})\s*\)|\b(sunrise|sunset|dawn|dusk)\b/g;
+
+/** Whether a rule's hours depend on the sun (outside its quoted comments). */
+function isSunRelative(rule: string): boolean {
+  return SUN_RELATIVE.test(rule.replace(QUOTED, ""));
+}
 type SunEvent = "sunrise" | "sunset" | "dawn" | "dusk";
 
 const sunTimes = new Map<string, Record<SunEvent, Date>>();
@@ -85,8 +96,8 @@ const sunTimes = new Map<string, Record<SunEvent, Date>>();
 /**
  * The rule with each sun-relative time replaced by its wall-clock time on `localDate` where the place
  * is, to the minute: sunrise and sunset, and dawn and dusk as civil twilight, as OSM means them. Null
- * when one does not occur that day (polar day or night). Evaluated over the days either side, the
- * day's times are within a couple of minutes of theirs.
+ * when one does not occur that day (polar day or night). Only that day's times: on the next day they
+ * can be an hour off (a DST change), so evaluateHours reads each day with its own (sunWindow).
  */
 export function withSunTimes(rule: string, localDate: string, timeZone: string, lat: number, lon: number): string | null {
   // At the ~1 km bucket the place is in (the sun times differ by seconds within one), so the answer
@@ -95,6 +106,7 @@ export function withSunTimes(rule: string, localDate: string, timeZone: string, 
   const sun = remember(sunTimes, `${localDate}\u0000${timeZone}\u0000${la},${lo}`, 2_000, () => SunCalc.getTimes(fromLocal(localDate, 12 * 60, timeZone), Number(la), Number(lo)));
   let missing = false;
   const out = rule.replace(SUN_TIME, (match, withOffset: SunEvent | undefined, sign: string | undefined, hh: string | undefined, mm: string | undefined, bare: SunEvent | undefined) => {
+    if (!withOffset && !bare) return match; // a quoted comment
     const t = sun[(withOffset ?? bare)!];
     if (Number.isNaN(t.getTime())) {
       missing = true;
@@ -106,6 +118,33 @@ export function withSunTimes(rule: string, localDate: string, timeZone: string, 
     return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
   });
   return missing ? null : out;
+}
+
+/**
+ * A sun-relative rule's open intervals over [day − 24h, day + 61h] on the wall clock, each local day
+ * read with its own sun times: a boundary is the sun's on the day it falls on, so tomorrow's opening,
+ * or the close of a rule running overnight, is tomorrow's sunrise, not today's (an hour apart on the
+ * clock across a DST change). An interval running past midnight is joined back up. Null when a day in
+ * the window has no sunrise or sunset.
+ */
+function sunWindow(rule: string, timeZone: string, lat: number, lon: number, day: Date): Interval[] | null {
+  return remember(sunWindows, `${rule}\u0000${timeZone}\u0000${lat.toFixed(2)},${lon.toFixed(2)}\u0000${day.getTime()}`, INTERVALS_MAX, () => {
+    const from = new Date(day.getTime() - 24 * 3_600_000);
+    const to = new Date(day.getTime() + 61 * 3_600_000);
+    const out: Interval[] = [];
+    for (let d = from; d < to; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) {
+      const local = withSunTimes(rule, wallDate(d), timeZone, lat, lon);
+      const oh = local === null ? null : parseOsmHours(local).oh;
+      if (!oh) return null;
+      const end = new Date(Math.min(to.getTime(), new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime()));
+      for (const [f, t, unknown, comment] of oh.getOpenIntervals(d, end)) {
+        const last = out[out.length - 1];
+        if (last && f.getTime() === d.getTime() && last[1].getTime() === f.getTime() && last[2] === unknown && last[3] === comment) last[1] = t;
+        else out.push([f, t, unknown, comment]);
+      }
+    }
+    return out;
+  });
 }
 
 export function parseOsmHours(rule: string): ParsedRule {
@@ -137,6 +176,7 @@ export function clearHoursCaches(): void {
   parsed.clear();
   sunTimes.clear();
   intervals.clear();
+  sunWindows.clear();
   holidays.clear();
 }
 
@@ -147,8 +187,11 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
       return { openNow: true, interval: { open: new Date(at.getTime() - 86_400_000), close: new Date(at.getTime() + 86_400_000 * 365) }, always: true, parseError: null, approximate: false };
     }
     if (rule === "off" || rule === "closed") return { openNow: false, interval: null, always: false, parseError: null, approximate: false };
-    // A sun-relative rule is read with the day's real sun times where the place is.
-    const local = SUN_RELATIVE.test(rule) ? withSunTimes(rule, localClock(at, timeZone).date, timeZone, geo?.lat ?? 40.7185, geo?.lon ?? -73.988) : rule;
+    // A sun-relative rule is read with the real sun times where the place is, each day its own.
+    const lat = geo?.lat ?? 40.7185;
+    const lon = geo?.lon ?? -73.988;
+    const sun = isSunRelative(rule);
+    const local = sun ? withSunTimes(rule, localClock(at, timeZone).date, timeZone, lat, lon) : rule;
     if (local === null) return { openNow: null, interval: null, always: false, parseError: "no sunrise or sunset that day", approximate: false };
     const { oh, error, approximate: ruleApproximate, publicHolidays } = parseOsmHours(local);
     if (!oh) return { openNow: null, interval: null, always: false, parseError: error, approximate: false };
@@ -161,9 +204,12 @@ export function evaluateHours(value: HoursValue, at: Date, timeZone: string, geo
     const day = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
     const nextDay = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate() + 1);
     const approximate = ruleApproximate || (publicHolidays && (isPublicHoliday(day) || isPublicHoliday(nextDay)));
-    const wide = remember(intervals, `${local}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
-      oh.getOpenIntervals(new Date(day.getTime() - 24 * 3_600_000), new Date(day.getTime() + 61 * 3_600_000)),
-    );
+    const wide = sun
+      ? sunWindow(rule, timeZone, lat, lon, day)
+      : remember(intervals, `${local}\u0000${timeZone}\u0000${day.getTime()}`, INTERVALS_MAX, () =>
+          oh.getOpenIntervals(new Date(day.getTime() - 24 * 3_600_000), new Date(day.getTime() + 61 * 3_600_000)),
+        );
+    if (!wide) return { openNow: null, interval: null, always: false, parseError: "no sunrise or sunset that day", approximate: false };
     const lo = shifted.getTime() - 24 * 3_600_000;
     const hi = shifted.getTime() + 36 * 3_600_000;
     const its: [Date, Date, boolean][] = [];
@@ -218,8 +264,12 @@ function toWallClockDate(at: Date, timeZone: string): Date {
 }
 
 function fromWallClockDate(wall: Date, timeZone: string): Date {
-  const date = `${wall.getFullYear()}-${String(wall.getMonth() + 1).padStart(2, "0")}-${String(wall.getDate()).padStart(2, "0")}`;
-  return fromLocal(date, wall.getHours() * 60 + wall.getMinutes(), timeZone);
+  return fromLocal(wallDate(wall), wall.getHours() * 60 + wall.getMinutes(), timeZone);
+}
+
+/** A wall-clock Date's local day, "YYYY-MM-DD". */
+function wallDate(wall: Date): string {
+  return `${wall.getFullYear()}-${String(wall.getMonth() + 1).padStart(2, "0")}-${String(wall.getDate()).padStart(2, "0")}`;
 }
 
 function shiftDate(date: string, days: number): string {
