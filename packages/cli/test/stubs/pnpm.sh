@@ -10,6 +10,7 @@
 #   STUB_FAIL_LAUNCH    areas `areas launch` fails for any other reason
 #   STUB_MIGRATE_EXIT   exit status of db:migrate
 #   STUB_FAIL_WEATHER   set: `weather refresh` fails (no network)
+#   STUB_FAIL_EVENTS    areas whose `ingest nyc-parks` fails (no network)
 set -u
 printf 'pnpm %s | DATABASE_URL=%s\n' "$*" "${DATABASE_URL:-}" >>"$STUB_LOG"
 listed() { case " $2 " in *" $1 "*) return 0 ;; esac; return 1; }
@@ -120,6 +121,15 @@ case "$group $cmd" in
       exit 1
     fi
     echo "les: 156 hours, 2026-10-03T16:00:00.000Z to 2026-10-10T04:00:00.000Z, issued 2026-10-03T15:30:12.000Z"
+    ;;
+  "ingest nyc-parks")
+    known
+    if listed "$area" "${STUB_FAIL_EVENTS:-}"; then
+      echo "error: fetch failed for data.cityofnewyork.us" >&2
+      exit 1
+    fi
+    echo "94 events within 3.1 km of $area"
+    echo "  events     94 of 94 written (of 938 in the city) · 28 new event sites · 0 left out"
     ;;
   "areas launch")
     known

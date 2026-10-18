@@ -284,18 +284,20 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (o.status === "ended" || (o.end && o.end <= ctx.now)) return out("EVENT_STARTED");
     const cutoff = o.entryCutoff ?? o.start;
     latestArrival = cutoff;
+    // A walk-in pop-up in the open (a band on the lawn, a street fair, fireworks, a festival in the
+    // park) has no door: one can come after it starts and leave before it ends.
+    const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
     if (arrival > cutoff) {
-      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in pop-up
-      // in the open (a band on the lawn, a street fair, fireworks): no door to be late for. The plan
-      // still says it has started.
-      const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
+      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in
+      // pop-up. The plan still says it has started.
       if (o.lateEntry !== true && !walkInPopUp) return out("EVENT_STARTED");
       if (!walkInPopUp) unresolved.push("LATE_ENTRY_UNCERTAIN");
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");
-    // A small overrun of the user's own deadline is tolerated; none past a permanent closure.
-    if (end > addMinutes(userDeadline, 15) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
+    // A small overrun of the user's own deadline is tolerated, and a walk-in pop-up is left when it is
+    // time to go; none past a permanent closure.
+    if ((end > addMinutes(userDeadline, 15) && !walkInPopUp) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
     // Arriving early is waiting, not useful time: useful time starts at the event.
     const effectiveStart = arrival < o.start ? o.start : arrival;
     latestFinish = end < deadline ? end : deadline;

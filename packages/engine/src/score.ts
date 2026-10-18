@@ -20,7 +20,7 @@ const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
  * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
  * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, kidsEventForAdults: 0.35 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -65,10 +65,14 @@ export function scoreCandidate(
   // from their taste (below). Feasibility has already excluded published limits; this sinks estimated
   // ones. A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
   const adultForMinor = minorInParty(ctx) && ((ageLimitOf(c)?.minAge ?? 0) >= 18 || c.category === "bar" || c.category === "nightclub");
+  // An event made for children (its source says so) is a family's: the family bonus with a minor
+  // along, and it sinks in appeal (below) for grown-ups out on their own.
+  const forKids = c.kind === "occurrence" && (c.facts.audience?.value as { kids?: unknown } | undefined)?.kids === true;
   if (ctx.company) {
     if (adultForMinor) chips -= 0.25;
     else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
   }
+  if (forKids && minorInParty(ctx)) chips += 0.25;
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = isOutdoor(c);
@@ -94,6 +98,7 @@ export function scoreCandidate(
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
+  if (forKids && !minorInParty(ctx)) appeal -= APPEAL_WEIGHTS.kidsEventForAdults;
   // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;

@@ -88,7 +88,7 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
   const occ = (
     await q.query<OccRow>(
       `select id, venue_id, title, start_at, end_at, entry_cutoff_at, late_entry, status from occurrences
-        where venue_id = any($1::uuid[]) and status <> 'ended'
+        where venue_id = any($1::uuid[]) and status not in ('ended', 'withdrawn')
           and coalesce(end_at, start_at + interval '2 hours') > $2 and start_at < $3`,
       [venues.map((v) => v.id), now, windowEnd],
     )
