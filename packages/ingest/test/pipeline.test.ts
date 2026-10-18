@@ -319,6 +319,44 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       expect(await record("node/990042")).toEqual({ live: true, name: "Probe Lantern Bar", version: 6 });
     });
 
+    // Three areas whose circles meet at one point (synthetic snapshots of a small circle there).
+    const atPoint = (area: string, elements: unknown[], at: { lat: number; lon: number }, base: string) => ingestOsmArea(db, { areaSlug: area, fromFile: bx(elements, at, base) });
+
+    it("the newest sign a record is gone holds, whichever area lets go of it last, against an older mirror's listing", async () => {
+      const at = { lat: 40.98, lon: -73.76 };
+      const deli = { type: "node", id: 990044, ...at, version: 5, tags: { name: "Probe Station Deli", amenity: "cafe" } };
+      await atPoint("yonkers", [deli], at, "2026-10-09T00:00:00Z");
+      await atPoint("white_plains", [deli], at, "2026-10-05T00:00:00Z");
+      // Yonkers's newer snapshot finds it gone; White Plains still holds it, so it stays for now.
+      await atPoint("yonkers", [], at, "2026-10-10T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(true);
+      // White Plains's older one lets go of it last.
+      await atPoint("white_plains", [], at, "2026-10-06T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(false);
+      // Scarsdale's first snapshot, from a mirror at the 8th, still lists the same version: it stays gone.
+      const s = await atPoint("scarsdale", [deli], at, "2026-10-08T00:00:00Z");
+      expect(s.raw).toMatchObject({ older: 1, changed: 0 });
+      expect((await record("node/990044"))?.live).toBe(false);
+      // A snapshot newer than the 10th that has it brings it back.
+      await atPoint("scarsdale", [deli], at, "2026-10-11T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(true);
+    });
+
+    it("an older mirror's listing doesn't hold a record a newer snapshot found gone while another area held it", async () => {
+      const at = { lat: 40.985, lon: -73.765 };
+      const shop = { type: "node", id: 990045, ...at, version: 2, tags: { name: "Probe Corner Books", amenity: "cafe" } };
+      await atPoint("yonkers", [shop], at, "2026-10-09T00:00:00Z");
+      await atPoint("white_plains", [shop], at, "2026-10-05T00:00:00Z");
+      await atPoint("yonkers", [], at, "2026-10-10T00:00:00Z");
+      // Scarsdale, at the 8th, lists it while White Plains still holds it: Scarsdale takes no hold.
+      const s = await atPoint("scarsdale", [shop], at, "2026-10-08T00:00:00Z");
+      expect(s.raw.older).toBe(1);
+      const holders = async () => (await db.query<{ slug: string }>(`select a.slug from osm_area_records o join service_areas a on a.id = o.area_id join source_entities s on s.id = o.source_entity_id where s.external_id = 'node/990045' order by 1`)).rows.map((r) => r.slug);
+      expect(await holders()).toEqual(["white_plains"]);
+      await atPoint("white_plains", [], at, "2026-10-06T00:00:00Z");
+      expect((await record("node/990045"))?.live).toBe(false);
+    });
+
     it("a snapshot older than the area's last withdraws and lets go of nothing; the next newer one does", async () => {
       const at = { lat: 40.95, lon: -73.83 };
       const kiosk = { type: "node", id: 990043, ...at, version: 1, tags: { name: "Probe Ferry Kiosk", amenity: "cafe" } };

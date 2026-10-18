@@ -60,9 +60,10 @@ export interface SnapshotHolder {
  *
  * `asOf` is when the snapshot's data was current (its `osm3s.timestamp_osm_base`; null when it doesn't
  * say). An older snapshot than what is stored never wins: an element's older version leaves the newer
- * one standing; a record withdrawn by newer data stays withdrawn unless a newer version of it comes
- * (undeleted, or edited back into shape); and a snapshot older than the area's last one withdraws and
- * lets go of nothing, since what it lacks may be newer than it.
+ * one standing; a record a newer snapshot found missing (`absent_as_of`, whichever area saw it, and
+ * whether or not another area still held it then) is not held, nor brought back, unless a newer
+ * version of it comes (undeleted, or edited back into shape); and a snapshot older than the area's
+ * last one withdraws and lets go of nothing, since what it lacks may be newer than it.
  */
 export async function upsertOsmElements(
   q: Queryable,
@@ -93,19 +94,21 @@ export async function upsertOsmElements(
     const raw = { type: el.type, id: el.id, point: el.point, tags: el.tags, version: el.version, timestamp: el.sourceUpdatedAt?.toISOString() ?? null };
     const kind = isOsmParking(el.tags) ? "parking" : "venue";
     const hash = contentHash({ tags: el.tags, point: el.point });
-    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string; version: number | null; withdrawn_as_of: Date | null }>(
-      `select id, content_hash, deleted_at, kind, (raw->>'version')::int as version, withdrawn_as_of from source_entities where source_id = 'osm' and external_id = $1`,
+    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string; version: number | null; absent_as_of: Date | null }>(
+      `select id, content_hash, deleted_at, kind, (raw->>'version')::int as version, absent_as_of from source_entities where source_id = 'osm' and external_id = $1`,
       [el.externalId],
     );
     const prev = existing.rows[0];
     const versions = prev && prev.version !== null && el.version !== null ? el.version - prev.version : null;
     const olderThanStored = versions !== null && versions < 0;
-    // Withdrawn by newer data (or while the area has newer data than this): only a newer version brings it back.
-    const olderThanWithdrawal = !!prev?.deleted_at && !(versions !== null && versions > 0) && (behind !== null || (asOf !== null && prev.withdrawn_as_of !== null && asOf < prev.withdrawn_as_of));
-    if (prev && (olderThanStored || olderThanWithdrawal)) {
+    // Found missing by newer data (or withdrawn while the area has newer data than this): only a newer
+    // version of it outweighs that.
+    const newerVersion = versions !== null && versions > 0;
+    const olderThanAbsence = !!prev && !newerVersion && ((asOf !== null && prev.absent_as_of !== null && asOf < prev.absent_as_of) || (prev.deleted_at !== null && behind !== null));
+    if (prev && (olderThanStored || olderThanAbsence)) {
       counts.older++;
-      // Still there, as far as this snapshot goes: held, at the version stored.
-      if (!prev.deleted_at) seen.push(el.externalId);
+      // Still there as far as this snapshot goes, at the version stored: held. Not when newer data found it gone.
+      if (!prev.deleted_at && !olderThanAbsence) seen.push(el.externalId);
       continue;
     }
     seen.push(el.externalId);
@@ -122,9 +125,11 @@ export async function upsertOsmElements(
     const changed = prev.content_hash !== hash || prev.deleted_at !== null || prev.kind !== kind;
     await q.query(
       `update source_entities set raw = $2, content_hash = $3, geom = ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography,
-              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, withdrawn_as_of = null, kind = $10
+              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, kind = $10,
+              absent_as_of = case when $11::timestamptz >= absent_as_of or $12 then null else absent_as_of end
         where id = $1`,
-      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind],
+      // A sighting as new as the last absence, or of a newer version, ends it.
+      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind, asOf, newerVersion],
     );
     if (changed) {
       counts.changed++;
@@ -146,27 +151,42 @@ export async function upsertOsmElements(
   // And lets go of what it held that this snapshot lacks: inside the circle; from outside a circle no
   // wider than this one, that this snapshot could have kept; and beyond anything the area keeps
   // (stored before records were kept by their point).
-  const released = (
-    await q.query<{ source_entity_id: string }>(
+  const releases = (
+    await q.query<{ source_entity_id: string; observed: boolean }>(
       `delete from osm_area_records o using source_entities s
         where o.area_id = $1 and o.run_id <> $2 and s.id = o.source_entity_id
           and (ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $10)
                or (o.outside_of_m <= $9 and ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $5))
                or not ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($6, $7), 4326)::geography, $8))
-        returning o.source_entity_id`,
+        returning o.source_entity_id,
+          (ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $10)
+           or (o.outside_of_m <= $9 and ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($3, $4), 4326)::geography, $5))) as observed`,
       [holder.areaId, runId, extent.lon, extent.lat, holder.keepM, holder.areaReach.lon, holder.areaReach.lat, holder.areaReach.radiusM, Math.ceil(extent.radiusM), extent.radiusM],
     )
-  ).rows.map((r) => r.source_entity_id);
+  ).rows;
+  const released = releases.map((r) => r.source_entity_id);
+  // Seen missing where this snapshot would have had it (inside its circle, or let go of from outside
+  // it): the newest such sighting is kept, held by another area or not. Letting go of what lies
+  // beyond the area's reach says nothing of whether it is still there.
+  if (asOf) {
+    await q.query(
+      `update source_entities s set absent_as_of = greatest(s.absent_as_of, $5)
+        where s.source_id = 'osm' and s.kind in ('venue', 'parking') and s.deleted_at is null
+          and not (s.external_id = any($1::text[]))
+          and (s.id = any($6::uuid[]) or ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4))`,
+      [seen, extent.lon, extent.lat, extent.radiusM, asOf, releases.filter((r) => r.observed).map((r) => r.source_entity_id)],
+    );
+  }
   // Withdrawn once no area holds it: what this area let go of, and what it lacks inside its circle
   // that no one held (nothing the snapshot doesn't have is left standing for want of a holder).
   const tomb = await q.query<{ id: string }>(
-    `update source_entities s set deleted_at = now(), withdrawn_as_of = $6
+    `update source_entities s set deleted_at = now()
       where s.source_id = 'osm' and s.kind in ('venue', 'parking') and s.deleted_at is null
         and not (s.external_id = any($1::text[]))
         and (s.id = any($5::uuid[]) or ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4))
         and not exists (select 1 from osm_area_records o where o.source_entity_id = s.id)
       returning s.id`,
-    [seen, extent.lon, extent.lat, extent.radiusM, released, asOf],
+    [seen, extent.lon, extent.lat, extent.radiusM, released],
   );
   counts.tombstoned = tomb.rowCount ?? 0;
   touched.push(...tomb.rows.map((r) => r.id));

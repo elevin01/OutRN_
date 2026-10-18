@@ -106,8 +106,9 @@ October with June's data). A fetch whose data (`osm3s.timestamp_osm_base`) is mo
 is asked again, then refused with the mirror's name and the data's date: point `OVERPASS_URL` at
 another mirror, or try later (`--max-data-age <days>` to accept older). In the database, an older
 snapshot never wins over a newer one: an element's older version leaves the newer one standing, a
-place withdrawn by newer data stays withdrawn unless a newer version of it comes back, and a snapshot
-older than the area's last withdraws nothing (`ingest osm` says so).
+place a newer snapshot found missing (in any area, even while another still held it) is neither held
+nor brought back unless a newer version of it comes, and a snapshot older than the area's last
+withdraws nothing (`ingest osm` says so).
 
 **Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
 overture --area <slug>` reads the Overture places near the area's venues straight from Overture's
