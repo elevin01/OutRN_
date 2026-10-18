@@ -98,4 +98,9 @@ describe("NYC Parks events as an area's events", () => {
     // Sunday 1 November: 10am is EST (UTC-5), the day after EDT ends.
     expect(one({ starttime: "2026-11-01T10:00:00.000", endtime: "2026-11-01T11:00:00.000" })).toMatchObject({ start: "2026-11-01T15:00:00.000Z" });
   });
+  it("an inherited name is no category and no entity: \"constructor\" or \"__proto__\" in a listing is only text", () => {
+    expect(decodeEntities("Fun &constructor; Day &toString; &amp; more")).toBe("Fun &constructor; Day &toString; & more");
+    const e = one({ categories: "constructor | toString | __proto__ | hasOwnProperty | valueOf | Festivals" })!;
+    expect(e.kinds).toEqual(["festivals"]);
+  });
 });

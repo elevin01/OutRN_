@@ -9,3 +9,4 @@ export * from "./weather.js";
 export * from "./events.js";
 export * from "./destinations.js";
 export * from "./nyc-parks.js";
+export * from "./calendars.js";
