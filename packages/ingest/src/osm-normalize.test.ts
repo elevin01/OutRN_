@@ -120,6 +120,13 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "The Velvet Lounge", amenity: "pub" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" } });
     expect(fact(rec({ name: "The Wine Bar", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" } });
     expect(fact(rec({ name: "Sully's Sports Bar", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "cocktail_bar" } });
+    // The deciding tag is the evidence, not the category's.
+    expect(fact(rec({ name: "Yonkers Brewing", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidence: "craft=brewery" });
+    expect(fact(rec({ name: "Taps", amenity: "bar", microbrewery: "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" }, evidence: "microbrewery=yes" });
+    // brewery=* names the beers poured, not a brewery on the premises; brewery=no says nothing either.
+    expect(fact(rec({ name: "The Red Lion", amenity: "pub", brewery: "Krombacher" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" }, evidence: "amenity=pub" });
+    expect(fact(rec({ name: "Whistling Rail", amenity: "bar", brewery: "no" }), "subtype")).toBeUndefined();
+    expect(fact(rec({ name: "Whistling Rail", amenity: "bar", sport: "no" }), "subtype")).toBeUndefined();
     // Only a bar's: a wine shop's or a restaurant's name says nothing of a bar.
     expect(fact(rec({ name: "Wine Palace", amenity: "restaurant" }), "subtype")).toBeUndefined();
   });

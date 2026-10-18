@@ -49,5 +49,7 @@ describe("a bar's style, from its tags to whether it suits a date", () => {
     expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "pub" }), "date")).toBe(false);
     expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "bar" }), "date")).toBe(true);
     expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "pub" }), "friends")).toBe(true);
+    // A pub that names the beer it pours is still a pub.
+    expect(suitsCompany(candidate({ name: "The Red Lion", amenity: "pub", brewery: "Krombacher" }), "date")).toBe(false);
   });
 });
