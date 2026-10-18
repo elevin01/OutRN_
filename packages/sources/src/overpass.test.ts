@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildAreaQuery, loadAreaFromFile, normalizeElements } from "./overpass.js";
+import { buildAreaQuery, loadAreaFromFile, normalizeElements, osmDataAgeDays, osmDataTime } from "./overpass.js";
 import { OSM_CATEGORY_KEYS, OSM_QUALIFIED_TAGS, OSM_TAG_CATEGORIES } from "./osm-tags.js";
 
 describe("Overpass area query", () => {
@@ -57,5 +57,24 @@ describe("a saved capture's extent", () => {
     ]) {
       await expect(loadAreaFromFile(saved(extent)), extent).rejects.toThrow();
     }
+  });
+});
+
+describe("how old a mirror's data is", () => {
+  const at = new Date("2026-10-18T00:43:00Z");
+  it("is the time since its base, in days, and unknown when it doesn't say", () => {
+    expect(osmDataAgeDays({ osm3s: { timestamp_osm_base: "2026-10-18T00:41:00Z" }, elements: [] }, at)).toBeCloseTo(2 / 1440, 6);
+    // One of a public mirror's servers, answering in October with June's data.
+    expect(Math.floor(osmDataAgeDays({ osm3s: { timestamp_osm_base: "2026-06-01T08:52:28Z" }, elements: [] }, at)!)).toBe(138);
+    expect(osmDataAgeDays({ elements: [] }, at)).toBeNull();
+    expect(osmDataAgeDays({ osm3s: { timestamp_osm_base: "yesterday" }, elements: [] }, at)).toBeNull();
+    // Dated after it could have been fetched (a mirror's clock, a hand-edited capture): no data time.
+    expect(osmDataAgeDays({ osm3s: { timestamp_osm_base: "2099-01-01T00:00:00Z" }, elements: [] }, at)).toBeNull();
+    expect(osmDataTime({ osm3s: { timestamp_osm_base: "2026-10-18T01:30:00Z" }, elements: [] }, at)?.toISOString()).toBe("2026-10-18T01:30:00.000Z");
+  });
+
+  it("keeps an element's version only when it is a small whole number", () => {
+    const el = (version: number) => ({ type: "node" as const, id: 1, lat: 40.7, lon: -73.9, version, tags: { name: "X", amenity: "cafe" } });
+    expect(normalizeElements({ elements: [el(7), el(1.5), el(3_000_000_000), el(-2), el(0)] }).elements.map((e) => e.version)).toEqual([7, null, null, null, null]);
   });
 });

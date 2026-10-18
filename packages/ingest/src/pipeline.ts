@@ -3,7 +3,7 @@ import { DEFAULT_MAX_TRAVEL_MINUTES, haversineMetres, maxReachMetres, parkingBuf
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
-import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
+import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, osmDataTime, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
 import { normalizeOsm, OSM_NORMALIZE_VERSION } from "./osm-normalize.js";
 import { syncParking } from "./parking.js";
 
@@ -24,6 +24,8 @@ export interface IngestOptions {
   radiusM?: number;
   /** The instant a replay is ingested at (tests, backfills). A live fetch always uses its own fetch time. */
   clock?: () => Date;
+  /** How many days old a live fetch's data may be (default OSM_MAX_DATA_AGE_DAYS). */
+  maxDataAgeDays?: number;
   log?: (line: string) => void;
 }
 
@@ -34,13 +36,15 @@ export interface IngestSummary {
   extentM: number;
   fetched: number;
   dropped: number;
-  raw: { new: number; changed: number; unchanged: number; tombstoned: number; renormalized: number };
+  raw: { new: number; changed: number; unchanged: number; older: number; tombstoned: number; renormalized: number };
   venues: { created: number; linked: number; review: number; children: number; skipped: number };
   facts: { inserted: number; superseded: number; rejected: number };
   materialized: { subjects: number; conflicts: number; tasks: number };
   /** Public parking derived from this snapshot, and rows dropped (gone, private, no longer parking). */
   parking: { facilities: number; removed: number };
   osmBaseTimestamp: string | null;
+  /** When the snapshot is older than the area's last one: that one's data time (nothing was withdrawn). */
+  behindOsmBase: string | null;
 }
 
 /**
@@ -71,13 +75,16 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
   try {
     const center = { lat: area.lat, lon: area.lon };
     if (!opts.fromFile) log(`fetching ${radiusM} m around ${area.slug}${opts.radiusM ? " (override)" : ` (catchment ${derived.catchmentM} m + ${area.travel_mode} reach ${derived.reachM} m)`}`);
-    const fetched = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea(center, radiusM);
+    const fetched = opts.fromFile ? await loadAreaFromFile(opts.fromFile) : await fetchArea(center, radiusM, opts.maxDataAgeDays !== undefined ? { maxDataAgeDays: opts.maxDataAgeDays } : {});
     const result = opts.fromFile && opts.clock ? { ...fetched, fetchedAt: opts.clock() } : fetched;
     const now = result.fetchedAt;
     // A replay without a saved extent is treated as covering the catchment only (the old capture size).
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
-    const { elements: read, baseTimestamp, dropped } = normalizeElements(result.response);
+    const { elements: read, baseTimestamp: statedBase, dropped } = normalizeElements(result.response);
+    // A data time later than the snapshot could have been taken is no data time.
+    const baseTimestamp = osmDataTime(result.response, new Date(Math.max(result.fetchedAt.getTime(), Date.now())));
+    if (statedBase && !baseTimestamp) log(`the snapshot's data time (${result.response.osm3s?.timestamp_osm_base}) is not a time it could have been taken at: treated as unknown`);
     // A way or relation that meets the circle can have its point far outside it (a refuge whose units
     // run along the coast): no place of this area, and it would stretch every read built on the
     // area's venues. Only where the extent is known: an older capture without one may hold a wider fetch.
@@ -88,8 +95,9 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     // The farthest the area keeps a record: its own reach (or a wider override), and the slack past it.
     const reachM = Math.max(derived.radiusM, radiusM, extent.radiusM);
     const holder = { areaId: area.id, keepM: extent.radiusM + outsideSlackM(extent.radiusM), areaReach: { ...center, radiusM: reachM + outsideSlackM(reachM) } };
-    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, holder, extent, elements, result.fetchedAt));
-    log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);
+    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, holder, extent, elements, result.fetchedAt, baseTimestamp));
+    log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.older} older than stored, ${rawOut.counts.tombstoned} tombstoned`);
+    if (rawOut.behind) log(`this snapshot's data (${baseTimestamp?.toISOString()}) is older than the area's last (${rawOut.behind.toISOString()}): nothing withdrawn`);
 
     // Unchanged records still need processing when the rules that turn tags into facts changed since,
     // or a date in their tags (a closing date, an opening date, a survey's expiry) has come due.
@@ -129,6 +137,7 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
       materialized: { subjects: mat.subjects, conflicts: mat.conflicts, tasks: mat.tasksCreated },
       parking,
       osmBaseTimestamp: baseTimestamp?.toISOString() ?? null,
+      behindOsmBase: rawOut.behind?.toISOString() ?? null,
     };
   } catch (e) {
     await finishRun(db, runId, { status: "failed", error: (e as Error).message });

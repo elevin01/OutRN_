@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
+import { OSM_MAX_DATA_AGE_DAYS } from "@outrn/sources";
 import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
@@ -14,14 +15,23 @@ export function registerIngest(program: Command): void {
     .option("--from-file <path>", "replay a saved Overpass JSON response instead of fetching")
     .option("--save <path>", "save the fetched response for later replay")
     .option("--radius <m>", "override the derived ingest radius (catchment + max reach), metres", (v) => parseInt(v, 10))
-    .action(async (o: { area: string; fromFile?: string; save?: string; radius?: number }) => {
+    .option("--max-data-age <days>", `how old a fetched snapshot's data may be, in days (default ${OSM_MAX_DATA_AGE_DAYS}): a lagging mirror's is asked again, then refused`, (v) => parseFloat(v))
+    .action(async (o: { area: string; fromFile?: string; save?: string; radius?: number; maxDataAge?: number }) => {
       const db = getDb();
       const t0 = Date.now();
-      const s = await ingestOsmArea(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.radius ? { radiusM: o.radius } : {}), log: (l) => console.log(l) });
+      const s = await ingestOsmArea(db, {
+        areaSlug: o.area,
+        ...(o.fromFile ? { fromFile: o.fromFile } : {}),
+        ...(o.save ? { saveTo: o.save } : {}),
+        ...(o.radius ? { radiusM: o.radius } : {}),
+        ...(o.maxDataAge !== undefined && Number.isFinite(o.maxDataAge) ? { maxDataAgeDays: o.maxDataAge } : {}),
+        log: (l) => console.log(l),
+      });
       console.log("");
       console.log(`run ${s.runId} · area ${s.area} · extent ${s.extentM} m · ${Date.now() - t0} ms`);
       console.log(`  elements   ${s.fetched} kept, ${s.dropped} dropped${s.osmBaseTimestamp ? ` · OSM base ${s.osmBaseTimestamp}` : ""}`);
-      console.log(`  raw        ${s.raw.new} new · ${s.raw.changed} changed · ${s.raw.unchanged} unchanged · ${s.raw.tombstoned} tombstoned${s.raw.renormalized ? ` · ${s.raw.renormalized} re-normalized (rules changed)` : ""}`);
+      console.log(`  raw        ${s.raw.new} new · ${s.raw.changed} changed · ${s.raw.unchanged} unchanged${s.raw.older ? ` · ${s.raw.older} older than stored (kept)` : ""} · ${s.raw.tombstoned} tombstoned${s.raw.renormalized ? ` · ${s.raw.renormalized} re-normalized (rules changed)` : ""}`);
+      if (s.behindOsmBase) console.log(`  note       the snapshot's data is older than the area's last (${s.behindOsmBase}): it withdrew nothing`);
       console.log(`  venues     ${s.venues.created} created · ${s.venues.linked} linked to existing · ${s.venues.review} flagged for review · ${s.venues.children} child venues · ${s.venues.skipped} skipped`);
       console.log(`  facts      ${s.facts.inserted} inserted · ${s.facts.superseded} superseded · ${s.facts.rejected} rejected`);
       console.log(`  current    ${s.materialized.subjects} venues materialized · ${s.materialized.conflicts} conflicts · ${s.materialized.tasks} verification tasks`);

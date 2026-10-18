@@ -1,9 +1,9 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { migrate, testDatabaseAvailable, reset } from "@outrn/db";
+import { insertArea, migrate, testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { fromLocal, VENUE_FACTS_DOC_SQL } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
@@ -270,6 +270,113 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     });
   });
 
+  describe("snapshots of different ages (mirrors lag one another)", () => {
+    const LES = { lat: 40.7185, lon: -73.988, radius_m: 1500 };
+    // The LES fixture's data is from 2026-09-26T14:39:11Z (its osm3s base).
+    const les = (elements: unknown[]) => {
+      const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: unknown[] };
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "les-aged.json");
+      writeFileSync(path, JSON.stringify({ ...fixture, elements: [...fixture.elements, ...elements], outrn_extent: LES }));
+      return path;
+    };
+    // Bronxville's (synthetic) snapshot of a small circle around a point, its data from `base`.
+    const bx = (elements: unknown[], at: { lat: number; lon: number }, base: string | null) => {
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "bx-aged.json");
+      writeFileSync(path, JSON.stringify({ ...(base ? { osm3s: { timestamp_osm_base: base } } : {}), elements, outrn_extent: { ...at, radius_m: 20 } }));
+      return path;
+    };
+    const record = async (name: string) =>
+      (await db.query<{ live: boolean; name: string; version: number }>(`select deleted_at is null as live, raw->'tags'->>'name' as name, (raw->>'version')::int as version from source_entities where external_id = $1`, [name])).rows[0];
+
+    it("an element's older version, from a lagging mirror, leaves the newer one standing", async () => {
+      const at = { lat: 40.7195, lon: -73.9895 };
+      const cafe = { type: "node", id: 990041, ...at, version: 3, tags: { name: "Probe Corner Cafe", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: les([cafe]) });
+      const s = await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...cafe, version: 2, tags: { name: "Probe Corner Diner", amenity: "restaurant" } }], at, null) });
+      expect(s.raw).toMatchObject({ older: 1, changed: 0, tombstoned: 0 });
+      expect(await record("node/990041")).toEqual({ live: true, name: "Probe Corner Cafe", version: 3 });
+      // Still held by the snapshot that has it: LES letting go doesn't withdraw it.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: les([]) });
+      expect((await record("node/990041"))?.live).toBe(true);
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([], at, null) });
+      expect((await record("node/990041"))?.live).toBe(false);
+    });
+
+    it("a record withdrawn by newer data comes back only in newer data, or as an edit made since", async () => {
+      const at = { lat: 40.7175, lon: -73.9865 };
+      const bar = { type: "node", id: 990042, ...at, version: 5, tags: { name: "Probe Lantern Bar", amenity: "bar" } };
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: les([bar]) });
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: les([]) });
+      expect((await record("node/990042"))?.live).toBe(false);
+      // A mirror a week behind still lists it.
+      const s = await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([bar], at, "2026-09-19T00:00:00Z") });
+      expect(s.raw).toMatchObject({ older: 1, changed: 0 });
+      expect((await record("node/990042"))?.live).toBe(false);
+      const holders = await db.query(`select 1 from osm_area_records o join source_entities s on s.id = o.source_entity_id where s.external_id = 'node/990042'`);
+      expect(holders.rowCount).toBe(0);
+      // A higher version in that same lagging data was edited before the record went: still withdrawn.
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...bar, version: 6, timestamp: "2026-09-12T00:00:00Z" }], at, "2026-09-19T00:00:00Z") });
+      expect((await record("node/990042"))?.live).toBe(false);
+      // Undeleted upstream (a new version, edited after it went), it is back.
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...bar, version: 6, timestamp: "2026-09-27T00:00:00Z" }], at, "2026-09-28T00:00:00Z") });
+      expect(await record("node/990042")).toEqual({ live: true, name: "Probe Lantern Bar", version: 6 });
+    });
+
+    // Three areas whose circles meet at one point (synthetic snapshots of a small circle there).
+    const atPoint = (area: string, elements: unknown[], at: { lat: number; lon: number }, base: string) => ingestOsmArea(db, { areaSlug: area, fromFile: bx(elements, at, base) });
+
+    it("the newest sign a record is gone holds, whichever area lets go of it last, against an older mirror's listing", async () => {
+      const at = { lat: 40.98, lon: -73.76 };
+      const deli = { type: "node", id: 990044, ...at, version: 5, tags: { name: "Probe Station Deli", amenity: "cafe" } };
+      await atPoint("yonkers", [deli], at, "2026-10-09T00:00:00Z");
+      await atPoint("white_plains", [deli], at, "2026-10-05T00:00:00Z");
+      // Yonkers's newer snapshot finds it gone; White Plains still holds it, so it stays for now.
+      await atPoint("yonkers", [], at, "2026-10-10T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(true);
+      // White Plains's older one lets go of it last.
+      await atPoint("white_plains", [], at, "2026-10-06T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(false);
+      // Scarsdale's first snapshot, from a mirror at the 8th, still lists the same version: it stays gone.
+      const s = await atPoint("scarsdale", [deli], at, "2026-10-08T00:00:00Z");
+      expect(s.raw).toMatchObject({ older: 1, changed: 0 });
+      expect((await record("node/990044"))?.live).toBe(false);
+      // A snapshot newer than the 10th that has it brings it back.
+      await atPoint("scarsdale", [deli], at, "2026-10-11T00:00:00Z");
+      expect((await record("node/990044"))?.live).toBe(true);
+    });
+
+    it("an older mirror's listing doesn't hold a record a newer snapshot found gone while another area held it", async () => {
+      const at = { lat: 40.985, lon: -73.765 };
+      const shop = { type: "node", id: 990045, ...at, version: 2, tags: { name: "Probe Corner Books", amenity: "cafe" } };
+      await atPoint("yonkers", [shop], at, "2026-10-09T00:00:00Z");
+      await atPoint("white_plains", [shop], at, "2026-10-05T00:00:00Z");
+      await atPoint("yonkers", [], at, "2026-10-10T00:00:00Z");
+      // Scarsdale, at the 8th, lists it while White Plains still holds it: Scarsdale takes no hold.
+      const s = await atPoint("scarsdale", [shop], at, "2026-10-08T00:00:00Z");
+      expect(s.raw.older).toBe(1);
+      const holders = async () => (await db.query<{ slug: string }>(`select a.slug from osm_area_records o join service_areas a on a.id = o.area_id join source_entities s on s.id = o.source_entity_id where s.external_id = 'node/990045' order by 1`)).rows.map((r) => r.slug);
+      expect(await holders()).toEqual(["white_plains"]);
+      await atPoint("white_plains", [], at, "2026-10-06T00:00:00Z");
+      expect((await record("node/990045"))?.live).toBe(false);
+    });
+
+    it("a snapshot older than the area's last withdraws and lets go of nothing; the next newer one does", async () => {
+      const at = { lat: 40.95, lon: -73.83 };
+      const kiosk = { type: "node", id: 990043, ...at, version: 1, tags: { name: "Probe Ferry Kiosk", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([kiosk], at, "2026-10-01T00:00:00Z") });
+      // From a server three months behind: the kiosk opened since.
+      const s = await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([], at, "2026-07-01T00:00:00Z") });
+      expect(s.behindOsmBase).toBe("2026-10-01T00:00:00.000Z");
+      expect(s.raw.tombstoned).toBe(0);
+      expect((await record("node/990043"))?.live).toBe(true);
+      const held = await db.query(`select 1 from osm_area_records o join source_entities s on s.id = o.source_entity_id where s.external_id = 'node/990043'`);
+      expect(held.rowCount).toBe(1);
+      const next = await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([], at, "2026-10-02T00:00:00Z") });
+      expect(next.behindOsmBase).toBeNull();
+      expect((await record("node/990043"))?.live).toBe(false);
+    });
+  });
+
   it("a mapper's survey supersedes the stored claims: status becomes published, hours carry the survey date, the ledger keeps both", async () => {
     const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; timestamp: string; tags: Record<string, string> }[] };
     const el = fixture.elements.find((e) => e.tags["name"] === "Grand Kitchen")!;
@@ -519,6 +626,66 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(await stale()).toBeGreaterThan(20);
     await migrate(db, undefined, { reapply: ["0018_venue_facts_doc.sql"] });
     expect(await stale()).toBe(0);
+  });
+  describe("data times and versions a mirror can get wrong", () => {
+    const at = { lat: 41.2, lon: -73.6 };
+    let areas = 0;
+    const area = async () => {
+      const slug = `aged-${++areas}`;
+      await insertArea(db, { slug, name: slug, lat: at.lat, lon: at.lon, radiusM: 1500, travelMode: "walk" });
+      return slug;
+    };
+    const snap = (elements: unknown[], base: string | null) => {
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "p53.json");
+      writeFileSync(path, JSON.stringify({ ...(base ? { osm3s: { timestamp_osm_base: base } } : {}), elements, outrn_extent: { ...at, radius_m: 20 } }));
+      return path;
+    };
+    const live = async (ext: string) => (await db.query<{ live: boolean }>(`select deleted_at is null as live from source_entities where external_id = $1`, [ext])).rows[0]?.live ?? null;
+
+    it("a lagging mirror's intermediate version (edited before the absence) does not bring a withdrawn record back", async () => {
+      const [a, c] = [await area(), await area()];
+      const el = { type: "node", id: 990532, ...at, version: 5, timestamp: "2026-09-01T00:00:00Z", tags: { name: "Probe53 Kiosk Two", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([el], "2026-09-10T00:00:00Z") });
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([], "2026-09-26T00:00:00Z") });
+      expect(await live("node/990532")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([{ ...el, version: 6, timestamp: "2026-09-15T00:00:00Z" }], "2026-09-20T00:00:00Z") });
+      expect(await live("node/990532")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([{ ...el, version: 7, timestamp: "2026-09-27T00:00:00Z" }], "2026-09-28T00:00:00Z") });
+      expect(await live("node/990532")).toBe(true);
+    });
+
+    it("a snapshot dated in the future does not stop the area's later snapshots from withdrawing", async () => {
+      const d = await area();
+      const el = { type: "node", id: 990533, ...at, version: 1, tags: { name: "Probe53 Kiosk Three", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2099-01-01T00:00:00Z") });
+      const s = await ingestOsmArea(db, { areaSlug: d, fromFile: snap([], "2026-09-30T00:00:00Z") });
+      expect(s.behindOsmBase).toBeNull();
+      expect(await live("node/990533")).toBe(false);
+    });
+
+    it("a record withdrawn before 0023 takes the time of the next snapshot that sees it gone, and older data then can't bring it back", async () => {
+      const [a, c] = [await area(), await area()];
+      const el = { type: "node", id: 990535, ...at, version: 5, tags: { name: "Probe53 Kiosk Five", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([el], "2026-09-10T00:00:00Z") });
+      // As 0023 leaves it: withdrawn, no time it was found gone, held by no one.
+      await db.query(`update source_entities set deleted_at = now(), absent_as_of = null where external_id = 'node/990535'`);
+      await db.query(`delete from osm_area_records o using source_entities s where s.id = o.source_entity_id and s.external_id = 'node/990535'`);
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([], "2026-09-26T00:00:00Z") });
+      expect((await db.query<{ absent_as_of: Date | null }>(`select absent_as_of from source_entities where external_id = 'node/990535'`)).rows[0]!.absent_as_of?.toISOString()).toBe("2026-09-26T00:00:00.000Z");
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([el], "2026-09-20T00:00:00Z") });
+      expect(await live("node/990535")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([el], "2026-09-27T00:00:00Z") });
+      expect(await live("node/990535")).toBe(true);
+    });
+
+    it("an element version that is not a small whole number does not fail the next run", async () => {
+      const d = await area();
+      for (const version of [3_000_000_000, 1.5]) {
+        const el = { type: "node", id: 990534, ...at, version, tags: { name: "Probe53 Kiosk Four", amenity: "cafe" } };
+        await ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2026-09-30T00:00:00Z") });
+        await expect(ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2026-09-30T00:00:00Z") })).resolves.toBeTruthy();
+      }
+    });
   });
 });
 

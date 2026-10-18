@@ -80,11 +80,22 @@ export function normalizeElements(resp: OverpassResponse): { elements: OsmElemen
       point: p,
       tags: e.tags,
       sourceUpdatedAt: e.timestamp ? new Date(e.timestamp) : null,
-      version: e.version ?? null,
+      // A version is a small whole number; anything else is no version (it is compared, and stored as an int).
+      version: e.version !== undefined && Number.isSafeInteger(e.version) && e.version > 0 && e.version <= 2_147_483_647 ? e.version : null,
     });
   }
   const base = resp.osm3s?.timestamp_osm_base ? new Date(resp.osm3s.timestamp_osm_base) : null;
   return { elements: out, baseTimestamp: base, dropped };
+}
+
+/**
+ * When a response's data was current (`osm3s.timestamp_osm_base`), or null when it doesn't say, can't
+ * be read, or is later than the response could have been made (`at`, with an hour for clocks): a
+ * snapshot dated in the future would make every later one look older, and nothing would be withdrawn.
+ */
+export function osmDataTime(resp: OverpassResponse, at: Date): Date | null {
+  const base = resp.osm3s?.timestamp_osm_base ? Date.parse(resp.osm3s.timestamp_osm_base) : NaN;
+  return Number.isFinite(base) && base <= at.getTime() + 3_600_000 ? new Date(base) : null;
 }
 
 /** The area a snapshot covers. Tombstoning is only valid inside it. */
@@ -111,21 +122,49 @@ export function captureWithExtent(response: OverpassResponse, extent: SnapshotEx
 
 const CaptureExtentSchema = z.object({ outrn_extent: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), radius_m: z.number().finite().positive() }).optional() });
 
-export async function fetchArea(center: LatLon, radiusM: number, opts: { minIntervalMs?: number } = {}): Promise<OverpassFetchResult> {
+/**
+ * How old a mirror's OpenStreetMap data may be when it is fetched. The servers behind one public mirror
+ * can lag each other by months (one answered with June's data in October): such a snapshot would put
+ * back places closed since, and miss the ones opened.
+ */
+export const OSM_MAX_DATA_AGE_DAYS = 3;
+
+/** How many days behind `at` a response's data is (`osm3s.timestamp_osm_base`), or null when it doesn't say. */
+export function osmDataAgeDays(resp: OverpassResponse, at: Date): number | null {
+  const base = osmDataTime(resp, at);
+  return base ? (at.getTime() - base.getTime()) / 86_400_000 : null;
+}
+
+export async function fetchArea(center: LatLon, radiusM: number, opts: { minIntervalMs?: number; maxDataAgeDays?: number; attempts?: number; pauseMs?: number } = {}): Promise<OverpassFetchResult> {
   const url = process.env["OVERPASS_URL"] ?? "https://overpass-api.de/api/interpreter";
   const query = buildAreaQuery(center, radiusM);
-  const res = await guardedFetch(url, {
-    sourceId: "osm",
-    method: "POST",
-    body: `data=${encodeURIComponent(query)}`,
-    accept: "application/json",
-    allowedContentTypes: ["application/json"],
-    minIntervalMs: opts.minIntervalMs ?? 2000,
-    timeoutMs: 200_000, // wide drive catchments take a while on Overpass
-    retries: 2,
-  });
-  const parsed = OverpassResponseSchema.parse(JSON.parse(res.text));
-  return { response: parsed, fetchedAt: res.fetchedAt, bytes: res.bytes, url: res.url, query, extent: { lat: center.lat, lon: center.lon, radiusM } };
+  const maxAgeDays = opts.maxDataAgeDays ?? OSM_MAX_DATA_AGE_DAYS;
+  const attempts = opts.attempts ?? 3;
+  let stale: { days: number; base: string } | null = null;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const res = await guardedFetch(url, {
+      sourceId: "osm",
+      method: "POST",
+      body: `data=${encodeURIComponent(query)}`,
+      accept: "application/json",
+      allowedContentTypes: ["application/json"],
+      minIntervalMs: opts.minIntervalMs ?? 2000,
+      timeoutMs: 200_000, // wide drive catchments take a while on Overpass
+      retries: 2,
+    });
+    const parsed = OverpassResponseSchema.parse(JSON.parse(res.text));
+    const days = osmDataAgeDays(parsed, res.fetchedAt);
+    if (days === null || days <= maxAgeDays) {
+      return { response: parsed, fetchedAt: res.fetchedAt, bytes: res.bytes, url: res.url, query, extent: { lat: center.lat, lon: center.lon, radiusM } };
+    }
+    // Another of the mirror's servers may answer next time.
+    stale = { days, base: parsed.osm3s!.timestamp_osm_base! };
+    if (attempt < attempts) await new Promise((r) => setTimeout(r, opts.pauseMs ?? 15_000));
+  }
+  throw new Error(
+    `${new URL(url).host} answered with OpenStreetMap data from ${stale!.base.slice(0, 10)}, ${Math.floor(stale!.days)} days old (at most ${maxAgeDays}), ` +
+      `${attempts} times: set OVERPASS_URL to another mirror, or try again later`,
+  );
 }
 
 /** Replay a saved Overpass JSON response (fixtures, or a capture from a machine with network). */
