@@ -3,7 +3,7 @@ import { DEFAULT_MAX_TRAVEL_MINUTES, haversineMetres, maxReachMetres, parkingBuf
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
-import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
+import { captureWithExtent, fetchArea, finishRun, loadAreaFromFile, normalizeElements, osmDataTime, startRun, upsertOsmElements, type SnapshotExtent } from "@outrn/sources";
 import { normalizeOsm, OSM_NORMALIZE_VERSION } from "./osm-normalize.js";
 import { syncParking } from "./parking.js";
 
@@ -81,7 +81,10 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     // A replay without a saved extent is treated as covering the catchment only (the old capture size).
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
-    const { elements: read, baseTimestamp, dropped } = normalizeElements(result.response);
+    const { elements: read, baseTimestamp: statedBase, dropped } = normalizeElements(result.response);
+    // A data time later than the snapshot could have been taken is no data time.
+    const baseTimestamp = osmDataTime(result.response, new Date(Math.max(result.fetchedAt.getTime(), Date.now())));
+    if (statedBase && !baseTimestamp) log(`the snapshot's data time (${result.response.osm3s?.timestamp_osm_base}) is not a time it could have been taken at: treated as unknown`);
     // A way or relation that meets the circle can have its point far outside it (a refuge whose units
     // run along the coast): no place of this area, and it would stretch every read built on the
     // area's venues. Only where the extent is known: an older capture without one may hold a wider fetch.

@@ -80,11 +80,22 @@ export function normalizeElements(resp: OverpassResponse): { elements: OsmElemen
       point: p,
       tags: e.tags,
       sourceUpdatedAt: e.timestamp ? new Date(e.timestamp) : null,
-      version: e.version ?? null,
+      // A version is a small whole number; anything else is no version (it is compared, and stored as an int).
+      version: e.version !== undefined && Number.isSafeInteger(e.version) && e.version > 0 && e.version <= 2_147_483_647 ? e.version : null,
     });
   }
   const base = resp.osm3s?.timestamp_osm_base ? new Date(resp.osm3s.timestamp_osm_base) : null;
   return { elements: out, baseTimestamp: base, dropped };
+}
+
+/**
+ * When a response's data was current (`osm3s.timestamp_osm_base`), or null when it doesn't say, can't
+ * be read, or is later than the response could have been made (`at`, with an hour for clocks): a
+ * snapshot dated in the future would make every later one look older, and nothing would be withdrawn.
+ */
+export function osmDataTime(resp: OverpassResponse, at: Date): Date | null {
+  const base = resp.osm3s?.timestamp_osm_base ? Date.parse(resp.osm3s.timestamp_osm_base) : NaN;
+  return Number.isFinite(base) && base <= at.getTime() + 3_600_000 ? new Date(base) : null;
 }
 
 /** The area a snapshot covers. Tombstoning is only valid inside it. */
@@ -120,8 +131,8 @@ export const OSM_MAX_DATA_AGE_DAYS = 3;
 
 /** How many days behind `at` a response's data is (`osm3s.timestamp_osm_base`), or null when it doesn't say. */
 export function osmDataAgeDays(resp: OverpassResponse, at: Date): number | null {
-  const base = resp.osm3s?.timestamp_osm_base ? Date.parse(resp.osm3s.timestamp_osm_base) : NaN;
-  return Number.isFinite(base) ? (at.getTime() - base) / 86_400_000 : null;
+  const base = osmDataTime(resp, at);
+  return base ? (at.getTime() - base.getTime()) / 86_400_000 : null;
 }
 
 export async function fetchArea(center: LatLon, radiusM: number, opts: { minIntervalMs?: number; maxDataAgeDays?: number; attempts?: number; pauseMs?: number } = {}): Promise<OverpassFetchResult> {

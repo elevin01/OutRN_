@@ -61,9 +61,11 @@ export interface SnapshotHolder {
  * `asOf` is when the snapshot's data was current (its `osm3s.timestamp_osm_base`; null when it doesn't
  * say). An older snapshot than what is stored never wins: an element's older version leaves the newer
  * one standing; a record a newer snapshot found missing (`absent_as_of`, whichever area saw it, and
- * whether or not another area still held it then) is not held, nor brought back, unless a newer
- * version of it comes (undeleted, or edited back into shape); and a snapshot older than the area's
- * last one withdraws and lets go of nothing, since what it lacks may be newer than it.
+ * whether or not another area still held it then) is not held, nor brought back, unless the element
+ * was edited after that (undeleted, or edited back into shape: its own timestamp says when; a higher
+ * version alone doesn't, since a lagging mirror lists the version edited before the record went); and
+ * a snapshot older than the area's last one withdraws and lets go of nothing, since what it lacks may
+ * be newer than it. A data time later than the snapshot could have been taken is no data time.
  */
 export async function upsertOsmElements(
   q: Queryable,
@@ -84,7 +86,8 @@ export async function upsertOsmElements(
     ? (
         await q.query<{ as_of: Date | null }>(
           `select max((cursor->>'osm_base')::timestamptz) as as_of from ingestion_runs
-            where source_id = 'osm' and area_id = $1 and status = 'succeeded' and id <> $2`,
+            where source_id = 'osm' and area_id = $1 and status = 'succeeded' and id <> $2
+              and (cursor->>'osm_base')::timestamptz <= coalesce(finished_at, now()) + interval '1 hour'`,
           [holder.areaId, runId],
         )
       ).rows[0]?.as_of ?? null
@@ -95,16 +98,19 @@ export async function upsertOsmElements(
     const kind = isOsmParking(el.tags) ? "parking" : "venue";
     const hash = contentHash({ tags: el.tags, point: el.point });
     const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string; version: number | null; absent_as_of: Date | null }>(
-      `select id, content_hash, deleted_at, kind, (raw->>'version')::int as version, absent_as_of from source_entities where source_id = 'osm' and external_id = $1`,
+      `select id, content_hash, deleted_at, kind, case when raw->>'version' ~ '^[0-9]{1,9}$' then (raw->>'version')::int end as version, absent_as_of
+         from source_entities where source_id = 'osm' and external_id = $1`,
       [el.externalId],
     );
     const prev = existing.rows[0];
     const versions = prev && prev.version !== null && el.version !== null ? el.version - prev.version : null;
     const olderThanStored = versions !== null && versions < 0;
-    // Found missing by newer data (or withdrawn while the area has newer data than this): only a newer
-    // version of it outweighs that.
-    const newerVersion = versions !== null && versions > 0;
-    const olderThanAbsence = !!prev && !newerVersion && ((asOf !== null && prev.absent_as_of !== null && asOf < prev.absent_as_of) || (prev.deleted_at !== null && behind !== null));
+    // Found missing by newer data (or withdrawn while the area has newer data than this): only an edit
+    // made after that outweighs it. A higher version alone doesn't: a lagging mirror lists the version
+    // edited before the record went.
+    const goneAsOf = prev?.absent_as_of ?? prev?.deleted_at ?? null;
+    const editedSince = el.sourceUpdatedAt !== null && goneAsOf !== null && el.sourceUpdatedAt > goneAsOf;
+    const olderThanAbsence = !!prev && !editedSince && ((asOf !== null && prev.absent_as_of !== null && asOf < prev.absent_as_of) || (prev.deleted_at !== null && behind !== null));
     if (prev && (olderThanStored || olderThanAbsence)) {
       counts.older++;
       // Still there as far as this snapshot goes, at the version stored: held. Not when newer data found it gone.
@@ -128,8 +134,8 @@ export async function upsertOsmElements(
               last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, kind = $10,
               absent_as_of = case when $11::timestamptz >= absent_as_of or $12 then null else absent_as_of end
         where id = $1`,
-      // A sighting as new as the last absence, or of a newer version, ends it.
-      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind, asOf, newerVersion],
+      // A sighting as new as the last absence, or of an edit made since, ends it.
+      [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind, asOf, editedSince],
     );
     if (changed) {
       counts.changed++;
@@ -166,12 +172,14 @@ export async function upsertOsmElements(
   ).rows;
   const released = releases.map((r) => r.source_entity_id);
   // Seen missing where this snapshot would have had it (inside its circle, or let go of from outside
-  // it): the newest such sighting is kept, held by another area or not. Letting go of what lies
-  // beyond the area's reach says nothing of whether it is still there.
+  // it): the newest such sighting is kept, held by another area or not, and withdrawn already or not
+  // (a record withdrawn before 0023 has no time of its own until a snapshot sees it gone again). It
+  // only sets the time: nothing is withdrawn again. Letting go of what lies beyond the area's reach
+  // says nothing of whether it is still there.
   if (asOf) {
     await q.query(
       `update source_entities s set absent_as_of = greatest(s.absent_as_of, $5)
-        where s.source_id = 'osm' and s.kind in ('venue', 'parking') and s.deleted_at is null
+        where s.source_id = 'osm' and s.kind in ('venue', 'parking')
           and not (s.external_id = any($1::text[]))
           and (s.id = any($6::uuid[]) or ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4))`,
       [seen, extent.lon, extent.lat, extent.radiusM, asOf, releases.filter((r) => r.observed).map((r) => r.source_entity_id)],

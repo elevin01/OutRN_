@@ -107,8 +107,9 @@ is asked again, then refused with the mirror's name and the data's date: point `
 another mirror, or try later (`--max-data-age <days>` to accept older). In the database, an older
 snapshot never wins over a newer one: an element's older version leaves the newer one standing, a
 place a newer snapshot found missing (in any area, even while another still held it) is neither held
-nor brought back unless a newer version of it comes, and a snapshot older than the area's last
-withdraws nothing (`ingest osm` says so).
+nor brought back unless it was edited after that, a snapshot older than the area's last withdraws
+nothing (`ingest osm` says so), and a data time later than the snapshot could have been taken is
+treated as unknown.
 
 **Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
 overture --area <slug>` reads the Overture places near the area's venues straight from Overture's

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { migrate, testDatabaseAvailable, reset } from "@outrn/db";
+import { insertArea, migrate, testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { fromLocal, VENUE_FACTS_DOC_SQL } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
@@ -302,7 +302,7 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       expect((await record("node/990041"))?.live).toBe(false);
     });
 
-    it("a record withdrawn by newer data comes back only as a newer version of it", async () => {
+    it("a record withdrawn by newer data comes back only in newer data, or as an edit made since", async () => {
       const at = { lat: 40.7175, lon: -73.9865 };
       const bar = { type: "node", id: 990042, ...at, version: 5, tags: { name: "Probe Lantern Bar", amenity: "bar" } };
       await ingestOsmArea(db, { areaSlug: "les", fromFile: les([bar]) });
@@ -314,8 +314,11 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       expect((await record("node/990042"))?.live).toBe(false);
       const holders = await db.query(`select 1 from osm_area_records o join source_entities s on s.id = o.source_entity_id where s.external_id = 'node/990042'`);
       expect(holders.rowCount).toBe(0);
-      // Undeleted upstream (a new version), it is back, whatever the mirror.
-      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...bar, version: 6 }], at, "2026-09-19T00:00:00Z") });
+      // A higher version in that same lagging data was edited before the record went: still withdrawn.
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...bar, version: 6, timestamp: "2026-09-12T00:00:00Z" }], at, "2026-09-19T00:00:00Z") });
+      expect((await record("node/990042"))?.live).toBe(false);
+      // Undeleted upstream (a new version, edited after it went), it is back.
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([{ ...bar, version: 6, timestamp: "2026-09-27T00:00:00Z" }], at, "2026-09-28T00:00:00Z") });
       expect(await record("node/990042")).toEqual({ live: true, name: "Probe Lantern Bar", version: 6 });
     });
 
@@ -623,6 +626,66 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(await stale()).toBeGreaterThan(20);
     await migrate(db, undefined, { reapply: ["0018_venue_facts_doc.sql"] });
     expect(await stale()).toBe(0);
+  });
+  describe("data times and versions a mirror can get wrong", () => {
+    const at = { lat: 41.2, lon: -73.6 };
+    let areas = 0;
+    const area = async () => {
+      const slug = `aged-${++areas}`;
+      await insertArea(db, { slug, name: slug, lat: at.lat, lon: at.lon, radiusM: 1500, travelMode: "walk" });
+      return slug;
+    };
+    const snap = (elements: unknown[], base: string | null) => {
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "p53.json");
+      writeFileSync(path, JSON.stringify({ ...(base ? { osm3s: { timestamp_osm_base: base } } : {}), elements, outrn_extent: { ...at, radius_m: 20 } }));
+      return path;
+    };
+    const live = async (ext: string) => (await db.query<{ live: boolean }>(`select deleted_at is null as live from source_entities where external_id = $1`, [ext])).rows[0]?.live ?? null;
+
+    it("a lagging mirror's intermediate version (edited before the absence) does not bring a withdrawn record back", async () => {
+      const [a, c] = [await area(), await area()];
+      const el = { type: "node", id: 990532, ...at, version: 5, timestamp: "2026-09-01T00:00:00Z", tags: { name: "Probe53 Kiosk Two", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([el], "2026-09-10T00:00:00Z") });
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([], "2026-09-26T00:00:00Z") });
+      expect(await live("node/990532")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([{ ...el, version: 6, timestamp: "2026-09-15T00:00:00Z" }], "2026-09-20T00:00:00Z") });
+      expect(await live("node/990532")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([{ ...el, version: 7, timestamp: "2026-09-27T00:00:00Z" }], "2026-09-28T00:00:00Z") });
+      expect(await live("node/990532")).toBe(true);
+    });
+
+    it("a snapshot dated in the future does not stop the area's later snapshots from withdrawing", async () => {
+      const d = await area();
+      const el = { type: "node", id: 990533, ...at, version: 1, tags: { name: "Probe53 Kiosk Three", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2099-01-01T00:00:00Z") });
+      const s = await ingestOsmArea(db, { areaSlug: d, fromFile: snap([], "2026-09-30T00:00:00Z") });
+      expect(s.behindOsmBase).toBeNull();
+      expect(await live("node/990533")).toBe(false);
+    });
+
+    it("a record withdrawn before 0023 takes the time of the next snapshot that sees it gone, and older data then can't bring it back", async () => {
+      const [a, c] = [await area(), await area()];
+      const el = { type: "node", id: 990535, ...at, version: 5, tags: { name: "Probe53 Kiosk Five", amenity: "cafe" } };
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([el], "2026-09-10T00:00:00Z") });
+      // As 0023 leaves it: withdrawn, no time it was found gone, held by no one.
+      await db.query(`update source_entities set deleted_at = now(), absent_as_of = null where external_id = 'node/990535'`);
+      await db.query(`delete from osm_area_records o using source_entities s where s.id = o.source_entity_id and s.external_id = 'node/990535'`);
+      await ingestOsmArea(db, { areaSlug: a, fromFile: snap([], "2026-09-26T00:00:00Z") });
+      expect((await db.query<{ absent_as_of: Date | null }>(`select absent_as_of from source_entities where external_id = 'node/990535'`)).rows[0]!.absent_as_of?.toISOString()).toBe("2026-09-26T00:00:00.000Z");
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([el], "2026-09-20T00:00:00Z") });
+      expect(await live("node/990535")).toBe(false);
+      await ingestOsmArea(db, { areaSlug: c, fromFile: snap([el], "2026-09-27T00:00:00Z") });
+      expect(await live("node/990535")).toBe(true);
+    });
+
+    it("an element version that is not a small whole number does not fail the next run", async () => {
+      const d = await area();
+      for (const version of [3_000_000_000, 1.5]) {
+        const el = { type: "node", id: 990534, ...at, version, tags: { name: "Probe53 Kiosk Four", amenity: "cafe" } };
+        await ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2026-09-30T00:00:00Z") });
+        await expect(ingestOsmArea(db, { areaSlug: d, fromFile: snap([el], "2026-09-30T00:00:00Z") })).resolves.toBeTruthy();
+      }
+    });
   });
 });
 
