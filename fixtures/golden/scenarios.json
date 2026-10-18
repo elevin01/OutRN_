@@ -2156,10 +2156,23 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 90,
+   "eligible": 91,
    "top": [
     {
      "rank": 1,
+     "name": "Hunt's Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Yonkers Public Library Grinton I. Will Branch",
      "category": "library",
      "status": "ready",
@@ -2173,7 +2186,7 @@
      "caveats": []
     },
     {
-     "rank": 2,
+     "rank": 3,
      "name": "Slave To the Grind",
      "category": "cafe",
      "status": "ready",
@@ -2181,20 +2194,6 @@
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "State Line Lookout",
-     "category": "viewpoint",
-     "status": "ready",
-     "reasons": [
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "SUNSET_WINDOW"
      ],
      "caveats": []
     },
@@ -2212,6 +2211,20 @@
     },
     {
      "rank": 5,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
      "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
@@ -2221,18 +2234,6 @@
       "DAWN_TO_DUSK",
       "FREE",
       "SUNSET_WINDOW"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Häagen-Dazs",
-     "category": "dessert",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
      ],
      "caveats": []
     }

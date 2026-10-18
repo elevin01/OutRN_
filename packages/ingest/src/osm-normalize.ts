@@ -427,7 +427,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   }
 
   if (hours && hours !== "off" && hours !== "closed") {
-    const { oh, error } = parseOsmHours(hours, rec.point.lat, rec.point.lon);
+    const { oh, error } = parseOsmHours(hours);
     if (oh) {
       const edited = hoursConfidence(rec.sourceUpdatedAt, now);
       if (hoursCheckedAt) {
@@ -439,7 +439,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // Kitchen hours: when food is served, last orders at the close. Only a parseable rule counts.
   const kitchen = t["opening_hours:kitchen"]?.trim();
   if (kitchen) {
-    const { oh } = parseOsmHours(kitchen, rec.point.lat, rec.point.lon);
+    const { oh } = parseOsmHours(kitchen);
     if (oh) pub("kitchen_hours", { osm: kitchen }, `opening_hours:kitchen=${kitchen}`, hoursConfidence(rec.sourceUpdatedAt, now));
   }
 
@@ -447,7 +447,7 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // and tables outside, whatever kind ("sidewalk", "garden", "roof"; "only" has no seats inside).
   if (category && CUISINE_CATEGORIES.has(category)) {
     const happy = t["happy_hours"]?.trim();
-    if (happy && parseOsmHours(happy, rec.point.lat, rec.point.lon).oh) pub("happy_hours", { osm: happy }, `happy_hours=${happy}`, hoursConfidence(rec.sourceUpdatedAt, now));
+    if (happy && parseOsmHours(happy).oh) pub("happy_hours", { osm: happy }, `happy_hours=${happy}`, hoursConfidence(rec.sourceUpdatedAt, now));
     const seats = seatingOf(t);
     if (seats.outside) pub("outdoor_seating", { value: seats.outside }, seats.evidence!, 0.7);
     // What it serves for diets: the diet:* tags when a mapper gave any (they say more than a name;
