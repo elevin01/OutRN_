@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { destinationMaxTravel, haversineMetres, matchKey, maxReachMetres, parkingBufferAt, type Category, type DestinationKind, type FactInput, type LatLon } from "@outrn/core";
+import { acrossTheSound, destinationMaxTravel, haversineMetres, matchKey, maxReachMetres, parkingBufferAt, type Category, type DestinationKind, type FactInput, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { createIfNew } from "@outrn/identity";
@@ -95,30 +95,6 @@ const MEMBERS_ONLY: ReadonlySet<string> = new Set(["greenbrook sanctuary"]);
 const NAMES_A_PART = /\s[-–—]|[-–—]\s/;
 /** Gated records need this much confidence that the place exists as described. */
 export const DESTINATION_CONFIDENCE = 0.9;
-
-/**
- * Across water from the mainland the search starts on: Long Island's north shore is minutes away as
- * the crow flies from New Rochelle and an hour by road. Straight-line travel cannot see the Sound.
- * East of Throgs Neck, south of the Sound's middle (or 40.905, whichever is farther north): the north
- * shore runs north of 40.9 from Oyster Bay on (Caumsett, Eatons Neck, Fort Salonga), while the
- * Westchester and Connecticut shore stays north of the line.
- */
-const SOUND_LINE: readonly (readonly [lon: number, lat: number])[] = [
-  [-73.775, 40.85], [-73.7, 40.9], [-73.6, 40.94], [-73.5, 40.97], [-73.4, 41.01], [-73.3, 41.03], [-73.1, 41.07], [-72.8, 41.1], [-72.3, 41.22], [-71.8, 41.3],
-];
-function acrossTheSound(p: LatLon): boolean {
-  const [first, last] = [SOUND_LINE[0]!, SOUND_LINE[SOUND_LINE.length - 1]!];
-  if (p.lon < first[0] || p.lon > last[0] || p.lat < 40.5) return false;
-  let line = first[1];
-  for (let i = 1; i < SOUND_LINE.length; i++) {
-    const [[x0, y0], [x1, y1]] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
-    if (p.lon <= x1) {
-      line = y0 + ((p.lon - x0) / (x1 - x0)) * (y1 - y0);
-      break;
-    }
-  }
-  return p.lat <= Math.max(40.905, line);
-}
 
 /** Words that say what kind of place it is, not which one: "park", "preserve", "the". */
 const KIND_WORDS = new Set([

@@ -1,47 +1,51 @@
 {
   "id": "00000000-0000-4000-8000-00000000001a",
-  "name": "Forsyth Library",
+  "name": "Broome Kitchen",
   "category": {
-    "id": "library",
-    "label": "Library"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.93001,
-    "lon": -73.8441
+    "lat": 40.932019,
+    "lon": -73.846175
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
-    "closesAt": null,
+    "state": "open",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": null
+    "summary": "Open now until 11pm"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.61,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -59,12 +63,35 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Mexican",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -80,20 +107,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "No",
       "detail": null,
       "provenance": {
         "sources": [
@@ -102,15 +129,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
+        "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -128,38 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Orchard Street Lot",
-    "kind": "lot",
+    "name": "Rivington Garage",
+    "kind": "garage",
     "fee": "paid",
-    "openingHours": "Mo-Su 06:00-24:00",
+    "openingHours": null,
     "location": {
-      "lat": 40.9296,
-      "lon": -73.8434
+      "lat": 40.9325,
+      "lon": -73.8458
     },
-    "distanceMetres": 74,
+    "distanceMetres": 62,
     "walkMinutes": 2,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-    "text": "Orchard Street Lot (paid), ~2 min walk"
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
+    "text": "Rivington Garage (paid), ~2 min walk"
   },
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 5589"
+    "websiteUrl": "https://broomekitchen.example/",
+    "phone": "+1 212 555 7228"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
     },
     "links": []
   },

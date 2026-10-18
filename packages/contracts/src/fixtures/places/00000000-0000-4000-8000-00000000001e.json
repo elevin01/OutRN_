@@ -1,54 +1,51 @@
 {
   "id": "00000000-0000-4000-8000-00000000001e",
-  "name": "Hester Bar",
+  "name": "Clinton Norfolk Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.727329,
-    "lon": -73.986761
+    "lat": 40.929098,
+    "lon": -73.843087
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T05:00:00.000Z",
+    "closesAt": "2026-10-04T03:30:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 1am"
+    "summary": "Open now until 11:30pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 17:00-01:00",
-      "detail": "Open now until 1am",
+      "value": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+      "detail": "Open now until 11:30pm",
       "provenance": {
         "sources": [
           {
-            "id": "founder",
-            "label": "OutRN"
+            "id": "osm",
+            "label": "OpenStreetMap"
           }
         ],
         "evidence": "published",
-        "confidence": 0.63,
-        "verifiedAt": "2026-05-26T16:00:00.000Z",
-        "sourceUpdatedAt": "2026-05-26T16:00:00.000Z",
-        "retrievedAt": "2026-05-26T16:00:00.000Z",
-        "dueForRecheck": true,
-        "conflict": true,
-        "freshness": "confirmed May 26 · due for recheck",
-        "summary": "OutRN · confirmed May 26 · due for recheck · published"
+        "confidence": 0.562,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -66,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     },
     {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Mexican",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,15 +83,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.5,
+        "evidence": "published",
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -110,14 +107,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     },
     {
@@ -135,12 +132,35 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · published"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
       }
     },
     {
@@ -158,25 +178,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-09-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-10-30T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Sep 2026",
-        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
+        "freshness": "last edited in OSM Oct 2025",
+        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
       }
     }
   ],
-  "parkingNearby": null,
+  "parkingNearby": {
+    "name": "Orchard Street Lot",
+    "kind": "lot",
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
+    "location": {
+      "lat": 40.9296,
+      "lon": -73.8434
+    },
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
+  },
   "contact": {
-    "websiteUrl": "https://hesterbar.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 6566"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929098%2C-73.843087&travelmode=driving"
     },
     "links": []
   },

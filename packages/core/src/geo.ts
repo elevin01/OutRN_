@@ -16,6 +16,84 @@ export function haversineMetres(a: LatLon, b: LatLon): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/**
+ * The middle of Long Island Sound, west to east from off Throgs Neck: the line between the
+ * Westchester and Connecticut shore to the north and Long Island's north shore to the south.
+ */
+const SOUND_LINE: readonly (readonly [lon: number, lat: number])[] = [
+  [-73.775, 40.85], [-73.7, 40.9], [-73.6, 40.94], [-73.5, 40.97], [-73.4, 41.01], [-73.3, 41.03], [-73.1, 41.07], [-72.8, 41.1], [-72.3, 41.22], [-71.8, 41.3],
+];
+
+/**
+ * Whether a place counts as across the Sound for the destinations job, which leaves those out:
+ * Long Island's north shore is minutes away as the crow flies from New Rochelle and an hour by road.
+ * South of the Sound's middle, or of 40.905 (whichever is farther north), east of Throgs Neck: a
+ * margin that leaves out some of the mainland's own shore too (New Rochelle's Davenport Neck), so it
+ * is a filter on what is added, not a test of which shore a place is on (see tripMetres).
+ */
+export function acrossTheSound(p: LatLon): boolean {
+  const [first, last] = [SOUND_LINE[0]!, SOUND_LINE[SOUND_LINE.length - 1]!];
+  if (p.lon < first[0] || p.lon > last[0] || p.lat < 40.5) return false;
+  let line = first[1];
+  for (let i = 1; i < SOUND_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
+    if (p.lon <= x1) {
+      line = y0 + ((p.lon - x0) / (x1 - x0)) * (y1 - y0);
+      break;
+    }
+  }
+  return p.lat <= Math.max(40.905, line);
+}
+
+/** Where a trip across the Sound crosses it: the Throgs Neck Bridge, the crossing nearest the mainland we serve. */
+const THROGS_NECK: LatLon = { lat: 40.8005, lon: -73.7929 };
+
+/**
+ * The Sound's middle as a trip crosses it: from the bridge, between City Island and Fort Totten, then
+ * the line above. West to east, one latitude for each longitude.
+ */
+const CROSSING_LINE: readonly (readonly [lon: number, lat: number])[] = [[THROGS_NECK.lon, THROGS_NECK.lat], ...SOUND_LINE];
+
+/** The crossing line's latitude at a longitude within it. */
+function crossingLat(lon: number): number {
+  for (let i = 1; i < CROSSING_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [CROSSING_LINE[i - 1]!, CROSSING_LINE[i]!];
+    if (lon <= x1) return y0 + ((lon - x0) / (x1 - x0)) * (y1 - y0);
+  }
+  return CROSSING_LINE[CROSSING_LINE.length - 1]![1];
+}
+
+/**
+ * Whether the straight line between two places crosses the middle of the Sound: one on each shore,
+ * east of the Throgs Neck Bridge. Two places on one shore never do, however near the water (New
+ * Rochelle's center and its Davenport Neck, City Island and Pelham Bay), and neither do two in Queens.
+ * Over the longitudes the trip and the line share, the trip is north of the line, then south of it
+ * (or the other way): both are straight between the line's vertices and the ends of that stretch, so
+ * the side at those points says it, a trip through a vertex included. Touching the line is not crossing.
+ */
+export function crossesTheSound(a: LatLon, b: LatLon): boolean {
+  const [west, east] = a.lon <= b.lon ? [a, b] : [b, a];
+  const from = Math.max(west.lon, CROSSING_LINE[0]![0]);
+  const to = Math.min(east.lon, CROSSING_LINE[CROSSING_LINE.length - 1]![0]);
+  if (!(from <= to)) return false;
+  // Due north or south: the two ends are the whole of it.
+  if (west.lon === east.lon) return Math.sign(west.lat - crossingLat(from)) * Math.sign(east.lat - crossingLat(from)) < 0;
+  const tripLat = (lon: number) => west.lat + ((lon - west.lon) / (east.lon - west.lon)) * (east.lat - west.lat);
+  const at = [from, ...CROSSING_LINE.map(([lon]) => lon).filter((lon) => lon > from && lon < to), to];
+  const sides = new Set(at.map((lon) => Math.sign(tripLat(lon) - crossingLat(lon))));
+  return sides.has(1) && sides.has(-1);
+}
+
+/**
+ * The straight-line distance a trip covers: as the crow flies, or, when that line crosses the
+ * Sound, to the bridge and on from it. Never shorter than the straight line, so a search radius
+ * made from it still holds.
+ */
+export function tripMetres(from: LatLon, to: LatLon): number {
+  if (!crossesTheSound(from, to)) return haversineMetres(from, to);
+  return haversineMetres(from, THROGS_NECK) + haversineMetres(THROGS_NECK, to);
+}
+
 export type TravelMode = "walk" | "drive" | "transit";
 
 /** Default one-way travel limits by mode, minutes. A request may set its own. */
@@ -83,13 +161,13 @@ export interface TravelEstimate {
 }
 
 /**
- * v1 travel estimate. Straight-line distance × a detour factor at a speed by mode (a drive at town
- * speed for its first few km, then road speed), plus a fixed buffer for the mode (finding parking,
- * waiting for a light).
+ * v1 travel estimate. Straight-line distance (round by the bridge across the Sound, see tripMetres)
+ * × a detour factor at a speed by mode (a drive at town speed for its first few km, then road speed),
+ * plus a fixed buffer for the mode (finding parking, waiting for a light).
  * Labeled as an estimate everywhere it is shown. Routed times come later via an adapter.
  */
 export function estimateTravel(from: LatLon, to: LatLon, mode: TravelMode, opts: { hourLocal?: number; parkingBufferMinutes?: number } = {}): TravelEstimate {
-  const d = haversineMetres(from, to);
+  const d = tripMetres(from, to);
   switch (mode) {
     case "walk": {
       const minutes = Math.ceil((d * WALK_DETOUR) / WALK_M_PER_MIN);

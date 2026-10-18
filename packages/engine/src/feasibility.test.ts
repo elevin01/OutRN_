@@ -5,7 +5,7 @@ import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
-import { APPEAL_WEIGHTS, merit, suitsCompany } from "./score.js";
+import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
@@ -629,6 +629,86 @@ describe("appeal signals", () => {
     expect(late.ordered.at(-1)!.candidate.id).toBe("park");
     // By day the same park is a good idea and variety brings it forward.
     expect(recommend([park, ...bars], ctx("2026-10-03 17:00", 120, { sunset }), POLICIES).items.map((e) => e.candidate.id)).toContain("park");
+  });
+
+  it("a Ready park after dark ranks with Check first by merit, not ahead of every bar worth checking (Wednesday 10:30pm in Westchester)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: null });
+    const late = recommend([park, bar], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    const p = late.all.find((e) => e.candidate.id === "park")!;
+    // Its card still says Ready (it is open); where it ranks is another matter.
+    expect(p.class).toBe("ready");
+    expect(p.dayPart).toBe("off");
+    expect(standing(p)).toBe("check_first");
+    expect(late.ordered.map((e) => e.candidate.id)).toEqual(["bar", "park"]);
+    // By day it is a good idea and leads on being open.
+    expect(recommend([park, bar], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["park", "bar"]);
+  });
+
+  it("after dark, a family's bar or 21+ casino never rises past the park (the demotion lifts no adult place for a minor)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const casino = venue({ id: "casino", category: "activity", subtype: "casino", hours: "24/7" });
+    casino.facts.age_limit = { value: { minAge: 21 }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    for (const party of [{ company: "family" as const }, { youngestAge: 10 }]) {
+      const late = recommend([bar, casino, park], ctx("2026-10-03 22:30", 120, { sunset, ...party }), POLICIES);
+      expect(late.ordered.map((e) => e.candidate.id), JSON.stringify(party)).toEqual(["park", "bar", "casino"]);
+    }
+    // Adults out late: the bar comes before the dark lawn, as above.
+    expect(recommend([bar, park], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["bar", "park"]);
+    // A love is kept on the first page, but not one a family may not be let into (16+, ages unknown).
+    const arcade = venue({ id: "arcade", category: "activity", subtype: "amusement_arcade", hours: "Mo-Su 10:00-22:00" });
+    arcade.facts.age_limit = { value: { minAge: 16 }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    const others = ["a", "b", "c", "d"].map((id) => venue({ id, category: "bookshop", hours: "Mo-Su 09:00-22:00" }));
+    const day = recommend([arcade, ...others], ctx("2026-10-03 14:00", 120, { sunset, company: "family", taste: [["games", 1]] }), POLICIES);
+    const a = day.all.find((e) => e.candidate.id === "arcade")!;
+    expect(a.unresolved).toContain("AGE_LIMIT_UNCERTAIN");
+    expect(day.ordered.slice(0, 3).map((e) => e.candidate.id)).not.toContain("arcade");
+  });
+
+  it("no sunset window once a park or waterfront is dark for the day; a viewpoint keeps its twenty minutes after (PR #56 re-review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const at = (c: Candidate, clock: string) => evaluateAll([c], ctx(clock, 120, { sunset }), POLICIES)[0]!;
+    const waterfront = venue({ id: "water", category: "waterfront", hours: "24/7" });
+    expect(at(waterfront, "2026-10-03 18:20").reasons).toContain("SUNSET_WINDOW");
+    const dark = at(waterfront, "2026-10-03 18:45");
+    expect(dark.dayPart).toBe("off");
+    expect(dark.reasons).not.toContain("SUNSET_WINDOW");
+    expect(at(venue({ id: "view", category: "viewpoint", hours: "24/7" }), "2026-10-03 18:42").reasons).toContain("SUNSET_WINDOW");
+  });
+
+  it("a park likely open after dark ranks with Check first too: losing its hours never lifts it past a bar (PR #56 review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const operating = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status: "operating" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const unknownPark = operating(venue({ id: "unknown-park", category: "park", hours: null }));
+    const knownPark = venue({ id: "known-park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: null });
+    const peers = Array.from({ length: 8 }, (_, i) => venue({ id: `peer-${i}`, category: "park", hours: "24/7", point: FAR }));
+    const late = recommend([unknownPark, knownPark, bar, ...peers], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    const u = late.all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(u.class).toBe("check_first");
+    expect(u.likelyOpen).toBeDefined();
+    expect(u.dayPart).toBe("off");
+    expect(standing(u)).toBe("check_first");
+    expect(standing(late.all.find((e) => e.candidate.id === "known-park")!)).toBe("check_first");
+    const order = late.ordered.map((e) => e.candidate.id).filter((id) => !id.startsWith("peer-"));
+    expect(order[0]).toBe("bar");
+    // By day the likely-open park leads with the Ready ones; an indoor café at 9pm keeps its standing.
+    const day = recommend([unknownPark, bar, ...peers], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(standing(day)).toBe("ready");
+    const cafe = recommend([venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-23:00" })], ctx("2026-10-03 21:00", 120, { sunset }), POLICIES).all[0]!;
+    expect(cafe.dayPart).toBe("off");
+    expect(standing(cafe)).toBe("ready");
+  });
+
+  it("an everyday drive to the mainland's own shore stays in reach: a café on New Rochelle's Davenport Neck (PR #56 review)", () => {
+    const newRochelle = { lat: 40.9115, lon: -73.783 };
+    const cafe = venue({ id: "shore-cafe", category: "cafe", hours: "24/7", point: { lat: 40.905, lon: -73.772 } });
+    const e = one(cafe, ctx("2026-10-03 12:00", 180, { origin: newRochelle, mode: "drive" }));
+    expect(e.class).toBe("ready");
+    expect(e.timing!.travel.minutes).toBeLessThanOrEqual(12);
   });
 
   it("travel counts against the time the user has: the same walk weighs more in an hour than in an evening", () => {
@@ -2057,6 +2137,33 @@ describe("destinations worth the drive", () => {
     const cands = [venue({ id: "pocket", category: "park", hours: null, point: NEAR }), venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-22:00", point: NEAR }), preserve];
     const s = recommend(cands, drive("2026-10-03 13:00", 240), POLICIES);
     expect(s.items[0]!.candidate.id).toBe("pre");
+  });
+
+  it("past the everyday reach, a destination with one like it within reach pays back its bonus: the near one leads", () => {
+    // ~10 km north: about 20 minutes by car, inside the everyday 30. The far one is ~43 minutes.
+    const CLOSE = { lat: ORIGIN.lat + 0.09, lon: ORIGIN.lon };
+    const far = { ...destination({ id: "far", name: "Inwood Hill Park" }, { kind: "nature", note: "a natural forest above a salt marsh" }), hasLandmarkId: true };
+    const near = destination({ id: "near", name: "Kensico Dam Plaza", point: CLOSE }, { kind: "park", note: "a grand stone dam with a long lawn" });
+    const x = drive("2026-10-03 13:00", 240);
+    const all = evaluateAll([far, near], x, POLICIES);
+    const [f, n] = [all.find((e) => e.candidate.id === "far")!, all.find((e) => e.candidate.id === "near")!];
+    expect(n.detour).toBeUndefined();
+    expect(f.detour!.minutes).toBe(f.timing!.travel.minutes - 30);
+    // 13 minutes past: two thirds of the 0.25 a destination earns in a four-hour window.
+    expect(f.detour!.appeal).toBeCloseTo((Math.min(1, f.detour!.minutes / 20)) * (APPEAL_WEIGHTS.destination + APPEAL_WEIGHTS.destinationLongWindow + APPEAL_WEIGHTS.destinationNamed), 2);
+    // The landmark would have led without it; with it, the dam twenty minutes away does.
+    expect(merit({ ...f, detour: undefined })).toBeGreaterThan(merit(n));
+    expect(merit(f)).toBeLessThan(merit(n));
+    expect(recommend([far, near], x, POLICIES).items.map((e) => e.candidate.id)).toEqual(["near", "far"]);
+    // Alone, or with nothing like it near (a lookout is not a walk), or with only a place to check, it keeps its bonus.
+    expect(evaluateAll([far], x, POLICIES)[0]!.detour).toBeUndefined();
+    const lookout = destination({ id: "look", category: "viewpoint", point: CLOSE }, { kind: "viewpoint", note: "views over the river" });
+    expect(evaluateAll([far, lookout], x, POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
+    const garden = destination({ id: "garden", category: "garden", point: CLOSE }, { kind: "garden", note: "walled gardens" });
+    expect(evaluateAll([far, garden], x, POLICIES).find((e) => e.candidate.id === "garden")!.class).toBe("check_first");
+    expect(evaluateAll([far, garden], x, POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
+    // A request's own travel limit is every place's reach.
+    expect(evaluateAll([far, near], drive("2026-10-03 13:00", 240, { maxTravelMinutes: 60 }), POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
   });
 
   it("a lookout at sunset puts the sunset in the plan", () => {
