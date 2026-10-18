@@ -1,6 +1,6 @@
 import { ACTIVITY_OF_CATEGORY, cuisineGroups, ownValue } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
-import { compareEvaluations, merit, standing } from "./score.js";
+import { compareEvaluations, hasAgeDoubt, merit, standing } from "./score.js";
 import { TASTE } from "./taste.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
@@ -77,7 +77,8 @@ export const FIRST_PAGE = 3;
 function keepLovedOnFirstPage(ordered: Evaluation[]): void {
   const loved = (e: Evaluation) => (e.scores.taste ?? 0) >= TASTE.loved;
   if (ordered.length <= FIRST_PAGE || ordered.slice(0, FIRST_PAGE).some(loved)) return;
-  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off");
+  // Nor one the party may not be let into (a 16+ arcade, children's ages unknown): a love does not lift that.
+  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off" && !hasAgeDoubt(e));
   if (i < 0) return;
   const [e] = ordered.splice(i, 1);
   ordered.splice(FIRST_PAGE - 1, 0, e!);
@@ -107,6 +108,9 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   const likedIn = new Set(eligible.filter(likes).map(standing));
   const admissible = (e: Evaluation, pass: Pass): boolean => {
     if ((pass.cls !== "any" && standing(e) !== pass.cls) || taken.has(e)) return false;
+    // A doubt the party may go in at all (a bar with a child along) waits for the last pass: no
+    // variety, no class pass, no demotion of the rest puts it before what they can surely do.
+    if (pass.cls !== "any" && hasAgeDoubt(e)) return false;
     const parent = e.candidate.parentVenueId;
     if (usedVenues.has(e.candidate.venueId)) return false;
     if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;

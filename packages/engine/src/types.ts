@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, Interest, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.7.0";
-export const WEIGHTS_VERSION = "2026-10-18.2";
+export const WEIGHTS_VERSION = "2026-10-18.3";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";

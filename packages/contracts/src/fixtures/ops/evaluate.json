@@ -5,7 +5,7 @@
   "candidateCount": 80,
   "durationMs": 42,
   "engineVersion": "0.7.0",
-  "weightsVersion": "2026-10-18.2",
+  "weightsVersion": "2026-10-18.3",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
     "mode": "walk",
@@ -832,8 +832,7 @@
       "excludedBy": null,
       "reasons": [
         "FREE",
-        "ENOUGH_TIME",
-        "SUNSET_WINDOW"
+        "ENOUGH_TIME"
       ],
       "unresolved": [
         "HOURS_UNKNOWN"
@@ -843,7 +842,7 @@
       "scores": {
         "evidence": 0.215,
         "fit": 0.603,
-        "appeal": 0.433,
+        "appeal": 0.283,
         "novelty": 1,
         "taste": null
       },
@@ -861,8 +860,7 @@
         "OPEN_LATE",
         "FREE",
         "SHORT_TRAVEL",
-        "ENOUGH_TIME",
-        "SUNSET_WINDOW"
+        "ENOUGH_TIME"
       ],
       "unresolved": [],
       "travelMinutes": 9,
@@ -870,7 +868,7 @@
       "scores": {
         "evidence": 0.558,
         "fit": 0.722,
-        "appeal": 0.467,
+        "appeal": 0.317,
         "novelty": 1,
         "taste": null
       },
@@ -887,8 +885,7 @@
       "reasons": [
         "FREE",
         "SHORT_TRAVEL",
-        "ENOUGH_TIME",
-        "SUNSET_WINDOW"
+        "ENOUGH_TIME"
       ],
       "unresolved": [
         "HOURS_UNKNOWN"
@@ -898,7 +895,7 @@
       "scores": {
         "evidence": 0.26,
         "fit": 0.708,
-        "appeal": 0.467,
+        "appeal": 0.317,
         "novelty": 1,
         "taste": null
       },
@@ -915,8 +912,7 @@
       "reasons": [
         "OPEN_LATE",
         "FREE",
-        "ENOUGH_TIME",
-        "SUNSET_WINDOW"
+        "ENOUGH_TIME"
       ],
       "unresolved": [],
       "travelMinutes": 14,
@@ -924,7 +920,7 @@
       "scores": {
         "evidence": 0.46,
         "fit": 0.655,
-        "appeal": 0.5,
+        "appeal": 0.35,
         "novelty": 1,
         "taste": null
       },
@@ -1671,8 +1667,7 @@
         "FREE",
         "SHORT_TRAVEL",
         "ENOUGH_TIME",
-        "LANDMARK",
-        "SUNSET_WINDOW"
+        "LANDMARK"
       ],
       "unresolved": [],
       "travelMinutes": 8,
@@ -1680,7 +1675,7 @@
       "scores": {
         "evidence": 0.536,
         "fit": 0.735,
-        "appeal": 0.567,
+        "appeal": 0.417,
         "novelty": 1,
         "taste": null
       },
