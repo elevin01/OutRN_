@@ -4,7 +4,7 @@
   {
    "id": "les-sat-morning",
    "title": "LES, Saturday 10am, 3 hours, walking",
-   "eligible": 1984,
+   "eligible": 1983,
    "top": [
     {
      "rank": 1,
@@ -85,7 +85,7 @@
   {
    "id": "les-sat-afternoon",
    "title": "LES, Saturday 2pm, 2 hours",
-   "eligible": 2011,
+   "eligible": 2010,
    "top": [
     {
      "rank": 1,
@@ -168,7 +168,7 @@
   {
    "id": "les-sat-afternoon-free",
    "title": "LES, Saturday 2pm, 2 hours, free only",
-   "eligible": 387,
+   "eligible": 386,
    "top": [
     {
      "rank": 1,
@@ -254,7 +254,7 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 2050,
+   "eligible": 2049,
    "top": [
     {
      "rank": 1,
@@ -334,7 +334,7 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 1522,
+   "eligible": 1521,
    "top": [
     {
      "rank": 1,
@@ -491,7 +491,7 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 2015,
+   "eligible": 2014,
    "top": [
     {
      "rank": 1,
@@ -976,7 +976,7 @@
   {
    "id": "les-sat-long",
    "title": "LES, Saturday noon, 5 hours",
-   "eligible": 2092,
+   "eligible": 2091,
    "top": [
     {
      "rank": 1,
@@ -1626,7 +1626,7 @@
   {
    "id": "les-sat-evening-music-lover",
    "title": "LES, Saturday 6:30pm, 3 hours, loves live music",
-   "eligible": 2050,
+   "eligible": 2049,
    "top": [
     {
      "rank": 1,
@@ -1709,7 +1709,7 @@
   {
    "id": "les-sat-afternoon-art-no-bars",
    "title": "LES, Saturday 2pm, 2 hours, loves art, skips bars",
-   "eligible": 2011,
+   "eligible": 2010,
    "top": [
     {
      "rank": 1,
@@ -1795,7 +1795,7 @@
   {
    "id": "les-sat-evening-family-loves-drinks",
    "title": "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks",
-   "eligible": 1960,
+   "eligible": 1959,
    "top": [
     {
      "rank": 1,
