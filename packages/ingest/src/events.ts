@@ -53,6 +53,8 @@ const EventInput = z
     url: z.string().max(2000).optional(),
     /** What it is, as interest ids (live_music, festivals…). */
     kinds: z.array(z.string()).min(1).max(4).optional(),
+    /** Made for children, as the source says ("Best for Kids"). */
+    forKids: z.literal(true).optional(),
     /** Minimum age to get in, as the event states it. */
     minAge: z.number().int().min(0).max(25).optional(),
     admission: z.enum(["walk_in", "ticket", "reservation"]).optional(),
@@ -145,6 +147,7 @@ function eventFacts(c: Checked, occurrenceId: string, atSite: boolean, sourceId:
   });
   const out: FactInput[] = [];
   if (c.kinds.length) out.push(pub("event_kind", { interests: c.kinds }, 0.8));
+  if (e.forKids) out.push(pub("audience", { kids: true }, 0.8));
   if (c.url) out.push(pub("website", { value: c.url }, 0.8));
   if (e.admission) out.push(pub("admission", { requirement: e.admission }, 0.8));
   if (e.price) out.push(pub("price", "free" in e.price ? { currency: "USD", free: true } : { currency: "USD", min: e.price.min, max: e.price.max ?? e.price.min }, 0.8));
@@ -208,7 +211,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
           const site = await eventSiteFor(tx, { sourceEntityId: se.rows[0]!.id, areaId: area.id, timezone: area.timezone, record: { name: e.place.name, category: "event_site", point, website: null, phone: null, housenumber: null, street: null, brand: null, xids: {} } });
           venueId = site.venueId;
           if (site.created) summary.sitesCreated++;
-          const siteFact = (attribute: FactInput["attribute"], value: unknown): FactInput => ({ subjectKind: "venue", subjectId: site.venueId, attribute, value, evidenceClass: "published", sourceId: source, evidence: `${source}: where "${e.title}" is held`, sourceUpdatedAt: now, fetchedAt: now, confidence: 0.8, lineageGroup: source, ingestionRunId: runId });
+          const siteFact = (attribute: FactInput["attribute"], value: unknown): FactInput => ({ subjectKind: "venue", subjectId: site.venueId, attribute, value, evidenceClass: "published", sourceId: source, evidence: `${source}: where its events are held`, sourceUpdatedAt: now, fetchedAt: now, confidence: 0.8, lineageGroup: source, ingestionRunId: runId });
           const w = await writeFacts(tx, [siteFact("name", { value: e.place.name }), siteFact("category", { value: "event_site" }), siteFact("business_status", { status: "operating" })]);
           if (w.rejected.length) throw new Error(`site facts rejected: ${w.rejected.map((r) => `${r.attribute}: ${r.reason}`).join("; ")}`);
         }

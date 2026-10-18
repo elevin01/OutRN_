@@ -67,8 +67,17 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
 checks their places against Overture Maps, switches those areas on, fetches their weather from the
-National Weather Service (optional: without it, plans ignore the weather, and it says so), and starts
-the API.
+National Weather Service and their NYC Parks events from NYC Open Data (both optional: without them,
+plans go without, and it says so), and starts the API.
+
+**NYC Parks events** (`pnpm outrn ingest nyc-parks --area <slug>`): the next two weeks of public
+events in the city's parks, refreshed daily by NYC Parks (about a thousand: classes, tours,
+festivals, film nights, concerts, Halloween parades). An area keeps the ones within its reach, each at
+a site of its own, as the listing says: its times, its page, its categories as interests ("Fall
+Festivals" is festivals), register first or walk in, full when registration has closed, cancelled
+when the title says so, free only when it says so, and made for children when it is "Best for
+Kids" (it leads for a family and sinks for grown-ups on their own). A walk-in event can be joined
+late and left when it's time to go, so a festival afternoon fits a two-hour window.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that

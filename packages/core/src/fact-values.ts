@@ -107,6 +107,7 @@ export const FACT_VALUE_SCHEMAS = {
   // One number, so it cannot contradict itself: 0 = no age limit, 16 = 16+, 21 = 21+.
   age_limit: z.object({ minAge: z.number().int().min(0).max(25) }).strict(),
   event_kind: z.object({ interests: z.array(z.string().refine(isInterest, "not an interest")).min(1).max(4) }).strict(),
+  audience: z.object({ kids: z.literal(true) }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),
