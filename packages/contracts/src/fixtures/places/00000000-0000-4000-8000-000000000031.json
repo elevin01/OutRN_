@@ -1,24 +1,24 @@
 {
-  "id": "00000000-0000-4000-8000-00000000002b",
-  "name": "Forsyth Kitchen",
+  "id": "00000000-0000-4000-8000-000000000031",
+  "name": "Delancey Playhouse",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "theatre",
+    "label": "Theatre"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.70705,
-    "lon": -73.993872
+    "lat": 40.714031,
+    "lon": -73.977359
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T02:00:00.000Z",
-    "opensAt": null,
-    "summary": "Open now until 10pm"
+    "state": "closed",
+    "closesAt": null,
+    "opensAt": "2026-10-03T23:00:00.000Z",
+    "summary": "Closed now · opens 7pm today"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:30-15:00,17:00-22:00",
-      "detail": "Open now until 10pm",
+      "value": "Tu-Su 19:00-22:30",
+      "detail": "Closed now · opens 7pm today",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.582,
+        "confidence": 0.528,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · published"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
       }
     },
     {
@@ -63,87 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Pizza",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.8,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · published"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.45,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "Yes",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · published"
-      }
-    },
-    {
-      "attribute": "indoor_outdoor",
-      "label": "Setting",
-      "value": "Mixed",
+      "value": "Ticket required",
       "detail": null,
       "provenance": {
         "sources": [
@@ -155,25 +86,71 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-02-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Feb 2026",
-        "summary": "OpenStreetMap · last edited in OSM Feb 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Limited access",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Indoor",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2025",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://forsythkitchen.example/",
+    "websiteUrl": "https://delanceyplayhouse.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=driving"
     },
     "links": []
   },

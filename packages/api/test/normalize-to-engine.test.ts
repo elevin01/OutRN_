@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fromLocal, type Attribute } from "@outrn/core";
-import { evaluateAll, type Candidate, type CategoryPolicy, type RequestContext } from "@outrn/engine";
+import { evaluateAll, suitsCompany, type Candidate, type CategoryPolicy, type RequestContext } from "@outrn/engine";
 import { normalizeOsm } from "@outrn/ingest";
 
 /**
@@ -40,5 +40,16 @@ describe("a university library, from its tags to a recommendation", () => {
 
   it("stays out when the record restricts it", () => {
     for (const access of ["private", "no", "members", "permit"]) expect(decide({ ...bobst, access }).excludedBy, access).toBe("MEMBERS_ONLY");
+  });
+});
+
+describe("a bar's style, from its tags to whether it suits a date", () => {
+  it("a pub named like a lounge is a pub, by its tag: no date's place, as a pub; a lounge with no tag is one", () => {
+    expect(candidate({ name: "The Velvet Lounge", amenity: "pub" }).facts.subtype).toMatchObject({ value: { value: "pub" }, evidenceClass: "published" });
+    expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "pub" }), "date")).toBe(false);
+    expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "bar" }), "date")).toBe(true);
+    expect(suitsCompany(candidate({ name: "The Velvet Lounge", amenity: "pub" }), "friends")).toBe(true);
+    // A pub that names the beer it pours is still a pub.
+    expect(suitsCompany(candidate({ name: "The Red Lion", amenity: "pub", brewery: "Krombacher" }), "date")).toBe(false);
   });
 });

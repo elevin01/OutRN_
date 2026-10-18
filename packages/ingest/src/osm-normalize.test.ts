@@ -101,6 +101,36 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "R", amenity: "restaurant" }), "subtype")).toBeUndefined();
   });
 
+  it("a bar carries its style: published from a tag that says it, estimated from its name, none when neither says", () => {
+    for (const [tags, style] of [
+      [{ name: "Francey Brady's", amenity: "pub" }, "pub"],
+      [{ name: "The Stadium", amenity: "bar", sport: "american_football" }, "sports_bar"],
+      [{ name: "1730", amenity: "bar", "drink:wine": "yes" }, "wine_bar"],
+      [{ name: "Ten Bells", amenity: "bar", bar: "wine" }, "wine_bar"],
+      [{ name: "Attaboy", amenity: "bar", "drink:cocktail": "yes" }, "cocktail_bar"],
+      [{ name: "Yonkers Brewing", amenity: "bar", craft: "brewery" }, "brewery"],
+    ] as const) {
+      expect(fact(rec(tags), "subtype"), tags.name).toMatchObject({ evidenceClass: "published", value: { value: style } });
+    }
+    for (const [name, style] of [["1730 Wine Bar and Eats", "wine_bar"], ["The Velvet Lounge", "cocktail_bar"], ["Sully's Sports Bar", "sports_bar"], ["Captain Lawrence Taproom", "brewery"], ["McCabe's Tavern", "pub"]] as const) {
+      expect(fact(rec({ name, amenity: "bar" }), "subtype"), name).toMatchObject({ evidenceClass: "estimate", confidence: 0.5, value: { value: style } });
+    }
+    expect(fact(rec({ name: "Whistling Rail", amenity: "bar" }), "subtype")).toBeUndefined();
+    // A tag decides over the name, whichever style the name suggests.
+    expect(fact(rec({ name: "The Velvet Lounge", amenity: "pub" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" } });
+    expect(fact(rec({ name: "The Wine Bar", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" } });
+    expect(fact(rec({ name: "Sully's Sports Bar", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "cocktail_bar" } });
+    // The deciding tag is the evidence, not the category's.
+    expect(fact(rec({ name: "Yonkers Brewing", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidence: "craft=brewery" });
+    expect(fact(rec({ name: "Taps", amenity: "bar", microbrewery: "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" }, evidence: "microbrewery=yes" });
+    // brewery=* names the beers poured, not a brewery on the premises; brewery=no says nothing either.
+    expect(fact(rec({ name: "The Red Lion", amenity: "pub", brewery: "Krombacher" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" }, evidence: "amenity=pub" });
+    expect(fact(rec({ name: "Whistling Rail", amenity: "bar", brewery: "no" }), "subtype")).toBeUndefined();
+    expect(fact(rec({ name: "Whistling Rail", amenity: "bar", sport: "no" }), "subtype")).toBeUndefined();
+    // Only a bar's: a wine shop's or a restaurant's name says nothing of a bar.
+    expect(fact(rec({ name: "Wine Palace", amenity: "restaurant" }), "subtype")).toBeUndefined();
+  });
+
   describe("survey dates (check_date)", () => {
     it("check_date:opening_hours dates the hours by the mapper's survey, not by the last edit", () => {
       // Edited this month (a name fix), hours surveyed three years ago: the survey is what the hours rest on.

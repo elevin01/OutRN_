@@ -5,7 +5,7 @@ import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
-import { APPEAL_WEIGHTS, merit } from "./score.js";
+import { APPEAL_WEIGHTS, merit, suitsCompany } from "./score.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
@@ -492,6 +492,28 @@ describe("selection: diversity and fewer than three", () => {
     // Without cuisines there is nothing to vary: merit order, as before.
     const plain = recommend(cands.map((c) => ({ ...c, facts: { ...c.facts, cuisine: undefined } })), x, POLICIES);
     expect(plain.items.map((e) => e.candidate.id)).toEqual(["it1", "it2", "it3"]);
+  });
+
+  it("on a date, the wine bar and the dinner come first: not the pub, the pizza counter or the casino; friends keep the pub", () => {
+    const style = (c: Candidate, value: string) => {
+      c.facts.subtype = { value: { value }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    const night = (company: "date" | "friends") => ctx("2026-10-23 19:30", 180, { company });
+    const ids = (cs: Candidate[], company: "date" | "friends") => recommend(cs, night(company), POLICIES).items.map((i) => i.candidate.id);
+    const pub = style(venue({ id: "pub", category: "bar", hours: "Mo-Su 11:00-02:00", point: NEAR }), "pub");
+    const wine = style(venue({ id: "wine", category: "bar", hours: "Mo-Su 16:00-24:00", point: NEAR }), "wine_bar");
+    expect(ids([pub, wine], "date")[0]).toBe("wine");
+    const pizza = venue({ id: "pizza", category: "restaurant", hours: "Mo-Su 11:00-23:00", point: NEAR, cuisine: ["pizza"] });
+    const trattoria = venue({ id: "trattoria", category: "restaurant", hours: "Mo-Su 17:00-23:00", point: NEAR, cuisine: ["italian"] });
+    expect(ids([pizza, trattoria], "date")[0]).toBe("trattoria");
+    expect(suitsCompany(pub, "date")).toBe(false);
+    expect(suitsCompany(style(venue({ id: "casino", category: "activity", point: NEAR }), "casino"), "date")).toBe(false);
+    // A place not known to be casual stays what its category says.
+    expect(suitsCompany(venue({ id: "plain", category: "bar", point: NEAR }), "date")).toBe(true);
+    expect(suitsCompany(venue({ id: "unknown", category: "restaurant", point: NEAR }), "date")).toBe(true);
+    // Friends: the pub is theirs.
+    expect(suitsCompany(pub, "friends")).toBe(true);
   });
 
   it("a much better place keeps its place: variety breaks near-ties, it doesn't bury the best option", () => {

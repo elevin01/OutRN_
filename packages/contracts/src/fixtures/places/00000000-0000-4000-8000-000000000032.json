@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000032",
-  "name": "Delancey Playhouse",
+  "name": "Broome Playhouse",
   "category": {
     "id": "theatre",
     "label": "Theatre"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.714031,
-    "lon": -73.977359
+    "lat": 40.727811,
+    "lon": -73.986647
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "closed",
+    "state": "unknown",
     "closesAt": null,
-    "opensAt": "2026-10-03T23:00:00.000Z",
-    "summary": "Closed now · opens 7pm today"
+    "opensAt": null,
+    "summary": null
   },
   "price": {
     "kind": "unknown"
@@ -28,24 +28,19 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Su 19:00-22:30",
-      "detail": "Closed now · opens 7pm today",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.531,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2025",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -61,14 +56,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2025",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -86,35 +81,12 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2025",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Limited access",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Apr 2025",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
@@ -132,25 +104,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-04-05T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2025",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://delanceyplayhouse.example/",
+    "websiteUrl": "https://broomeplayhouse.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.714031%2C-73.977359&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727811%2C-73.986647&travelmode=driving"
     },
     "links": []
   },

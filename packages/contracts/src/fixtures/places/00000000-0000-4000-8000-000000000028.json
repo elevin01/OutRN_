@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000028",
-  "name": "Attorney Pitt Kitchen",
+  "name": "Hester Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.718281,
-    "lon": -73.971661
+    "lat": 40.726295,
+    "lon": -73.981623
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": null
   },
   "price": {
     "kind": "unknown"
@@ -28,24 +28,19 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Su 12:00-23:00; Mo off",
-      "detail": "Open now until 11pm",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.591,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -63,12 +58,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
       }
     },
     {
@@ -86,18 +81,18 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -109,12 +104,12 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
       }
     },
     {
@@ -132,12 +127,35 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+      }
+    },
+    {
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
       }
     },
     {
@@ -155,25 +173,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://attorneypittkitchen.example/",
-    "phone": "+1 212 555 1242"
+    "websiteUrl": null,
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=driving"
     },
     "links": []
   },

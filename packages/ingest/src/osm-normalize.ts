@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.16";
+export const OSM_NORMALIZE_VERSION = "2026-10-18.17";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,6 +225,46 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
+
+/**
+ * What kind of bar it is, which the category alone cannot say and an evening turns on: a sports
+ * bar's big screens, a pub, a brewery's taproom, a wine or cocktail bar. A tag that says it decides
+ * (sport=*, drink:wine, drink:cocktail, craft=brewery or microbrewery=yes, amenity=pub), whatever the
+ * name, and is the evidence; only a bar no tag classifies is read by its name. brewery=* names the
+ * beers poured (brewery=Krombacher at a pub), not a brewery on the premises: only the old boolean
+ * brewery=yes says that. Null for a bar that says nothing more.
+ */
+export function barStyle(t: Record<string, string>): { style: string; tag: string | null } | null {
+  const tagged = barStyleFromTags(t);
+  if (tagged) return tagged;
+  const named = barStyleFromName(t["name"] ?? "");
+  return named ? { style: named, tag: null } : null;
+}
+
+function barStyleFromTags(t: Record<string, string>): { style: string; tag: string } | null {
+  const has = (key: string, ...values: string[]) => (t[key] !== undefined && values.includes(t[key]!) ? `${key}=${t[key]}` : null);
+  const sport = t["sport"] && t["sport"] !== "no" ? `sport=${t["sport"]}` : null;
+  if (sport) return { style: "sports_bar", tag: sport };
+  const wine = has("drink:wine", "yes", "served") ?? has("bar", "wine");
+  if (wine) return { style: "wine_bar", tag: wine };
+  const cocktail = has("drink:cocktail", "yes", "served") ?? has("cocktails", "yes") ?? has("bar", "cocktail");
+  if (cocktail) return { style: "cocktail_bar", tag: cocktail };
+  const brewery = has("craft", "brewery") ?? has("microbrewery", "yes") ?? has("brewery", "yes");
+  if (brewery) return { style: "brewery", tag: brewery };
+  const pub = has("amenity", "pub");
+  if (pub) return { style: "pub", tag: pub };
+  return null;
+}
+
+function barStyleFromName(raw: string): string | null {
+  const name = raw.toLowerCase();
+  if (/\bsports? (bar|grill|pub|lounge)\b/.test(name)) return "sports_bar";
+  if (/\b(wine|vino|enoteca)\b/.test(name)) return "wine_bar";
+  if (/\b(cocktails?|lounge|speakeasy|mixology)\b/.test(name)) return "cocktail_bar";
+  if (/\b(brew(ing|ery|house|pub)|taproom|tap room|beer hall)\b/.test(name)) return "brewery";
+  if (/\b(pub|tavern|ale ?house|saloon)\b/.test(name)) return "pub";
+  return null;
+}
 /**
  * OSM internet_access → wlan | yes | wired | terminal | no. "wifi" is wlan, and wlan names the kind in
  * a list ("yes, wifi"). "yes" alone is internet of an unknown kind. A list that says "no" and
@@ -364,6 +404,10 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
   const subtype = subtypeFromOsmTags(t);
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
+  // A bar's style: published from a tag that says it, estimated from its name alone.
+  const style = category === "bar" ? barStyle(t) : null;
+  if (style?.tag) pub("subtype", { value: style.style }, style.tag, 0.8);
+  else if (style) facts.push({ ...base, attribute: "subtype", value: { value: style.style }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
   const cuisines = category && CUISINE_CATEGORIES.has(category) ? cuisineSlugs(t["cuisine"]) : [];
   if (cuisines.length) pub("cuisine", { values: cuisines }, `cuisine=${t["cuisine"]!.trim().slice(0, 200)}`, 0.8);
   // No cuisine tag: what the name says it serves ("Joe's Pizza", "Taqueria Diana"), as an estimate.
