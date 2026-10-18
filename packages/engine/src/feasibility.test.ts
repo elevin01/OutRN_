@@ -4,8 +4,10 @@ import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
+import { openShares } from "./likely.js";
 import { evaluateAll, recommend } from "./recommend.js";
-import { APPEAL_WEIGHTS, merit, suitsCompany } from "./score.js";
+import { orderForDisplay } from "./select.js";
+import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
@@ -64,6 +66,73 @@ function ctx(date: string, minutes: number, over: Partial<RequestContext> = {}):
 const one = (c: Candidate, x: RequestContext) => evaluateAll([c], x, POLICIES)[0]!;
 
 describe("feasibility: opening hours", () => {
+  it("a close that looks mistyped for the kind of place is no close: Check first, never open all night", () => {
+    // A gallery "10:00-06:00" (for 18:00) at 9pm on a Friday: not open till 6am, but Check first with the doubt named.
+    const late = one(venue({ category: "gallery", hours: "Mo-Fr 10:00-06:00" }), ctx("2026-10-02 21:00", 120));
+    expect(late.class).toBe("check_first");
+    expect(late.unresolved).toEqual(["HOURS_DOUBTFUL"]);
+    expect(late.timing!.closesAt).toBeNull();
+    expect(late.reasons).not.toContain("OPEN_LATE");
+    expect(caveatNotes(late).map((n) => n.text).join(" ")).toMatch(/hours listed look mistyped/);
+    // A library to midnight, a museum to 24:00.
+    expect(one(venue({ category: "library", hours: "Mo, Fr, Sa 10:00-00:00; Tu-Th 10:00-19:00" }), ctx("2026-10-03 21:00", 120)).unresolved).toContain("HOURS_DOUBTFUL");
+    expect(one(venue({ category: "museum", hours: "Mo-Su 10:00-24:00" }), ctx("2026-10-03 14:00", 120)).unresolved).toContain("HOURS_DOUBTFUL");
+  });
+
+  it("only the interval the visit uses is doubted: closed days, other days' closes and other seasons stand (PR #60 review)", () => {
+    const gallery = (hours: string) => venue({ category: "gallery", hours, admission: "walk_in" });
+    const weekly = gallery("Mo-Fr 10:00-06:00; Sa 10:00-18:00; Su off");
+    // Sunday is off, and Saturday closes at 6pm: both as listed.
+    expect(one(weekly, ctx("2026-10-18 12:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    expect(one(weekly, ctx("2026-10-17 19:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    // Saturday's own close stands (the schedule is approximate as listed: Saturday's rule overrides Friday's night).
+    const saturday = one(weekly, ctx("2026-10-17 12:00", 120));
+    expect(saturday.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(saturday.timing!.closesAt!.getTime()).toBe(fromLocal("2026-10-17", 18 * 60, TZ).getTime());
+    // A weekday's open still holds: before 10am, it waits for the opening.
+    const early = one(weekly, ctx("2026-10-16 09:30", 120));
+    expect(early.reasons).toContain("WAIT_FOR_OPENING");
+    expect(early.unresolved).toContain("HOURS_DOUBTFUL");
+    // A mistyped range in a season not in force says nothing of this one.
+    const seasons = gallery("Jan-Mar Mo-Su 10:00-06:00; Apr-Dec Mo-Su 09:00-18:00");
+    expect(one(seasons, ctx("2026-10-18 19:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    expect(one(seasons, ctx("2026-10-18 12:00", 120)).class).toBe("ready");
+    // A time in a quoted comment is not hours.
+    const noted = one(gallery('Mo-Su 09:00-18:00 open "last updated from 10:00-06:00"'), ctx("2026-10-18 12:00", 120));
+    expect(noted.class).toBe("ready");
+    expect(noted.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(noted.timing!.closesAt!.getTime()).toBe(fromLocal("2026-10-18", 18 * 60, TZ).getTime());
+    // Late where late is the point, a close at 11pm, and round the clock are read as listed.
+    expect(one(venue({ category: "bar", hours: "Mo-Su 17:00-04:00" }), ctx("2026-10-03 23:00", 120)).unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(one(venue({ category: "library", hours: "Mo-Su 09:00-23:00" }), ctx("2026-10-03 20:00", 120)).class).toBe("ready");
+    expect(one(venue({ category: "library", hours: "24/7" }), ctx("2026-10-03 23:30", 60)).unresolved).not.toContain("HOURS_DOUBTFUL");
+  });
+
+  it("the close is read by the wall clock across a clock change: 11pm on the day clocks fall back stands, 11:30pm on the day they spring forward is doubted (PR #60 review)", () => {
+    const museum = (hours: string) => venue({ category: "museum", hours, admission: "walk_in" });
+    // 1am to 11pm on Sunday 1 November 2026 is 23 hours by the wall clock and 24 elapsed.
+    const fallBack = one(museum("Su 01:00-23:00"), ctx("2026-11-01 12:00", 120));
+    expect(fallBack.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(fallBack.timing!.closesAt!.getTime()).toBe(fromLocal("2026-11-01", 23 * 60, TZ).getTime());
+    // 1am to 11:30pm on Sunday 8 March 2026 is 22½ hours elapsed, and still past 11pm.
+    const springForward = one(museum("Su 01:00-23:30"), ctx("2026-03-08 12:00", 120));
+    expect(springForward.unresolved).toContain("HOURS_DOUBTFUL");
+    expect(springForward.timing!.closesAt).toBeNull();
+    // Peers the same way.
+    const peers = (hours: string) => Array.from({ length: 8 }, (_, i) => venue({ id: `m${i}`, category: "museum", hours }));
+    expect(openShares(peers("Su 01:00-23:00"), POLICIES, 30)("museum", fromLocal("2026-11-01", 12 * 60, TZ))).toEqual({ open: 8, listed: 8 });
+    expect(openShares(peers("Su 01:00-23:30"), POLICIES, 30)("museum", fromLocal("2026-03-08", 12 * 60, TZ))).toEqual({ open: 0, listed: 0 });
+  });
+
+  it("peers' hours count for likely open by the interval then: a mistyped close then is skipped, a quoted comment is not (PR #60 review)", () => {
+    const peers = (hours: string) => Array.from({ length: 8 }, (_, i) => venue({ id: `g${i}`, category: "gallery", hours }));
+    const noon = fromLocal("2026-10-17", 12 * 60, TZ);
+    expect(openShares(peers('Mo-Su 09:00-18:00 open "last updated from 10:00-06:00"'), POLICIES, 30)("gallery", noon)).toEqual({ open: 8, listed: 8 });
+    // A weekday's mistyped close says nothing of a Saturday they are closed: they count, closed.
+    expect(openShares(peers("Mo-Fr 10:00-06:00"), POLICIES, 30)("gallery", noon)).toEqual({ open: 0, listed: 8 });
+    expect(openShares(peers("Mo-Su 10:00-06:00"), POLICIES, 30)("gallery", fromLocal("2026-10-16", 21 * 60, TZ))).toEqual({ open: 0, listed: 0 });
+  });
+
   it("open now but closes before a worthwhile visit → NOT_ENOUGH_TIME", () => {
     const e = one(venue({ category: "restaurant", hours: "Mo-Su 12:00-19:00" }), ctx("2026-10-03 18:20", 180));
     // arrival 18:33, kitchen closes 18:20 (19:00 − 40) → no time
@@ -118,14 +187,19 @@ describe("feasibility: opening hours", () => {
     expect(at("Mo-Su 18:00-02:00", "2026-10-24 20:00", 180)).toContain("OPEN_LATE");
   });
 
-  it("a range that ends when it starts (10:00-10:00) is read as written but approximate: Check first, never 'open all night'", () => {
+  it("a range that ends when it starts (10:00-10:00) is Check first, never 'open all night'", () => {
+    // At a bookshop it looks mistyped: its hours are doubted, and no close is claimed (it was "until 7pm tomorrow").
     const slip = one(venue({ category: "bookshop", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
     expect(slip.class).toBe("check_first");
-    expect(slip.unresolved).toContain("HOURS_APPROXIMATE");
-    expect(explain(slip, TZ).factLine).toMatch(/until 7pm tomorrow/);
-    // Nor is it "open late": approximate hours claim no late close.
+    expect(slip.unresolved).toContain("HOURS_DOUBTFUL");
+    expect(explain(slip, TZ).factLine).not.toMatch(/until/);
     expect(slip.reasons).not.toContain("OPEN_LATE");
     expect(explain(slip, TZ).sentence).not.toMatch(/open late/);
+    // Where late hours are plausible it is read as written but approximate.
+    const bar = one(venue({ category: "bar", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
+    expect(bar.class).toBe("check_first");
+    expect(bar.unresolved).toContain("HOURS_APPROXIMATE");
+    expect(bar.reasons).not.toContain("OPEN_LATE");
   });
 
   it("stale hours (low confidence) → Check first with HOURS_UNVERIFIED", () => {
@@ -419,6 +493,34 @@ describe("selection: diversity and fewer than three", () => {
     expect(s.fewerThanThree).toBe(false);
   });
 
+  it("one place under two records shows once, whichever category each gives it; the same name farther off is another place", () => {
+    const north = (m: number) => ({ lat: NEAR.lat + m / 111_000, lon: NEAR.lon });
+    const cands = [
+      // OSM's outline of a park and its old point, 45 m apart.
+      venue({ id: "park-way", name: "Columbus Park", category: "park", hours: "Mo-Su 06:00-22:00" }),
+      venue({ id: "park-node", name: "Columbus Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(45) }),
+      // A museum OSM has as a park and Overture as a museum, 25 m apart.
+      venue({ id: "jay-osm", name: "Jay Heritage Center", category: "park", hours: "Mo-Su 06:00-22:00", point: north(-25) }),
+      venue({ id: "jay-overture", name: "Jay Heritage Center", category: "museum", hours: "Mo-Su 10:00-20:00" }),
+      // Two branches of a chain 400 m apart are two places.
+      venue({ id: "sb-1", name: "Starbucks", category: "cafe", hours: "Mo-Su 06:00-22:00" }),
+      venue({ id: "sb-2", name: "Starbucks", category: "cafe", hours: "Mo-Su 06:00-22:00", point: north(400) }),
+      // A preserve's two parts 600 m apart are one place; two parks of one name 1.4 km apart are two.
+      venue({ id: "marsh-1", name: "Marshlands Conservancy", category: "park", hours: "Mo-Su 06:00-22:00", point: north(100) }),
+      venue({ id: "marsh-2", name: "Marshlands Conservancy", category: "park", hours: "Mo-Su 06:00-22:00", point: north(700) }),
+      venue({ id: "green-1", name: "Green Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(-100) }),
+      venue({ id: "green-2", name: "Green Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(1300) }),
+    ];
+    const x = ctx("2026-10-03 15:00", 180);
+    const all = orderForDisplay(evaluateAll(cands, x, POLICIES), x);
+    const ids = all.map((e) => e.candidate.id);
+    expect(ids.filter((id) => id.startsWith("park-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("jay-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("sb-")).sort()).toEqual(["sb-1", "sb-2"]);
+    expect(ids.filter((id) => id.startsWith("marsh-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("green-")).sort()).toEqual(["green-1", "green-2"]);
+  });
+
   it("a narrowed request respects the category and skips activity diversity", () => {
     const cands = [venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "r2", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "r3", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "p1", category: "park" })];
     const s = recommend(cands, ctx("2026-10-03 15:00", 180, { categories: ["restaurant"] }), POLICIES);
@@ -629,6 +731,86 @@ describe("appeal signals", () => {
     expect(late.ordered.at(-1)!.candidate.id).toBe("park");
     // By day the same park is a good idea and variety brings it forward.
     expect(recommend([park, ...bars], ctx("2026-10-03 17:00", 120, { sunset }), POLICIES).items.map((e) => e.candidate.id)).toContain("park");
+  });
+
+  it("a Ready park after dark ranks with Check first by merit, not ahead of every bar worth checking (Wednesday 10:30pm in Westchester)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: null });
+    const late = recommend([park, bar], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    const p = late.all.find((e) => e.candidate.id === "park")!;
+    // Its card still says Ready (it is open); where it ranks is another matter.
+    expect(p.class).toBe("ready");
+    expect(p.dayPart).toBe("off");
+    expect(standing(p)).toBe("check_first");
+    expect(late.ordered.map((e) => e.candidate.id)).toEqual(["bar", "park"]);
+    // By day it is a good idea and leads on being open.
+    expect(recommend([park, bar], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["park", "bar"]);
+  });
+
+  it("after dark, a family's bar or 21+ casino never rises past the park (the demotion lifts no adult place for a minor)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const casino = venue({ id: "casino", category: "activity", subtype: "casino", hours: "24/7" });
+    casino.facts.age_limit = { value: { minAge: 21 }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    for (const party of [{ company: "family" as const }, { youngestAge: 10 }]) {
+      const late = recommend([bar, casino, park], ctx("2026-10-03 22:30", 120, { sunset, ...party }), POLICIES);
+      expect(late.ordered.map((e) => e.candidate.id), JSON.stringify(party)).toEqual(["park", "bar", "casino"]);
+    }
+    // Adults out late: the bar comes before the dark lawn, as above.
+    expect(recommend([bar, park], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["bar", "park"]);
+    // A love is kept on the first page, but not one a family may not be let into (16+, ages unknown).
+    const arcade = venue({ id: "arcade", category: "activity", subtype: "amusement_arcade", hours: "Mo-Su 10:00-22:00" });
+    arcade.facts.age_limit = { value: { minAge: 16 }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    const others = ["a", "b", "c", "d"].map((id) => venue({ id, category: "bookshop", hours: "Mo-Su 09:00-22:00" }));
+    const day = recommend([arcade, ...others], ctx("2026-10-03 14:00", 120, { sunset, company: "family", taste: [["games", 1]] }), POLICIES);
+    const a = day.all.find((e) => e.candidate.id === "arcade")!;
+    expect(a.unresolved).toContain("AGE_LIMIT_UNCERTAIN");
+    expect(day.ordered.slice(0, 3).map((e) => e.candidate.id)).not.toContain("arcade");
+  });
+
+  it("no sunset window once a park or waterfront is dark for the day; a viewpoint keeps its twenty minutes after (PR #56 re-review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const at = (c: Candidate, clock: string) => evaluateAll([c], ctx(clock, 120, { sunset }), POLICIES)[0]!;
+    const waterfront = venue({ id: "water", category: "waterfront", hours: "24/7" });
+    expect(at(waterfront, "2026-10-03 18:20").reasons).toContain("SUNSET_WINDOW");
+    const dark = at(waterfront, "2026-10-03 18:45");
+    expect(dark.dayPart).toBe("off");
+    expect(dark.reasons).not.toContain("SUNSET_WINDOW");
+    expect(at(venue({ id: "view", category: "viewpoint", hours: "24/7" }), "2026-10-03 18:42").reasons).toContain("SUNSET_WINDOW");
+  });
+
+  it("a park likely open after dark ranks with Check first too: losing its hours never lifts it past a bar (PR #56 review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const operating = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status: "operating" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const unknownPark = operating(venue({ id: "unknown-park", category: "park", hours: null }));
+    const knownPark = venue({ id: "known-park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: null });
+    const peers = Array.from({ length: 8 }, (_, i) => venue({ id: `peer-${i}`, category: "park", hours: "24/7", point: FAR }));
+    const late = recommend([unknownPark, knownPark, bar, ...peers], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    const u = late.all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(u.class).toBe("check_first");
+    expect(u.likelyOpen).toBeDefined();
+    expect(u.dayPart).toBe("off");
+    expect(standing(u)).toBe("check_first");
+    expect(standing(late.all.find((e) => e.candidate.id === "known-park")!)).toBe("check_first");
+    const order = late.ordered.map((e) => e.candidate.id).filter((id) => !id.startsWith("peer-"));
+    expect(order[0]).toBe("bar");
+    // By day the likely-open park leads with the Ready ones; an indoor café at 9pm keeps its standing.
+    const day = recommend([unknownPark, bar, ...peers], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(standing(day)).toBe("ready");
+    const cafe = recommend([venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-23:00" })], ctx("2026-10-03 21:00", 120, { sunset }), POLICIES).all[0]!;
+    expect(cafe.dayPart).toBe("off");
+    expect(standing(cafe)).toBe("ready");
+  });
+
+  it("an everyday drive to the mainland's own shore stays in reach: a café on New Rochelle's Davenport Neck (PR #56 review)", () => {
+    const newRochelle = { lat: 40.9115, lon: -73.783 };
+    const cafe = venue({ id: "shore-cafe", category: "cafe", hours: "24/7", point: { lat: 40.905, lon: -73.772 } });
+    const e = one(cafe, ctx("2026-10-03 12:00", 180, { origin: newRochelle, mode: "drive" }));
+    expect(e.class).toBe("ready");
+    expect(e.timing!.travel.minutes).toBeLessThanOrEqual(12);
   });
 
   it("travel counts against the time the user has: the same walk weighs more in an hour than in an evening", () => {
@@ -2057,6 +2239,33 @@ describe("destinations worth the drive", () => {
     const cands = [venue({ id: "pocket", category: "park", hours: null, point: NEAR }), venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-22:00", point: NEAR }), preserve];
     const s = recommend(cands, drive("2026-10-03 13:00", 240), POLICIES);
     expect(s.items[0]!.candidate.id).toBe("pre");
+  });
+
+  it("past the everyday reach, a destination with one like it within reach pays back its bonus: the near one leads", () => {
+    // ~10 km north: about 20 minutes by car, inside the everyday 30. The far one is ~43 minutes.
+    const CLOSE = { lat: ORIGIN.lat + 0.09, lon: ORIGIN.lon };
+    const far = { ...destination({ id: "far", name: "Inwood Hill Park" }, { kind: "nature", note: "a natural forest above a salt marsh" }), hasLandmarkId: true };
+    const near = destination({ id: "near", name: "Kensico Dam Plaza", point: CLOSE }, { kind: "park", note: "a grand stone dam with a long lawn" });
+    const x = drive("2026-10-03 13:00", 240);
+    const all = evaluateAll([far, near], x, POLICIES);
+    const [f, n] = [all.find((e) => e.candidate.id === "far")!, all.find((e) => e.candidate.id === "near")!];
+    expect(n.detour).toBeUndefined();
+    expect(f.detour!.minutes).toBe(f.timing!.travel.minutes - 30);
+    // 13 minutes past: two thirds of the 0.25 a destination earns in a four-hour window.
+    expect(f.detour!.appeal).toBeCloseTo((Math.min(1, f.detour!.minutes / 20)) * (APPEAL_WEIGHTS.destination + APPEAL_WEIGHTS.destinationLongWindow + APPEAL_WEIGHTS.destinationNamed), 2);
+    // The landmark would have led without it; with it, the dam twenty minutes away does.
+    expect(merit({ ...f, detour: undefined })).toBeGreaterThan(merit(n));
+    expect(merit(f)).toBeLessThan(merit(n));
+    expect(recommend([far, near], x, POLICIES).items.map((e) => e.candidate.id)).toEqual(["near", "far"]);
+    // Alone, or with nothing like it near (a lookout is not a walk), or with only a place to check, it keeps its bonus.
+    expect(evaluateAll([far], x, POLICIES)[0]!.detour).toBeUndefined();
+    const lookout = destination({ id: "look", category: "viewpoint", point: CLOSE }, { kind: "viewpoint", note: "views over the river" });
+    expect(evaluateAll([far, lookout], x, POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
+    const garden = destination({ id: "garden", category: "garden", point: CLOSE }, { kind: "garden", note: "walled gardens" });
+    expect(evaluateAll([far, garden], x, POLICIES).find((e) => e.candidate.id === "garden")!.class).toBe("check_first");
+    expect(evaluateAll([far, garden], x, POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
+    // A request's own travel limit is every place's reach.
+    expect(evaluateAll([far, near], drive("2026-10-03 13:00", 240, { maxTravelMinutes: 60 }), POLICIES).find((e) => e.candidate.id === "far")!.detour).toBeUndefined();
   });
 
   it("a lookout at sunset puts the sunset in the plan", () => {

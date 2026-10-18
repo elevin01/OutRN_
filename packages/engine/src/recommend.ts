@@ -1,4 +1,5 @@
 import { maxTravelFor } from "./destination.js";
+import { markDetours } from "./detour.js";
 import type { Candidate, CategoryPolicy, Evaluation, RequestContext, Shortlist } from "./types.js";
 import { evaluateFeasibility } from "./feasibility.js";
 import { markLikelyOpen, openShares } from "./likely.js";
@@ -26,6 +27,7 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
     return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
   });
   markLikelyOpen(evals, openShares(candidates, policies, fallback.minUsefulMinutes));
+  markDetours(evals, ctx);
   return evals;
 }
 

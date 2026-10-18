@@ -1,5 +1,5 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type OpenInterval, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import SunCalc from "suncalc";
 import { maxTravelFor, openDawnToDusk } from "./destination.js";
@@ -77,6 +77,24 @@ export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company"
  * minimum (a listed occurrence brings its own duration), and a bare venue must not borrow that zero.
  */
 export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, number>>> = { cinema: 120, theatre: 120, live_music: 90 };
+
+/** Places that close by the evening: a gallery, a library, a bookshop. */
+const DAYTIME: ReadonlySet<Category> = new Set(["museum", "gallery", "library", "bookshop", "garden"]);
+
+/**
+ * Whether the close of one interval of a place's hours looks mistyped for its kind: past 11pm, or
+ * into the next morning, at a place that closes by the evening ("10:00-06:00" for 18:00, "10:00-10:00"
+ * for 22:00, a library to midnight). Only that interval is doubted: the schedule's other days, its
+ * closed days and other seasons, and this interval's opening are read as listed. One open from
+ * midnight (round the clock, a 24/7 study hall) is not doubted.
+ */
+export function doubtfulClose(category: Category, interval: OpenInterval, timeZone: string): boolean {
+  if (!DAYTIME.has(category)) return false;
+  // By the wall clock on both ends, not elapsed time: a day the clocks change is 23 or 25 hours long.
+  const opens = localClock(interval.open, timeZone);
+  const closes = localClock(interval.close, timeZone);
+  return opens.minutes > 0 && (closes.date !== opens.date || closes.minutes > 23 * 60);
+}
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
@@ -383,7 +401,10 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
         reasons.push("WAIT_FOR_OPENING");
       } else return out("CLOSED_ON_ARRIVAL");
     }
-    closesAt = ev.interval.close;
+    // A close that looks mistyped (a gallery to 6am) is no close: the visit is bounded by the window
+    // alone, Check first with the doubt named. The opening, and every other day, stand as listed.
+    if (doubtfulClose(c.category, ev.interval, c.timezone)) unresolved.push("HOURS_DOUBTFUL");
+    else closesAt = ev.interval.close;
   }
   // Published kitchen hours decide when a meal can start, whether or not the venue ever closes.
   const kitchen = kitchenGate();

@@ -61,8 +61,11 @@ const HOURS: Partial<Record<Category, Hours>> = {
   viewpoint: { prime: [span("09:00", "20:30")], fair: [span("07:00", "09:00"), span("20:30", "23:00")] },
 };
 
-/** Places whose appeal ends with the light: fair in the last 45 minutes before sunset, off after it, whatever the clock table says. */
-const OUTDOOR_AFTER_DARK: ReadonlySet<Category> = new Set(["park", "garden"]);
+/**
+ * Places whose appeal ends with the light: fair in the last 45 minutes before sunset, off after it,
+ * whatever the clock table says. A shore too: a beach at 10pm is dark sand. Not a lookout: city lights.
+ */
+const OUTDOOR_AFTER_DARK: ReadonlySet<Category> = new Set(["park", "garden", "waterfront"]);
 
 /** Candidates share arrival minutes, so each local minute's clock is read once. */
 const clocks = new Map<string, { minutes: number; weekday: number }>();

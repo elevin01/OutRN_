@@ -1,5 +1,6 @@
 import { addMinutes } from "@outrn/core";
 import { evaluateHours, isHoursValue, type HoursValue } from "@outrn/facts";
+import { doubtfulClose } from "./feasibility.js";
 import type { Candidate, CategoryPolicy, Evaluation } from "./types.js";
 
 /**
@@ -72,7 +73,8 @@ export function openShares(candidates: readonly Candidate[], policies: Map<strin
       if (!availablePeer(c, until)) continue;
       const hours = c.facts.opening_hours!.value as HoursValue;
       const at = evaluateHours(hours, slot, c.timezone, c.point);
-      if (at.parseError || at.approximate) continue;
+      // A close that looks mistyped then (a gallery to 6am) says nothing of the kind's habits then.
+      if (at.parseError || at.approximate || (at.openNow && at.interval && doubtfulClose(c.category, at.interval, c.timezone))) continue;
       share.listed++;
       if (at.always || (at.openNow && at.interval && at.interval.close >= until)) share.open++;
     }

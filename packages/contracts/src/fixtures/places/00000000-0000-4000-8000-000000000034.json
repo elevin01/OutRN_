@@ -1,47 +1,51 @@
 {
   "id": "00000000-0000-4000-8000-000000000034",
-  "name": "Stanton Park",
+  "name": "Ridge Coffee",
   "category": {
-    "id": "park",
-    "label": "Park"
+    "id": "cafe",
+    "label": "Cafe"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.719677,
-    "lon": -73.981504
+    "lat": 40.728686,
+    "lon": -73.980324
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
-    "closesAt": null,
+    "state": "open",
+    "closesAt": "2026-10-04T00:00:00.000Z",
     "opensAt": null,
-    "summary": null
+    "summary": "Open now until 8pm"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Mo-Su 08:00-20:00",
+      "detail": "Open now until 8pm",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.545,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
       }
     },
     {
@@ -59,12 +63,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     },
     {
@@ -82,18 +86,18 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     },
     {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "Yes",
       "detail": null,
       "provenance": {
         "sources": [
@@ -102,21 +106,21 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.6,
+        "evidence": "published",
+        "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -128,25 +132,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://stantonpark.example/",
-    "phone": "+1 212 555 6468"
+    "websiteUrl": "https://ridgecoffee.example/",
+    "phone": "+1 212 555 1346"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=driving"
     },
     "links": []
   },

@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000025",
+  "requestId": "00000000-0000-4000-8000-00000000002d",
   "asOf": "2026-10-04T05:15:00.000Z",
   "generatedAt": "2026-10-04T05:15:00.000Z",
   "expiresAt": "2026-10-04T05:35:00.000Z",
@@ -39,9 +39,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-00000000001d",
+      "id": "00000000-0000-4000-8000-000000000025",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001d",
+      "placeId": "00000000-0000-4000-8000-000000000025",
       "name": "Pitt Street Nightcap",
       "placeName": "Pitt Street Nightcap",
       "photos": [],
@@ -156,9 +156,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000007",
+      "id": "00000000-0000-4000-8000-000000000006",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000007",
+      "placeId": "00000000-0000-4000-8000-000000000006",
       "name": "Broome Bar",
       "placeName": "Broome Bar",
       "photos": [],
@@ -278,9 +278,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000001c",
+      "id": "00000000-0000-4000-8000-00000000000d",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000001c",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
       "photos": [],
@@ -403,7 +403,7 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI1IiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJkIiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

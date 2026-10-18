@@ -1,54 +1,46 @@
 {
   "id": "00000000-0000-4000-8000-000000000022",
-  "name": "Essex Hester Bar",
+  "name": "Pitt Books",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "bookshop",
+    "label": "Bookshop"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.709488,
-    "lon": -73.975001
+    "lat": 40.929885,
+    "lon": -73.833771
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": null
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.548,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -64,37 +56,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-03T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.5,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     },
     {
@@ -112,35 +81,12 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-03T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "No",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     },
     {
@@ -158,25 +104,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-08-04T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-03T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2025",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://essexhesterbar.example/",
+    "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929885%2C-73.833771&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929885%2C-73.833771&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929885%2C-73.833771&travelmode=driving"
     },
     "links": []
   },
