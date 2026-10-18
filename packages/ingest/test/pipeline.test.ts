@@ -7,6 +7,7 @@ import { migrate, testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { fromLocal, VENUE_FACTS_DOC_SQL } from "@outrn/core";
 import { OSM_NORMALIZE_VERSION } from "../src/osm-normalize.js";
+import { overtureReadBox } from "../src/overture.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /**
@@ -151,6 +152,122 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(s.raw.tombstoned).toBe(1);
     const gone = await db.query<{ deleted: boolean }>(`select deleted_at is not null as deleted from source_entities where raw->'tags'->>'name' = $1`, [dropped.tags["name"]]);
     expect(gone.rows[0]!.deleted).toBe(true);
+  });
+
+  describe("records and the areas whose snapshots hold them", () => {
+    const LES = { lat: 40.7185, lon: -73.988 };
+    // About 2 km north: outside a 1,500 m circle, within the slack it may be kept in (1 km past it).
+    const edge = { type: "way", id: 990003, center: { lat: 40.7365, lon: -73.988 }, tags: { name: "Edge Meadow Garden", leisure: "garden" } };
+    // About 25 km away: no place of the area, however it meets the circle.
+    const far = { type: "relation", id: 990001, center: { lat: 40.9, lon: -73.7 }, tags: { name: "Far Shore Refuge", leisure: "nature_reserve" } };
+    const near = { type: "way", id: 990002, center: { lat: 40.7205, lon: -73.9875 }, tags: { name: "Near Edge Garden", leisure: "garden" } };
+    const capture = async (elements: unknown[], extent: { lat: number; lon: number; radius_m: number } | null) => {
+      const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: unknown[] };
+      const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "les-extent.json");
+      writeFileSync(path, JSON.stringify({ ...fixture, elements: [...fixture.elements, ...elements], ...(extent ? { outrn_extent: extent } : {}) }));
+      return path;
+    };
+    const live = async (name: string) => (await db.query<{ live: boolean }>(`select deleted_at is null as live from source_entities where raw->'tags'->>'name' = $1`, [name])).rows[0]?.live ?? null;
+
+    it("is not kept when it is far outside, and is kept just past the edge, in a capture that knows its extent", async () => {
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([far, near, edge], { ...LES, radius_m: 1500 }) });
+      expect(await live("Far Shore Refuge")).toBeNull();
+      expect(await live("Near Edge Garden")).toBe(true);
+      expect(await live("Edge Meadow Garden")).toBe(true);
+    });
+
+    it("is withdrawn when the area's next snapshot no longer has it and no other area's does", async () => {
+      const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(s.raw.tombstoned).toBe(1);
+      expect(await live("Edge Meadow Garden")).toBe(false);
+    });
+
+    it("stays while an overlapping area's snapshot still has it, and goes when that one lets go too", async () => {
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, edge], { ...LES, radius_m: 1500 }) });
+      // Bronxville's (synthetic) snapshot holds it inside its own small circle.
+      const bronx = join(mkdtempSync(join(tmpdir(), "outrn-")), "bx.json");
+      writeFileSync(bronx, JSON.stringify({ elements: [edge], outrn_extent: { lat: 40.7365, lon: -73.988, radius_m: 100 } }));
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bronx });
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Edge Meadow Garden")).toBe(true);
+      writeFileSync(bronx, JSON.stringify({ elements: [], outrn_extent: { lat: 40.7365, lon: -73.988, radius_m: 100 } }));
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bronx });
+      expect(await live("Edge Meadow Garden")).toBe(false);
+    });
+
+    it("inside two areas' circles, stays while either snapshot has it (mirrors of different ages), and keeps the other's hold", async () => {
+      const shared = { type: "way", id: 990004, center: { lat: 40.7255, lon: -73.988 }, tags: { name: "Shared Corner Garden", leisure: "garden" } };
+      const bx = (elements: unknown[]) => {
+        const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "bx.json");
+        writeFileSync(path, JSON.stringify({ elements, outrn_extent: { lat: 40.7255, lon: -73.988, radius_m: 20 } }));
+        return path;
+      };
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, shared], { ...LES, radius_m: 1500 }) });
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([shared]) });
+      // LES's snapshot lacks it inside its own circle; Bronxville's still has it.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Shared Corner Garden")).toBe(true);
+      const holders = await db.query<{ slug: string }>(`select a.slug from osm_area_records o join service_areas a on a.id = o.area_id join source_entities s on s.id = o.source_entity_id where s.raw->'tags'->>'name' = 'Shared Corner Garden'`);
+      expect(holders.rows.map((r) => r.slug)).toEqual(["bronxville"]);
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx([]) });
+      expect(await live("Shared Corner Garden")).toBe(false);
+    });
+
+    it("stored before this change, kept alive by the area that legitimately holds it, no longer widens the first area's Overture read", async () => {
+      const farAgain = { ...far, id: 990005, tags: { name: "Far Shore Refuge North", leisure: "nature_reserve" } };
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, farAgain], null) });
+      // Bronxville's (synthetic) snapshot holds it inside its own circle.
+      const bx = join(mkdtempSync(join(tmpdir(), "outrn-")), "bx-far.json");
+      writeFileSync(bx, JSON.stringify({ elements: [farAgain], outrn_extent: { lat: 40.9, lon: -73.7, radius_m: 20 } }));
+      await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: bx });
+      expect((await overtureReadBox(db, "les")).east).toBeGreaterThan(-73.71);
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Far Shore Refuge North")).toBe(true);
+      expect((await overtureReadBox(db, "les")).east).toBeLessThan(-73.9);
+    });
+
+    it("stored before this change (a relation 25 km out), is withdrawn by the area's next snapshot and no longer widens its Overture read", async () => {
+      // An older capture, with no saved extent, keeps whatever it holds: as the area was ingested before.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, far], null) });
+      expect(await live("Far Shore Refuge")).toBe(true);
+      expect((await overtureReadBox(db, "les")).east).toBeGreaterThan(-73.71);
+      // The database as it was before 0022: nothing recorded who holds what; the migration backfills it.
+      await db.query(`delete from osm_area_records`);
+      await migrate(db, undefined, { reapply: ["0022_osm_area_records.sql"] });
+      const s = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(s.raw.tombstoned).toBe(1);
+      expect(await live("Far Shore Refuge")).toBe(false);
+      expect((await overtureReadBox(db, "les")).east).toBeLessThan(-73.9);
+    });
+
+    // The database as it was before 0022, after a run of this radius: the migration backfills who holds what.
+    const backfillAfter = async (runId: string, radiusM: number) => {
+      await db.query(`update ingestion_runs set params = params || jsonb_build_object('radius_m', $2::int) where id = $1`, [runId, radiusM]);
+      await db.query(`delete from osm_area_records`);
+      await migrate(db, undefined, { reapply: ["0022_osm_area_records.sql"] });
+    };
+
+    it("a park a pre-0022 live read kept just past its circle is withdrawn once the area's next snapshot no longer has it", async () => {
+      // A live read of 1,500 m kept a park whose point is 2 km out (it meets the circle).
+      const band = { ...edge, id: 990021, tags: { name: "Probe Band Park", leisure: "park" } };
+      const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, band], null) });
+      await backfillAfter(before.runId, 1500);
+      expect(await live("Probe Band Park")).toBe(true);
+      // Deleted upstream: the area's next snapshot (1,500 m, extent known) doesn't have it.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Probe Band Park")).toBe(false);
+    });
+
+    it("a park a pre-0022 wide replay kept inside its circle is not withdrawn by a smaller snapshot", async () => {
+      const kept = { ...edge, id: 990023, tags: { name: "Probe Kept Park", leisure: "park" } };
+      const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, kept], { ...LES, radius_m: 2500 }) });
+      await backfillAfter(before.runId, 2500);
+      // A 1,500 m snapshot says nothing of it; the next 2,500 m one does.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Probe Kept Park")).toBe(true);
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 2500 }) });
+      expect(await live("Probe Kept Park")).toBe(false);
+    });
   });
 
   it("a mapper's survey supersedes the stored claims: status becomes published, hours carry the survey date, the ledger keeps both", async () => {

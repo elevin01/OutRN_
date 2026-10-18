@@ -19,7 +19,10 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-# OUTRN_USER_AGENT and OVERPASS_URL may be in .env; the database is this script's own.
+# OUTRN_USER_AGENT and OVERPASS_URL may be in .env; the database is this script's own. When
+# overpass-api.de refuses the connection or times out, a public mirror serves the same queries
+# (OVERPASS_URL=https://overpass.kumi.systems/api/interpreter), though its data may be weeks older.
+# Never put an email address in OUTRN_USER_AGENT: every source it is sent to receives it.
 if [ -f .env ]; then set -a; . ./.env; set +a; fi
 if [ -z "${OUTRN_USER_AGENT:-}" ]; then
   echo "Set OUTRN_USER_AGENT (in .env or the environment) to something that identifies you: Overpass and Wikimedia ask for it." >&2
