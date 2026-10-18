@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
-import { extractPage, FetchBlocked, FetchFailed, type FirstPartyExtraction, type RobotsPolicy } from "@outrn/sources";
+import { extractPage, FetchBlocked, FetchFailed, sameSite, type FirstPartyExtraction, type RobotsPolicy } from "@outrn/sources";
 import { discoverSites, factsFromExtraction, runFirstParty, type SiteFetcher } from "../src/firstparty-job.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
@@ -32,21 +32,45 @@ const siteOf = async (name: string) => (await db.query<{ url: string; last_statu
 const page = (body: string) => `<html><head><title>x</title></head><body>${body}</body></html>`;
 const HOURS = `<h3>Hours</h3><p>Monday - Thursday: 11am - 10pm</p><p>Friday - Saturday: 11am - 11pm</p><p>Sunday: noon - 9pm</p>`;
 
-/** A web of fake sites: robots.txt by host, pages (or failures) by URL; it counts what was asked. */
-function fakeWeb(robots: Record<string, RobotsPolicy>, pages: Record<string, string | Error>): SiteFetcher & { asked: string[] } {
+/** What a fake site serves at a URL: a page, a failure, or a redirect. */
+type Served = string | Error | { redirect: string };
+
+/**
+ * A web of fake sites: robots.txt by host, pages, failures or redirects by URL. Like the live
+ * fetcher, it passes the gate each request before "sending" it, redirect hops included (www and
+ * bare name followed, another host handed back as a move), and counts what was asked.
+ */
+function fakeWeb(robots: Record<string, RobotsPolicy>, pages: Record<string, Served>): SiteFetcher & { asked: string[] } {
   const asked: string[] = [];
   return {
     asked,
-    async robots(_origin, host) {
-      asked.push(`robots:${host}`);
-      return robots[host] ?? { status: "none", rules: [], crawlDelayS: null };
+    async robots(origin, gate) {
+      const u = new URL(`${origin}/robots.txt`);
+      await gate(u);
+      asked.push(`robots:${u.host}`);
+      return robots[u.host] ?? { status: "none", rules: [], crawlDelayS: null };
     },
     async page(url, o): Promise<FirstPartyExtraction> {
-      asked.push(url);
-      const p = pages[url];
-      if (p === undefined) throw new FetchFailed(`404 from ${new URL(url).host}`, 404);
-      if (p instanceof Error) throw p;
-      return extractPage(p, url, NOW, { text: o.text });
+      let at = new URL(url);
+      for (let hop = 0; hop <= 5; hop++) {
+        await o.gate(at);
+        asked.push(at.toString());
+        const p = pages[at.toString()];
+        if (p === undefined) throw new FetchFailed(`404 from ${at.host}`, 404);
+        if (p instanceof Error) throw p;
+        if (typeof p !== "string") {
+          const next = new URL(p.redirect, at);
+          if (next.host !== at.host && !sameSite(next.host, at.host)) {
+            const moved = new FetchBlocked(`cross-host redirect ${at.host} -> ${next.host}`);
+            moved.redirectTo = next.toString();
+            throw moved;
+          }
+          at = next;
+          continue;
+        }
+        return extractPage(p, at.toString(), NOW, { text: o.text });
+      }
+      throw new FetchBlocked("too many redirects");
     },
   };
 }
@@ -116,12 +140,10 @@ describe.skipIf(!available)("venues' own websites", () => {
   it("leaves a host alone when it asks for a pause, and follows a site that moved when its new host's robots.txt allows", async () => {
     await db.query(`update firstparty_sites set last_fetched_at = null`);
     await db.query(`delete from firstparty_hosts`);
-    const moved = new FetchBlocked("cross-host redirect www.essexkitchen-nyc.com -> essexkitchen.nyc");
-    moved.redirectTo = "https://essexkitchen.nyc/";
     const web = fakeWeb(
       {},
       {
-        "https://www.essexkitchen-nyc.com/": moved,
+        "https://www.essexkitchen-nyc.com/": { redirect: "https://essexkitchen.nyc/" },
         "https://essexkitchen.nyc/": page(HOURS),
         "https://attorneycoffee.com/": new FetchFailed("429 from attorneycoffee.com", 429, 7200),
       },
@@ -151,6 +173,97 @@ describe.skipIf(!available)("venues' own websites", () => {
     const pages = Object.fromEntries((await db.query<{ url: string }>(`select url from firstparty_sites`)).rows.map((r) => [r.url, page(HOURS)]));
     const s = await runFirstParty(db, { areaSlug: "les", fetcher: fakeWeb({}, pages), now: () => NOW });
     expect(s.hours).toBe(0);
+  });
+
+  it("asks robots.txt before every hop: a redirect to a disallowed path, or to a www. host whose robots.txt refuses, is never requested (PR #57 review)", async () => {
+    await db.query(`update firstparty_sites set last_fetched_at = null, fetch_interval_h = 168`);
+    await db.query(`delete from firstparty_hosts`);
+    await db.query(`update firstparty_sites set url = 'https://essexbar.com/start' where venue_id = $1`, [await venueId("Essex Bar")]);
+    await db.query(`update firstparty_sites set url = 'https://attorneycoffee.com/' where venue_id = $1`, [await venueId("Attorney Coffee")]);
+    await db.query(`update firstparty_sites set url = 'https://www.essexkitchen-nyc.com/' where venue_id = $1`, [await venueId("Essex Kitchen")]);
+    await db.query(`delete from firstparty_sites where url like '%lesparks-nyc%'`);
+    const web = fakeWeb(
+      {
+        "essexbar.com": { status: "ok", rules: [{ allow: false, path: "/private" }], crawlDelayS: null },
+        "www.attorneycoffee.com": { status: "ok", rules: [{ allow: false, path: "/" }], crawlDelayS: null },
+      },
+      {
+        "https://essexbar.com/start": { redirect: "/private/hours" },
+        "https://essexbar.com/private/hours": page(HOURS),
+        "https://attorneycoffee.com/": { redirect: "https://www.attorneycoffee.com/" },
+        "https://www.attorneycoffee.com/": page(HOURS),
+        "https://www.essexkitchen-nyc.com/": page(HOURS),
+      },
+    );
+    const s = await runFirstParty(db, { areaSlug: "les", fetcher: web, now: () => NOW });
+    expect(web.asked).toContain("https://essexbar.com/start");
+    expect(web.asked).not.toContain("https://essexbar.com/private/hours");
+    expect(web.asked).toContain("robots:www.attorneycoffee.com");
+    expect(web.asked).not.toContain("https://www.attorneycoffee.com/");
+    expect(s.robots).toBe(2);
+    expect((await siteOf("Essex Bar"))?.last_status).toBe("robots: disallowed");
+    expect((await siteOf("Attorney Coffee"))?.last_status).toBe("robots: disallowed");
+  });
+
+  it("charges each host's daily allowance per request it gets, redirects included, and a moved site's new host its own (PR #57 review)", async () => {
+    await db.query(`delete from firstparty_hosts`);
+    // Three venues on one host, each page a redirect: robots.txt, then two requests a page.
+    const ids = [await venueId("Essex Kitchen"), await venueId("Attorney Coffee"), await venueId("Essex Bar")];
+    for (const [i, id] of ids.entries()) await db.query(`update firstparty_sites set url = $2, last_fetched_at = null where venue_id = $1`, [id, `https://onehost.example.com/start${i}`]);
+    const pages: Record<string, Served> = {};
+    for (const i of [0, 1, 2]) {
+      pages[`https://onehost.example.com/start${i}`] = { redirect: `/end${i}` };
+      pages[`https://onehost.example.com/end${i}`] = page(HOURS);
+    }
+    const web = fakeWeb({}, pages);
+    const s = await runFirstParty(db, { areaSlug: "les", fetcher: web, now: () => NOW });
+    // Four requests and no more: robots.txt, one site's start and end, the next site's start. Its end and
+    // the third site wait for tomorrow.
+    expect(web.asked).toHaveLength(4);
+    expect(web.asked[0]).toBe("robots:onehost.example.com");
+    expect(web.asked[1]!.replace("start", "end")).toBe(web.asked[2]);
+    expect(web.asked[3]).toMatch(/\/start\d$/);
+    expect(s.deferred).toBe(2);
+    expect((await db.query<{ requests: number }>(`select requests from firstparty_hosts where host = 'onehost.example.com'`)).rows[0]!.requests).toBe(4);
+    // Two sites that moved to one host: that host's own allowance (three of four already spent today) holds.
+    await db.query(`delete from firstparty_hosts`);
+    await db.query(`insert into firstparty_hosts (host, robots_status, robots_fetched_at, requests_on, requests) values ('target.example.com', 'none', $1, $2::date, 3)`, [NOW, NOW.toISOString().slice(0, 10)]);
+    await db.query(`update firstparty_sites set url = 'https://a.example.com/', last_fetched_at = null where venue_id = $1`, [ids[0]]);
+    await db.query(`update firstparty_sites set url = 'https://b.example.com/', last_fetched_at = null where venue_id = $1`, [ids[1]]);
+    await db.query(`update firstparty_sites set enabled = false where venue_id = $1`, [ids[2]]);
+    const movers = fakeWeb({}, { "https://a.example.com/": { redirect: "https://target.example.com/a" }, "https://b.example.com/": { redirect: "https://target.example.com/b" }, "https://target.example.com/a": page(HOURS), "https://target.example.com/b": page(HOURS) });
+    const m = await runFirstParty(db, { areaSlug: "les", fetcher: movers, now: () => NOW });
+    expect(movers.asked.filter((u) => u.startsWith("https://target.example.com/"))).toHaveLength(1);
+    expect(m.deferred).toBe(1);
+    await db.query(`update firstparty_sites set enabled = true`);
+  });
+
+  it("saves nothing over a good capture when no site could be read, and keeps an earlier read for a site that failed this time (PR #57 review)", async () => {
+    await db.query(`delete from firstparty_hosts`);
+    await db.query(`delete from firstparty_sites where venue_id not in ($1, $2)`, [await venueId("Essex Kitchen"), await venueId("Attorney Coffee")]);
+    await db.query(`update firstparty_sites set url = 'https://www.essexkitchen-nyc.com/', last_fetched_at = null where venue_id = $1`, [await venueId("Essex Kitchen")]);
+    await db.query(`update firstparty_sites set url = 'https://attorneycoffee.com/', last_fetched_at = null where venue_id = $1`, [await venueId("Attorney Coffee")]);
+    const dir = mkdtempSync(join(tmpdir(), "outrn-"));
+    const good = join(dir, "les-sites.json");
+    // A good capture: both sites read.
+    await runFirstParty(db, { areaSlug: "les", saveTo: good, fetcher: fakeWeb({}, { "https://www.essexkitchen-nyc.com/": page(HOURS), "https://attorneycoffee.com/": page(HOURS) }), now: () => NOW });
+    const before = readFileSync(good, "utf8");
+    expect(JSON.parse(before).sites.filter((x: { read?: unknown }) => x.read)).toHaveLength(2);
+    // Every site fails: a failed run, and the good capture is untouched.
+    await db.query(`update firstparty_sites set last_fetched_at = null`);
+    await db.query(`delete from firstparty_hosts`);
+    const down = new FetchFailed("service unavailable", 500);
+    const failed = await runFirstParty(db, { areaSlug: "les", saveTo: good, keep: good, fetcher: fakeWeb({}, { "https://www.essexkitchen-nyc.com/": down, "https://attorneycoffee.com/": down }), now: () => NOW });
+    expect(failed.outcome).toBe("failed");
+    expect(readFileSync(good, "utf8")).toBe(before);
+    // One reads and one fails: saved, with the earlier read kept for the one that failed.
+    await db.query(`update firstparty_sites set last_fetched_at = null`);
+    await db.query(`delete from firstparty_hosts`);
+    const next = join(dir, "next.json");
+    const partial = await runFirstParty(db, { areaSlug: "les", saveTo: next, keep: good, fetcher: fakeWeb({}, { "https://www.essexkitchen-nyc.com/": page(HOURS), "https://attorneycoffee.com/": down }), now: () => NOW });
+    expect(partial.outcome).toBe("partial");
+    const sites = JSON.parse(readFileSync(next, "utf8")).sites as { url: string; status: string; read?: unknown }[];
+    expect(sites.map((x) => `${x.url} ${x.status} ${Boolean(x.read)}`).sort()).toEqual(["https://attorneycoffee.com/ ok true", "https://www.essexkitchen-nyc.com/ ok true"]);
   });
 
   it("saves what each site stated (never its HTML), and a replay writes the same hours into another database", async () => {

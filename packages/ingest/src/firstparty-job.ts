@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, rename, writeFile } from "node:fs/promises";
 import { websiteUrl, type Attribute, type FactInput } from "@outrn/core";
 import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
 import { evaluateHours, materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
@@ -12,7 +12,9 @@ import {
   startRun,
   FetchBlocked,
   FetchFailed,
+  RequestRefused,
   type FirstPartyExtraction,
+  type RequestGate,
   type RobotsPolicy,
 } from "@outrn/sources";
 
@@ -22,11 +24,13 @@ import {
  * class) and dated occurrences, then re-materialize the venue. Raw HTML is never stored.
  *
  * Sites are registered by hand (`firstparty add`) or found (`discoverSites`): a venue's own website,
- * when no source publishes its hours. Every read obeys the site's robots.txt (RFC 9309), read once a
- * day per host. The source policy's limits hold: a host's requests at least 5 s apart (longer when
- * its robots.txt asks), at most four a day per host, and eight hosts at a time (each paced on its
- * own: no site sees more for it). A host that answers 429 or 503 is left alone for at least six
- * hours; a page a site refuses (403) or robots.txt keeps us from is asked again in a month.
+ * when no source publishes its hours. Every request, whichever host it goes to (a redirect, a site
+ * that moved, a retry), passes one gate first (hostGate): the host is not backing off, its
+ * robots.txt (RFC 9309, read once a day per host) allows that very path, and one of the host's four
+ * requests for the day is reserved for it, robots.txt reads included. Requests to a host are at least
+ * 5 s apart (longer when its robots.txt asks), eight hosts at a time. A host that answers 429 or 503
+ * is left alone for at least six hours; a page a site refuses (403) or robots.txt keeps us from is
+ * asked again in a month.
  */
 
 export interface FirstPartyRunSummary {
@@ -44,6 +48,8 @@ export interface FirstPartyRunSummary {
   robots: number;
   /** Sites left for later: their host asked us to wait, or today's requests for it are spent. */
   deferred: number;
+  /** failed: sites were tried and none could be read (nothing is saved then). */
+  outcome: "succeeded" | "partial" | "failed";
 }
 
 interface SiteRow {
@@ -53,17 +59,20 @@ interface SiteRow {
   fetch_interval_h: number;
 }
 
-/** What a fetcher does: read robots.txt, and a page's extraction (tests replace it). */
+/**
+ * What a fetcher does: read robots.txt, and a page's extraction (tests replace it). Each passes
+ * `gate` every request it sends, before sending it, redirects and retries included.
+ */
 export interface SiteFetcher {
-  robots(origin: string, host: string): Promise<RobotsPolicy>;
-  page(url: string, opts: { host: string; minIntervalMs: number; text: boolean }): Promise<FirstPartyExtraction>;
+  robots(origin: string, gate: RequestGate): Promise<RobotsPolicy>;
+  page(url: string, opts: { gate: RequestGate; text: boolean }): Promise<FirstPartyExtraction>;
 }
 
 export function liveSiteFetcher(): SiteFetcher {
   const userAgent = currentUserAgent();
   return {
-    robots: (origin, host) => fetchRobots(origin, { userAgent, throttleKey: `firstparty:${host}` }),
-    page: (url, o) => fetchAndExtract(url, { throttleKey: `firstparty:${o.host}`, minIntervalMs: o.minIntervalMs, text: o.text }),
+    robots: (origin, gate) => fetchRobots(origin, { userAgent, beforeRequest: gate }),
+    page: (url, o) => fetchAndExtract(url, { beforeRequest: o.gate, text: o.text }),
   };
 }
 
@@ -251,48 +260,89 @@ async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstP
   });
 }
 
-interface HostState {
-  robots: RobotsPolicy;
-  minIntervalMs: number;
-  /** Requests left today for this host. */
-  budget: number;
-  /** Words on its pages are read for hours: not on a government site, or one many venues share. */
-  text: boolean;
+interface HostRow {
+  robots_status: string;
+  robots_rules: RobotsPolicy["rules"];
+  crawl_delay_s: string | null;
+  robots_fetched_at: Date;
+  retry_after: Date | null;
 }
 
-/** Robots.txt for a host (read at most once a day), today's request budget, and whether it is backing off. */
-async function hostState(db: Db, fetcher: SiteFetcher, origin: string, host: string, shared: boolean, now: Date): Promise<HostState | "backing_off"> {
-  const row = (
-    await db.query<{ robots_status: string; robots_rules: RobotsPolicy["rules"]; crawl_delay_s: string | null; robots_fetched_at: Date; retry_after: Date | null; requests_on: string | null; requests: number }>(
-      `select robots_status, robots_rules, crawl_delay_s, robots_fetched_at, retry_after, requests_on::text, requests from firstparty_hosts where host = $1`,
-      [host],
-    )
-  ).rows[0];
-  if (row?.retry_after && row.retry_after > now) return "backing_off";
-  const today = now.toISOString().slice(0, 10);
-  let used = row && row.requests_on === today ? row.requests : 0;
-  let robots: RobotsPolicy;
-  if (row && now.getTime() - row.robots_fetched_at.getTime() < FIRSTPARTY_LIMITS.robotsMaxAgeH * 3_600_000) {
-    robots = { status: row.robots_status as RobotsPolicy["status"], rules: row.robots_rules, crawlDelayS: row.crawl_delay_s === null ? null : Number(row.crawl_delay_s) };
-  } else {
-    robots = await fetcher.robots(origin, host);
-    used++;
-    await db.query(
-      `insert into firstparty_hosts (host, robots_status, robots_rules, crawl_delay_s, robots_fetched_at, requests_on, requests) values ($1, $2, $3, $4, $5, $6, $7)
-       on conflict (host) do update set robots_status = excluded.robots_status, robots_rules = excluded.robots_rules, crawl_delay_s = excluded.crawl_delay_s,
-         robots_fetched_at = excluded.robots_fetched_at, requests_on = excluded.requests_on, requests = excluded.requests`,
-      [host, robots.status, JSON.stringify(robots.rules), robots.crawlDelayS, now, today, used],
+/**
+ * The one gate every request passes (see the header), for a run: each host's back-off, its
+ * robots.txt for the very path, a reservation of one of its requests for the day, and its pace.
+ * Hosts are found as requests go to them: a redirect or a moved site's new host is gated as its own.
+ */
+function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
+  const policies = new Map<string, Promise<RobotsPolicy>>();
+  const delays = new Map<string, number>();
+  const pace = (host: string) => ({ throttleKey: `firstparty:${host}`, minIntervalMs: Math.max(FIRSTPARTY_LIMITS.minIntervalMs, (delays.get(host) ?? 0) * 1000) });
+
+  /** One of the host's requests for today, or a refusal when they are spent (atomic: hosts are read side by side). */
+  const reserve = async (host: string): Promise<void> => {
+    const today = clock().toISOString().slice(0, 10);
+    const r = await db.query(
+      `insert into firstparty_hosts as h (host, robots_status, robots_fetched_at, requests_on, requests) values ($1, 'unreachable', 'epoch', $2::date, 1)
+       on conflict (host) do update set requests = case when h.requests_on = $2::date then h.requests + 1 else 1 end, requests_on = $2::date
+        where h.requests_on is distinct from $2::date or h.requests < $3
+       returning requests`,
+      [host, today, FIRSTPARTY_LIMITS.perHostPerDay],
     );
-  }
-  const govOrShared = /\.(?:gov|mil)$/i.test(host) || /\.(?:ny|ct|nj)\.us$/i.test(host) || shared;
-  return { robots, minIntervalMs: Math.max(FIRSTPARTY_LIMITS.minIntervalMs, (robots.crawlDelayS ?? 0) * 1000), budget: FIRSTPARTY_LIMITS.perHostPerDay - used, text: !govOrShared };
+    if (!r.rowCount) throw new RequestRefused(`today's requests for ${host} are spent`, "allowance", host);
+  };
+  const row = async (host: string) => (await db.query<HostRow>(`select robots_status, robots_rules, crawl_delay_s, robots_fetched_at, retry_after from firstparty_hosts where host = $1`, [host])).rows[0];
+  const notBackingOff = async (host: string) => {
+    const r = await row(host);
+    if (r?.retry_after && r.retry_after > clock()) throw new RequestRefused(`${host} asked us to wait`, "backoff", host);
+    return r;
+  };
+
+  /** robots.txt for a host: today's read, or a new one (its requests reserved like any other). */
+  const policyFor = (origin: string, host: string): Promise<RobotsPolicy> => {
+    let p = policies.get(host);
+    if (!p) {
+      p = (async () => {
+        const r = await row(host);
+        if (r && clock().getTime() - r.robots_fetched_at.getTime() < FIRSTPARTY_LIMITS.robotsMaxAgeH * 3_600_000) {
+          return { status: r.robots_status as RobotsPolicy["status"], rules: r.robots_rules, crawlDelayS: r.crawl_delay_s === null ? null : Number(r.crawl_delay_s) };
+        }
+        // Reading robots.txt asks no robots.txt, but it is a request like any other to whichever host it reaches.
+        const policy = await fetcher.robots(origin, async (url) => {
+          const h = url.host.toLowerCase();
+          await notBackingOff(h);
+          await reserve(h);
+          return pace(h);
+        });
+        await db.query(
+          `update firstparty_hosts set robots_status = $2, robots_rules = $3, crawl_delay_s = $4, robots_fetched_at = $5 where host = $1`,
+          [host, policy.status, JSON.stringify(policy.rules), policy.crawlDelayS, clock()],
+        );
+        return policy;
+      })();
+      // A read that was refused (its allowance spent, a back-off) is tried again next time, not kept.
+      p.catch(() => policies.delete(host));
+      policies.set(host, p);
+    }
+    return p;
+  };
+
+  const gate: RequestGate = async (url) => {
+    const host = url.host.toLowerCase();
+    await notBackingOff(host);
+    const policy = await policyFor(url.origin, host);
+    delays.set(host, policy.crawlDelayS ?? 0);
+    if (!robotsAllows(policy, pathOf(url))) {
+      throw new RequestRefused(policy.status === "unreachable" ? `robots.txt for ${host} could not be read` : `robots.txt disallows ${pathOf(url)} on ${host}`, "robots", host);
+    }
+    await reserve(host);
+    return pace(host);
+  };
+  return gate;
 }
 
-async function spend(db: Db, host: string, now: Date): Promise<void> {
-  await db.query(
-    `update firstparty_hosts set requests = case when requests_on = $2::date then requests + 1 else 1 end, requests_on = $2::date where host = $1`,
-    [host, now.toISOString().slice(0, 10)],
-  );
+/** Words on a host's pages are read for hours: not on a government site, or one many venues share. */
+function textAllowed(host: string, shared: ReadonlySet<string>): boolean {
+  return !(/\.(?:gov|mil)$/i.test(host) || /\.(?:ny|ct|nj)\.us$/i.test(host) || shared.has(host.replace(/^www\./, "")));
 }
 
 function pathOf(u: URL): string {
@@ -310,6 +360,8 @@ export interface RunOptions {
   concurrency?: number;
   /** Save what each site stated (never its HTML) for replay. */
   saveTo?: string;
+  /** An earlier capture: what it read for a site this run could not (later, an error) is saved again. */
+  keep?: string;
   /** Replay a saved capture instead of fetching. */
   fromFile?: string;
   now?: () => Date;
@@ -340,7 +392,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
     ).rows.map((r) => r.host),
   );
   const runId = await startRun(db, { sourceId: "firstparty", kind: "firstparty_site", params: { sites: due.length, area: opts.areaSlug ?? null } });
-  const s: FirstPartyRunSummary = { runId, sites: due.length, ok: 0, noJsonLd: 0, blocked: 0, failed: 0, facts: 0, occurrences: 0, hours: 0, robots: 0, deferred: 0 };
+  const s: FirstPartyRunSummary = { runId, sites: due.length, ok: 0, noJsonLd: 0, blocked: 0, failed: 0, facts: 0, occurrences: 0, hours: 0, robots: 0, deferred: 0, outcome: "succeeded" };
   const captured: CapturedSite[] = [];
   const byHost = new Map<string, SiteRow[]>();
   for (const site of due) {
@@ -357,59 +409,37 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
     await db.query(`update firstparty_sites set last_fetched_at = now(), last_status = $2, fetch_interval_h = coalesce($3, fetch_interval_h) where id = $1`, [site.id, status, recheckH ?? null]);
     log(`  ${site.url} → ${status}`);
   };
+  const gate = hostGate(db, fetcher, clock);
 
   const readHost = async (host: string, sites: SiteRow[]) => {
-    const origin = new URL(sites[0]!.url).origin;
-    const state = await hostState(db, fetcher, origin, host, sharedHosts.has(host.replace(/^www\./, "")), clock());
-    if (state === "backing_off") {
-      s.deferred += sites.length;
-      for (const site of sites) log(`  ${site.url} → later: the site asked us to wait`);
-      return;
-    }
-    let budget = state.budget;
     for (const site of sites) {
-      const u = new URL(site.url);
-      if (!robotsAllows(state.robots, pathOf(u))) {
-        s.robots++;
-        await finish(site, state.robots.status === "unreachable" ? "robots: unreachable (nothing read)" : "robots: disallowed", FIRSTPARTY_LIMITS.refusedRecheckH);
-        captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: "robots" });
-        continue;
-      }
-      if (budget <= 0) {
-        s.deferred++;
-        log(`  ${site.url} → later: today's requests for ${host} are spent`);
-        continue;
-      }
-      const read = async (url: string): Promise<FirstPartyExtraction> => {
-        budget--;
-        await spend(db, host, clock());
-        return fetcher.page(url, { host, minIntervalMs: state.minIntervalMs, text: state.text });
-      };
       let status = "ok";
       let recheck: number | undefined;
       let x: FirstPartyExtraction | undefined;
       try {
         try {
-          x = await read(site.url);
+          x = await fetcher.page(site.url, { gate, text: textAllowed(host, sharedHosts) });
         } catch (e) {
-          // Moved to another host: followed once, when that host's robots.txt lets us (on this one's budget).
+          // Moved to another host: followed once, as that host's own gate allows (its robots.txt, its requests).
           const to = e instanceof FetchBlocked && e.redirectTo ? ownSiteUrl(e.redirectTo) : null;
-          if (!to || budget < 2) throw e;
+          if (!to) throw e;
           const t = new URL(to);
-          budget -= 2;
-          const theirs = await fetcher.robots(t.origin, t.host);
-          if (!robotsAllows(theirs, pathOf(t))) throw new FetchBlocked(`moved to ${t.host}, whose robots.txt disallows it`);
-          x = await fetcher.page(to, { host: t.host, minIntervalMs: state.minIntervalMs, text: state.text });
+          x = await fetcher.page(to, { gate, text: textAllowed(t.host.toLowerCase(), sharedHosts) });
           status = `ok (moved to ${t.host})`;
         }
-        // No hours on the page: the site's page for them, when robots.txt allows and the budget lasts.
-        if (!x.facts.some((f) => f.attribute === "opening_hours") && x.hoursLinks?.length && budget > 0) {
+        // No hours on the page: the site's page for them, through the same gate.
+        if (!x.facts.some((f) => f.attribute === "opening_hours") && x.hoursLinks?.length) {
           const from = new URL(x.url);
-          const link = x.hoursLinks.map((l) => new URL(l)).find((l) => sameSite(l.host, from.host) && (!sameSite(from.host, host) || robotsAllows(state.robots, pathOf(l))));
-          if (link && sameSite(from.host, host)) {
-            const y = await read(link.toString());
-            const hours = y.facts.filter((f) => f.attribute === "opening_hours");
-            if (hours.length) x = { ...x, url: y.url, facts: [...x.facts.filter((f) => f.attribute !== "opening_hours"), ...hours], events: [...x.events, ...y.events] };
+          const link = x.hoursLinks.map((l) => new URL(l)).find((l) => sameSite(l.host, from.host));
+          if (link) {
+            try {
+              const y = await fetcher.page(link.toString(), { gate, text: textAllowed(link.host.toLowerCase(), sharedHosts) });
+              const hours = y.facts.filter((f) => f.attribute === "opening_hours");
+              if (hours.length) x = { ...x, url: y.url, facts: [...x.facts.filter((f) => f.attribute !== "opening_hours"), ...hours], events: [...x.events, ...y.events] };
+            } catch (e) {
+              // The page itself was read: a refused or failed hours page leaves it as it was.
+              if (!(e instanceof RequestRefused || e instanceof FetchBlocked || e instanceof FetchFailed)) throw e;
+            }
           }
         }
         if (!x.blocks && !x.facts.length && !x.events.length) {
@@ -419,16 +449,26 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
         if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
         await writeExtraction(db, runId, site.venue_id, x, s);
       } catch (e) {
-        if (e instanceof FetchBlocked) {
+        if (e instanceof RequestRefused && e.reason !== "robots") {
+          // Its host's requests for today are spent, or it asked us to wait: this site is not due-marked,
+          // and an earlier capture's read of it stands (see `keep`).
+          s.deferred++;
+          log(`  ${site.url} → later: ${e.message}`);
+          continue;
+        }
+        if (e instanceof RequestRefused) {
+          status = e.message.includes("could not be read") ? "robots: unreachable (nothing read)" : "robots: disallowed";
+          recheck = FIRSTPARTY_LIMITS.refusedRecheckH;
+          s.robots++;
+        } else if (e instanceof FetchBlocked) {
           status = `blocked: ${e.message}`;
           s.blocked++;
         } else if (e instanceof FetchFailed && (e.status === 429 || e.status === 503)) {
-          // Asked to slow down: this host is left alone for a while, its other sites with it.
+          // Asked to slow down: the host that said so is left alone for a while, its other sites with it.
           const hours = Math.max(FIRSTPARTY_LIMITS.backoffH, (e.retryAfterS ?? 0) / 3600);
-          await db.query(`update firstparty_hosts set retry_after = $2 where host = $1`, [host, new Date(clock().getTime() + hours * 3_600_000)]);
+          await db.query(`update firstparty_hosts set retry_after = $2 where host = $1`, [e.host ?? host, new Date(clock().getTime() + hours * 3_600_000)]);
           status = `later: ${e.status} (waiting ${Math.ceil(hours)} h)`;
           s.failed++;
-          budget = 0;
         } else if (e instanceof FetchFailed && (e.status === 401 || e.status === 403)) {
           status = `refused: ${e.status}`;
           recheck = FIRSTPARTY_LIMITS.refusedRecheckH;
@@ -439,7 +479,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
         }
       }
       await finish(site, status, recheck);
-      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status, ...(x ? { read: x } : {}) });
+      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: status.startsWith("robots") ? "robots" : status, ...(x ? { read: x } : {}) });
     }
   };
 
@@ -450,12 +490,36 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
   });
   await Promise.all(workers);
 
-  if (opts.saveTo) {
-    const capture: FirstPartyCapture = { outrn_capture: "firstparty-sites", area: opts.areaSlug ?? null, fetchedAt: clock().toISOString(), sites: captured };
-    await writeFile(opts.saveTo, JSON.stringify(capture), "utf8");
+  // Tried and none read: a failed run, and nothing it saw replaces a capture that holds reads.
+  const read = s.ok + s.noJsonLd;
+  s.outcome = s.failed && !read ? "failed" : s.failed ? "partial" : "succeeded";
+  if (opts.saveTo && s.outcome !== "failed") {
+    const capture: FirstPartyCapture = { outrn_capture: "firstparty-sites", area: opts.areaSlug ?? null, fetchedAt: clock().toISOString(), sites: opts.keep ? await keptWith(captured, opts.keep) : captured };
+    // Written whole, then moved into place: a reader never sees half a capture.
+    await writeFile(`${opts.saveTo}.tmp`, JSON.stringify(capture), "utf8");
+    await rename(`${opts.saveTo}.tmp`, opts.saveTo);
   }
-  await finishRun(db, runId, { status: s.failed && !s.ok ? "failed" : s.failed ? "partial" : "succeeded", counts: { ...s } as unknown as Record<string, number> });
+  await finishRun(db, runId, { status: s.outcome, counts: { ...s, outcome: undefined } as unknown as Record<string, number> });
   return s;
+}
+
+/** A site this run settled (read, refused, kept out) speaks for itself; one it could not, by an earlier capture's read. */
+async function keptWith(captured: CapturedSite[], earlierPath: string): Promise<CapturedSite[]> {
+  let earlier: CapturedSite[] = [];
+  try {
+    const raw = JSON.parse(await readFile(earlierPath, "utf8")) as Partial<FirstPartyCapture>;
+    if (raw.outrn_capture === "firstparty-sites" && Array.isArray(raw.sites)) earlier = raw.sites;
+  } catch {
+    // No earlier capture (a first run): nothing to keep.
+  }
+  const key = (c: CapturedSite) => `${c.venue}|${c.url}`;
+  const unsettled = (c: CapturedSite) => c.status.startsWith("later") || c.status.startsWith("error");
+  const settled = new Map(captured.filter((c) => !unsettled(c)).map((c) => [key(c), c]));
+  const out = [...settled.values()];
+  for (const c of earlier) if (!settled.has(key(c))) out.push(c);
+  const kept = new Set(out.map(key));
+  for (const c of captured) if (!kept.has(key(c))) out.push(c);
+  return out;
 }
 
 /** Replay a saved run: register each site for its venue (found by source record) and write what it stated. */
@@ -463,7 +527,7 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void):
   const raw = JSON.parse(await readFile(path, "utf8")) as Partial<FirstPartyCapture>;
   if (raw.outrn_capture !== "firstparty-sites" || !Array.isArray(raw.sites)) throw new Error(`${path} is not a first-party sites capture (outrn firstparty run --save)`);
   const runId = await startRun(db, { sourceId: "firstparty", kind: "replay", params: { from_file: path, area: raw.area ?? null } });
-  const s: FirstPartyRunSummary = { runId, sites: raw.sites.length, ok: 0, noJsonLd: 0, blocked: 0, failed: 0, facts: 0, occurrences: 0, hours: 0, robots: 0, deferred: 0 };
+  const s: FirstPartyRunSummary = { runId, sites: raw.sites.length, ok: 0, noJsonLd: 0, blocked: 0, failed: 0, facts: 0, occurrences: 0, hours: 0, robots: 0, deferred: 0, outcome: "succeeded" };
   let unmatched = 0;
   for (const site of raw.sites) {
     const venueId = typeof site.venue === "string" ? await venueByKey(db, site.venue) : null;

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { hoursFromText, hoursLinks, microdataHours, visibleLines } from "./sitehours.js";
+import { hoursFromText, hoursLinks, microdataHours, visibleLines, visibleText } from "./sitehours.js";
 
 const page = (body: string) => `<html><head><title>x</title><script>var hours = "Mon-Fri 1am-2am";</script><style>.mon{}</style></head><body>${body}</body></html>`;
-const read = (body: string) => hoursFromText(visibleLines(page(body)));
+const read = (body: string) => {
+  const v = visibleText(page(body));
+  return hoursFromText(v.lines, v);
+};
 const h = (hh: number, mm = 0) => hh * 60 + mm;
 
 describe("visible text", () => {
@@ -49,6 +52,21 @@ describe("hours written out on a venue's own page", () => {
     expect(x?.weekly[0]).toEqual({ weekday: 0, startMin: h(17), endMin: h(22) });
     expect(read(`<p>Mon-Sat 11-10pm</p>`)?.weekly[0]).toEqual({ weekday: 1, startMin: h(11), endMin: h(22) });
     expect(read(`<p>Mon-Sun 08:00 - 22:00</p>`)?.weekly).toHaveLength(7);
+  });
+
+  it("leaves out hours under a heading for something else or a season, however much copy comes between, until the section ends (PR #57 review)", () => {
+    for (const heading of ["Delivery Hours", "Kitchen Hours", "Office Hours", "Summer Hours"]) {
+      const body = `<section><h2>${heading}</h2><p>See our schedule below</p><p>123 Main Street</p><a>Order now</a><p>Mon-Sun 9am-9pm</p></section>`;
+      expect(read(body), heading).toBeNull();
+    }
+    // A heading for the venue's own hours reads, and so does a section after the excluded one ends.
+    expect(read(`<section><h2>Hours</h2><p>Come see us</p><p>Mon-Sun 9am-9pm</p></section>`)?.weekly).toHaveLength(7);
+    const after = read(`<section><h2>Delivery Hours</h2><p>Mon-Fri 5pm-9pm</p></section><section><p>Our dining room</p><p>Mon-Sun 11am-10pm</p></section>`);
+    expect(after?.weekly).toHaveLength(7);
+    expect(after?.weekly[0]).toMatchObject({ startMin: h(11), endMin: h(22) });
+    // A new heading ends the last one's scope.
+    expect(read(`<h2>Catering</h2><p>Call us for events</p><h2>Visit us</h2><p>Mon-Sun 9am-9pm</p>`)?.weekly).toHaveLength(7);
+    expect(visibleText(page(`<h2>Delivery <b>Hours</b></h2><p>x</p>`)).heading).toEqual([true, false]);
   });
 
   it("reads nothing it would have to guess", () => {

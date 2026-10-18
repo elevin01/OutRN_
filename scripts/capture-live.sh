@@ -154,7 +154,8 @@ for slug in "${slugs[@]}"; do
   # Optional: when it can't be done, the previous sites capture stays and the rest is saved.
   # CAPTURE_SITES=0 skips it.
   if [ -z "$problem" ] && [ "${CAPTURE_SITES:-1}" != "0" ]; then
-    if out="$(pnpm -s outrn firstparty discover --area "$slug" && pnpm -s outrn firstparty run --area "$slug" --limit 100000 --save "$new_sites")"; then
+    # --keep: a site this run could not read (asked us to wait, an error) keeps what the last capture read.
+    if out="$(pnpm -s outrn firstparty discover --area "$slug" && pnpm -s outrn firstparty run --area "$slug" --limit 100000 --save "$new_sites" --keep "$sites")"; then
       printf '%s\n' "$out" | grep -E "^[0-9]+ venues|^sites" | sed 's/^/   websites: /'
     else
       printf '%s\n' "$out" | tail -n 1 >&2

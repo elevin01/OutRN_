@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRobots, productToken, robotsAllows, type RobotsPolicy } from "./robots.js";
+import { normalizeRobotsPath, parseRobots, productToken, robotsAllows, type RobotsPolicy } from "./robots.js";
 
 const policy = (text: string, token = "outrn-dev"): RobotsPolicy => ({ status: "ok", ...parseRobots(text, token) });
 
@@ -29,6 +29,19 @@ describe("robots.txt (RFC 9309)", () => {
     expect(robotsAllows(p, "/search?x=1&q=pizza")).toBe(false);
     expect(robotsAllows(p, "/same")).toBe(true);
     expect(robotsAllows(p, "/robots.txt")).toBe(true);
+  });
+
+  it("compares paths as RFC 9309 says: an encoded unreserved character is the character, a reserved one stays encoded (PR #57 review)", () => {
+    const p = policy(`User-agent: *\nDisallow: /private\nDisallow: /a%2fb\nDisallow: /caf%C3%A9\n`);
+    expect(robotsAllows(p, "/private/hours")).toBe(false);
+    expect(robotsAllows(p, "/%70rivate/hours")).toBe(false);
+    expect(robotsAllows(p, "/%70RIVATE/hours")).toBe(true); // case matters in paths
+    // %2F is not "/": the rule for "/a%2fb" (either case) blocks only the encoded form.
+    expect(robotsAllows(p, "/a%2Fb")).toBe(false);
+    expect(robotsAllows(p, "/a/b")).toBe(true);
+    // Characters outside ASCII are compared as their UTF-8 encoding.
+    expect(robotsAllows(p, "/café")).toBe(false);
+    expect(normalizeRobotsPath("/%7euser/%41%2f%3F")).toBe("/~user/A%2F%3F");
   });
 
   it("reads an empty Disallow as no rule, comments as nothing, and the crawl delay (capped)", () => {

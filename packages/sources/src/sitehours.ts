@@ -28,6 +28,20 @@ function decodeEntities(s: string): string {
 
 /** The page's visible text, one line per block: scripts, styles and the like left out. */
 export function visibleLines(html: string): string[] {
+  return visibleText(html).lines;
+}
+
+/** Elements whose end closes what a heading inside them was about. */
+const SECTION_TAGS = new Set(["section", "article", "aside", "header", "footer", "main", "nav", "table"]);
+const HEADING = /^h[1-6]$/;
+/** Marks in the text while it is built: a heading's start and end, and a section's end (none can appear in a decoded page). */
+const [H_OPEN, H_CLOSE, BREAK] = ["\u0001", "\u0002", "\u0003"];
+
+/**
+ * The page's visible lines, and for each whether it is a heading (h1–h6), and whether a section
+ * (section, article, header, footer, a table…) ended just before it: what the lines are about.
+ */
+export function visibleText(html: string): { lines: string[]; heading: boolean[]; breakBefore: boolean[] } {
   let out = "";
   let i = 0;
   const lower = html.toLowerCase();
@@ -37,7 +51,7 @@ export function visibleLines(html: string): string[] {
       out += html.slice(i);
       break;
     }
-    out += html.slice(i, lt);
+    out += html.slice(i, lt).replace(/[\u0001-\u0003]/g, " ");
     // Comments, then elements whose content is never shown.
     if (html.startsWith("<!--", lt)) {
       const end = html.indexOf("-->", lt + 4);
@@ -55,17 +69,35 @@ export function visibleLines(html: string): string[] {
       out += "\n";
       continue;
     }
-    out += BLOCK_TAGS.has(name) ? "\n" : " ";
+    if (HEADING.test(name)) out += closing ? `${H_CLOSE}\n` : `\n${H_OPEN}`;
+    else if (closing && SECTION_TAGS.has(name)) out += `\n${BREAK}\n`;
+    else out += BLOCK_TAGS.has(name) ? "\n" : " ";
     i = gt + 1;
   }
   const lines: string[] = [];
+  const heading: boolean[] = [];
+  const breakBefore: boolean[] = [];
+  let pendingBreak = false;
+  let inHeading = false;
   for (const raw of decodeEntities(out).split("\n")) {
-    const line = raw.replace(/[\s ​]+/g, " ").trim();
+    if (raw.includes(BREAK)) {
+      pendingBreak = true;
+      continue;
+    }
+    const opens = raw.includes(H_OPEN);
+    const closes = raw.includes(H_CLOSE);
+    const line = raw.replace(/[\u0001\u0002]/g, "").replace(/[\s\u00a0\u200b]+/g, " ").trim();
+    const isHeading = inHeading || opens;
+    if (opens) inHeading = true;
+    if (closes) inHeading = false;
     if (!line) continue;
     lines.push(line.slice(0, MAX_LINE));
+    heading.push(isHeading);
+    breakBefore.push(pendingBreak);
+    pendingBreak = false;
     if (lines.length >= MAX_LINES) break;
   }
-  return lines;
+  return { lines, heading, breakBefore };
 }
 
 /** `itemprop="openingHours"` values (content= or datetime=, else the element's text), as schema.org's OSM-like strings. */
@@ -224,16 +256,25 @@ function statementsOf(line: string, next: string | undefined): { statements: Sta
 /**
  * Hours written out in a page's lines, or null when there are none it can read without guessing.
  * Lines of hours next to each other are one block; every block on the page counts (lunch and dinner
- * on separate lines join), except one whose own lines, or the line just above or below it, say it is
- * the hours of something else (happy hour, delivery, the box office) or of a season. A line about a
+ * on separate lines join), except one whose own lines, the line just above or below it, or the
+ * heading it is under (until the next heading or the end of its section) say it is the hours of
+ * something else (happy hour, delivery, the box office) or of a season. A line about a
  * holiday or a date is an exception and is left out. Nothing is read from a page that gives two
  * different sets of hours for one day (several locations), or hours for weekdays only, saying
  * nothing of the weekend (an office's hours, more often than a venue's).
  */
-export function hoursFromText(lines: readonly string[]): TextHours | null {
+export function hoursFromText(lines: readonly string[], scope?: { heading: readonly boolean[]; breakBefore: readonly boolean[] }): TextHours | null {
   const byDay = new Map<number, Array<{ startMin: number; endMin: number }>>();
   const closed = new Set<number>();
   const evidence: string[] = [];
+  // The heading each line is under: from a heading until the next one, or the end of its section.
+  const under: string[] = [];
+  let current = "";
+  for (let k = 0; k < lines.length; k++) {
+    if (scope?.breakBefore[k]) current = "";
+    if (scope?.heading[k]) current = lines[k]!;
+    under.push(current);
+  }
   let i = 0;
   while (i < lines.length) {
     const first = statementsOf(lines[i]!, lines[i + 1]);
@@ -255,7 +296,9 @@ export function hoursFromText(lines: readonly string[]): TextHours | null {
     }
     const above = lines[start - 1] ?? "";
     const below = lines[i] ?? "";
-    const context = [above, below, ...blockLines];
+    // The lines around the block, and the heading it sits under however far above ("Delivery Hours",
+    // a line of copy, then the hours).
+    const context = [above, below, under[start] ?? "", ...blockLines];
     if (context.some((l) => NOT_OPENING.test(l) || SEASONAL.test(l))) continue;
     for (const st of block) {
       for (const d of st.days) {
