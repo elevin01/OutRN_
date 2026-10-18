@@ -198,6 +198,8 @@ interface CapturedSite {
   status: string;
   /** What was read, when anything was. */
   read?: FirstPartyExtraction;
+  /** Its hours page could not be read: the read says nothing of its hours (an earlier capture's are kept). */
+  hoursUnread?: true;
 }
 
 export interface FirstPartyCapture {
@@ -237,13 +239,14 @@ function revive(x: FirstPartyExtraction): FirstPartyExtraction {
 // ---------------------------------------------------------------------------------------------
 
 /** Write what a site stated for a venue: its facts, its events, and, when a page was read and states no hours, no hours from it any more. */
-async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean): Promise<void> {
+async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean, hoursUnread = false): Promise<void> {
   const source = siteSource(auto);
   await withTx(db, async (tx) => {
     const w = await writeFacts(tx, factsFromExtraction(x, venueId, auto).map((f) => ({ ...f, ingestionRunId: runId })));
     s.facts += w.inserted;
-    // Hours its own site no longer states (moved, or taken down) stop counting as published.
-    if (!x.facts.some((f) => f.attribute === "opening_hours")) {
+    // Hours its own site no longer states (moved, or taken down) stop counting as published; not when
+    // the page that states them could not be read this time (it failed, or its host asked us to wait).
+    if (!hoursUnread && !x.facts.some((f) => f.attribute === "opening_hours")) {
       await tx.query(
         `update facts set superseded_at = now() where subject_kind = 'venue' and subject_id = $1 and source_id in ('firstparty', 'firstparty_found') and attribute = 'opening_hours' and superseded_at is null`,
         [venueId],
@@ -424,12 +427,22 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
     log(`  ${site.url} → ${status}`);
   };
   const gate = hostGate(db, fetcher, clock);
+  /**
+   * Asked to slow down (429, 503), by whichever page: the host that answered is left alone for six
+   * hours at least, or as long as it asked, its other sites with it (the gate refuses it until then).
+   */
+  const backOff = async (e: FetchFailed, host: string): Promise<number> => {
+    const hours = Math.max(FIRSTPARTY_LIMITS.backoffH, (e.retryAfterS ?? 0) / 3600);
+    await db.query(`update firstparty_hosts set retry_after = $2 where host = $1`, [e.host ?? host, new Date(clock().getTime() + hours * 3_600_000)]);
+    return hours;
+  };
 
   const readHost = async (host: string, sites: SiteRow[]) => {
     for (const site of sites) {
       let status = "ok";
       let recheck: number | undefined;
       let x: FirstPartyExtraction | undefined;
+      let hoursUnread = false;
       try {
         try {
           x = await fetcher.page(site.url, { gate, text: textAllowed(host, sharedHosts) });
@@ -451,8 +464,14 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
               const hours = y.facts.filter((f) => f.attribute === "opening_hours");
               if (hours.length) x = { ...x, url: y.url, facts: [...x.facts.filter((f) => f.attribute !== "opening_hours"), ...hours], events: [...x.events, ...y.events] };
             } catch (e) {
-              // The page itself was read: a refused or failed hours page leaves it as it was.
+              // The page itself was read; its hours page was not, so this read says nothing of its hours:
+              // the ones published stay, and a capture keeps an earlier read's. A host that asked us to
+              // slow down is left alone like any other.
               if (!(e instanceof RequestRefused || e instanceof FetchBlocked || e instanceof FetchFailed)) throw e;
+              hoursUnread = true;
+              let why = e instanceof RequestRefused ? e.reason : e instanceof FetchFailed && e.status ? String(e.status) : "failed";
+              if (e instanceof FetchFailed && (e.status === 429 || e.status === 503)) why = `${e.status}, waiting ${Math.ceil(await backOff(e, link.host))} h`;
+              status = `${status} (hours page not read: ${why})`;
             }
           }
         }
@@ -461,7 +480,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           s.noJsonLd++;
         } else s.ok++;
         if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-        await writeExtraction(db, runId, site.venue_id, x, s, site.auto);
+        await writeExtraction(db, runId, site.venue_id, x, s, site.auto, hoursUnread);
       } catch (e) {
         if (e instanceof RequestRefused && e.reason !== "robots") {
           // Its host's requests for today are spent, or it asked us to wait: this site is not due-marked,
@@ -478,10 +497,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           status = `blocked: ${e.message}`;
           s.blocked++;
         } else if (e instanceof FetchFailed && (e.status === 429 || e.status === 503)) {
-          // Asked to slow down: the host that said so is left alone for a while, its other sites with it.
-          const hours = Math.max(FIRSTPARTY_LIMITS.backoffH, (e.retryAfterS ?? 0) / 3600);
-          await db.query(`update firstparty_hosts set retry_after = $2 where host = $1`, [e.host ?? host, new Date(clock().getTime() + hours * 3_600_000)]);
-          status = `later: ${e.status} (waiting ${Math.ceil(hours)} h)`;
+          status = `later: ${e.status} (waiting ${Math.ceil(await backOff(e, host))} h)`;
           s.failed++;
         } else if (e instanceof FetchFailed && (e.status === 401 || e.status === 403)) {
           status = `refused: ${e.status}`;
@@ -493,7 +509,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
         }
       }
       await finish(site, status, recheck);
-      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: status.startsWith("robots") ? "robots" : status, ...(x ? { read: x } : {}) });
+      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: status.startsWith("robots") ? "robots" : status, ...(x ? { read: x } : {}), ...(hoursUnread ? { hoursUnread: true as const } : {}) });
     }
   };
 
@@ -528,7 +544,13 @@ async function keptWith(captured: CapturedSite[], earlierPath: string): Promise<
   }
   const key = (c: CapturedSite) => `${c.venue}|${c.url}`;
   const unsettled = (c: CapturedSite) => c.status.startsWith("later") || c.status.startsWith("error");
-  const settled = new Map(captured.filter((c) => !unsettled(c)).map((c) => [key(c), c]));
+  const before = new Map(earlier.map((c) => [key(c), c]));
+  // A read whose hours page could not be read keeps the hours an earlier read had.
+  const withHours = (c: CapturedSite): CapturedSite => {
+    const was = c.hoursUnread && c.read ? before.get(key(c))?.read?.facts.filter((f) => f.attribute === "opening_hours") : undefined;
+    return was?.length && c.read ? { ...c, read: { ...c.read, facts: [...c.read.facts.filter((f) => f.attribute !== "opening_hours"), ...was] } } : c;
+  };
+  const settled = new Map(captured.filter((c) => !unsettled(c)).map((c) => [key(c), withHours(c)]));
   const out = [...settled.values()];
   for (const c of earlier) if (!settled.has(key(c))) out.push(c);
   const kept = new Set(out.map(key));
@@ -557,7 +579,7 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void):
     const x = revive(site.read);
     s.ok++;
     if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-    await writeExtraction(db, runId, venueId, x, s, true);
+    await writeExtraction(db, runId, venueId, x, s, true, site.hoursUnread === true);
   }
   if (unmatched) log(`  ${unmatched} captured sites name venues not in this database (another area's, or gone)`);
   await finishRun(db, runId, { status: "succeeded", counts: { ...s } as unknown as Record<string, number> });

@@ -290,6 +290,58 @@ describe.skipIf(!available)("venues' own websites", () => {
   });
 });
 
+describe.skipIf(!available)("a site's hours page that could not be read (PR #57 review)", () => {
+  const busy = (status: number) => Object.assign(new FetchFailed(`${status} from busyvenues.com`, status, 7200), { host: "busyvenues.com" });
+
+  it("leaves its host alone when the hours page asks us to wait (429, 503): the host's next site waits too", async () => {
+    for (const status of [429, 503]) {
+      await db.query(`delete from firstparty_sites`);
+      await db.query(`delete from firstparty_hosts`);
+      await registerSite(db, await venueId("Attorney Coffee"), "https://busyvenues.com/a", "test", true);
+      await registerSite(db, await venueId("Essex Bar"), "https://busyvenues.com/b", "test", true);
+      const welcome = page(`<p>Welcome</p><a href="/hours">Hours</a>`);
+      const web = fakeWeb({}, { "https://busyvenues.com/a": welcome, "https://busyvenues.com/b": welcome, "https://busyvenues.com/hours": busy(status) });
+      const s = await runFirstParty(db, { areaSlug: "les", fetcher: web, now: () => NOW });
+      // One home page, its hours page (which said wait), and nothing more from the host.
+      expect(web.asked.filter((u) => /\/(a|b)$/.test(u)), String(status)).toHaveLength(1);
+      expect(web.asked.filter((u) => u.endsWith("/hours")), String(status)).toHaveLength(1);
+      expect(s.deferred, String(status)).toBe(1);
+      const until = (await db.query<{ retry_after: Date }>(`select retry_after from firstparty_hosts where host = 'busyvenues.com'`)).rows[0]!.retry_after;
+      expect(until.getTime(), String(status)).toBeGreaterThanOrEqual(NOW.getTime() + 6 * 3_600_000);
+    }
+  });
+
+  it("keeps the hours it published, and an earlier capture's, until its hours page is read again; a read that states none retracts them", async () => {
+    await db.query(`delete from firstparty_sites`);
+    await db.query(`delete from firstparty_hosts`);
+    const home = "https://www.essexkitchen-nyc.com/";
+    await registerSite(db, await venueId("Essex Kitchen"), home, "test", true);
+    const welcome = page(`<p>Welcome</p><a href="/hours">Hours</a>`);
+    const run = async (hours: Served, opts: { saveTo?: string; keep?: string } = {}) => {
+      await db.query(`update firstparty_sites set last_fetched_at = null`);
+      await db.query(`delete from firstparty_hosts`);
+      return runFirstParty(db, { areaSlug: "les", fetcher: fakeWeb({}, { [home]: welcome, "https://www.essexkitchen-nyc.com/hours": hours }), now: () => NOW, ...opts });
+    };
+    const dir = mkdtempSync(join(tmpdir(), "outrn-hours-page-"));
+    await run(page(HOURS), { saveTo: join(dir, "good.json") });
+    expect((await hoursOf("Essex Kitchen"))?.source_ids).toContain("firstparty_found");
+    // The hours page fails (503), or today's requests for the host are spent: the hours stand.
+    for (const failure of [busy(503), new FetchFailed("500 from www.essexkitchen-nyc.com", 500)]) {
+      const s = await run(failure, { saveTo: join(dir, "next.json"), keep: join(dir, "good.json") });
+      expect(s.failed).toBe(0);
+      expect((await hoursOf("Essex Kitchen"))?.source_ids).toContain("firstparty_found");
+      const next = JSON.parse(readFileSync(join(dir, "next.json"), "utf8")) as { sites: { status: string; hoursUnread?: boolean; read?: FirstPartyExtraction }[] };
+      expect(next.sites[0]!.status).toMatch(/hours page not read/);
+      expect(next.sites[0]!.read!.facts.some((f) => f.attribute === "opening_hours")).toBe(true);
+    }
+    // A replay of that capture keeps them too.
+    expect((await runFirstParty(db, { fromFile: join(dir, "next.json") })).hours).toBe(1);
+    // Read again, and stating none: they go.
+    await run(page(`<p>Call us for our hours</p>`));
+    expect((await hoursOf("Essex Kitchen"))?.source_ids ?? []).not.toContain("firstparty_found");
+  });
+});
+
 describe.skipIf(!available)("a site found, not checked", () => {
   it("never lifts members_only, and stands below the founder's own check (which it contests)", async () => {
     const id = await venueId("Essex Bar");
