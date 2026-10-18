@@ -232,6 +232,8 @@ export function schemaDate(v: unknown, timeZone: string): { at: Date; allDay: bo
   // A calendar date and a clock time, or nothing (a date library would roll "2026-13-40" into 2027).
   const parts = /^\d{4}-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/.exec(s);
   if (!parts || +parts[1]! < 1 || +parts[1]! > 12 || +parts[2]! < 1 || +parts[2]! > 31 || (parts[3] !== undefined && (+parts[3] > 23 || +parts[4]! > 59))) return null;
+  // A day the month does not have ("2026-02-30", "2026-04-31") is no date, not the 2nd of the next.
+  if (new Date(Date.UTC(Number(s.slice(0, 4)), +parts[1]! - 1, +parts[2]!)).getUTCDate() !== +parts[2]!) return null;
   const day = /^(\d{4}-\d{2}-\d{2})$/.exec(s);
   if (day) {
     const at = fromLocal(day[1]!, 0, timeZone);

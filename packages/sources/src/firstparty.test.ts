@@ -143,6 +143,10 @@ describe("a venue's own events: where its site lists them, and what each says", 
     expect(schemaDate("2026-10-24T19:30:00", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
     expect(schemaDate("2026-10-24T19:30:00-04:00", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
     expect(schemaDate("2026-10-24T23:30:00Z", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
+    // A day the month does not have is no date, not the 2nd of the next month.
+    expect(schemaDate("2026-02-30T19:30", TZ)).toBeNull();
+    expect(schemaDate("2026-04-31", TZ)).toBeNull();
+    expect(schemaDate("2028-02-29T19:30", TZ)!.at.toISOString()).toBe("2028-03-01T00:30:00.000Z");
     expect(schemaDate("2026-10-24", TZ)).toEqual({ at: new Date("2026-10-24T04:00:00.000Z"), allDay: true });
     for (const v of ["soon", "2026-13-40T99:99", "", 42, null]) expect(schemaDate(v, TZ), String(v)).toBeNull();
   });

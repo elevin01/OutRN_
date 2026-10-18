@@ -264,7 +264,7 @@ function revive(x: FirstPartyExtraction): FirstPartyExtraction {
  * Write what a site stated for a venue: its facts, and, when a page was read and states no hours, no
  * hours from it any more; then its events (see site-events.ts), as the source venue_events.
  */
-async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean, events: readonly CalendarEvent[], now: Date, hoursUnread = false): Promise<void> {
+async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean, events: readonly CalendarEvent[], now: Date, hoursUnread = false, eventsComplete = false): Promise<void> {
   await withTx(db, async (tx) => {
     const w = await writeFacts(tx, factsFromExtraction(x, venueId, auto).map((f) => ({ ...f, ingestionRunId: runId })));
     s.facts += w.inserted;
@@ -278,7 +278,8 @@ async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstP
     }
     await materializeSubjects(tx, "venue", [venueId]);
   });
-  if (events.length) s.occurrences += (await writeSiteEvents(db, { venueId, host: new URL(x.url).hostname }, events, now)).written;
+  // A feed read whole that lists nothing still says the site's earlier events are gone.
+  if (events.length || eventsComplete) s.occurrences += (await writeSiteEvents(db, { venueId, host: new URL(x.url).hostname }, events, now, { complete: eventsComplete })).written;
 }
 
 interface HostRow {
@@ -364,6 +365,12 @@ function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
 /** Words on a host's pages are read for hours: not on a government site, or one many venues share. */
 function textAllowed(host: string, shared: ReadonlySet<string>): boolean {
   return !(/\.(?:gov|mil)$/i.test(host) || /\.(?:ny|ct|nj)\.us$/i.test(host) || shared.has(host.replace(/^www\./, "")));
+}
+
+/** `url` is under `page`'s own path ("/delancey/events.ics" under "/delancey"); nothing is under a home page's. */
+function underPath(url: string, page: string): boolean {
+  const base = new URL(page).pathname.replace(/\/?$/, "/");
+  return base !== "/" && new URL(url).pathname.startsWith(base);
 }
 
 function pathOf(u: URL): string {
@@ -486,12 +493,19 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
         // Its events where the page says the site lists them, through the same gate (a feed refused or
         // failed leaves the page's own).
         let feedEvents: CalendarEvent[] = [];
+        let feedComplete = false;
         const eventsFeed = async () => {
           if (!page.eventsFeed) return;
+          // On a host many venues share, a feed is this venue's only under its own path (a host-wide
+          // one lists every venue's), and its events are keyed by the host: it never withdraws.
+          const shared = sharedHosts.has(new URL(page.eventsFeed.url).hostname.toLowerCase().replace(/^www\./, ""));
+          if (shared && !underPath(page.eventsFeed.url, page.url)) return;
           const reader: SiteFeedReader = { text: (u, o) => fetcher.text(u, { ...o, gate }), page: (u) => fetcher.page(u, { gate, text: false }) };
           const now = clock();
           const { read: r, slowDown } = await readSiteFeed(page.eventsFeed, reader, { now, until: new Date(now.getTime() + CALENDAR_DAYS * 86_400_000), timeZone: SITE_TIME_ZONE });
           feedEvents = r.events;
+          // Only a feed read to its end says what the site no longer lists (a page lists some).
+          feedComplete = !shared && page.eventsFeed.format !== "page" && r.status === "ok" && r.complete === true;
           // A feed that asked us to slow down backs its host off like any page of it would.
           const waited = slowDown ? `, waiting ${Math.ceil(await backOff(slowDown, new URL(page.eventsFeed.url).host))} h` : "";
           if (r.status !== "ok") log(`  ${site.url} events (${page.eventsFeed.format}) → ${r.status}${r.error ? `: ${oneLine(r.error)}` : ""}${waited}`);
@@ -503,7 +517,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           s.noJsonLd++;
         } else s.ok++;
         if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-        await writeExtraction(db, runId, site.venue_id, x, s, site.auto, events, clock(), hoursUnread);
+        await writeExtraction(db, runId, site.venue_id, x, s, site.auto, events, clock(), hoursUnread, feedComplete);
       } catch (e) {
         if (e instanceof RequestRefused && e.reason !== "robots") {
           // Its host's requests for today are spent, or it asked us to wait: this site is not due-marked,
@@ -603,6 +617,8 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void, 
     s.ok++;
     if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
     const events = reviveCalendarEvents(site.events) ?? calendarEventsOf(x.events);
+    // Never withdraws: a capture is a read from its day, and an older one must not take a newer
+    // read's events away.
     await writeExtraction(db, runId, venueId, x, s, true, events, now, site.hoursUnread === true);
   }
   if (unmatched) log(`  ${unmatched} captured sites name venues not in this database (another area's, or gone)`);

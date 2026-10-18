@@ -211,7 +211,10 @@ run --area <slug>` then reads them:
   venue unless one names another place nearby, kinds from their schema.org types, nothing for children
   about drink, a price only as stated (free only when the page says so, not for a price of 0), once
   when another source lists the same event there. A page lists some of a venue's events, so nothing is
-  withdrawn for missing from a read: an event leaves when it is over or the site marks it cancelled.
+  withdrawn for missing from one. A feed read to its end (every page of The Events Calendar's API, an
+  iCalendar feed) is the site's listing: what it listed before and no longer lists by its last day
+  read (a show taken down or moved) is withdrawn. On a host several venues share, only a feed under
+  the venue's own path is read, and it never withdraws; a replay never withdraws either.
 - **What is kept:** the facts, with the words or JSON they were read from as evidence (published,
   0.85 from structured data, 0.75 from the page's words), never the HTML. Hours a site no longer
   states stop counting. `--save` keeps what each site stated for `pnpm real` to replay; a run that

@@ -142,6 +142,35 @@ describe.skipIf(!available)("a venue's own events", () => {
     const r = await runFirstParty(db, { fromFile: join(dir, "sites.json"), now: () => NOW });
     expect(r.occurrences).toBe(2);
     expect((await at("Broome Playhouse")).map((o) => o.title)).toEqual(["The Seagull", "Wine & Verse"]);
+    // The next day its feed, read whole, has moved the reading a week on: the old time is gone, not listed twice.
+    tec.events = [{ id: 7002, title: "Wine &amp; Verse", utc_start_date: "2026-10-12 23:00:00", categories: [{ name: "Readings" }] }];
+    const later = new Date(NOW.getTime() + 86_400_000);
+    await runFirstParty(db, { areaSlug: "les", fetcher, now: () => later, force: true });
+    const rows = await db.query<{ start_at: Date; status: string }>(`select start_at, status from occurrences where venue_id = $1 and title = 'Wine & Verse' order by start_at`, [broome]);
+    expect(rows.rows.map((o) => `${o.start_at.toISOString()} ${o.status}`)).toEqual(["2026-10-05T23:00:00.000Z withdrawn", "2026-10-12T23:00:00.000Z scheduled"]);
+  });
+
+  it("a feed read whole withdraws what the site no longer lists, wherever it was placed; a page never does", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const site = { venueId: playhouse, host: "feeds.delanceyplayhouse.example" };
+    const scheduled = async () => (await db.query<{ title: string }>(`select title from occurrences where recurrence_key like 'venue_events:site-feeds.delanceyplayhouse.example/%' and status = 'scheduled' order by start_at`)).rows.map((o) => o.title);
+    const all = [
+      event({ uid: "a", title: "Uncle Vanya", start: "2026-10-05T23:00:00.000Z" }),
+      event({ uid: "b", title: "Late Set", start: "2026-10-06T01:00:00.000Z", location: ["Attorney Arts Center"] }),
+      event({ uid: "c", title: "Matinee", start: "2026-10-07T18:00:00.000Z" }),
+    ];
+    await writeSiteEvents(db, site, all, NOW);
+    expect(await scheduled()).toEqual(["Uncle Vanya", "Late Set", "Matinee"]);
+    // A page lists some: nothing goes.
+    await writeSiteEvents(db, site, [all[0]!], NOW);
+    expect(await scheduled()).toEqual(["Uncle Vanya", "Late Set", "Matinee"]);
+    // Its feed read whole lists one: the others go, the one placed at another venue too.
+    const s = await writeSiteEvents(db, site, [all[2]!], NOW, { complete: true });
+    expect(s.withdrawn).toBe(2);
+    expect(await scheduled()).toEqual(["Matinee"]);
+    // And a feed read whole that lists nothing says they are all gone.
+    await writeSiteEvents(db, site, [], NOW, { complete: true });
+    expect(await scheduled()).toEqual([]);
   });
 
   it("back its host off when the events feed asks us to wait (429, 503): the host's next site waits too (PR #61 review)", async () => {
@@ -159,7 +188,7 @@ describe.skipIf(!available)("a venue's own events", () => {
         async page(url, o) {
           await o.gate(new URL(url));
           asked.push(new URL(url).pathname);
-          return extractPage(`<html><body class="tribe-events"></body></html>`, url, NOW);
+          return extractPage(`<html><head><link rel="alternate" type="text/calendar" href="${new URL(url).pathname}/events.ics"></head></html>`, url, NOW);
         },
         async text(url, o) {
           await o.gate(new URL(url));
@@ -168,11 +197,51 @@ describe.skipIf(!available)("a venue's own events", () => {
         },
       };
       const s = await runFirstParty(db, { areaSlug: "les", fetcher, now: () => NOW });
-      expect(asked, String(status)).toEqual([asked[0], "/wp-json/tribe/events/v1/events"]);
+      expect(asked, String(status)).toEqual([asked[0], `${asked[0]}/events.ics`]);
       expect(s.deferred, String(status)).toBe(1);
       const until = (await db.query<{ retry_after: Date }>(`select retry_after from firstparty_hosts where host = 'stages.example.org'`)).rows[0]!.retry_after;
       expect(until.getTime(), String(status)).toBeGreaterThanOrEqual(NOW.getTime() + 6 * 3_600_000);
     }
+  });
+
+  it("on a host several venues share, read only a feed under the venue's own path, and never withdraw for missing from it", async () => {
+    await db.query(`delete from firstparty_sites`);
+    await db.query(`delete from firstparty_hosts`);
+    const delancey = await venueId("Delancey Playhouse");
+    const broome = await venueId("Broome Playhouse");
+    await db.query(`delete from occurrences where venue_id = any($1::uuid[])`, [[delancey, broome]]);
+    await registerSite(db, delancey, "https://stages.example.org/delancey", "test", true);
+    await registerSite(db, broome, "https://stages.example.org/broome", "test", true);
+    const ics = (titles: string[]) =>
+      ["BEGIN:VCALENDAR", "VERSION:2.0", ...titles.flatMap((t) => ["BEGIN:VEVENT", `DTSTART:2026100${t === "Ivanov" ? 4 : 5}T233000Z`, `SUMMARY:${t}`, `UID:${t}@stages.example.org`, "END:VEVENT"]), "END:VCALENDAR", ""].join("\r\n");
+    let listing = ["Ivanov", "The Bear"];
+    const asked: string[] = [];
+    const fetcher: SiteFetcher = {
+      async robots(origin, gate) {
+        await gate(new URL(`${origin}/robots.txt`));
+        return { status: "none", rules: [], crawlDelayS: null };
+      },
+      async page(url, o) {
+        await o.gate(new URL(url));
+        const path = new URL(url).pathname;
+        asked.push(path);
+        // Delancey's page names the host's whole listing (The Events Calendar); Broome's, its own feed.
+        return extractPage(path === "/delancey" ? `<html><body class="tribe-events"></body></html>` : `<html><head><link rel="alternate" type="text/calendar" href="${path}/events.ics"></head></html>`, url, NOW);
+      },
+      async text(url, o) {
+        await o.gate(new URL(url));
+        asked.push(new URL(url).pathname);
+        return ics(listing);
+      },
+    };
+    await runFirstParty(db, { areaSlug: "les", fetcher, now: () => NOW });
+    expect(asked.filter((p) => p !== "/robots.txt").sort()).toEqual(["/broome", "/broome/events.ics", "/delancey"]);
+    expect(await at("Delancey Playhouse")).toEqual([]);
+    expect((await at("Broome Playhouse")).map((o) => o.title)).toEqual(["Ivanov", "The Bear"]);
+    // Read whole the next day, it lists one: the other stays (its key is the host's, which Delancey's would share).
+    listing = ["The Bear"];
+    await runFirstParty(db, { areaSlug: "les", fetcher, now: () => new Date(NOW.getTime() + 86_400_000), force: true });
+    expect((await at("Broome Playhouse")).map((o) => `${o.title} ${o.status}`)).toEqual(["Ivanov scheduled", "The Bear scheduled"]);
   });
 
   it("replay from a capture saved before feeds were read: its page events, with only the fields it kept (PR #61 review)", async () => {

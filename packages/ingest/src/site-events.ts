@@ -13,9 +13,11 @@ import { ingestEvents, type EventInput, type EventsSummary, type WrittenEvent } 
  *
  * They are written as calendars' events are (calendarEventInput: what is not an outing is left
  * out, kinds, who it is for, registration, price as stated, no drink event for children), at the
- * venue unless an event names another place we know nearby, as the source "venue_events". A read is
- * never the whole of a venue's events (a page lists some), so nothing is withdrawn for missing from
- * one: an event leaves when it is over, or when the site marks it cancelled.
+ * venue unless an event names another place we know nearby, as the source "venue_events". A page is
+ * never the whole of a venue's events (it lists some), so nothing is withdrawn for missing from one.
+ * A feed read whole (The Events Calendar's API, an iCalendar feed, every page of it) is: what this
+ * site listed before and its feed no longer lists by then (a show taken down, or moved to another
+ * time) is withdrawn.
  */
 
 export const VENUE_EVENTS_SOURCE = "venue_events";
@@ -131,18 +133,21 @@ export async function readSiteFeed(feed: EventsFeed, reader: SiteFeedReader, opt
 
 export interface SiteEventsSummary {
   written: number;
+  /** This site's events its feed, read whole, no longer lists. */
+  withdrawn: number;
   skipped: Partial<Record<CalendarSkip, number>>;
   areas: EventsSummary[];
 }
 
 /**
  * Write a venue's events from its own site, at the venue unless one names another place we know
- * within 3 km. The same event twice (on its page and in its feed) is one. Nothing is withdrawn for
- * missing; the events this site's pages once wrote straight into occurrences (keyed by host) give way
- * to these.
+ * within 3 km. The same event twice (on its page and in its feed) is one. Only when `complete` (its
+ * feed read whole) is what this site listed before and no longer lists, up to the last day read,
+ * withdrawn; the events this site's pages once wrote straight into occurrences (keyed by host) give
+ * way to these.
  */
-export async function writeSiteEvents(db: Db, site: { venueId: string; host: string }, events: readonly CalendarEvent[], now: Date): Promise<SiteEventsSummary> {
-  const summary: SiteEventsSummary = { written: 0, skipped: {}, areas: [] };
+export async function writeSiteEvents(db: Db, site: { venueId: string; host: string }, events: readonly CalendarEvent[], now: Date, opts: { complete?: boolean } = {}): Promise<SiteEventsSummary> {
+  const summary: SiteEventsSummary = { written: 0, withdrawn: 0, skipped: {}, areas: [] };
   const venue = await venueOf(db, site.venueId);
   if (!venue) return summary;
   const feed: Pick<CalendarFeed, "id" | "venue"> = { id: `site-${site.host}`.slice(0, 80), venue: { aliases: [venue.name], at: venue.point } };
@@ -204,6 +209,20 @@ export async function writeSiteEvents(db: Db, site: { venueId: string; host: str
     const s = await ingestEvents(db, { source: VENUE_EVENTS_SOURCE, events: list }, { areaSlug: area, now, actor: "firstparty", complete: false, afterWrite });
     summary.written += s.written;
     summary.areas.push(s);
+  }
+  if (opts.complete) {
+    // Its feed, read whole, is this site's listing up to the last day read (or, past the most it
+    // writes, up to the last of those it wrote): an event it listed before and no longer lists by
+    // then is gone, wherever it was placed. One another source lists too gives way to that one.
+    const listed = [...byArea.values()].flat().map((e) => `${VENUE_EVENTS_SOURCE}:${e.id}`);
+    const through = events.length > SITE_EVENTS_MAX ? new Date(soonest[soonest.length - 1]!.start) : until;
+    const gone = await db.query(
+      `update occurrences set status = 'withdrawn', updated_at = now()
+        where recurrence_key like $1 escape '\\' and not (recurrence_key = any($2::text[]))
+          and status in ('scheduled', 'sold_out') and start_at > $3 and start_at < $4`,
+      [`${VENUE_EVENTS_SOURCE}:${feed.id.replace(/[\\%_]/g, (c) => `\\${c}`)}/%`, listed, now, through],
+    );
+    summary.withdrawn = gone.rowCount ?? 0;
   }
   return summary;
 }
