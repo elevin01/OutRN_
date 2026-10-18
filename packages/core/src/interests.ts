@@ -67,7 +67,8 @@ export const INTERESTS_OF_CATEGORY: Readonly<Record<Category, InterestStrengths>
 /** Kinds within a broad category ("activity", "attraction") that say more than the category does. */
 export const INTERESTS_OF_SUBTYPE: Readonly<Record<string, InterestStrengths>> = {
   karaoke_box: { games: 1, nightlife: 0.5 },
-  casino: { games: 1, nightlife: 0.5 },
+  // A night out with a stake, not a game night: half a game, so "active" does not send anyone to the tables.
+  casino: { nightlife: 1, games: 0.5 },
   escape_game: { games: 1 },
   miniature_golf: { games: 1, outdoors: 0.5 },
   ice_rink: { sports: 1, games: 0.5 },

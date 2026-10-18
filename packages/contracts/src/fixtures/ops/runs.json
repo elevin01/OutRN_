@@ -1,49 +1,49 @@
 {
   "runs": [
     {
-      "id": "00000000-0000-4000-8000-000000000038",
+      "id": "00000000-0000-4000-8000-00000000003e",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.7.0",
-      "weightsVersion": "2026-10-18.1"
+      "weightsVersion": "2026-10-18.2"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000069",
+      "id": "00000000-0000-4000-8000-00000000006a",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.7.0",
-      "weightsVersion": "2026-10-18.1"
+      "weightsVersion": "2026-10-18.2"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000037",
+      "id": "00000000-0000-4000-8000-00000000003d",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.7.0",
-      "weightsVersion": "2026-10-18.1"
+      "weightsVersion": "2026-10-18.2"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000036",
+      "id": "00000000-0000-4000-8000-00000000003c",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.7.0",
-      "weightsVersion": "2026-10-18.1"
+      "weightsVersion": "2026-10-18.2"
     },
     {
-      "id": "00000000-0000-4000-8000-000000000033",
+      "id": "00000000-0000-4000-8000-00000000003a",
       "areaName": "Lower East Side (test point)",
       "createdAt": "2026-10-03T22:30:00.000Z",
       "candidateCount": 80,
       "durationMs": 42,
       "engineVersion": "0.7.0",
-      "weightsVersion": "2026-10-18.1"
+      "weightsVersion": "2026-10-18.2"
     }
   ]
 }

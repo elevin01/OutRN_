@@ -16,6 +16,42 @@ export function haversineMetres(a: LatLon, b: LatLon): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/**
+ * Across Long Island Sound from the mainland: Long Island's north shore is minutes away as the crow
+ * flies from New Rochelle and an hour by road, round through the Throgs Neck Bridge. East of Throgs
+ * Neck, south of the Sound's middle (or 40.905, whichever is farther north): the north shore runs
+ * north of 40.9 from Oyster Bay on (Caumsett, Eatons Neck, Fort Salonga), while the Westchester and
+ * Connecticut shore stays north of the line.
+ */
+const SOUND_LINE: readonly (readonly [lon: number, lat: number])[] = [
+  [-73.775, 40.85], [-73.7, 40.9], [-73.6, 40.94], [-73.5, 40.97], [-73.4, 41.01], [-73.3, 41.03], [-73.1, 41.07], [-72.8, 41.1], [-72.3, 41.22], [-71.8, 41.3],
+];
+export function acrossTheSound(p: LatLon): boolean {
+  const [first, last] = [SOUND_LINE[0]!, SOUND_LINE[SOUND_LINE.length - 1]!];
+  if (p.lon < first[0] || p.lon > last[0] || p.lat < 40.5) return false;
+  let line = first[1];
+  for (let i = 1; i < SOUND_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
+    if (p.lon <= x1) {
+      line = y0 + ((p.lon - x0) / (x1 - x0)) * (y1 - y0);
+      break;
+    }
+  }
+  return p.lat <= Math.max(40.905, line);
+}
+
+/** Where a trip across the Sound crosses it: the Throgs Neck Bridge, the crossing nearest the mainland we serve. */
+const THROGS_NECK: LatLon = { lat: 40.8005, lon: -73.7929 };
+
+/**
+ * The straight-line distance a trip covers: as the crow flies, or, across the Sound, to the bridge
+ * and on from it. Never shorter than the straight line, so a search radius made from it still holds.
+ */
+export function tripMetres(from: LatLon, to: LatLon): number {
+  if (acrossTheSound(from) === acrossTheSound(to)) return haversineMetres(from, to);
+  return haversineMetres(from, THROGS_NECK) + haversineMetres(THROGS_NECK, to);
+}
+
 export type TravelMode = "walk" | "drive" | "transit";
 
 /** Default one-way travel limits by mode, minutes. A request may set its own. */
@@ -83,13 +119,13 @@ export interface TravelEstimate {
 }
 
 /**
- * v1 travel estimate. Straight-line distance × a detour factor at a speed by mode (a drive at town
- * speed for its first few km, then road speed), plus a fixed buffer for the mode (finding parking,
- * waiting for a light).
+ * v1 travel estimate. Straight-line distance (round by the bridge across the Sound, see tripMetres)
+ * × a detour factor at a speed by mode (a drive at town speed for its first few km, then road speed),
+ * plus a fixed buffer for the mode (finding parking, waiting for a light).
  * Labeled as an estimate everywhere it is shown. Routed times come later via an adapter.
  */
 export function estimateTravel(from: LatLon, to: LatLon, mode: TravelMode, opts: { hourLocal?: number; parkingBufferMinutes?: number } = {}): TravelEstimate {
-  const d = haversineMetres(from, to);
+  const d = tripMetres(from, to);
   switch (mode) {
     case "walk": {
       const minutes = Math.ceil((d * WALK_DETOUR) / WALK_M_PER_MIN);

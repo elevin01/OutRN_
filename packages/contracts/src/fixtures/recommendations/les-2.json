@@ -26,180 +26,16 @@
     "cuisines": [],
     "features": [],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
     "originIsDefault": true,
-    "travelModeIsDefault": true,
-    "eventsOnly": false
+    "travelModeIsDefault": true
   },
   "items": [
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
-          "basis": "typical",
-          "level": "moderate",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [
-        {
-          "alt": "The lawn at Pitt Park on a summer evening (synthetic fixture: this file does not exist)",
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg",
-          "width": 960,
-          "author": "Synthetic Photographer",
-          "credit": "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons",
-          "height": 720,
-          "license": "CC BY-SA 4.0",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
-        },
-        {
-          "alt": "Fountain in Pitt Park & its benches (synthetic fixture)",
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/OutRN_synthetic_Pitt_Park_fountain.jpg/960px-OutRN_synthetic_Pitt_Park_fountain.jpg",
-          "width": 960,
-          "author": null,
-          "credit": "CC0, via Wikimedia Commons",
-          "height": 1280,
-          "license": "CC0",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg",
-          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
-        }
-      ],
-      "cuisines": [],
-      "diets": [],
-      "features": [],
-      "interests": [
-        "outdoors"
-      ],
-      "id": "00000000-0000-4000-8000-000000000005",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~8 min walk · takes about 1h · until 1am · usually free",
-        "sentence": "A short walk, plenty of time, open late, usually free, sunset window, a landmark."
-      },
-      "kind": "venue",
-      "name": "Pitt Park",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:43:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:43pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "free",
-        "evidence": "estimate"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Visit",
-          "style": "visit",
-          "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 8,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:43:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 167
-      },
-      "actions": {
-        "links": [],
-        "phone": null,
-        "websiteUrl": "https://pittpark.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722592%2C-73.986782&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000005",
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 8
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 167
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "FREE",
-          "text": "usually free",
-          "params": {},
-          "required": false
-        },
-        {
-          "code": "SUNSET_WINDOW",
-          "text": "sunset window",
-          "params": {},
-          "required": false
-        },
-        {
-          "code": "LANDMARK",
-          "text": "a landmark",
-          "params": {},
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "park",
-        "label": "Park"
-      },
-      "location": {
-        "lat": 40.722592,
-        "lon": -73.986782
-      },
-      "placeName": "Pitt Park",
-      "callToAction": "go"
-    },
     {
       "conditions": [
         {
@@ -237,7 +73,7 @@
       "interests": [
         "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000006",
+      "id": "00000000-0000-4000-8000-000000000005",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -298,7 +134,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719101%2C-73.993416&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000006",
+      "placeId": "00000000-0000-4000-8000-000000000005",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -356,7 +192,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000007",
+      "id": "00000000-0000-4000-8000-000000000006",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -417,7 +253,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000007",
+      "placeId": "00000000-0000-4000-8000-000000000006",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -450,6 +286,136 @@
         "lon": -73.992962
       },
       "placeName": "Broome Bar",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "pizza",
+          "label": "Pizza"
+        }
+      ],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000007",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Pizza · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Ridge Ludlow Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:52:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:52pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 12,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:52:00.000Z",
+        "closesAt": "2026-10-04T03:30:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 158
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 7135",
+        "websiteUrl": "https://ridgeludlowkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000007",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 158
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:30:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.718864,
+        "lon": -73.979899
+      },
+      "placeName": "Ridge Ludlow Kitchen",
       "callToAction": "go"
     }
   ],

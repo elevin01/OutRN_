@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, Interest, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
 export const ENGINE_VERSION = "0.7.0";
-export const WEIGHTS_VERSION = "2026-10-18.1";
+export const WEIGHTS_VERSION = "2026-10-18.2";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -311,6 +311,8 @@ export interface Evaluation {
   tasteLead?: Interest | null;
   /** Check first on its hours alone, and most places of its kind that list theirs are open then (LIKELY_OPEN). */
   likelyOpen?: { open: number; listed: number };
+  /** A destination past the everyday reach with one like it within it: the minutes past, and the appeal it pays back (detour.ts). */
+  detour?: { minutes: number; appeal: number };
 }
 
 /** A specific change that would admit more options: "allow a longer walk" (+4). */

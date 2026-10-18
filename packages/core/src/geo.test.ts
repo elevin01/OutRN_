@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimateTravel, maxReachMetres, parkingBufferAt, type LatLon, type ParkingRule } from "./geo.js";
+import { acrossTheSound, estimateTravel, haversineMetres, maxReachMetres, parkingBufferAt, tripMetres, type LatLon, type ParkingRule } from "./geo.js";
 
 const ORIGIN: LatLon = { lat: 40.941, lon: -73.835 };
 /** A point `m` metres due north of the origin. */
@@ -35,6 +35,25 @@ describe("travel estimates", () => {
     expect(estimateTravel(ORIGIN, croton, "drive", { hourLocal: 17 }).minutes).toBeGreaterThan(55); // rush hour
     // Around town nothing changes: 2 km is the same town drive as before.
     expect(estimateTravel(ORIGIN, north(2_000), "drive", { hourLocal: 12 }).minutes).toBe(13);
+  });
+
+  it("a trip across Long Island Sound goes round by the Throgs Neck Bridge: the north shore is an hour from Mamaroneck, not half that", () => {
+    const mamaroneck: LatLon = { lat: 40.9384, lon: -73.7423 };
+    const locustValley: LatLon = { lat: 40.8754, lon: -73.597 };
+    const ryePlayland: LatLon = { lat: 40.968, lon: -73.672 };
+    expect(acrossTheSound(locustValley)).toBe(true);
+    expect(acrossTheSound(mamaroneck)).toBe(false);
+    expect(acrossTheSound(ryePlayland)).toBe(false);
+    // 13.6 km as the crow flies; ~34 km by the bridge.
+    expect(Math.round(haversineMetres(mamaroneck, locustValley) / 1000)).toBe(14);
+    expect(Math.round(tripMetres(mamaroneck, locustValley) / 1000)).toBe(34);
+    expect(estimateTravel(mamaroneck, locustValley, "drive", { hourLocal: 12 }).minutes).toBeGreaterThanOrEqual(55);
+    // Either way round, and the mainland is as before.
+    expect(tripMetres(locustValley, mamaroneck)).toBe(tripMetres(mamaroneck, locustValley));
+    expect(tripMetres(mamaroneck, ryePlayland)).toBe(haversineMetres(mamaroneck, ryePlayland));
+    expect(estimateTravel(mamaroneck, ryePlayland, "drive", { hourLocal: 12 }).minutes).toBeLessThan(25);
+    // Never shorter than the straight line, so a search radius from maxReachMetres still finds everything.
+    expect(tripMetres(mamaroneck, locustValley)).toBeGreaterThan(haversineMetres(mamaroneck, locustValley));
   });
 
   it("the parking rule applies by local hour, wrapping past midnight", () => {

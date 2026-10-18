@@ -339,6 +339,37 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Golden: two LES slots. Ray's Pizza & Bagel Cafe (Overture says it operates) is #3 for pizza, and
     Best Damn Cookies #6 on the Friday date, in place of il laboratorio del gelato. Bronxville unchanged.
   - Engine time: about 20% more (White Plains, 2,613 candidates: 119 ms warm, was 97).
+- **Part 9 (this PR): what a search in each of the 12 areas showed.** Six searches per area (Sunday
+  evening, a family Saturday, a Friday date, a weekday lunch, an active Saturday morning, Wednesday
+  10:30pm) on the fresh captures, three pages each, read by hand.
+  - **The same far parks everywhere.** A family Saturday from White Plains, Port Chester or Rye led
+    with Tibbetts Brook, Van Cortlandt, Orchard Beach, Inwood Hill and Fort Tryon (34 to 45 minutes),
+    past Kensico Dam Plaza and Greenburgh Nature Center (20). A 4-hour window reaches twice as far for
+    a destination, and every destination in reach earned the same bonus, so a Wikidata id (the
+    landmark lift) outweighed 20 more minutes each way. Now a destination past the everyday reach
+    (30 minutes by car) pays its bonus back over the next 20 minutes when a Ready one like it is
+    within that reach (`DETOUR`, detour.ts; any walk stands in for another, anything else only its
+    own kind). White Plains now opens with Greenburgh Nature Center, then Cranberry Lake Preserve and
+    Kensico Dam Plaza; Inwood Hill and Fort Tryon fall from #9 and #12 to #23 and #29.
+  - **Long Island was half an hour away.** Straight-line travel cannot see the Sound: a bookshop in
+    Locust Valley was "29 min" from Rye and Mamaroneck. A trip from the mainland to the north shore
+    now goes round by the Throgs Neck Bridge (`tripMetres`; the Sound line moved from the
+    destinations job into core): ~34 km and ~55 minutes from Mamaroneck at noon. Never shorter than the
+    straight line, so search radii hold.
+  - **Parks at 10:30pm.** Parks OSM tags 24/7 (Brite Avenue Park, Davis Brook Park) were Ready on a
+    Wednesday night, so they came before every bar that lists no hours. A Ready place outdoors in
+    the dark now ranks with Check first, by merit (`standing`); its card still says it is open. A
+    café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
+    beach was "fair" until 11pm); a lookout keeps the city lights.
+  - **A casino in the "active" mood.** Empire City's subtype read as games first; it is now
+    nightlife first and half a game.
+  - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
+    (`afternoon`) keeps a page with photos for the apps' demo mode.
+  - Golden: unchanged (none of its scenarios has a far destination with a near one like it).
+  - Seen, not fixed: the same place twice where OSM maps it as a point and an area, or where a
+    destination made from Overture before any nearby area's OSM had it (59 such parks; none reached
+    the first three pages); hours a mapper mistyped (a gallery "10:00-06:00", a bookshop
+    "10:00-10:00"); and most local places listing no hours, which reading their own sites addresses.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never

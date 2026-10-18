@@ -1,5 +1,5 @@
 import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
-import { destinationOf } from "./destination.js";
+import { destinationOf, type DestinationView } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, ResultClass, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
@@ -62,6 +62,17 @@ export function suitsCompany(c: Candidate, company: NonNullable<RequestContext["
   return !(cuisines.length > 0 && cuisines.every((x) => CASUAL_CUISINES.has(x)));
 }
 
+/** How far into a long window this search is: 0 up to 90 minutes, 1 from four hours (see WORTH_THE_TRIP). */
+export function longWindowOf(ctx: RequestContext): number {
+  const windowMinutes = Math.max(1, minutesBetween(ctx.now, deadlineOf(ctx)));
+  return Math.max(0, Math.min(1, (windowMinutes - WORTH_THE_TRIP.fromMinutes) / (WORTH_THE_TRIP.fullMinutes - WORTH_THE_TRIP.fromMinutes)));
+}
+
+/** What being a destination adds to a place's appeal in this search (see scoreCandidate, and detour.ts). */
+export function destinationAppeal(dest: DestinationView, ctx: RequestContext): number {
+  return APPEAL_WEIGHTS.destination + longWindowOf(ctx) * APPEAL_WEIGHTS.destinationLongWindow + (dest.note ? APPEAL_WEIGHTS.destinationNamed : 0);
+}
+
 export function scoreCandidate(
   c: Candidate,
   ctx: RequestContext,
@@ -81,7 +92,7 @@ export function scoreCandidate(
   // getting there and back. A long trip is for a place that takes a while (a museum, a market, a
   // long meal), not a 25-minute ice cream. It counts from 90 minutes and fully from four hours.
   const worth = 1 - (2 * t.travel.minutes) / (2 * t.travel.minutes + t.visit.typicalMinutes);
-  const longWindow = Math.max(0, Math.min(1, (windowMinutes - WORTH_THE_TRIP.fromMinutes) / (WORTH_THE_TRIP.fullMinutes - WORTH_THE_TRIP.fromMinutes)));
+  const longWindow = longWindowOf(ctx);
   const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * Math.max(0, 1 - t.travel.minutes / reach) + longWindow * WORTH_THE_TRIP.share * worth;
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
@@ -129,7 +140,7 @@ export function scoreCandidate(
   // when it is one anyone local would name (the curated list, which says why).
   const dest = c.kind === "venue" ? destinationOf(c) : null;
   if (dest) {
-    appeal += APPEAL_WEIGHTS.destination + longWindow * APPEAL_WEIGHTS.destinationLongWindow + (dest.note ? APPEAL_WEIGHTS.destinationNamed : 0);
+    appeal += destinationAppeal(dest, ctx);
     extra.push("DESTINATION");
   }
   if (forKids && !minorInParty(ctx)) appeal -= APPEAL_WEIGHTS.kidsEventForAdults;
@@ -218,17 +229,25 @@ export function scoreCandidate(
  */
 export function merit(e: Evaluation): number {
   const s = e.scores;
-  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + s.appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : s.appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
+  // A destination past the everyday reach with one like it nearer pays back its bonus (detour.ts).
+  const appeal = s.appeal - (e.detour?.appeal ?? 0);
+  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
   // Likely open, not known to be: less the cost of checking, and of the times places like it are shut then.
   return e.likelyOpen ? m - LIKELY_OPEN.checkCost - (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost : m;
 }
 
 /**
  * Where an option ranks: Ready, and Check first on its hours alone where places like it are likely
- * open then (LIKELY_OPEN), lead; the rest of Check first follows. Its class (the card's label) is its own.
+ * open then (LIKELY_OPEN), lead; the rest of Check first follows. A Ready place outdoors in the dark
+ * (a park open all night at 10:30pm: dayPart "off") ranks with Check first, by merit, which its hour
+ * already costs: being open is not enough to come before every bar worth checking. A café at 9pm
+ * keeps its standing: it is a poor idea for the hour, not a dark lawn. Its class (the card's label)
+ * is its own.
  */
 export function standing(e: Evaluation): ResultClass {
-  return e.class === "check_first" && e.likelyOpen ? "ready" : e.class;
+  if (e.class === "check_first" && e.likelyOpen) return "ready";
+  if (e.class === "ready" && e.dayPart === "off" && isOutdoor(e.candidate)) return "check_first";
+  return e.class;
 }
 
 /** Ordering within the eligible set: standing, then merit. */
