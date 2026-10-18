@@ -102,3 +102,11 @@ describe("JSON-LD days that name what every object inherits", () => {
   });
 });
 
+
+describe("schema.org openingHours text", () => {
+  it("is read as OSM's syntax: a separator between days, no spaces around the dash", async () => {
+    const { osmHoursFromSchema } = await import("./firstparty.js");
+    expect(osmHoursFromSchema("Su 09:00 - 23:00 Mo 09:00 - 23:00 Fr 09:00 - 00:00")).toBe("Su 09:00-23:00; Mo 09:00-23:00; Fr 09:00-00:00");
+    expect(osmHoursFromSchema("Mo-Fr 11:00-22:00, Sa 12:00-23:00")).toBe("Mo-Fr 11:00-22:00, Sa 12:00-23:00");
+  });
+});

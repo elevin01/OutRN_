@@ -13,6 +13,8 @@ import { lookup } from "node:dns/promises";
 
 export interface GuardedFetchOptions {
   sourceId: string;
+  /** What requests are spaced by (default: the source): a site's own host, for many small sites read side by side. */
+  throttleKey?: string;
   minIntervalMs?: number;
   timeoutMs?: number;
   maxBytes?: number;
@@ -24,6 +26,8 @@ export interface GuardedFetchOptions {
   body?: string;
   headers?: Record<string, string>;
   allowCrossHostRedirect?: boolean;
+  /** Follow a redirect between a host and its www. form (a site moving to or from www.), and no further. */
+  sameSiteRedirects?: boolean;
 }
 
 export interface GuardedResponse {
@@ -38,9 +42,18 @@ export interface GuardedResponse {
   attempts: number;
 }
 
-export class FetchBlocked extends Error {}
+export class FetchBlocked extends Error {
+  /** For a redirect off the host that wasn't followed: where it pointed. */
+  redirectTo?: string;
+}
+
+/** The same site: one host is the other with or without "www.". */
+export function sameSite(a: string, b: string): boolean {
+  return a.replace(/^www\./i, "").toLowerCase() === b.replace(/^www\./i, "").toLowerCase();
+}
 export class FetchFailed extends Error {
-  constructor(message: string, public readonly status?: number) {
+  /** retryAfterS: how long a 429 or 503 asked to be left alone, in seconds, when it said. */
+  constructor(message: string, public readonly status?: number, public readonly retryAfterS?: number) {
     super(message);
   }
 }
@@ -50,6 +63,14 @@ const lastCallAt = new Map<string, number>();
 function userAgent(): string {
   return process.env["OUTRN_USER_AGENT"] ?? "outrn-dev (set OUTRN_USER_AGENT)";
 }
+
+/** The User-Agent requests are sent with (robots.txt rules are matched against its product token). */
+export function currentUserAgent(): string {
+  return userAgent();
+}
+
+/** The longest Retry-After waited out before trying again; a site that asks for longer is given up on for now. */
+export const MAX_RETRY_AFTER_MS = 60_000;
 
 /**
  * Addresses a connector must never reach: this host, private networks, link-local (cloud metadata
@@ -152,7 +173,7 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
   let lastErr: unknown;
   while (attempt <= retries) {
     attempt++;
-    await throttle(opts.sourceId, opts.minIntervalMs ?? 1000);
+    await throttle(opts.throttleKey ?? opts.sourceId, opts.minIntervalMs ?? 1000);
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
@@ -174,7 +195,11 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
         const loc = res.headers.get("location");
         if (!loc) throw new FetchFailed(`redirect without location from ${url.host}`, res.status);
         const next = new URL(loc, url);
-        if (next.host !== url.host && !opts.allowCrossHostRedirect) throw new FetchBlocked(`cross-host redirect ${url.host} -> ${next.host}`);
+        if (next.host !== url.host && !opts.allowCrossHostRedirect && !(opts.sameSiteRedirects && sameSite(next.host, url.host))) {
+          const blocked = new FetchBlocked(`cross-host redirect ${url.host} -> ${next.host}`);
+          blocked.redirectTo = next.toString();
+          throw blocked;
+        }
         // Never from https down to http: the rest of the exchange would travel in the clear.
         if (url.protocol === "https:" && next.protocol !== "https:") throw new FetchBlocked(`redirect from https to ${next.protocol} at ${url.host}`);
         if (redirects >= MAX_REDIRECTS) throw new FetchBlocked(`more than ${MAX_REDIRECTS} redirects from ${url.host}`);
@@ -182,9 +207,12 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions, re
         return guardedFetch(next.toString(), { ...opts, retries: 0 }, redirects + 1);
       }
       if (res.status === 429 || res.status >= 500) {
-        lastErr = new FetchFailed(`${res.status} from ${url.host}`, res.status);
         const retryAfter = Number(res.headers.get("retry-after"));
-        await new Promise((r) => setTimeout(r, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * 2 ** (attempt - 1)));
+        lastErr = new FetchFailed(`${res.status} from ${url.host}`, res.status, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined);
+        const waitMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * 2 ** (attempt - 1);
+        // No wait after the last attempt, and none past a minute: a site asking for an hour is asked again another day.
+        if (attempt > retries || waitMs > MAX_RETRY_AFTER_MS) break;
+        await new Promise((r) => setTimeout(r, waitMs));
         continue;
       }
       const contentType = res.headers.get("content-type") ?? "";

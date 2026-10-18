@@ -7,3 +7,5 @@ export * from "./firstparty.js";
 export * from "./wikimedia.js";
 export * from "./overture.js";
 export * from "./nycparks.js";
+export * from "./robots.js";
+export * from "./sitehours.js";

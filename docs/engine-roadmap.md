@@ -415,6 +415,27 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     named for karaoke is an activity, not a show.
   - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
     them can be Ready.
+- **Hours from venues' own websites: done (this PR)** (`outrn firstparty discover` and `run`; the
+  founder's call, decision 10). Outside the city four in five places list no hours, so most local
+  places could only be Check first.
+  - **Which sites:** every venue with a website and no published hours, when the site is its own
+    (never a social network, review site, map, booking, ordering or link page). Registered
+    automatically, each with its reason; a founder can still add one by hand.
+  - **How:** robots.txt first (RFC 9309, our product token, else `*`; a site whose robots.txt can't
+    be reached is not read), cached a day per host with its crawl delay. At most four requests a day
+    per host, 5 s apart, eight hosts at a time; a 429 or 503 backs off six hours or more, a refusal
+    (403, or robots.txt) is asked again in a month. Moving between www. and the bare name is
+    followed; moving to another host once, if that host's robots.txt allows.
+  - **What:** JSON-LD (hours, phone, price, events), then microdata, then the hours the page writes
+    out, read strictly (am/pm required; not under a happy-hour, delivery, kitchen, office or
+    worship heading; no season's or holiday's hours; no two sets for a day; a weekend day stated).
+    On government sites, and sites many venues share, only structured data counts. With no hours on
+    the page, its own Hours/Visit/Location/Contact page is read. Facts are published at 0.85
+    (structured) or 0.75 (the page's words), with what they were read from as evidence.
+  - **White Plains, October 2026:** 237 sites, 103 read, hours from 61; robots.txt kept us off 42;
+    29 events came with the pages (JSON-LD events, kept as occurrences). `pnpm capture` records each
+    area's reads (`<area>-sites.json`) and `pnpm real` replays them.
+  - **Next:** `og:image` as a photo where the site's terms allow, and the menu link the site gives.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use
@@ -469,3 +490,6 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
 9. **Likely open** (batch 6, part 8): should a place with no listed hours rank with the Ready ones
    when most places like it nearby are open then (still labelled Check first, with the reason on its
    card)? It's in place now; veto it in review to keep Ready strictly first.
+10. ~~**Venues' own websites:** register each site by hand with a reviewed reason, or automatically?~~
+   Decided: automatically, respecting robots.txt and the rate limits above (batch 8). Sites that
+   aren't the venue's own are never registered.

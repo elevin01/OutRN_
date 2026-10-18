@@ -1,0 +1,85 @@
+import { describe, expect, it } from "vitest";
+import { hoursFromText, hoursLinks, microdataHours, visibleLines } from "./sitehours.js";
+
+const page = (body: string) => `<html><head><title>x</title><script>var hours = "Mon-Fri 1am-2am";</script><style>.mon{}</style></head><body>${body}</body></html>`;
+const read = (body: string) => hoursFromText(visibleLines(page(body)));
+const h = (hh: number, mm = 0) => hh * 60 + mm;
+
+describe("visible text", () => {
+  it("leaves out scripts, styles, comments and the head, breaks lines at blocks, and decodes entities", () => {
+    expect(visibleLines(page(`<!-- Mon 9am-5pm --><p>Monday&nbsp;&ndash; Friday</p><div>11:00&#8239;AM &#8211; 10pm</div><span>a</span> <b>b</b>`))).toEqual(["Monday – Friday", "11:00 AM – 10pm", "a b"]);
+  });
+
+  it("is linear on a crafted page (a megabyte of unclosed tags)", () => {
+    const t0 = performance.now();
+    visibleLines("<script".repeat(50_000) + "<div".repeat(100_000));
+    expect(performance.now() - t0).toBeLessThan(2000);
+  });
+});
+
+describe("hours written out on a venue's own page", () => {
+  it("reads day ranges, lists, lunch and dinner, a split statement and late closes", () => {
+    const x = read(`<h3>Hours</h3><p>Monday - Thursday: 11:30am - 2:30pm, 5pm - 10pm</p><p>Fri &amp; Sat: 11:30 AM - 12:30 AM</p><p>Sunday</p><p>noon - 9pm</p>`);
+    expect(x?.weekly).toEqual([
+      { weekday: 0, startMin: h(12), endMin: h(21) },
+      { weekday: 1, startMin: h(11, 30), endMin: h(14, 30) },
+      { weekday: 1, startMin: h(17), endMin: h(22) },
+      { weekday: 2, startMin: h(11, 30), endMin: h(14, 30) },
+      { weekday: 2, startMin: h(17), endMin: h(22) },
+      { weekday: 3, startMin: h(11, 30), endMin: h(14, 30) },
+      { weekday: 3, startMin: h(17), endMin: h(22) },
+      { weekday: 4, startMin: h(11, 30), endMin: h(14, 30) },
+      { weekday: 4, startMin: h(17), endMin: h(22) },
+      { weekday: 5, startMin: h(11, 30), endMin: h(24, 30) },
+      { weekday: 6, startMin: h(11, 30), endMin: h(24, 30) },
+    ]);
+    expect(x?.evidence).toContain("Monday - Thursday: 11:30am - 2:30pm, 5pm - 10pm");
+  });
+
+  it("leaves a holiday's line out and reads the rest; a season elsewhere on the page doesn't matter", () => {
+    const x = read(`<h3>Hours &amp; Holidays</h3><p>Mon-Sat 10am-9pm</p><p>Sunday 12pm-5pm</p><p>Christmas Eve: Sun 10am-2pm</p><p>Visit us</p><h4>Summer reading</h4><p>Join us!</p>`);
+    expect(x?.weekly).toHaveLength(7);
+    expect(x?.evidence).not.toContain("Christmas");
+  });
+
+  it("reads 'open daily', closed days, a missing meridiem from the close, and 24-hour times", () => {
+    expect(read(`<p>Open daily 7am - 3pm</p>`)?.weekly).toHaveLength(7);
+    const x = read(`<p>Tue-Sun 5-10pm</p><p>Monday: Closed</p>`);
+    expect(x?.weekly).toHaveLength(6);
+    expect(x?.weekly[0]).toEqual({ weekday: 0, startMin: h(17), endMin: h(22) });
+    expect(read(`<p>Mon-Sat 11-10pm</p>`)?.weekly[0]).toEqual({ weekday: 1, startMin: h(11), endMin: h(22) });
+    expect(read(`<p>Mon-Sun 08:00 - 22:00</p>`)?.weekly).toHaveLength(7);
+  });
+
+  it("reads nothing it would have to guess", () => {
+    // No meridiem at all, and not 24-hour times.
+    expect(read(`<p>Mon-Fri 11-10</p>`)).toBeNull();
+    // Happy hour, delivery and kitchen hours are not the doors' hours, inline or under a heading.
+    expect(read(`<p>Happy Hour Mon-Fri 4pm-7pm</p>`)).toBeNull();
+    expect(read(`<h4>Delivery hours</h4><p>Mon-Sun 11am-11pm</p>`)).toBeNull();
+    expect(read(`<p>Kitchen: Mon-Sat 5pm-11pm</p>`)).toBeNull();
+    // A caption under the block says what it is.
+    expect(read(`<p>Burgers</p><p>Monday – Friday 3pm-6pm</p><p>Saturday 3pm-5pm</p><p>Sunday 11:30 AM - 3pm</p><p>Happy Hour</p>`)).toBeNull();
+    // A season's hours are not this week's.
+    expect(read(`<h4>Summer Hours</h4><p>Mon-Sun 10am-9pm</p>`)).toBeNull();
+    // Weekdays only, nothing said of the weekend: an office's hours.
+    expect(read(`<p>Monday through Friday 9 a.m. - 5 p.m.</p>`)).toBeNull();
+    // Two locations' hours on one page disagree for a day.
+    expect(read(`<p>Rye: Mon-Fri 11am-9pm</p><p>Port Chester: Mon-Fri 11am-10pm</p>`)).toBeNull();
+    // Too little to be a week's hours, and prose with no times.
+    expect(read(`<p>Mon-Fri 11am-10pm</p><p>Sun: closed</p><p>Sun 1pm-5pm</p>`)).toBeNull();
+    expect(read(`<p>Saturday 10am-2pm</p>`)).toBeNull();
+    expect(read(`<p>Hours: whenever we feel like it. Monday is our favourite day.</p>`)).toBeNull();
+  });
+});
+
+describe("microdata and hours links", () => {
+  it("reads itemprop=openingHours from content, datetime or text", () => {
+    expect(microdataHours(`<meta itemprop="openingHours" content="Mo-Fr 11:00-22:00"><time itemprop='openingHours' datetime="Sa 12:00-23:00">Sat</time><span itemprop="openingHours">Su 12:00-21:00</span>`)).toEqual(["Mo-Fr 11:00-22:00", "Sa 12:00-23:00", "Su 12:00-21:00"]);
+  });
+
+  it("finds the site's own hours page first, never another site's or a file", () => {
+    const html = `<a href="/contact">Contact</a><a href="https://other.example/hours">Hours</a><a href="/visit#top">Plan your visit</a><a href="/hours-and-location">Hours &amp; Location</a><a href="/menu.pdf">Hours (PDF)</a><a href="mailto:x@y.z">hours</a>`;
+    expect(hoursLinks(html, "https://www.venue.example/")).toEqual(["https://www.venue.example/hours-and-location", "https://www.venue.example/visit", "https://www.venue.example/contact"]);
+  });
+});
