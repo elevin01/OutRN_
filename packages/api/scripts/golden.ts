@@ -1,6 +1,7 @@
 /**
  * Regenerates fixtures/golden/scenarios.json: what the engine ranks first for each golden scenario,
- * on the real LES and Bronxville captures. Run it when a ranking change is intended, and review the diff.
+ * on the real LES, Bronxville and White Plains captures. Run it when a ranking change is intended,
+ * and review the diff.
  *
  *   pnpm golden
  */
@@ -9,7 +10,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { formatGolden, GOLDEN_FILE, runGolden, seedGolden } from "./golden-lib.js";
+import { formatGolden, GOLDEN_FILE, runAllGolden } from "./golden-lib.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/outrn";
@@ -21,8 +22,7 @@ await admin.end();
 const db = new pg.Pool({ connectionString: DB_URL });
 try {
   await db.query("create extension if not exists postgis; create extension if not exists pgcrypto;");
-  await seedGolden(db, ROOT);
-  const results = await runGolden(db);
+  const results = await runAllGolden(() => new pg.Pool({ connectionString: DB_URL }), ROOT);
   const path = resolve(ROOT, GOLDEN_FILE);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, formatGolden(results), "utf8");
