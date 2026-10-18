@@ -1,38 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000007",
-  "name": "Broome Bar",
+  "name": "Ridge Ludlow Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.727149,
-    "lon": -73.992962
+    "lat": 40.718864,
+    "lon": -73.979899
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T07:00:00.000Z",
+    "closesAt": "2026-10-04T03:30:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 3am"
+    "summary": "Open now until 11:30pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Sa 18:00-03:00",
-      "detail": "Open now until 3am",
+      "value": "Mo-Th 17:00-22:30; Fr-Sa 17:00-23:30; Su 17:00-22:00",
+      "detail": "Open now until 11:30pm",
       "provenance": {
         "sources": [
           {
@@ -41,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.615,
+        "confidence": 0.574,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
       }
     },
     {
@@ -66,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Pizza",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,21 +83,21 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.5,
+        "evidence": "published",
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -110,20 +107,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
       "attribute": "outdoor_seating",
       "label": "Outdoor seating",
-      "value": "Yes",
+      "value": "No",
       "detail": null,
       "provenance": {
         "sources": [
@@ -135,12 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
       }
     },
     {
@@ -158,18 +155,18 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -181,25 +178,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-08-31T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2026",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://broomebar.example/",
-    "phone": "+1 212 555 3125"
+    "websiteUrl": "https://ridgeludlowkitchen.example/",
+    "phone": "+1 212 555 7135"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=driving"
     },
     "links": []
   },

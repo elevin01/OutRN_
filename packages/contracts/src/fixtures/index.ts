@@ -6,6 +6,10 @@ import fx_recommendations_les_1 from "./recommendations/les-1.json" with { type:
 import fx_recommendations_les_2 from "./recommendations/les-2.json" with { type: "json" };
 import fx_recommendations_les_3 from "./recommendations/les-3.json" with { type: "json" };
 import fx_recommendations_les_4 from "./recommendations/les-4.json" with { type: "json" };
+import fx_recommendations_afternoon_1 from "./recommendations/afternoon-1.json" with { type: "json" };
+import fx_recommendations_afternoon_2 from "./recommendations/afternoon-2.json" with { type: "json" };
+import fx_recommendations_afternoon_3 from "./recommendations/afternoon-3.json" with { type: "json" };
+import fx_recommendations_afternoon_4 from "./recommendations/afternoon-4.json" with { type: "json" };
 import fx_recommendations_bronxville_1 from "./recommendations/bronxville-1.json" with { type: "json" };
 import fx_recommendations_bronxville_2 from "./recommendations/bronxville-2.json" with { type: "json" };
 import fx_recommendations_bronxville_3 from "./recommendations/bronxville-3.json" with { type: "json" };
@@ -46,10 +50,10 @@ import fx_places_00000000_0000_4000_8000_000000000013 from "./places/00000000-00
 import fx_places_00000000_0000_4000_8000_000000000014 from "./places/00000000-0000-4000-8000-000000000014.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000015 from "./places/00000000-0000-4000-8000-000000000015.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000016 from "./places/00000000-0000-4000-8000-000000000016.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_000000000017 from "./places/00000000-0000-4000-8000-000000000017.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000018 from "./places/00000000-0000-4000-8000-000000000018.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000019 from "./places/00000000-0000-4000-8000-000000000019.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000001a from "./places/00000000-0000-4000-8000-00000000001a.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000001b from "./places/00000000-0000-4000-8000-00000000001b.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000001c from "./places/00000000-0000-4000-8000-00000000001c.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000001d from "./places/00000000-0000-4000-8000-00000000001d.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000001e from "./places/00000000-0000-4000-8000-00000000001e.json" with { type: "json" };
@@ -58,18 +62,23 @@ import fx_places_00000000_0000_4000_8000_000000000020 from "./places/00000000-00
 import fx_places_00000000_0000_4000_8000_000000000021 from "./places/00000000-0000-4000-8000-000000000021.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000022 from "./places/00000000-0000-4000-8000-000000000022.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000023 from "./places/00000000-0000-4000-8000-000000000023.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_000000000024 from "./places/00000000-0000-4000-8000-000000000024.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000025 from "./places/00000000-0000-4000-8000-000000000025.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000026 from "./places/00000000-0000-4000-8000-000000000026.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000027 from "./places/00000000-0000-4000-8000-000000000027.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000028 from "./places/00000000-0000-4000-8000-000000000028.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000029 from "./places/00000000-0000-4000-8000-000000000029.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002a from "./places/00000000-0000-4000-8000-00000000002a.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000002b from "./places/00000000-0000-4000-8000-00000000002b.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_00000000002c from "./places/00000000-0000-4000-8000-00000000002c.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_00000000002d from "./places/00000000-0000-4000-8000-00000000002d.json" with { type: "json" };
-import fx_places_00000000_0000_4000_8000_00000000002e from "./places/00000000-0000-4000-8000-00000000002e.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000002f from "./places/00000000-0000-4000-8000-00000000002f.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000030 from "./places/00000000-0000-4000-8000-000000000030.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000031 from "./places/00000000-0000-4000-8000-000000000031.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000032 from "./places/00000000-0000-4000-8000-000000000032.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000034 from "./places/00000000-0000-4000-8000-000000000034.json" with { type: "json" };
 import fx_places_00000000_0000_4000_8000_000000000035 from "./places/00000000-0000-4000-8000-000000000035.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000038 from "./places/00000000-0000-4000-8000-000000000038.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_000000000039 from "./places/00000000-0000-4000-8000-000000000039.json" with { type: "json" };
+import fx_places_00000000_0000_4000_8000_00000000003b from "./places/00000000-0000-4000-8000-00000000003b.json" with { type: "json" };
 import fx_ops_evaluate from "./ops/evaluate.json" with { type: "json" };
 import fx_ops_runs from "./ops/runs.json" with { type: "json" };
 import fx_errors_cursor_expired from "./errors/cursor-expired.json" with { type: "json" };
@@ -105,6 +114,7 @@ export const areas = fx_areas as unknown as AreasResponse;
 
 export const scenarios: Scenario[] = [
   { id: "les", area: {"id":"les","name":"Lower East Side (test point)","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Lower East Side, Saturday 6:30pm", description: "Walking, 3 hours free. Several pages: follow nextCursor.", request: {"areaId":"les","windowMinutes":180}, pages: [fx_recommendations_les_1, fx_recommendations_les_2, fx_recommendations_les_3, fx_recommendations_les_4] as unknown as RecommendationResponse[] },
+  { id: "afternoon", area: {"id":"mock-afternoon","name":"Mock · afternoon, photos","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Lower East Side, Saturday 2pm", description: "Walking, 3 hours free by day: the parks lead, with their photos (synthetic Commons files: the image URLs don't load). After dark they rank with what there is to check.", request: {"areaId":"mock-afternoon","windowMinutes":180}, pages: [fx_recommendations_afternoon_1, fx_recommendations_afternoon_2, fx_recommendations_afternoon_3, fx_recommendations_afternoon_4] as unknown as RecommendationResponse[] },
   { id: "bronxville", area: {"id":"bronxville","name":"Bronxville (test point)","timezone":"America/New_York","defaultTravelMode":"drive","center":{"lat":40.941,"lon":-73.835}}, title: "Bronxville, Saturday 7:30pm", description: "Driving (the area default), 2 hours free; travel includes parking.", request: {"areaId":"bronxville","windowMinutes":120}, pages: [fx_recommendations_bronxville_1, fx_recommendations_bronxville_2, fx_recommendations_bronxville_3, fx_recommendations_bronxville_4] as unknown as RecommendationResponse[] },
   { id: "bars", area: {"id":"mock-bars","name":"Mock · bars, date night","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Bars on a date", description: "Narrowed to bars. One has hours confirmed by a call; another's place page shows a stale check and disagreeing sources.", request: {"areaId":"mock-bars","windowMinutes":180,"company":"date","categories":["bar"]}, pages: [fx_recommendations_bars_1, fx_recommendations_bars_2, fx_recommendations_bars_3, fx_recommendations_bars_4] as unknown as RecommendationResponse[] },
   { id: "family", area: {"id":"mock-family","name":"Mock · family, age limits","timezone":"America/New_York","defaultTravelMode":"walk","center":{"lat":40.7185,"lon":-73.988}}, title: "Family, late, bars", description: "A family with no ages given: a bar that is usually 21+ is Check first with a required age caveat.", request: {"areaId":"mock-family","windowMinutes":120,"company":"family","categories":["bar"]}, pages: [fx_recommendations_family_1, fx_recommendations_family_2] as unknown as RecommendationResponse[] },
@@ -139,10 +149,10 @@ export const places: Record<string, PlaceDetails> = {
   "00000000-0000-4000-8000-000000000014": fx_places_00000000_0000_4000_8000_000000000014 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000015": fx_places_00000000_0000_4000_8000_000000000015 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000016": fx_places_00000000_0000_4000_8000_000000000016 as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-000000000017": fx_places_00000000_0000_4000_8000_000000000017 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000018": fx_places_00000000_0000_4000_8000_000000000018 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000019": fx_places_00000000_0000_4000_8000_000000000019 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000001a": fx_places_00000000_0000_4000_8000_00000000001a as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000001b": fx_places_00000000_0000_4000_8000_00000000001b as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000001c": fx_places_00000000_0000_4000_8000_00000000001c as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000001d": fx_places_00000000_0000_4000_8000_00000000001d as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000001e": fx_places_00000000_0000_4000_8000_00000000001e as unknown as PlaceDetails,
@@ -151,18 +161,23 @@ export const places: Record<string, PlaceDetails> = {
   "00000000-0000-4000-8000-000000000021": fx_places_00000000_0000_4000_8000_000000000021 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000022": fx_places_00000000_0000_4000_8000_000000000022 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000023": fx_places_00000000_0000_4000_8000_000000000023 as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-000000000024": fx_places_00000000_0000_4000_8000_000000000024 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000025": fx_places_00000000_0000_4000_8000_000000000025 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000026": fx_places_00000000_0000_4000_8000_000000000026 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000027": fx_places_00000000_0000_4000_8000_000000000027 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000028": fx_places_00000000_0000_4000_8000_000000000028 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000029": fx_places_00000000_0000_4000_8000_000000000029 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002a": fx_places_00000000_0000_4000_8000_00000000002a as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000002b": fx_places_00000000_0000_4000_8000_00000000002b as unknown as PlaceDetails,
   "00000000-0000-4000-8000-00000000002c": fx_places_00000000_0000_4000_8000_00000000002c as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-00000000002d": fx_places_00000000_0000_4000_8000_00000000002d as unknown as PlaceDetails,
-  "00000000-0000-4000-8000-00000000002e": fx_places_00000000_0000_4000_8000_00000000002e as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000002f": fx_places_00000000_0000_4000_8000_00000000002f as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000030": fx_places_00000000_0000_4000_8000_000000000030 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000031": fx_places_00000000_0000_4000_8000_000000000031 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000032": fx_places_00000000_0000_4000_8000_000000000032 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000034": fx_places_00000000_0000_4000_8000_000000000034 as unknown as PlaceDetails,
   "00000000-0000-4000-8000-000000000035": fx_places_00000000_0000_4000_8000_000000000035 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000038": fx_places_00000000_0000_4000_8000_000000000038 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-000000000039": fx_places_00000000_0000_4000_8000_000000000039 as unknown as PlaceDetails,
+  "00000000-0000-4000-8000-00000000003b": fx_places_00000000_0000_4000_8000_00000000003b as unknown as PlaceDetails,
 };
 
 export const ops = { evaluate: fx_ops_evaluate as unknown as OpsRunDetail, runs: fx_ops_runs as unknown as OpsRunList };

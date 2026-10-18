@@ -1,0 +1,404 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "asOf": "2026-10-03T18:00:00.000Z",
+  "generatedAt": "2026-10-03T18:00:00.000Z",
+  "expiresAt": "2026-10-03T18:20:00.000Z",
+  "area": {
+    "id": "mock-afternoon",
+    "name": "Mock · afternoon, photos",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T18:00:00.000Z",
+    "mood": null,
+    "diets": [],
+    "taste": [],
+    "areaId": "mock-afternoon",
+    "backBy": null,
+    "budget": {
+      "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "company": null,
+    "cuisines": [],
+    "features": [],
+    "categories": [],
+    "eventsOnly": false,
+    "travelMode": "walk",
+    "visitStyle": "dine_in",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 180,
+    "originIsDefault": true,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "mexican",
+          "label": "Mexican"
+        }
+      ],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000009",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Mexican · ~13 min walk · takes about 1h · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Stanton Allen Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:23:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:23pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:23:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 157
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 7512",
+        "websiteUrl": "https://stantonallenkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000009",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 157
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.725116,
+        "lon": -73.989173
+      },
+      "placeName": "Stanton Allen Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "art"
+      ],
+      "id": "00000000-0000-4000-8000-000000000012",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~12 min walk · takes about 45 min · until 7pm · usually free",
+        "sentence": "Plenty of time, usually free."
+      },
+      "kind": "venue",
+      "name": "Stanton Gallery",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:17:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:17pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "last_entry",
+          "text": "Last entry likely around 6:30pm",
+          "isEstimate": true
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 40,
+          "typicalMinutes": 45
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 12,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:17:00.000Z",
+        "closesAt": "2026-10-03T23:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 163
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://stantongallery.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715524%2C-73.995201&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000012",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 163
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "gallery",
+        "label": "Gallery"
+      },
+      "location": {
+        "lat": 40.715524,
+        "lon": -73.995201
+      },
+      "placeName": "Stanton Gallery",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "cafes"
+      ],
+      "id": "00000000-0000-4000-8000-000000000013",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~11 min walk · takes about 35 min · until 8pm · price unknown",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Delancey Coffee",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:16:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:16pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Counter service",
+          "style": "counter",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 35
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 11,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:16:00.000Z",
+        "closesAt": "2026-10-04T00:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 164
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 6384",
+        "websiteUrl": "https://delanceycoffee.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000013",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 164
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "cafe",
+        "label": "Cafe"
+      },
+      "location": {
+        "lat": 40.724198,
+        "lon": -73.987295
+      },
+      "placeName": "Delancey Coffee",
+      "callToAction": "go"
+    }
+  ],
+  "page": {
+    "offset": 6,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6M30"
+  },
+  "insufficient": null,
+  "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
+    "© OpenStreetMap contributors"
+  ]
+}

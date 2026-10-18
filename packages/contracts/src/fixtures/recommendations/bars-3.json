@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000001b",
+  "requestId": "00000000-0000-4000-8000-000000000024",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -58,7 +58,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000020",
+      "id": "00000000-0000-4000-8000-000000000028",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -119,7 +119,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000020",
+      "placeId": "00000000-0000-4000-8000-000000000028",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -179,7 +179,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000021",
+      "id": "00000000-0000-4000-8000-000000000029",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -240,7 +240,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000021",
+      "placeId": "00000000-0000-4000-8000-000000000029",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -295,7 +295,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000022",
+      "id": "00000000-0000-4000-8000-00000000002a",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -356,7 +356,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000022",
+      "placeId": "00000000-0000-4000-8000-00000000002a",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -395,8 +395,8 @@
   "page": {
     "offset": 6,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6M30"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [

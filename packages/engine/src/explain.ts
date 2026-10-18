@@ -18,6 +18,7 @@ export { fmtDuration, fmtTime } from "./format.js";
 
 const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   HOURS_UNKNOWN: "hours not listed",
+  HOURS_DOUBTFUL: "the hours listed look mistyped",
   HOURS_UNVERIFIED: "hours not checked recently",
   HOURS_APPROXIMATE: "hours are approximate",
   ADMISSION_UNCONFIRMED: "admission not confirmed",

@@ -35,6 +35,9 @@ describe("time of day: when each kind of place is a good idea", () => {
     expect(dayPart("park", at("2026-10-03", "14:00"), TZ, sunset)).toBe("prime");
     // A viewpoint after dark is still fair: city lights.
     expect(dayPart("viewpoint", at("2026-10-03", "21:30"), TZ, sunset)).toBe("fair");
+    // A shore is not: a beach at 10:30pm is dark sand, whatever the clock table says.
+    expect(dayPart("waterfront", at("2026-10-03", "22:30"), TZ, sunset)).toBe("off");
+    expect(dayPart("waterfront", at("2026-10-03", "17:00"), TZ, sunset)).toBe("prime");
   });
 
   it("no rule where the kind is too varied", () => {

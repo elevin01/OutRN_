@@ -1,0 +1,438 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "asOf": "2026-10-03T18:00:00.000Z",
+  "generatedAt": "2026-10-03T18:00:00.000Z",
+  "expiresAt": "2026-10-03T18:20:00.000Z",
+  "area": {
+    "id": "mock-afternoon",
+    "name": "Mock · afternoon, photos",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T18:00:00.000Z",
+    "mood": null,
+    "diets": [],
+    "taste": [],
+    "areaId": "mock-afternoon",
+    "backBy": null,
+    "budget": {
+      "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "company": null,
+    "cuisines": [],
+    "features": [],
+    "categories": [],
+    "eventsOnly": false,
+    "travelMode": "walk",
+    "visitStyle": "dine_in",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 180,
+    "originIsDefault": true,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "outdoors"
+      ],
+      "id": "00000000-0000-4000-8000-000000000014",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~10 min walk · takes about 1h · until dusk (~6:36pm) · usually free",
+        "sentence": "A short walk, plenty of time, usually open dawn to dusk, usually free."
+      },
+      "kind": "venue",
+      "name": "Stanton Park",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:15:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:15pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:15:00.000Z",
+        "closesAt": null,
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 165
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 6468",
+        "websiteUrl": "https://stantonpark.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000014",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 165
+          },
+          "required": false
+        },
+        {
+          "code": "DAWN_TO_DUSK",
+          "text": "usually open dawn to dusk",
+          "params": {
+            "duskAt": "2026-10-03T22:36:52.045Z",
+            "isEstimate": true
+          },
+          "required": true
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "location": {
+        "lat": 40.719677,
+        "lon": -73.981504
+      },
+      "placeName": "Stanton Park",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "vietnamese",
+          "label": "Vietnamese"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        },
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
+        }
+      ],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000015",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "Vietnamese · ~18 min walk · takes about 1h · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Ridge Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:28:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:28pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:28:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 152
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 9547",
+        "websiteUrl": "https://ridgekitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000015",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 152
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.72504,
+        "lon": -73.997603
+      },
+      "placeName": "Ridge Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "art"
+      ],
+      "id": "00000000-0000-4000-8000-000000000016",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~20 min walk · takes about 45 min · until 7pm · usually free",
+        "sentence": "Plenty of time, usually free."
+      },
+      "kind": "venue",
+      "name": "Eldridge Gallery",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:25:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:25pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "last_entry",
+          "text": "Last entry likely around 6:30pm",
+          "isEstimate": true
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 40,
+          "typicalMinutes": 45
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 20,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:25:00.000Z",
+        "closesAt": "2026-10-03T23:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 155
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 6665",
+        "websiteUrl": "https://eldridgegallery.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713942%2C-74.000631&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000016",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 155
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "gallery",
+        "label": "Gallery"
+      },
+      "location": {
+        "lat": 40.713942,
+        "lon": -74.000631
+      },
+      "placeName": "Eldridge Gallery",
+      "callToAction": "go"
+    }
+  ],
+  "page": {
+    "offset": 9,
+    "size": 3,
+    "nextCursor": null,
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
+    "© OpenStreetMap contributors"
+  ]
+}

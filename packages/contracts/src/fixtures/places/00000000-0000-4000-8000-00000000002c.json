@@ -1,35 +1,41 @@
 {
   "id": "00000000-0000-4000-8000-00000000002c",
-  "name": "Ridge Kitchen",
+  "name": "Ridge Tavern",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "bar",
+    "label": "Bar"
   },
-  "subtype": null,
+  "subtype": {
+    "id": "pub",
+    "label": "Pub"
+  },
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.72504,
-    "lon": -73.997603
+    "lat": 40.720409,
+    "lon": -73.998263
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T06:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 2am"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": null,
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 12:00-02:00",
+      "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
@@ -38,14 +44,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.541,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
@@ -63,18 +69,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Vietnamese",
+      "attribute": "subtype",
+      "label": "Kind",
+      "value": "Pub",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,12 +92,35 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -107,37 +136,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
-      }
-    },
-    {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "Yes",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -155,18 +161,18 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -178,25 +184,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://ridgekitchen.example/",
-    "phone": "+1 212 555 9547"
+    "websiteUrl": null,
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=driving"
     },
     "links": []
   },

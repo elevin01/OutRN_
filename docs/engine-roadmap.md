@@ -339,13 +339,71 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Golden: two LES slots. Ray's Pizza & Bagel Cafe (Overture says it operates) is #3 for pizza, and
     Best Damn Cookies #6 on the Friday date, in place of il laboratorio del gelato. Bronxville unchanged.
   - Engine time: about 20% more (White Plains, 2,613 candidates: 119 ms warm, was 97).
+- **Part 9 (this PR): what a search in each of the 12 areas showed.** Six searches per area (Sunday
+  evening, a family Saturday, a Friday date, a weekday lunch, an active Saturday morning, Wednesday
+  10:30pm) on the fresh captures, three pages each, read by hand.
+  - **The same far parks everywhere.** A family Saturday from White Plains, Port Chester or Rye led
+    with Tibbetts Brook, Van Cortlandt, Orchard Beach, Inwood Hill and Fort Tryon (34 to 45 minutes),
+    past Kensico Dam Plaza and Greenburgh Nature Center (20). A 4-hour window reaches twice as far for
+    a destination, and every destination in reach earned the same bonus, so a Wikidata id (the
+    landmark lift) outweighed 20 more minutes each way. Now a destination past the everyday reach
+    (30 minutes by car) pays its bonus back over the next 20 minutes when a Ready one like it is
+    within that reach (`DETOUR`, detour.ts; any walk stands in for another, anything else only its
+    own kind). White Plains now opens with Greenburgh Nature Center, then Cranberry Lake Preserve and
+    Kensico Dam Plaza; Inwood Hill and Fort Tryon fall from #9 and #12 to #23 and #29.
+  - **Long Island was half an hour away.** Straight-line travel cannot see the Sound: a bookshop in
+    Locust Valley was "29 min" from Rye and Mamaroneck. A trip whose straight line crosses the middle
+    of the Sound now goes round by the Throgs Neck Bridge (`crossesTheSound`, `tripMetres`): ~34 km and
+    ~55 minutes from Mamaroneck at noon. The line starts at the bridge, so City Island and Pelham Bay
+    to Kings Point or Great Neck go round too; a trip exactly through one of its vertices crosses it.
+    A trip along one shore never does, however near the water (New Rochelle to its Davenport Neck,
+    City Island to Pelham Bay) or in Queens. The destinations job's own test of what is across
+    (with its margin) stays a filter on what it adds. Never shorter than the straight line, so search
+    radii hold.
+  - **Parks at 10:30pm.** Parks OSM tags 24/7 (Brite Avenue Park, Davis Brook Park) were Ready on a
+    Wednesday night, so they came before every bar that lists no hours. A Ready place outdoors in
+    the dark (known to be open, or likely open) now ranks with Check first, by merit (`standing`); its
+    card still says what it did. A café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
+    beach was "fair" until 11pm); a lookout keeps the city lights. A dark shore earns no sunset window.
+  - **The dark lawn's demotion put a family's bar first.** With the park after dark moved down, a bar
+    and a likely-21+ casino came before it at 10:30pm for a family. A place with an age doubt for the
+    party (`AGE_LIMIT_LIKELY`, `AGE_LIMIT_UNCERTAIN`, `KIDS_UNCERTAIN`, which come only with an age or a
+    family in the request) now ranks after every other eligible option (`hasAgeDoubt`): no class
+    pass, variety pass or love keeps one on the first page. Adults' order is unchanged.
+  - **A casino in the "active" mood.** Empire City's subtype read as games first; it is now
+    nightlife first and half a game.
+  - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
+    (`afternoon`) keeps a page with photos for the apps' demo mode.
+  - Golden: unchanged (none of its scenarios has a far destination with a near one like it).
+  - Seen, not fixed: most local places listing no hours, which reading their own sites addresses.
+  - **Hours a mapper mistyped.** Hauser & Wirth "Mo-Fr 10:00-06:00" (for 18:00), a Barnes & Noble
+    "Fr, Sa 10:00-10:00", St. Agnes Library to midnight. At a place that closes by the evening
+    (museum, gallery, library, bookshop, garden), a close past 11pm or into the next morning on the
+    interval the visit uses is no close: Check first with "the hours listed look mistyped"
+    (`doubtfulClose`, `HOURS_DOUBTFUL`), and a peer's hours then don't count among the kind's habits
+    for "likely open". Only that interval is doubted, as the hours library reads it: its opening,
+    the schedule's other days, its closed days, other seasons and quoted comments stand as listed.
+    Round the clock (a study hall 24/7, a museum's viewing windows) and late hours where late is the
+    point (bars, cafés, music venues) are read as listed.
+  - **The same place twice.** OSM maps a park as an old point and its outline, a shop twice, a
+    preserve in parts; Overture's copy of a place OSM has under another category (Jay Heritage Center
+    as a park and an attraction) escaped identity, which never merges across categories. A list now
+    shows a name once within 150 m, or 1 km for grounds (park, garden, shore, attraction), whatever
+    the records' category or source (`SAME_PLACE_M`, `SAME_GROUNDS_M`, select.ts). Over the 12 areas
+    and 8 requests' first five pages, the 6 repeats (Marshlands Conservancy, Rockefeller State Park
+    Preserve, Columbus Park, Greenburgh Nature Center) are gone; the 5 left are a chain's branches
+    1.3–8.6 km apart in a café list, which are different places. The records stay as they are:
+    merging them is identity's work, with review.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
   - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
     offers (cuisines, diets, must-haves) on its card.
-  - Add golden scenarios for the new areas once their real data is ingested.
+  - Golden scenarios for the new areas: White Plains done (six searches on its 18 Oct captures,
+    seeded on its own so its reach over Bronxville's doesn't move Bronxville's). Its Friday date
+    leans on the few places that list hours (a Barnes & Noble, a Baskin-Robbins): the venues' own
+    websites (batch 8) should change that. Next: Yonkers and Port Chester.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.

@@ -1,35 +1,38 @@
 {
   "id": "00000000-0000-4000-8000-000000000019",
-  "name": "Grand Kitchen",
+  "name": "Ridge Bar",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.929329,
-    "lon": -73.841533
+    "lat": 40.930593,
+    "lon": -73.825424
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T02:00:00.000Z",
+    "closesAt": "2026-10-04T06:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 10pm"
+    "summary": "Open now until 2am"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": null,
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:30-15:00,17:00-22:00",
-      "detail": "Open now until 10pm",
+      "value": "Mo-Su 16:00-02:00",
+      "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
@@ -38,14 +41,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.601,
+        "confidence": 0.608,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -63,18 +66,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Mexican",
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
       "detail": null,
       "provenance": {
         "sources": [
@@ -83,15 +86,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
-        "confidence": 0.8,
+        "evidence": "estimate",
+        "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -107,20 +110,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
       "attribute": "outdoor_seating",
       "label": "Outdoor seating",
-      "value": "Yes",
+      "value": "No",
       "detail": null,
       "provenance": {
         "sources": [
@@ -132,18 +135,18 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -155,28 +158,28 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Orchard Street Lot",
-    "kind": "lot",
-    "fee": "paid",
-    "openingHours": "Mo-Su 06:00-24:00",
+    "name": null,
+    "kind": "street",
+    "fee": "unknown",
+    "openingHours": null,
     "location": {
-      "lat": 40.9296,
-      "lon": -73.8434
+      "lat": 40.9333,
+      "lon": -73.8254
     },
-    "distanceMetres": 160,
-    "walkMinutes": 3,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-    "text": "Orchard Street Lot (paid), ~3 min walk"
+    "distanceMetres": 301,
+    "walkMinutes": 5,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9333%2C-73.8254&travelmode=driving",
+    "text": "Street parking 300 m away, ~5 min walk"
   },
   "contact": {
     "websiteUrl": null,
@@ -184,9 +187,9 @@
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.930593%2C-73.825424&travelmode=driving"
     },
     "links": []
   },

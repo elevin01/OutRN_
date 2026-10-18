@@ -1,24 +1,24 @@
 {
   "id": "00000000-0000-4000-8000-000000000013",
-  "name": "Attorney Kitchen",
+  "name": "Delancey Coffee",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "cafe",
+    "label": "Cafe"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.92844,
-    "lon": -73.849641
+    "lat": 40.724198,
+    "lon": -73.987295
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T00:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 8pm"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Su 12:00-23:00; Mo off",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 08:00-20:00",
+      "detail": "Open now until 8pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.606,
+        "confidence": 0.612,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -63,41 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Vietnamese",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.8,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -107,14 +84,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -132,12 +109,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -155,12 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -178,38 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-29T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Hester Lot",
-    "kind": "lot",
-    "fee": "unknown",
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
     "openingHours": null,
     "location": {
-      "lat": 40.9287,
-      "lon": -73.8491
+      "lat": 40.72101,
+      "lon": -73.98795
     },
-    "distanceMetres": 54,
-    "walkMinutes": 1,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
-    "text": "Hester Lot, ~1 min walk"
+    "distanceMetres": 358,
+    "walkMinutes": 6,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
+    "text": "Rivington Garage (paid), ~6 min walk"
   },
   "contact": {
-    "websiteUrl": "https://attorneykitchen.example/",
-    "phone": null
+    "websiteUrl": "https://delanceycoffee.example/",
+    "phone": "+1 212 555 6384"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=driving"
     },
     "links": []
   },

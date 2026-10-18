@@ -1,0 +1,443 @@
+{
+  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "asOf": "2026-10-03T18:00:00.000Z",
+  "generatedAt": "2026-10-03T18:00:00.000Z",
+  "expiresAt": "2026-10-03T18:20:00.000Z",
+  "area": {
+    "id": "mock-afternoon",
+    "name": "Mock · afternoon, photos",
+    "timezone": "America/New_York"
+  },
+  "request": {
+    "at": "2026-10-03T18:00:00.000Z",
+    "mood": null,
+    "diets": [],
+    "taste": [],
+    "areaId": "mock-afternoon",
+    "backBy": null,
+    "budget": {
+      "kind": "any"
+    },
+    "origin": {
+      "lat": 40.7185,
+      "lon": -73.988
+    },
+    "company": null,
+    "cuisines": [],
+    "features": [],
+    "categories": [],
+    "eventsOnly": false,
+    "travelMode": "walk",
+    "visitStyle": "dine_in",
+    "youngestAge": null,
+    "atIsExplicit": false,
+    "windowMinutes": 180,
+    "originIsDefault": true,
+    "travelModeIsDefault": true
+  },
+  "items": [
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "books"
+      ],
+      "id": "00000000-0000-4000-8000-000000000004",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
+        "sentence": "A short walk, plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Delancey Books",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:11:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:11pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 30
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 6,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:11:00.000Z",
+        "closesAt": "2026-10-04T01:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 169
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://delanceybooks.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000004",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 6
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 169
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T01:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "bookshop",
+        "label": "Bookshop"
+      },
+      "location": {
+        "lat": 40.715671,
+        "lon": -73.989625
+      },
+      "placeName": "Delancey Books",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday afternoons",
+          "basis": "typical",
+          "level": "quiet",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-000000000002",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Opens at 4pm, open late, hours confirmed."
+      },
+      "kind": "venue",
+      "name": "Clinton Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T19:41:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 3:41pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T20:00:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive as it opens at 4pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 14,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T19:41:00.000Z",
+        "arriveAt": "2026-10-03T20:00:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 60
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 8297",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000002",
+      "reasons": [
+        {
+          "code": "WAIT_FOR_OPENING",
+          "text": "opens at 4pm",
+          "params": {
+            "opensAt": "2026-10-03T20:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "HOURS_CONFIRMED",
+          "text": "hours confirmed",
+          "params": {
+            "verifiedAt": "2026-09-29T16:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.723404,
+        "lon": -73.980264
+      },
+      "placeName": "Clinton Bar",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [
+        {
+          "alt": "OutRN synthetic Norfolk Park",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
+          "width": 800,
+          "author": "Unknown author",
+          "credit": "Unknown author, Public domain, via Wikimedia Commons",
+          "height": 600,
+          "license": "Public domain",
+          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg",
+          "licenseUrl": null
+        }
+      ],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "outdoors"
+      ],
+      "id": "00000000-0000-4000-8000-000000000011",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~9 min walk · takes about 1h · until 1am · usually free",
+        "sentence": "A short walk, plenty of time, open late, usually free."
+      },
+      "kind": "venue",
+      "name": "Norfolk Park",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:14:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:14pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "free",
+        "evidence": "estimate"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 9,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:14:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 166
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 1075",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-000000000011",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 9
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 166
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T05:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "FREE",
+          "text": "usually free",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "park",
+        "label": "Park"
+      },
+      "location": {
+        "lat": 40.722865,
+        "lon": -73.985733
+      },
+      "placeName": "Norfolk Park",
+      "callToAction": "go"
+    }
+  ],
+  "page": {
+    "offset": 3,
+    "size": 3,
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6MH0"
+  },
+  "insufficient": null,
+  "attributions": [
+    "Photos: Wikimedia Commons contributors (credited with each photo)",
+    "© OpenStreetMap contributors"
+  ]
+}
