@@ -97,7 +97,7 @@ export function registerIngest(program: Command): void {
       const t0 = Date.now();
       const s = await ingestNycParksEvents(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
       console.log(`run ${s.runId} · area ${s.area} · source ${s.source} · ${Date.now() - t0} ms`);
-      console.log(`  events     ${s.written} of ${s.events} written (of ${s.rows} in the city) · ${s.sitesCreated} new event sites · ${s.rejected.length} left out`);
+      console.log(`  events     ${s.written} of ${s.events} written (of ${s.rows} in the city) · ${s.sitesCreated} new event sites · ${s.withdrawn} withdrawn (no longer listed) · ${s.rejected.length} left out`);
       for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
       if (s.rejected.length) process.exitCode = 1;
     });

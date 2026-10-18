@@ -35,6 +35,10 @@ export interface NycParksCapture {
   outrn_capture: "nyc-parks-events";
   dataset: "w3wp-dpdi";
   fetchedAt: string;
+  /** Saved for one area (only its rows), or absent for the whole table. */
+  area?: string;
+  /** For one area's rows: how many rows the whole table had when they were read. */
+  tableRows?: number;
   rows: NycParksEventRow[];
 }
 
@@ -42,6 +46,8 @@ const CaptureSchema = z.object({
   outrn_capture: z.literal("nyc-parks-events"),
   dataset: z.literal("w3wp-dpdi"),
   fetchedAt: z.string().datetime(),
+  area: z.string().max(64).optional(),
+  tableRows: z.number().int().min(0).max(MAX_ROWS).optional(),
   rows: z.array(z.unknown()).max(MAX_ROWS),
 });
 
@@ -60,7 +66,7 @@ export function parseNycParksRows(rows: readonly unknown[]): { rows: NycParksEve
 export function parseNycParksCapture(data: unknown, label: string): NycParksCapture {
   const c = CaptureSchema.safeParse(data);
   if (!c.success) throw new Error(`${label} is not an NYC Parks events capture (outrn ingest nyc-parks --save)`);
-  return { outrn_capture: "nyc-parks-events", dataset: "w3wp-dpdi", fetchedAt: c.data.fetchedAt, rows: parseNycParksRows(c.data.rows).rows };
+  return { outrn_capture: "nyc-parks-events", dataset: "w3wp-dpdi", fetchedAt: c.data.fetchedAt, ...(c.data.area ? { area: c.data.area } : {}), ...(c.data.tableRows !== undefined ? { tableRows: c.data.tableRows } : {}), rows: parseNycParksRows(c.data.rows).rows };
 }
 
 export async function fetchNycParksEvents(): Promise<NycParksCapture & { unreadable: number }> {

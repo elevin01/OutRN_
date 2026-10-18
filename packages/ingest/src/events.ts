@@ -75,6 +75,8 @@ export interface EventsSummary {
   events: number;
   written: number;
   sitesCreated: number;
+  /** Events an earlier listing had that no area's listing has any more (complete listings only). */
+  withdrawn: number;
   rejected: { index: number; id: string | null; reason: string }[];
 }
 
@@ -166,6 +168,12 @@ export interface IngestEventsOptions {
   areaSlug: string;
   now?: Date;
   actor?: string;
+  /**
+   * The file is everything the source lists for the area (a feed read whole, not a hand-made list):
+   * an event this area's previous listing had and this one does not loses the area's listing, and
+   * one that has not ended and that no area lists any more is withdrawn.
+   */
+  complete?: boolean;
 }
 
 export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOptions): Promise<EventsSummary> {
@@ -178,7 +186,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
   const { radiusM } = ingestExtentFor(area, await loadParkingRule(db, area.slug));
   const center = { lat: Number(area.lat), lon: Number(area.lon) };
   const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: "events", params: { events: events.length } });
-  const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, rejected: [] };
+  const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, withdrawn: 0, rejected: [] };
   try {
     const checked: Checked[] = [];
     for (const [i, raw] of events.entries()) {
@@ -236,11 +244,28 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
         }
         summary.written++;
       }
+      if (opts.complete) {
+        // This read is the area's listing now: its own rows, refreshed; the rest of its previous one gone.
+        await tx.query(
+          `insert into event_listings (source_id, area_id, occurrence_id, run_id, seen_at) select $1, $2, o, $4, $5 from unnest($3::uuid[]) o
+           on conflict (source_id, area_id, occurrence_id) do update set run_id = excluded.run_id, seen_at = excluded.seen_at`,
+          [source, area.id, occurrences, runId, now],
+        );
+        const unlisted = (await tx.query<{ occurrence_id: string }>(`delete from event_listings where source_id = $1 and area_id = $2 and run_id <> $3 returning occurrence_id`, [source, area.id, runId])).rows.map((r) => r.occurrence_id);
+        // Withdrawn once no area lists it, unless it is already over (its record stands as it was).
+        const withdrawn = await tx.query(
+          `update occurrences o set status = 'withdrawn', updated_at = now()
+            where o.id = any($1::uuid[]) and o.status in ('scheduled', 'sold_out') and coalesce(o.end_at, o.start_at + interval '${DEFAULT_EVENT_HOURS} hours') > $2
+              and not exists (select 1 from event_listings l where l.occurrence_id = o.id and l.source_id = $3)`,
+          [unlisted, now, source],
+        );
+        summary.withdrawn = withdrawn.rowCount ?? 0;
+      }
       if (occurrences.length) await materializeSubjects(tx, "occurrence", occurrences, now);
       if (venues.size) await materializeSubjects(tx, "venue", [...venues], now);
-      await audit(tx, { actor: opts.actor ?? source, action: "events.ingest", targetKind: "area", targetId: area.id, after: { source, written: summary.written, sites_created: summary.sitesCreated, rejected: summary.rejected.length } });
+      await audit(tx, { actor: opts.actor ?? source, action: "events.ingest", targetKind: "area", targetId: area.id, after: { source, written: summary.written, sites_created: summary.sitesCreated, withdrawn: summary.withdrawn, rejected: summary.rejected.length } });
     });
-    await finishRun(db, runId, { status: summary.rejected.length && !summary.written ? "failed" : summary.rejected.length ? "partial" : "succeeded", counts: { events: summary.events, written: summary.written, sites_created: summary.sitesCreated, rejected: summary.rejected.length } });
+    await finishRun(db, runId, { status: summary.rejected.length && !summary.written ? "failed" : summary.rejected.length ? "partial" : "succeeded", counts: { events: summary.events, written: summary.written, sites_created: summary.sitesCreated, withdrawn: summary.withdrawn, rejected: summary.rejected.length } });
     return summary;
   } catch (err) {
     await finishRun(db, runId, { status: "failed", error: (err as Error).message.slice(0, 500) });

@@ -75,9 +75,12 @@ events in the city's parks, refreshed daily by NYC Parks (about a thousand: clas
 festivals, film nights, concerts, Halloween parades). An area keeps the ones within its reach, each at
 a site of its own, as the listing says: its times, its page, its categories as interests ("Fall
 Festivals" is festivals), register first or walk in, full when registration has closed, cancelled
-when the title says so, free only when it says so, and made for children when it is "Best for
-Kids" (it leads for a family and sinks for grown-ups on their own). A walk-in event can be joined
-late and left when it's time to go, so a festival afternoon fits a two-hour window.
+when the title says so, free only when it says so without condition ("free for members" is not),
+and made for children when it is "Best for Kids" (it leads for a family and sinks for grown-ups on
+their own). An event the area's next read no longer lists is withdrawn once no area lists it. A
+walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
+two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
+read for it: migration `0021` has the one statement that switches it on and records the review.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that

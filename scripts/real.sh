@@ -138,7 +138,8 @@ if [ -n "$served" ]; then
 fi
 
 # Events are optional too, and live like the weather: NYC Parks' next two weeks (NYC Open Data), for
-# every served area within reach of the city. An area with none near it gets none.
+# every served area within reach of the city. An area with none near it gets none. The source is off
+# until its terms are reviewed (migration 0021 says how to switch it on); until then this says so.
 if [ -n "$served" ]; then
   echo
   echo "== events (NYC Parks)"
@@ -146,7 +147,7 @@ if [ -n "$served" ]; then
     if out="$(pnpm -s outrn ingest nyc-parks --area "$slug" 2>&1)"; then
       echo "   ${slug}: $(printf '%s\n' "$out" | grep -m1 '^ *events  ' | sed 's/^ *events *//')"
     else
-      echo "   ${slug}: not refreshed (it needs data.cityofnewyork.us): $(printf '%s\n' "$out" | tail -n 1)"
+      echo "   ${slug}: not refreshed: $(printf '%s\n' "$out" | tail -n 1)"
     fi
   done
 fi

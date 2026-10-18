@@ -111,6 +111,29 @@ function entry(r: NycParksEventRow): { admission?: EventInput["admission"]; clos
   return { closed: false };
 }
 
+/** "Free" as a word of its own: not "gluten-free", "car-free" or "free-range". */
+const FREE = /(?<![\w-])free\b(?!-)/gi;
+/** What makes a "free" conditional: free for members, with admission, to residents, until noon. */
+const CONDITION = /^\s*(?:(?:admission|entry|entrance|event|program|programs|class|classes|tours?|of charge)\s+)?(?:for|with|to|if|until|before|after|on|when|during|by|through|thru|except)\b(?!\s+(?:all|everyone|everybody|the public|all ages|the (?:whole )?family|families)\b)/i;
+/** A listing that names a price, or an admission it doesn't waive. */
+const PAID = /\$\s?\d|\b(?:regular|paid|museum|general) admission\b|\badmission (?:applies|is required|fee)|\bmembers? only\b|\bsuggested donation\b|\bfees?\b/i;
+
+/**
+ * Whether a listing says it is free, without condition: "free and open to the public", "free for
+ * all ages", "free of charge". "Free for members", "free with admission", "free for kids under 12"
+ * and a price anywhere leave it unknown: free for some is not free for whoever is going.
+ */
+export function listedFree(text: string): boolean {
+  if (PAID.test(text)) return false;
+  let free = false;
+  for (const m of text.matchAll(FREE)) {
+    if (/\bfeel\s+$/i.test(text.slice(Math.max(0, m.index - 6), m.index))) continue;
+    if (CONDITION.test(text.slice(m.index + m[0].length))) return false;
+    free = true;
+  }
+  return free;
+}
+
 export type NycParksSkip = "far" | "no_time" | "no_place" | "online" | "over";
 
 /**
@@ -156,7 +179,7 @@ export function nycParksEvents(rows: readonly NycParksEventRow[], area: { center
     const { admission, closed } = entry(r);
     // A cancelled event stays listed, its title saying so ("CANCELED: Zumba").
     const cancelled = /^\W*cancell?ed\b/i.test(title);
-    const free = /\bfree\b/i.test(`${title} ${description}`) && !/\$\s?\d/.test(`${title} ${description}`);
+    const free = listedFree(`${title}. ${description}`);
     const placeName = clip(decodeEntities(r.location || r.parknames || "") || "NYC Parks", 120);
     const url = eventUrl(r.link?.url);
     events.push({
@@ -217,11 +240,17 @@ export async function ingestNycParksEvents(db: Db, opts: NycParksIngestOptions):
   const { events, skipped } = nycParksEvents(capture.rows, { center, radiusM, timezone: area.timezone }, now);
   log(`${events.length} events within ${(radiusM / 1000).toFixed(1)} km of ${area.slug} (skipped: ${Object.entries(skipped).map(([k, n]) => `${k} ${n}`).join(", ")})`);
   if (opts.saveTo && !opts.fromFile) {
-    // Only the rows this area holds: a replay selects the same events from them.
+    // Only the rows this area holds: a replay for it selects the same events from them.
     const ids = new Set(events.map((e) => e.id));
-    const saved: NycParksCapture = { ...capture, rows: capture.rows.filter((r) => ids.has(r.guid)) };
-    await writeFile(opts.saveTo, JSON.stringify({ outrn_capture: saved.outrn_capture, dataset: saved.dataset, fetchedAt: saved.fetchedAt, rows: saved.rows }), "utf8");
+    const saved: NycParksCapture = { outrn_capture: capture.outrn_capture, dataset: capture.dataset, fetchedAt: capture.fetchedAt, area: area.slug, tableRows: capture.rows.length, rows: capture.rows.filter((r) => ids.has(r.guid)) };
+    await writeFile(opts.saveTo, JSON.stringify(saved), "utf8");
   }
-  const s = await ingestEvents(db, { source: "nyc_parks", events }, { areaSlug: area.slug, now, actor: "nyc_parks" });
+  // The read is the area's whole listing, so an event it no longer has is withdrawn (see ingestEvents),
+  // unless the table came back empty (an outage is not every event cancelled) or the read was saved
+  // for another area (it holds only that area's rows).
+  const tableRows = capture.area === undefined ? capture.rows.length : (capture.tableRows ?? 0);
+  const complete = tableRows > 0 && (capture.area === undefined || capture.area === area.slug);
+  if (!complete) log(tableRows === 0 ? "the table came back empty: nothing withdrawn" : `the read was saved for ${capture.area}: nothing withdrawn in ${area.slug}`);
+  const s = await ingestEvents(db, { source: "nyc_parks", events }, { areaSlug: area.slug, now, actor: "nyc_parks", complete });
   return { ...s, rows: capture.rows.length, skipped };
 }

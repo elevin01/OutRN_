@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NycParksEventRow } from "@outrn/sources";
-import { decodeEntities, nycParksEvents } from "./nyc-parks.js";
+import { decodeEntities, listedFree, nycParksEvents } from "./nyc-parks.js";
 
 const LES = { center: { lat: 40.7185, lon: -73.988 }, radiusM: 3100, timezone: "America/New_York" };
 const NOW = new Date("2026-10-24T12:00:00Z");
@@ -48,9 +48,29 @@ describe("NYC Parks events as an area's events", () => {
     expect(one({ registration_description: undefined })).not.toHaveProperty("admission");
   });
 
-  it("is free only when the listing says so and names no price", () => {
+  it("is free only when the listing says so without condition and names no price", () => {
     expect(one({ description: "Tickets: $30.00; free for members." })).not.toHaveProperty("price");
     expect(one({ description: "A tour of the old house." })).not.toHaveProperty("price");
+    expect(one({ description: "Free for members; regular museum admission applies." })).not.toHaveProperty("price");
+    for (const text of [
+      "Free for members.",
+      "Free with museum admission.",
+      "Free with admission to the garden.",
+      "Free for kids under 12.",
+      "Free for children and seniors.",
+      "Free admission for NYC residents.",
+      "Free of charge for Conservancy members.",
+      "Free until noon.",
+      "Pay what you wish: suggested donation.",
+      "Gluten-free snacks provided.",
+      "A car-free afternoon on the drive.",
+      "Feel free to bring a blanket.",
+    ]) {
+      expect(listedFree(text), text).toBe(false);
+    }
+    for (const text of ["This event is free and open to the public.", "Free for all ages!", "Free to the public.", "Free of charge.", "FREE outdoor movie night.", "Free for everyone, rain or shine."]) {
+      expect(listedFree(text), text).toBe(true);
+    }
   });
 
   it("decodes the table's entities, and keeps to the area, the future and outings", () => {

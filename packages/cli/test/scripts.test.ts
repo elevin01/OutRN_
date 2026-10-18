@@ -116,7 +116,7 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
   it("fetches each served area's NYC Parks events after the weather, and serves an area without them when they can't be fetched", () => {
     const r = real({ STUB_FAIL_EVENTS: "bronxville" });
     expect(r.status, r.out).toBe(0);
-    expect(r.out).toMatch(/== events \(NYC Parks\)\n +bronxville: not refreshed \(it needs data\.cityofnewyork\.us\): error: fetch failed/);
+    expect(r.out).toMatch(/== events \(NYC Parks\)\n +bronxville: not refreshed: error: fetch failed for data\.cityofnewyork\.us/);
     expect(r.out).toMatch(/ +les: 94 of 94 written/);
     const calls = r.pnpmCalls.map((c) => c.split(" | ")[0]);
     expect(calls.indexOf("pnpm -s outrn ingest nyc-parks --area les")).toBeGreaterThan(calls.indexOf("pnpm -s outrn weather refresh"));
