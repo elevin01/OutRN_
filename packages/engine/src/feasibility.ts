@@ -90,8 +90,10 @@ const DAYTIME: ReadonlySet<Category> = new Set(["museum", "gallery", "library", 
  */
 export function doubtfulClose(category: Category, interval: OpenInterval, timeZone: string): boolean {
   if (!DAYTIME.has(category)) return false;
-  const opens = localClock(interval.open, timeZone).minutes;
-  return opens > 0 && opens + minutesBetween(interval.open, interval.close) > 23 * 60;
+  // By the wall clock on both ends, not elapsed time: a day the clocks change is 23 or 25 hours long.
+  const opens = localClock(interval.open, timeZone);
+  const closes = localClock(interval.close, timeZone);
+  return opens.minutes > 0 && (closes.date !== opens.date || closes.minutes > 23 * 60);
 }
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */

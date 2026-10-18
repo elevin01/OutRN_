@@ -108,6 +108,22 @@ describe("feasibility: opening hours", () => {
     expect(one(venue({ category: "library", hours: "24/7" }), ctx("2026-10-03 23:30", 60)).unresolved).not.toContain("HOURS_DOUBTFUL");
   });
 
+  it("the close is read by the wall clock across a clock change: 11pm on the day clocks fall back stands, 11:30pm on the day they spring forward is doubted (PR #60 review)", () => {
+    const museum = (hours: string) => venue({ category: "museum", hours, admission: "walk_in" });
+    // 1am to 11pm on Sunday 1 November 2026 is 23 hours by the wall clock and 24 elapsed.
+    const fallBack = one(museum("Su 01:00-23:00"), ctx("2026-11-01 12:00", 120));
+    expect(fallBack.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(fallBack.timing!.closesAt!.getTime()).toBe(fromLocal("2026-11-01", 23 * 60, TZ).getTime());
+    // 1am to 11:30pm on Sunday 8 March 2026 is 22½ hours elapsed, and still past 11pm.
+    const springForward = one(museum("Su 01:00-23:30"), ctx("2026-03-08 12:00", 120));
+    expect(springForward.unresolved).toContain("HOURS_DOUBTFUL");
+    expect(springForward.timing!.closesAt).toBeNull();
+    // Peers the same way.
+    const peers = (hours: string) => Array.from({ length: 8 }, (_, i) => venue({ id: `m${i}`, category: "museum", hours }));
+    expect(openShares(peers("Su 01:00-23:00"), POLICIES, 30)("museum", fromLocal("2026-11-01", 12 * 60, TZ))).toEqual({ open: 8, listed: 8 });
+    expect(openShares(peers("Su 01:00-23:30"), POLICIES, 30)("museum", fromLocal("2026-03-08", 12 * 60, TZ))).toEqual({ open: 0, listed: 0 });
+  });
+
   it("peers' hours count for likely open by the interval then: a mistyped close then is skipped, a quoted comment is not (PR #60 review)", () => {
     const peers = (hours: string) => Array.from({ length: 8 }, (_, i) => venue({ id: `g${i}`, category: "gallery", hours }));
     const noon = fromLocal("2026-10-17", 12 * 60, TZ);
