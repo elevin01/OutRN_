@@ -8,6 +8,7 @@ import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from ".
 import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
+import { cuisinesOf } from "./cuisine.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -21,7 +22,7 @@ const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
  * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
  * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, notForTheCompany: 0.15 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -36,6 +37,29 @@ const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, str
   friends: ["bar", "restaurant", "live_music", "market", "park", "theatre", "bowling", "arcade", "nightclub", "activity"],
   family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
+
+/** Food a quick, casual meal is made of: good for friends or family, not what a date is built around. */
+const CASUAL_CUISINES: ReadonlySet<string> = new Set(["pizza", "burger", "fast_food", "chicken", "fried_chicken", "wings", "sandwich", "hot_dog", "bagel", "donut", "deli", "kebab", "fish_and_chips", "diner", "bubble_tea"]);
+/** Bars an evening for two is not built around: the big screens, the pub crowd. */
+const NOT_A_DATE_BAR: ReadonlySet<string> = new Set(["sports_bar", "pub"]);
+/** Activities that are no date: a casino floor. */
+const NOT_A_DATE_ACTIVITY: ReadonlySet<string> = new Set(["casino"]);
+
+/**
+ * Whether a place suits who is going: its category is one for that company, and, for a date, it is a
+ * place an evening for two is built around. A restaurant whose every cuisine is casual (a pizza
+ * counter, a burger joint), a pub or sports bar, and a casino are for friends, not a date. What a
+ * place is not known to be stays as its category says.
+ */
+export function suitsCompany(c: Candidate, company: NonNullable<RequestContext["company"]>): boolean {
+  if (!COMPANY_CATEGORY_BONUS[company].includes(c.category)) return false;
+  if (company !== "date") return true;
+  const subtype = (c.facts.subtype?.value as { value?: unknown } | undefined)?.value;
+  if (c.category === "bar") return !(typeof subtype === "string" && NOT_A_DATE_BAR.has(subtype));
+  if (c.category === "activity") return !(typeof subtype === "string" && NOT_A_DATE_ACTIVITY.has(subtype));
+  const cuisines = cuisinesOf(c);
+  return !(cuisines.length > 0 && cuisines.every((x) => CASUAL_CUISINES.has(x)));
+}
 
 export function scoreCandidate(
   c: Candidate,
@@ -71,7 +95,7 @@ export function scoreCandidate(
   const forKids = c.kind === "occurrence" && (c.facts.audience?.value as { kids?: unknown } | undefined)?.kids === true;
   if (ctx.company) {
     if (adultForMinor) chips -= 0.25;
-    else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
+    else if (suitsCompany(c, ctx.company)) chips += 0.25;
   }
   if (forKids && minorInParty(ctx)) chips += 0.25;
   chips = Math.max(0, Math.min(1, chips));
@@ -108,6 +132,9 @@ export function scoreCandidate(
     extra.push("DESTINATION");
   }
   if (forKids && !minorInParty(ctx)) appeal -= APPEAL_WEIGHTS.kidsEventForAdults;
+  // A place of the company's kind that is no place for it (a pub, a casino floor, a pizza counter on a
+  // date) sinks, so the wine bar and the dinner come first.
+  if (ctx.company && COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category) && !suitsCompany(c, ctx.company)) appeal -= APPEAL_WEIGHTS.notForTheCompany;
   // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
