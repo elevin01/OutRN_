@@ -40,7 +40,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -53,8 +52,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -66,7 +64,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -78,8 +75,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -112,7 +108,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -126,7 +121,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -138,8 +132,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -165,7 +158,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -199,7 +191,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -212,7 +203,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -240,7 +230,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -434,7 +423,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -446,8 +434,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -494,8 +481,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -541,8 +527,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -554,7 +539,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -581,7 +565,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -601,8 +584,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -612,8 +594,7 @@
      "category": "market",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
+      "SHORT_TRAVEL"
      ],
      "caveats": []
     },
@@ -637,8 +618,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -696,7 +676,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -710,7 +689,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -769,8 +747,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -793,8 +770,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -805,8 +781,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1035,7 +1010,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1048,8 +1022,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1073,7 +1046,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -1345,8 +1317,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1393,8 +1364,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1425,8 +1395,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1437,7 +1406,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1461,8 +1429,7 @@
      "category": "cafe",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1473,8 +1440,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1486,7 +1452,6 @@
      "reasons": [
       "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1562,7 +1527,7 @@
     },
     {
      "rank": 6,
-     "name": "Kiki's",
+     "name": "MayRee",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1588,7 +1553,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -1751,7 +1715,6 @@
      "reasons": [
       "TASTE_MATCH",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1766,7 +1729,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1780,7 +1742,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1794,7 +1755,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1808,7 +1768,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1822,7 +1781,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -2094,7 +2052,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -2192,8 +2149,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
