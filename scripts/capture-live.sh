@@ -9,7 +9,7 @@
 #   CAPTURE_PAUSE_SECONDS=30 pnpm capture   # seconds between areas (default 10)
 #
 # Each area is recorded into a staging directory next to fixtures/live and replaces
-# fixtures/live/<area>.json, <area>-photos.json and <area>-overture.json only once every step for it
+# fixtures/live/<area>.json, <area>-photos.json, <area>-overture.json and <area>-destinations.json only once every step for it
 # has succeeded, so a failed capture leaves the previous set exactly as it was. The database is the script's own
 # (outrn_capture on the local cluster, recreated each run). It runs on macOS's Bash 3.2.
 #
@@ -107,6 +107,8 @@ for slug in "${slugs[@]}"; do
   new_photos="${stage}/${slug}-photos.json"
   overture="fixtures/live/${slug}-overture.json"
   new_overture="${stage}/${slug}-overture.json"
+  destinations="fixtures/live/${slug}-destinations.json"
+  new_destinations="${stage}/${slug}-destinations.json"
 
   problem=""
   if ! pnpm -s outrn ingest osm --area "$slug" --save "$new_osm"; then
@@ -130,6 +132,15 @@ for slug in "${slugs[@]}"; do
     fi
   fi
 
+  # The places worth a longer outing around the area: Overture again, farther out.
+  if [ -z "$problem" ]; then
+    if ! pnpm -s outrn ingest destinations --area "$slug" --save "$new_destinations"; then
+      problem="destinations"
+    elif [ ! -s "$new_destinations" ]; then
+      problem="destinations: nothing saved"
+    fi
+  fi
+
   if [ -n "$problem" ]; then
     echo "   ${slug} (${problem}) failed: kept the previous capture as it was" >&2
     failed="${failed:+${failed}, }${slug} (${problem})"
@@ -139,11 +150,12 @@ for slug in "${slugs[@]}"; do
       mv -f "$new_photos" "$photos"
     fi
     mv -f "$new_overture" "$overture"
+    mv -f "$new_destinations" "$destinations"
     mv -f "$new_osm" "$osm"
     if $photos_supported; then
-      echo "   saved ${osm}, ${photos} and ${overture}"
+      echo "   saved ${osm}, ${photos}, ${overture} and ${destinations}"
     else
-      echo "   saved ${osm} and ${overture}"
+      echo "   saved ${osm}, ${overture} and ${destinations}"
       if [ -f "$photos" ]; then
         echo "   note: ${photos} is from an earlier capture (this checkout has no \`outrn ingest photos\`)"
       fi

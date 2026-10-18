@@ -73,6 +73,14 @@ describe("opening hours evaluation", () => {
   });
 });
 
+describe("a range that ends when it starts", () => {
+  it("is approximate (a slip for an evening close), and nothing else is for it", () => {
+    const at = fromLocal("2026-10-24", 20 * 60, "America/New_York");
+    expect(evaluateHours({ osm: "Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00" }, at, "America/New_York").approximate).toBe(true);
+    for (const osm of ["Mo-Su 10:00-22:00", "24/7", "Mo-Su 00:00-24:00", "Mo-Fr 10:00-10:30", 'Mo-Su 09:00-17:00 "call 10:00-10:00"']) expect(evaluateHours({ osm }, at, "America/New_York").approximate, osm).toBe(false);
+  });
+});
+
 describe("sun-relative hours: the real sun where the place is", () => {
   const park = { lat: 40.7185, lon: -73.988 };
   // NYC on Oct 3 2026: civil dawn 6:28, sunrise 6:55, sunset 6:36pm, civil dusk 7:04pm; on Dec 21 sunrise 7:17, sunset 4:32pm.
