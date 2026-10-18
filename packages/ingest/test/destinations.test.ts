@@ -6,6 +6,7 @@ import pg from "pg";
 import { reset, testDatabaseAvailable } from "@outrn/db";
 import { ingestDestinations } from "../src/destinations.js";
 import { addFounderVenue } from "../src/founder.js";
+import { ingestOverture } from "../src/overture.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /** Destinations around Bronxville, replayed from the committed read, against a real Postgres + PostGIS (outrn_test). */
@@ -14,6 +15,7 @@ const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/ou
 const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
 const OSM = resolve(__dirname, "../../../fixtures/live/bronxville.json");
 const READ = resolve(__dirname, "../../../fixtures/live/bronxville-destinations.json");
+const OVERTURE = resolve(__dirname, "../../../fixtures/live/bronxville-overture.json");
 const NOW = new Date("2026-10-05T12:00:00Z");
 
 let db: pg.Pool;
@@ -64,12 +66,35 @@ describe.skipIf(!available)("destinations around an area", () => {
     expect(point.lat).toBeCloseTo(40.966, 2);
     // A record that says what it is, with its kind and no note.
     expect((await venueNamed("Lenoir Preserve"))[0]).toMatchObject({ category: "park", destination: { kind: "nature" } });
+    // Walk-in and free for the list's places, whose access was checked; a record alone says nothing of it.
+    const access = async (name: string) =>
+      (await db.query<{ attribute: string }>(`select attribute from current_facts where subject_kind = 'venue' and subject_id = $1 and attribute in ('admission', 'price') order by attribute`, [(await venueNamed(name))[0]!.id])).rows.map((r) => r.attribute);
+    expect(await access("Saxon Woods Park")).toEqual(["admission", "price"]);
+    expect((await venueNamed("Rye Nature Center"))[0]).toMatchObject({ category: "park", destination: { kind: "nature" } });
+    expect(await access("Rye Nature Center")).toEqual([]);
   });
 
   it("is idempotent: the same read again adds, removes and rewrites nothing", async () => {
     const s = await replay();
     expect(s.venues).toMatchObject({ added: 0, removed: 0 });
     expect(s.facts.inserted).toBe(0);
+  });
+
+  it("is left alone by the area's Overture read, which neither refreshes nor withdraws a venue made for a destination", async () => {
+    const [untermyer] = await venueNamed("Untermyer Gardens");
+    const overtureFacts = async () =>
+      (await db.query<{ attribute: string }>(`select attribute from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'overture' and superseded_at is null order by attribute`, [untermyer!.id])).rows.map((r) => r.attribute);
+    const before = await overtureFacts();
+    expect(before).toContain("name");
+    // The area's read reaches as far as its venues do: with OSM's full reach, out past Untermyer.
+    const read = JSON.parse(readFileSync(OVERTURE, "utf8")) as { bbox: object };
+    read.bbox = { west: -73.92, south: 40.9, east: -73.76, north: 41.0 };
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-dest-")), "overture.json");
+    writeFileSync(path, JSON.stringify(read));
+    await ingestOverture(db, { areaSlug: "bronxville", fromFile: path, clock: () => NOW });
+    expect(await overtureFacts()).toEqual(before);
+    const deleted = await db.query(`select 1 from source_entities se join entity_links l on l.source_entity_id = se.id where l.venue_id = $1 and se.deleted_at is not null`, [untermyer!.id]);
+    expect(deleted.rowCount).toBe(0);
   });
 
   it("withdraws a destination the next read no longer names, and the venue made only for it", async () => {
@@ -85,5 +110,33 @@ describe.skipIf(!available)("destinations around an area", () => {
     expect(after.rows[0]!.n).toBe(0);
     // The founder's Twin Lakes keeps its own facts and stays a destination.
     expect((await venueNamed("Twin Lakes County Park"))[0]!.destination).toMatchObject({ kind: "nature" });
+  });
+
+  it("keeps each area's claim its own: an overlapping area that does not name a place leaves the other's claim, and the place's facts", async () => {
+    // Untermyer is in Yonkers, inside Bronxville's circle too.
+    const [untermyer] = await venueNamed("Untermyer Gardens");
+    const overtureFacts = async () => (await db.query(`select 1 from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'overture' and superseded_at is null`, [untermyer!.id])).rowCount;
+    const destination = async () => (await venueNamed("Untermyer Gardens"))[0]!.destination;
+    const before = await overtureFacts();
+    expect(before).toBeGreaterThan(0);
+    const read = JSON.parse(readFileSync(READ, "utf8")) as { tiles: { places: { name: string }[] }[] };
+    for (const t of read.tiles) t.places = t.places.filter((p) => p.name !== "Untermyer Gardens Conservancy");
+    const missing = join(mkdtempSync(join(tmpdir(), "outrn-dest-")), "read.json");
+    writeFileSync(missing, JSON.stringify(read));
+    const yonkers = (fromFile: string) => ingestDestinations(db, { areaSlug: "yonkers", fromFile, clock: () => NOW });
+
+    // Yonkers' read misses it: Bronxville's claim, and the facts of its record, stand.
+    await yonkers(missing);
+    expect(await destination()).toMatchObject({ kind: "garden" });
+    expect(await overtureFacts()).toBe(before);
+    // Both name it, then Bronxville no longer does: Yonkers' claim keeps it.
+    await yonkers(READ);
+    expect((await replay(missing)).venues.removed).toBe(1);
+    expect(await destination()).toMatchObject({ kind: "garden" });
+    expect(await overtureFacts()).toBe(before);
+    // Once no area names it, it goes, and the venue made only for it with it.
+    await yonkers(missing);
+    expect(await destination()).toBeNull();
+    expect(await overtureFacts()).toBe(0);
   });
 });

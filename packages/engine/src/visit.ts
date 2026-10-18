@@ -55,6 +55,7 @@ const DESTINATION_TYPICAL_MINUTES: Record<DestinationKind, number> = {
   viewpoint: 30,
   estate: 120,
   zoo: 180,
+  amusement: 180,
 };
 
 /** A sit-down dinner runs longer than lunch or a late bite. */

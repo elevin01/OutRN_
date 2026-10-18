@@ -132,10 +132,13 @@ half-degree reads, two and a half minutes from Bronxville). A place is a destina
   some far away under local points.
 
 A destination a venue already has gets the destination fact on that venue; any other becomes a venue
-of its own. In a search, a destination may be farther than the everyday limit when there is time: half
+of its own (walk-in and free only for the list's places: a record alone says nothing of who may go
+in). Each area's claim is its own, so an overlapping area that does not name a place leaves another's
+claim alone. In a search, a destination may be farther than the everyday limit when there is time: half
 again from 2½ hours, double from 3½ (a 4-hour Saturday reaches a 60-minute drive), and the card says
 it is worth the drive. One you walk (a preserve, a beach, a waterfront, a lookout) is usually open dawn
-to dusk, as a park is; gardens, estates and the zoo stay Check first until their hours are known.
+to dusk, as a park is; gardens, estates, the zoo and amusement parks stay Check first until their hours
+are known.
 Around Bronxville the read adds about 100. `--save` keeps only the few hundred records the selection
 reads, so a capture replays the same destinations.
 

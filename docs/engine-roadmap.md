@@ -341,9 +341,9 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   double from 3½), the card says "worth the drive: …", a walk reads as one ("a walk, about 1h30"),
   and a lookout at sunset puts the sunset in the plan. Outdoor ones are usually open dawn to dusk.
   On the captures, a 4-hour Saturday from Bronxville now leads with Twin Lakes, Orchard Beach, State
-  Line Lookout, Greenburgh Nature Center, Van Cortlandt Park and Playland, and a Monday after work
+  Line Lookout, Greenburgh Nature Center, Van Cortlandt Park and Glen Island Park, and a Monday after work
   suggests State Line Lookout for the sunset. Next: OSM for their hours, size and trails (gardens,
-  estates and the zoo stay Check first until their hours are known), Wikidata for what is notable,
+  estates, the zoo and Playland stay Check first until their hours are known), Wikidata for what is notable,
   and lists for the other areas.
 - **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still

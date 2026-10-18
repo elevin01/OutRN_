@@ -1975,6 +1975,16 @@ describe("destinations worth the drive", () => {
     expect(garden.unresolved).toContain("HOURS_UNKNOWN");
   });
 
+  it("an amusement park with no current hours is Check first, in season or out, never open dawn to dusk", () => {
+    const playland = destination({ id: "playland", category: "attraction", point: NEAR }, { kind: "amusement", note: "an Art Deco amusement park with a boardwalk on the Sound" });
+    for (const at of ["2026-10-03 12:00", "2026-07-11 12:00"]) {
+      const e = one(playland, ctx(at, 180));
+      expect(e.class, at).toBe("check_first");
+      expect(e.reasons, at).not.toContain("DAWN_TO_DUSK");
+      expect(e.unresolved, at).toContain("HOURS_UNKNOWN");
+    }
+  });
+
   it("in a long window, a destination outranks a small park and a café down the road", () => {
     const preserve = destination({ id: "pre" }, { kind: "nature", note: "carriage roads around a lake" });
     const cands = [venue({ id: "pocket", category: "park", hours: null, point: NEAR }), venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-22:00", point: NEAR }), preserve];

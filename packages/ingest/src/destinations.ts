@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { destinationMaxTravel, haversineMetres, matchKey, maxReachMetres, parkingBufferAt, type Category, type DestinationKind, type FactInput, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable } from "@outrn/db";
-import { materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
+import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { createIfNew } from "@outrn/identity";
 import { fetchOverturePlaces, finishRun, overtureCapture, parseOvertureCapture, startRun, type Bbox, type OvertureCapture, type OverturePlace } from "@outrn/sources";
 import { mostlyLatin, placeFacts, upsertPlace, venuePhone, venueWebsite } from "./overture.js";
@@ -69,7 +69,7 @@ export const CURATED_DESTINATIONS: readonly CuratedDestination[] = [
   { name: "Greenburgh Nature Center", aliases: ["greenburgh nature center"], at: { lat: 41.026, lon: -73.810 }, kind: "nature", note: "woodland trails and live animals, good with kids" },
   { name: "Saxon Woods Park", aliases: ["saxon woods park"], at: { lat: 40.985, lon: -73.770 }, kind: "park", note: "woods and trails between White Plains and Mamaroneck", categories: ["park"] },
   { name: "Marshlands Conservancy", aliases: ["marshlands conservancy"], at: { lat: 40.955, lon: -73.705 }, kind: "nature", note: "meadow and salt-marsh trails down to Long Island Sound" },
-  { name: "Playland", aliases: ["playland amusement park", "playland"], at: { lat: 40.968, lon: -73.672 }, kind: "waterfront", note: "an Art Deco amusement park with a boardwalk on the Sound", categories: ["amusement_park"] },
+  { name: "Playland", aliases: ["playland amusement park", "playland"], at: { lat: 40.968, lon: -73.672 }, kind: "amusement", note: "an Art Deco amusement park with a boardwalk on the Sound", categories: ["amusement_park"] },
   { name: "Glen Island Park", aliases: ["glen island park"], at: { lat: 40.887, lon: -73.785 }, kind: "waterfront", note: "lawns and a beach on Long Island Sound", categories: ["park"] },
   { name: "Westmoreland Sanctuary", aliases: ["westmoreland sanctuary"], at: { lat: 41.190, lon: -73.710 }, kind: "nature", note: "quiet woodland trails" },
   { name: "Mianus River Gorge Preserve", aliases: ["mianus river gorge preserve"], at: { lat: 41.180, lon: -73.620 }, kind: "nature", note: "an old-growth hemlock gorge" },
@@ -89,15 +89,36 @@ export const DESTINATION_READ_CATEGORIES: ReadonlySet<string> = new Set([
 const NATURE_NAME = /\b(preserve|sanctuary|reservation|nature center|arboretum|audubon|wilderness|refuge)\b/;
 /** Not a place to spend an afternoon, whatever it is filed under: a ball field, a triangle, a gate, a deli. */
 const NOT_THE_PLACE = /\b(field|fields|court|courts|pool|playground|parking|lot|entrance|gate|station|bridge|deli|grill|cafe|restaurant|office|offices|headquarters|maintenance|garage|rink|tennis|basketball|soccer|baseball|softball|golf|dog|marina|yacht|club|camp|camping|school|church|condo|condominium|apartments|realty|association|inc|llc|shop|store|hall|pavilion|restroom|boathouse|track|skate|triangle|cemetery|memorial|society|foundation|council|trust|catskill|catskills|adirondack|adirondacks)\b/;
+/** Places whose record says nothing of who may go in, that are open to members only. */
+const MEMBERS_ONLY: ReadonlySet<string> = new Set(["greenbrook sanctuary"]);
+/** A part of a place, or a listing of one, after a dash: "Baxter Preserve- The Racetrack". */
+const NAMES_A_PART = /\s[-–—]|[-–—]\s/;
 /** Gated records need this much confidence that the place exists as described. */
 export const DESTINATION_CONFIDENCE = 0.9;
 
 /**
  * Across water from the mainland the search starts on: Long Island's north shore is minutes away as
  * the crow flies from New Rochelle and an hour by road. Straight-line travel cannot see the Sound.
+ * East of Throgs Neck, south of the Sound's middle (or 40.905, whichever is farther north): the north
+ * shore runs north of 40.9 from Oyster Bay on (Caumsett, Eatons Neck, Fort Salonga), while the
+ * Westchester and Connecticut shore stays north of the line.
  */
-const ACROSS_THE_SOUND: Bbox = { west: -73.775, south: 40.5, east: -71.8, north: 40.905 };
-const inBox = (b: Bbox, p: LatLon) => p.lon >= b.west && p.lon <= b.east && p.lat >= b.south && p.lat <= b.north;
+const SOUND_LINE: readonly (readonly [lon: number, lat: number])[] = [
+  [-73.775, 40.85], [-73.7, 40.9], [-73.6, 40.94], [-73.5, 40.97], [-73.4, 41.01], [-73.3, 41.03], [-73.1, 41.07], [-72.8, 41.1], [-72.3, 41.22], [-71.8, 41.3],
+];
+function acrossTheSound(p: LatLon): boolean {
+  const [first, last] = [SOUND_LINE[0]!, SOUND_LINE[SOUND_LINE.length - 1]!];
+  if (p.lon < first[0] || p.lon > last[0] || p.lat < 40.5) return false;
+  let line = first[1];
+  for (let i = 1; i < SOUND_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
+    if (p.lon <= x1) {
+      line = y0 + ((p.lon - x0) / (x1 - x0)) * (y1 - y0);
+      break;
+    }
+  }
+  return p.lat <= Math.max(40.905, line);
+}
 
 /** Words that say what kind of place it is, not which one: "park", "preserve", "the". */
 const KIND_WORDS = new Set([
@@ -118,9 +139,9 @@ export function destinationGate(p: OverturePlace): { kind: DestinationKind } | {
   if ((p.confidence ?? 0) < DESTINATION_CONFIDENCE) return { skip: "confidence" };
   const key = matchKey(p.name);
   if (!(p.category === "nature_reserve" || p.category === "park" || p.category === "national_park") || !NATURE_NAME.test(key)) return { skip: "category" };
-  if (!key || !mostlyLatin(p.name) || NOT_THE_PLACE.test(key) || /\d/.test(p.name) || !placeWords(p.name)) return { skip: "name" };
+  if (!key || !mostlyLatin(p.name) || NOT_THE_PLACE.test(key) || /\d/.test(p.name) || NAMES_A_PART.test(p.name) || MEMBERS_ONLY.has(key) || !placeWords(p.name)) return { skip: "name" };
   if (!p.websites.some((w) => venueWebsite(w) !== null)) return { skip: "contact" };
-  if (inBox(ACROSS_THE_SOUND, p)) return { skip: "across" };
+  if (acrossTheSound(p)) return { skip: "across" };
   return { kind: "nature" };
 }
 
@@ -159,6 +180,7 @@ export const DESTINATION_CATEGORY: Readonly<Record<DestinationKind, Category>> =
   viewpoint: "viewpoint",
   estate: "attraction",
   zoo: "attraction",
+  amusement: "attraction",
 };
 
 export interface Destination {
@@ -171,6 +193,8 @@ export interface Destination {
 
 /** Same place, filed twice: within this distance and named alike ("Croton Point Park", "Croton Point Beach"). */
 const SAME_DESTINATION_M = 3_000;
+/** Or named the very same, this far apart: a reservation's records can be at entrances a few km apart. */
+const SAME_NAME_M = 10_000;
 
 /**
  * The destinations among an area's places: the curated ones found, then the records that say what
@@ -199,7 +223,11 @@ export function selectDestinations(places: readonly OverturePlace[], curated: re
       continue;
     }
     const words = placeWords(p.name);
-    const twin = out.find((d) => haversineMetres(d.place, p) <= SAME_DESTINATION_M && sharesWords(placeWords(d.name), words));
+    const key = matchKey(p.name);
+    const twin = out.find((d) => {
+      const m = haversineMetres(d.place, p);
+      return (m <= SAME_DESTINATION_M && sharesWords(placeWords(d.name), words)) || (m <= SAME_NAME_M && matchKey(d.name) === key);
+    });
     if (twin) {
       skipped.duplicate++;
       continue;
@@ -293,6 +321,19 @@ export interface DestinationsIngestSummary {
   facts: { inserted: number; superseded: number; rejected: number };
 }
 
+/** Estimates of who may go in, and for what. */
+const ACCESS_ESTIMATES: ReadonlySet<string> = new Set(["admission", "price"]);
+
+/**
+ * The facts of a venue made from a destination's record: what the record says, and what its kind
+ * estimates. Walk-in and free only for the list's places, whose access was checked: a record alone
+ * says nothing of who may go in (a members-only sanctuary, a reservation that charges to park).
+ */
+function destinationFacts(venueId: string, d: Destination, category: Category, runId: string, now: Date): FactInput[] {
+  const facts = placeFacts(venueId, { ...d.place, name: d.name }, category, runId, now);
+  return d.curated ? facts : facts.filter((f) => f.evidenceClass !== "estimate" || !ACCESS_ESTIMATES.has(f.attribute));
+}
+
 /** Venue categories a destination can be the same place as. */
 const DESTINATION_LIKE: ReadonlySet<Category> = new Set(["park", "garden", "waterfront", "viewpoint", "attraction", "museum"]);
 
@@ -319,6 +360,12 @@ async function existingVenue(q: Queryable, d: Destination): Promise<string | nul
 async function linkedVenue(q: Queryable, sourceEntityId: string): Promise<string | null> {
   const r = await q.query<{ venue_id: string }>(`select venue_id from entity_links where source_entity_id = $1 and superseded_by is null and decision <> 'rejected' limit 1`, [sourceEntityId]);
   return r.rows[0]?.venue_id ?? null;
+}
+
+/** Whether any area still names this venue a destination. */
+async function isDestination(q: Queryable, venueId: string): Promise<boolean> {
+  const r = await q.query(`select 1 from facts where subject_kind = 'venue' and subject_id = $1 and source_id = 'curated' and attribute = 'destination' and superseded_at is null limit 1`, [venueId]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 /** Whether a venue has no source but Overture (a venue made from a record). */
@@ -374,6 +421,8 @@ export async function ingestDestinations(db: Db, opts: DestinationsIngestOptions
   log(`${places.length} places within ${(extentM / 1000).toFixed(1)} km: ${destinations.filter((d) => d.curated).length} curated destinations, ${destinations.filter((d) => !d.curated).length} by their records (skipped: ${Object.entries(skipped).map(([k, n]) => `${k} ${n}`).join(", ")})`);
   if (missing.length) log(`curated, not found: ${missing.join(", ")}`);
 
+  // Each area's claim is a record of its own: areas overlap, and each reads only its own circle.
+  const claim = `area:${area.id}`;
   const runId = await startRun(db, { sourceId: "curated", areaId: area.id, kind: opts.fromFile ? "replay" : "destinations", params: { release, extent_m: extentM, from_file: opts.fromFile ?? null } });
   try {
     const summary: DestinationsIngestSummary = {
@@ -428,10 +477,16 @@ export async function ingestDestinations(db: Db, opts: DestinationsIngestOptions
           }
           venueId = made.venueId;
           summary.venues.added++;
-          await write(placeFacts(venueId, { ...d.place, name: d.name }, category, runId, now), venueId);
+          await write(destinationFacts(venueId, d, category, runId, now), venueId);
         } else if (mine) {
-          // Made from this record on an earlier run: refreshed from it.
-          await write(placeFacts(venueId, { ...d.place, name: d.name }, category, runId, now), venueId);
+          // Made from this record on an earlier run: refreshed from it, less what it no longer says.
+          const facts = destinationFacts(venueId, d, category, runId, now);
+          await write(facts, venueId);
+          const retracted = await retractSourceFactsExcept(tx, "venue", venueId, "overture", facts.map((f) => f.attribute));
+          if (retracted) {
+            summary.facts.superseded += retracted;
+            changed.add(venueId);
+          }
         } else {
           summary.venues.existing++;
         }
@@ -451,23 +506,24 @@ export async function ingestDestinations(db: Db, opts: DestinationsIngestOptions
               confidence: d.curated ? 0.7 : 0.55,
               lineageGroup: "curated",
               ingestionRunId: runId,
+              sourceRecord: claim,
             },
           ],
           venueId,
         );
       }
-      // Destinations an earlier run of this area named that this one does not: no longer named, and a
-      // venue made from a record only for being one goes with it.
+      // Destinations an earlier run of this area named that this one does not: this area's claim goes.
+      // Another area's claim on the same place stands (its read may reach a record this one does not);
+      // only once no area names it does a venue made from a record only for being one go with it.
       const earlier = await tx.query<{ subject_id: string }>(
-        `select distinct f.subject_id from facts f join venues v on v.id = f.subject_id
-          where f.subject_kind = 'venue' and f.source_id = 'curated' and f.attribute = 'destination' and f.superseded_at is null
-            and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
-        [center.lon, center.lat, extentM],
+        `select distinct subject_id from facts
+          where subject_kind = 'venue' and source_id = 'curated' and attribute = 'destination' and superseded_at is null and source_record = $1`,
+        [claim],
       );
       for (const { subject_id } of earlier.rows) {
         if (kept.has(subject_id)) continue;
-        let n = await retractSourceFacts(tx, "venue", subject_id, "curated");
-        if (await overtureOnly(tx, subject_id)) n += await retractSourceFacts(tx, "venue", subject_id, "overture");
+        let n = await retractSourceFacts(tx, "venue", subject_id, "curated", claim);
+        if (!(await isDestination(tx, subject_id)) && (await overtureOnly(tx, subject_id))) n += await retractSourceFacts(tx, "venue", subject_id, "overture");
         if (n) {
           summary.facts.superseded += n;
           summary.venues.removed++;

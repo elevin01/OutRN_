@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OverturePlace } from "@outrn/sources";
-import { curatedRecord, destinationGate, parseDestinationsCapture, placeWords, recordsRead, selectDestinations, tilesAround, type CuratedDestination } from "./destinations.js";
+import { CURATED_DESTINATIONS, curatedRecord, DESTINATION_CATEGORY, destinationGate, parseDestinationsCapture, placeWords, recordsRead, selectDestinations, tilesAround, type CuratedDestination } from "./destinations.js";
 
 let n = 0;
 function place(over: Partial<OverturePlace> = {}): OverturePlace {
@@ -43,6 +43,11 @@ describe("destinations from places", () => {
     expect(destinationGate(place({ name: "Catskill Forest Preserve" }))).toEqual({ skip: "name" });
     expect(destinationGate(place({ name: "Saxon Woods Park Field 3", category: "park" }))).toEqual({ skip: "category" });
     expect(destinationGate(place({ name: "Teatown Preserve Parking" }))).toEqual({ skip: "name" });
+    // A part of a place, or a listing of one; a sanctuary open to members only; a directory page for a website.
+    expect(destinationGate(place({ name: "Baxter Preserve- The Racetrack" }))).toEqual({ skip: "name" });
+    expect(destinationGate(place({ name: "Greenbrook Sanctuary", category: "park" }))).toEqual({ skip: "name" });
+    expect(destinationGate(place({ name: "Reeves-Reed Arboretum" }))).toEqual({ kind: "nature" });
+    expect(destinationGate(place({ name: "Annsville Preserve Park", websites: ["https://www.geocaching.com/geocache/GC1"] }))).toEqual({ skip: "contact" });
     // Beaches come only from the list: Overture files some far away (and private ones) under local points.
     expect(destinationGate(place({ category: "beach", name: "South Beach Miami, Fl" }))).toEqual({ skip: "category" });
   });
@@ -51,6 +56,14 @@ describe("destinations from places", () => {
     expect(destinationGate(place({ name: "Sands Point Preserve", lat: 40.857, lon: -73.699 }))).toEqual({ skip: "across" });
     // Pelham Bay and Glen Island are the mainland side of the Sound.
     expect(destinationGate(place({ name: "Hunter Island Sanctuary", lat: 40.877, lon: -73.792 }))).toEqual({ kind: "nature" });
+    // Farther out the north shore runs north of 40.9: Fort Salonga, Caumsett, Eatons Neck, Sunken Meadow.
+    for (const [name, lat, lon] of [["Makamah Nature Preserve", 40.909, -73.3144], ["Caumsett Preserve", 40.92, -73.47], ["Eatons Neck Preserve", 40.95, -73.4], ["Sunken Meadow Preserve", 40.91, -73.26]] as const) {
+      expect(destinationGate(place({ name, lat, lon })), name).toEqual({ skip: "across" });
+    }
+    // And the mainland shore stays, in Westchester and Connecticut.
+    for (const [name, lat, lon] of [["Marshlands Preserve", 40.9559, -73.7035], ["Read Sanctuary", 40.966, -73.674], ["Greenwich Point Preserve", 41.005, -73.57], ["Sherwood Island Preserve", 41.115, -73.335]] as const) {
+      expect(destinationGate(place({ name, lat, lon })), name).toEqual({ kind: "nature" });
+    }
   });
 
   it("finds a curated place by its name nearest where the list puts it, not a namesake misplaced a few km off", () => {
@@ -82,6 +95,21 @@ describe("destinations from places", () => {
     ]);
     expect(destinations.find((d) => d.curated)!.note).toBe(UNTERMYER.note);
     expect(missing).toEqual(["Nowhere Gardens"]);
+  });
+
+  it("takes a place filed twice under the very same name, a few km apart, once: the surer record", () => {
+    const south = place({ id: "south", name: "Blue Mountain Reservation", category: "park", lat: 41.236, lon: -73.9101, confidence: 0.936 });
+    const north = place({ id: "north", name: "Blue Mountain Reservation", category: "park", lat: 41.2721, lon: -73.9241, confidence: 0.976 });
+    expect(selectDestinations([south, north], []).destinations.map((d) => d.place.id)).toEqual(["north"]);
+    // Named alike but not the same, that far apart: two places.
+    const other = place({ id: "other", name: "Blue Mountain Nature Preserve", lat: 41.27, lon: -73.97 });
+    expect(selectDestinations([north, other], []).destinations).toHaveLength(2);
+  });
+
+  it("lists Playland as the amusement park it is, behind a gate and seasonal, not as a waterfront open dawn to dusk", () => {
+    const playland = CURATED_DESTINATIONS.find((d) => d.name === "Playland")!;
+    expect(playland.kind).toBe("amusement");
+    expect(DESTINATION_CATEGORY[playland.kind]).toBe("attraction");
   });
 
   it("names a place by its own words, not its kind", () => {

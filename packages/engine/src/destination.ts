@@ -26,7 +26,8 @@ export function maxTravelFor(c: Candidate, ctx: RequestContext): number {
 /**
  * Whether a place with no listed hours is usually open dawn to dusk: a park, and an outdoor
  * destination (a preserve, a beach, a waterfront, a lookout). Not gardens: a botanical garden keeps
- * posted hours, and a community garden opens on the days it posts.
+ * posted hours, and a community garden opens on the days it posts. Not an estate, a zoo or an
+ * amusement park: they are behind a gate, and an amusement park's rides run in season only.
  */
 export function openDawnToDusk(c: Candidate): boolean {
   if (c.category === "park") return true;

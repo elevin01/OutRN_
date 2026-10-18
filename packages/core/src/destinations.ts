@@ -3,10 +3,11 @@ import { DEFAULT_MAX_TRAVEL_MINUTES, type TravelMode } from "./geo.js";
 /**
  * Destinations: places worth going out of the way for, which an outing is built around rather than
  * stopped at. A preserve with miles of trails, a botanical garden, a beach, a lookout over the
- * Hudson, an estate with grounds to walk, a zoo. What each is decides how a visit there reads (a
- * walk) and how far the engine looks for it when there is time (see destinationMaxTravel).
+ * Hudson, an estate with grounds to walk, a zoo, an amusement park. What each is decides how a visit
+ * there reads (a walk) and how far the engine looks for it when there is time (see
+ * destinationMaxTravel).
  */
-export const DESTINATION_KINDS = ["nature", "park", "garden", "beach", "waterfront", "viewpoint", "estate", "zoo"] as const;
+export const DESTINATION_KINDS = ["nature", "park", "garden", "beach", "waterfront", "viewpoint", "estate", "zoo", "amusement"] as const;
 export type DestinationKind = (typeof DESTINATION_KINDS)[number];
 
 export function isDestinationKind(v: unknown): v is DestinationKind {
@@ -26,6 +27,7 @@ export const DESTINATION_LABEL: Readonly<Record<DestinationKind, string>> = {
   viewpoint: "a lookout",
   estate: "a historic estate",
   zoo: "a zoo",
+  amusement: "an amusement park",
 };
 
 /**

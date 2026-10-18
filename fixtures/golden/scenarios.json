@@ -1991,7 +1991,7 @@
   {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 99,
+   "eligible": 98,
    "top": [
     {
      "rank": 1,
@@ -2070,7 +2070,7 @@
   {
    "id": "bronxville-sun-family",
    "title": "Bronxville, Sunday noon, 3 hours, family",
-   "eligible": 125,
+   "eligible": 124,
    "top": [
     {
      "rank": 1,
@@ -2156,7 +2156,7 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 91,
+   "eligible": 90,
    "top": [
     {
      "rank": 1,
@@ -2242,7 +2242,7 @@
   {
    "id": "bronxville-sat-afternoon",
    "title": "Bronxville, Saturday 1pm, 4 hours, driving",
-   "eligible": 149,
+   "eligible": 147,
    "top": [
     {
      "rank": 1,
@@ -2327,7 +2327,7 @@
   {
    "id": "bronxville-sat-afternoon-outdoors",
    "title": "Bronxville, Saturday 1pm, 4 hours, loves the outdoors",
-   "eligible": 149,
+   "eligible": 147,
    "top": [
     {
      "rank": 1,
@@ -2401,7 +2401,7 @@
     },
     {
      "rank": 6,
-     "name": "Playland",
+     "name": "Glen Island Park",
      "category": "waterfront",
      "status": "ready",
      "reasons": [
@@ -2418,7 +2418,7 @@
   {
    "id": "bronxville-sat-sunset",
    "title": "Bronxville, Saturday 5pm, 3 hours, driving",
-   "eligible": 120,
+   "eligible": 119,
    "top": [
     {
      "rank": 1,
@@ -2502,7 +2502,7 @@
   {
    "id": "bronxville-sat-outdoors-lover",
    "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
-   "eligible": 125,
+   "eligible": 124,
    "top": [
     {
      "rank": 1,
