@@ -2067,3 +2067,93 @@ describe("destinations worth the drive", () => {
     expect(planSteps(e, { timezone: TZ, sunset }).find((s) => s.kind === "sunset")).toMatchObject({ text: "Sunset at 6:37pm", at: sunset });
   });
 });
+
+describe("likely open: no hours listed, where most places like it nearby are open then", () => {
+  // Saturday 7:30pm. Ten restaurants list hours; nine are open through dinner, one closed at 6pm.
+  const at = () => ctx("2026-10-03 19:30", 180);
+  const listed = (category: Category, open: number, closed: number) => [
+    ...Array.from({ length: open }, (_, i) => venue({ id: `${category}-open-${i}`, category, hours: "Mo-Su 11:00-22:30", point: FAR })),
+    ...Array.from({ length: closed }, (_, i) => venue({ id: `${category}-shut-${i}`, category, hours: "Mo-Su 08:00-18:00", point: FAR })),
+  ];
+  const operating = (c: Candidate, evidenceClass: "published" | "estimate" = "published"): Candidate => ({
+    ...c,
+    facts: { ...c.facts, business_status: { value: { status: "operating" }, confidence: 0.75, evidenceClass, validUntil: null, independentSources: 1 } },
+  });
+  const MID = { lat: 40.7305, lon: -73.988 }; // ~1.3 km → ~22 min walk
+
+  it("ranks with the Ready options, stays Check first, and its card says why", () => {
+    const unlisted = operating(venue({ id: "unlisted", name: "Corner Trattoria", category: "restaurant", hours: null }));
+    const all = evaluateAll([unlisted, ...listed("restaurant", 9, 1)], at(), POLICIES);
+    const e = all.find((x) => x.candidate.id === "unlisted")!;
+    expect(e.class).toBe("check_first");
+    expect(e.cta).toBe("check");
+    expect(e.unresolved).toEqual(["HOURS_UNKNOWN"]);
+    expect(e.likelyOpen).toEqual({ open: 9, listed: 10 });
+    expect(reasonNotes(e, TZ).find((r) => r.code === "LIKELY_OPEN")).toMatchObject({ text: "most places like it nearby are open then (9 of 10 that list hours)", params: { isEstimate: true } });
+    expect(caveatNotes(e).map((c) => c.code)).toEqual(["HOURS_UNKNOWN"]);
+  });
+
+  it("comes before a Ready place much farther away, and after a Ready one as good and as near", () => {
+    const near = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const farReady = venue({ id: "far-ready", category: "restaurant", hours: "Mo-Su 11:00-23:00", point: MID });
+    const nearReady = venue({ id: "near-ready", category: "restaurant", hours: "Mo-Su 11:00-23:00" });
+    const order = (cs: Candidate[]) => recommend([...cs, ...listed("restaurant", 9, 1)], at(), POLICIES, { size: 3 }).ordered.map((x) => x.candidate.id).filter((id) => !id.startsWith("restaurant-"));
+    expect(order([near, farReady])).toEqual(["unlisted", "far-ready"]);
+    expect(order([near, nearReady])).toEqual(["near-ready", "unlisted"]);
+    // With nothing like it listing hours to go by, Ready comes first, however far.
+    expect(recommend([near, farReady], at(), POLICIES, { size: 3 }).ordered.map((x) => x.candidate.id)).toEqual(["far-ready", "unlisted"]);
+  });
+
+  it("is not assumed when most like it are shut then, the sample is small, no source says it still operates, or something else is to check", () => {
+    const unlisted = (over: Parameters<typeof venue>[0] = {}) => operating(venue({ id: "unlisted", category: "restaurant", hours: null, ...over }));
+    const mark = (cs: Candidate[], x = at()) => evaluateAll(cs, x, POLICIES).find((e) => e.candidate.id === "unlisted")!;
+    // Seven of ten open: under four in five.
+    expect(mark([unlisted(), ...listed("restaurant", 7, 3)]).likelyOpen).toBeUndefined();
+    // Seven listed, all open: too few to go by.
+    expect(mark([unlisted(), ...listed("restaurant", 7, 0)]).likelyOpen).toBeUndefined();
+    // Only the place's own map entry says it operates (an estimate): it may be long gone.
+    expect(mark([operating(venue({ id: "unlisted", category: "restaurant", hours: null }), "estimate"), ...listed("restaurant", 9, 1)]).likelyOpen).toBeUndefined();
+    // Its price is to check too, on a budget.
+    const onBudget = mark([unlisted(), ...listed("restaurant", 9, 1)], ctx("2026-10-03 19:30", 180, { budget: 30 }));
+    expect(onBudget.unresolved).toEqual(expect.arrayContaining(["HOURS_UNKNOWN", "PRICE_UNKNOWN"]));
+    expect(onBudget.likelyOpen).toBeUndefined();
+    // Other kinds of places don't count: nine bars open says nothing of a restaurant.
+    expect(mark([unlisted(), ...listed("bar", 9, 1)]).likelyOpen).toBeUndefined();
+  });
+
+  it("counts no place no one can go to: closed for now or for good, excluded, or members only", () => {
+    const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const mark = (peers: Candidate[]) => evaluateAll([unlisted, ...peers], at(), POLICIES).find((e) => e.candidate.id === "unlisted")!.likelyOpen;
+    const open24 = () => listed("restaurant", 8, 0).map((c) => venue({ id: c.id, category: "restaurant", hours: "24/7", point: FAR }));
+    const withStatus = (c: Candidate, status: string): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    expect(mark(open24())).toEqual({ open: 8, listed: 8 });
+    expect(mark(open24().map((c) => withStatus(c, "closed_temporarily")))).toBeUndefined();
+    expect(mark(open24().map((c) => withStatus(c, "closed_permanently")))).toBeUndefined();
+    expect(mark(open24().map((c) => ({ ...c, excluded: true })))).toBeUndefined();
+    expect(mark(open24().map((c) => venue({ id: c.id, category: "restaurant", hours: "24/7", point: FAR, admission: "members_only" })))).toBeUndefined();
+    // Closing for good at 8pm, before the visit would end.
+    const closing = open24().map((c) => ({ ...c, facts: { ...c.facts, scheduled_closure: { value: { at: fromLocal("2026-10-03", 20 * 60, TZ).toISOString() }, confidence: 0.8, evidenceClass: "published" as const, validUntil: null, independentSources: 1 } } }));
+    expect(mark(closing)).toBeUndefined();
+  });
+
+  it("promises no arrival more of a visit than its peers give: one late in its quarter hour is judged from the quarter's end", () => {
+    const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const peers = (close: string) => listed("restaurant", 8, 0).map((c) => venue({ id: c.id, category: "restaurant", hours: `Mo-Su 11:00-${close}`, point: FAR }));
+    const run = (close: string) => evaluateAll([unlisted, ...peers(close)], ctx("2026-10-03 19:29", 180), POLICIES).find((e) => e.candidate.id === "unlisted")!;
+    const e = run("20:30");
+    // It gets there a few minutes before 7:45: an hour's meal there ends after 8:30, when its peers close.
+    expect(e.timing!.arrival.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 19 * 60 + 38, TZ).getTime());
+    expect(e.timing!.arrival.getTime()).toBeLessThan(fromLocal("2026-10-03", 19 * 60 + 45, TZ).getTime());
+    expect(e.likelyOpen).toBeUndefined();
+    expect(run("21:00").likelyOpen).toEqual({ open: 8, listed: 8 });
+  });
+
+  it("counts only hours a place lists and that read exactly", () => {
+    const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const estimated = listed("restaurant", 9, 1).map((c) => ({ ...c, facts: { ...c.facts, opening_hours: { ...c.facts.opening_hours!, evidenceClass: "estimate" as const } } }));
+    expect(evaluateAll([unlisted, ...estimated], at(), POLICIES).find((e) => e.candidate.id === "unlisted")!.likelyOpen).toBeUndefined();
+    // Public-holiday rules on a holiday are read approximately: Monday 12 October 2026 is Columbus Day.
+    const holiday = listed("restaurant", 9, 1).map((c) => venue({ id: c.id, category: "restaurant", hours: "Mo-Su 11:00-22:30; PH off", point: FAR }));
+    expect(evaluateAll([unlisted, ...holiday], ctx("2026-10-12 19:30", 180), POLICIES).find((e) => e.candidate.id === "unlisted")!.likelyOpen).toBeUndefined();
+  });
+});

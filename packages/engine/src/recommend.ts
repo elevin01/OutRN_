@@ -1,6 +1,7 @@
 import { maxTravelFor } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, RequestContext, Shortlist } from "./types.js";
 import { evaluateFeasibility } from "./feasibility.js";
+import { markLikelyOpen, openShares } from "./likely.js";
 import { scoreCandidate } from "./score.js";
 import { tasteWeights } from "./taste.js";
 import { selectShortlist } from "./select.js";
@@ -15,7 +16,7 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
   const weights = tasteWeights(ctx);
   // Events only: places are not candidates at all, so nothing about them is weighed or logged.
   const pool = ctx.eventsOnly ? candidates.filter((c) => c.kind === "occurrence") : candidates;
-  return pool.map((c) => {
+  const evals: Evaluation[] = pool.map((c) => {
     const policy = policies.get(c.category) ?? fallback;
     const f = evaluateFeasibility(c, ctx, policy);
     if (f.class === "ineligible" || !f.timing) {
@@ -24,6 +25,8 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
     const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravelFor(c, ctx), weights);
     return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
   });
+  markLikelyOpen(evals, openShares(candidates, policies, fallback.minUsefulMinutes));
+  return evals;
 }
 
 export function recommend(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>, opts: { size?: number; offset?: number; maxOffset?: number } = {}): Shortlist {
