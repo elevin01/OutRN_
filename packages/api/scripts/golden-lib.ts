@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import type { RecommendationRequest } from "@outrn/contracts";
-import { reset, type Db } from "@outrn/db";
+import { reset, setLaunchState, type Db } from "@outrn/db";
 import { caveatNotes, reasonNotes } from "@outrn/engine";
 import { ingestDestinations, ingestOsmArea, ingestOverture } from "@outrn/ingest";
 import { runEngine } from "../src/service/recommendations.js";
@@ -58,6 +58,13 @@ export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   { id: "bronxville-sat-afternoon", title: "Bronxville, Saturday 1pm, 4 hours, driving", at: "2026-10-03T17:00:00Z", request: { areaId: "bronxville", windowMinutes: 240 } },
   { id: "bronxville-sat-afternoon-outdoors", title: "Bronxville, Saturday 1pm, 4 hours, loves the outdoors", at: "2026-10-03T17:00:00Z", request: { areaId: "bronxville", windowMinutes: 240, taste: [{ interest: "outdoors", weight: 1 }] } },
   { id: "bronxville-sat-sunset", title: "Bronxville, Saturday 5pm, 3 hours, driving", at: "2026-10-03T21:00:00Z", request: { areaId: "bronxville", windowMinutes: 180 } },
+  // White Plains (captured 18 Oct): driving, a downtown where most places list no hours, county parks around.
+  { id: "white_plains-sat-family", title: "White Plains, Saturday 1pm, 4 hours, family with a 6-year-old", at: "2026-10-24T17:00:00Z", request: { areaId: "white_plains", windowMinutes: 240, company: "family", youngestAge: 6 } },
+  { id: "white_plains-fri-date", title: "White Plains, Friday 7:30pm, 2½ hours, a date", at: "2026-10-23T23:30:00Z", request: { areaId: "white_plains", windowMinutes: 150, company: "date" } },
+  { id: "white_plains-sun-evening", title: "White Plains, Sunday 6pm, 3 hours", at: "2026-10-25T22:00:00Z", request: { areaId: "white_plains", windowMinutes: 180 } },
+  { id: "white_plains-wed-lunch", title: "White Plains, Wednesday 12:30pm, 1 hour, food", at: "2026-10-21T16:30:00Z", request: { areaId: "white_plains", windowMinutes: 60, categories: ["restaurant", "cafe"] } },
+  { id: "white_plains-sat-morning-active", title: "White Plains, Saturday 9:30am, 3 hours, in the mood for something active", at: "2026-10-24T13:30:00Z", request: { areaId: "white_plains", windowMinutes: 180, mood: "active" } },
+  { id: "white_plains-wed-late", title: "White Plains, Wednesday 10:30pm, 2 hours", at: "2026-10-22T02:30:00Z", request: { areaId: "white_plains", windowMinutes: 120 } },
   { id: "bronxville-sat-outdoors-lover", title: "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food", at: "2026-10-03T15:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, taste: [{ interest: "outdoors", weight: 1 }, { interest: "food", weight: 0.5 }] } },
 ];
 
@@ -80,9 +87,28 @@ export interface GoldenResult {
   relaxations: string[];
 }
 
-/** A throwaway database seeded with the real captures: the same data every run. */
-export async function seedGolden(db: Db, root: string): Promise<void> {
+/**
+ * Each world is seeded on its own: White Plains' capture reaches over Bronxville's, and seeded
+ * together they would pin the two areas' results to each other's data.
+ */
+export const GOLDEN_WORLDS = ["les_bronxville", "white_plains"] as const;
+export type GoldenWorld = (typeof GOLDEN_WORLDS)[number];
+const worldOf = (s: GoldenScenario): GoldenWorld => (s.request.areaId === "white_plains" ? "white_plains" : "les_bronxville");
+
+/** A throwaway database seeded with one world's real captures: the same data every run. */
+export async function seedGolden(db: Db, root: string, world: GoldenWorld = "les_bronxville"): Promise<void> {
   await reset(db);
+  if (world === "white_plains") {
+    // Captured 18 Oct (OSM, Overture and its destinations), read a day after: the first Westchester
+    // town with every source, driving, where most places list no hours.
+    const wp = () => new Date("2026-10-19T12:00:00Z");
+    await ingestOsmArea(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains.json"), clock: wp });
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains-overture.json"), clock: wp });
+    await ingestDestinations(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains-destinations.json"), clock: wp });
+    // Served, as `pnpm real` serves it (seeded areas outside the city start ingest-only).
+    await setLaunchState(db, "white_plains", "test");
+    return;
+  }
   // Just after the captures were made (OSM base 2026-09-27), so their survey dates all count.
   for (const area of ["les", "bronxville"]) await ingestOsmArea(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}.json`), clock: () => new Date("2026-09-28T12:00:00Z") });
   // Then Overture's read of each (taken 29 Sep): whether places still operate, and the places OSM lacks.
@@ -91,9 +117,29 @@ export async function seedGolden(db: Db, root: string): Promise<void> {
   await ingestDestinations(db, { areaSlug: "bronxville", fromFile: resolve(root, "fixtures/live/bronxville-destinations.json"), clock: () => new Date("2026-09-29T12:00:00Z") });
 }
 
-export async function runGolden(db: Db): Promise<GoldenResult[]> {
+/**
+ * Every scenario, each world seeded in turn into the database `open` connects to, in the scenarios'
+ * order. A fresh pool per world: re-seeding recreates PostGIS, which a pool's open connections
+ * would still know by its old ids.
+ */
+export async function runAllGolden(open: () => Db, root: string): Promise<GoldenResult[]> {
+  const byId = new Map<string, GoldenResult>();
+  for (const world of GOLDEN_WORLDS) {
+    const db = open();
+    try {
+      await seedGolden(db, root, world);
+      for (const r of await runGolden(db, world)) byId.set(r.id, r);
+    } finally {
+      await db.end();
+    }
+  }
+  return GOLDEN_SCENARIOS.map((s) => byId.get(s.id)!);
+}
+
+/** The scenarios of one world (default: every scenario) against what `db` holds. */
+export async function runGolden(db: Db, world?: GoldenWorld): Promise<GoldenResult[]> {
   const out: GoldenResult[] = [];
-  for (const s of GOLDEN_SCENARIOS) {
+  for (const s of GOLDEN_SCENARIOS.filter((x) => !world || worldOf(x) === world)) {
     const at = new Date(s.at);
     const run = await runEngine(db, s.request, { clock: () => at, persist: false });
     const { shortlist, ctx } = run;

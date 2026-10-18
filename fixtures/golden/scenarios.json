@@ -2461,6 +2461,465 @@
    "relaxations": []
   },
   {
+   "id": "white_plains-sat-family",
+   "title": "White Plains, Saturday 1pm, 4 hours, family with a 6-year-old",
+   "eligible": 949,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Rockefeller State Park Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "White Plains Public Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Pokémoto",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Transom Bookshop",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Saxon Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-fri-date",
+   "title": "White Plains, Friday 7:30pm, 2½ hours, a date",
+   "eligible": 212,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Mario's Pizza & Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Barnes & Noble",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Opus Lobby Lounge",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Baskin-Robbins",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "The Cabin Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "The Brazen Fox",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-sun-evening",
+   "title": "White Plains, Sunday 6pm, 3 hours",
+   "eligible": 213,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Pokémoto",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Mario's Pizza & Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Opus Lobby Lounge",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Gong Cha",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Central Seafood",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Redefine Meals",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-wed-lunch",
+   "title": "White Plains, Wednesday 12:30pm, 1 hour, food",
+   "eligible": 20,
+   "top": [
+    {
+     "rank": 1,
+     "name": "The Pamplemousse Project",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Gong Cha",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "City Limits",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Starbucks",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Mandy Bean Specialty Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "The Formosa Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-sat-morning-active",
+   "title": "White Plains, Saturday 9:30am, 3 hours, in the mood for something active",
+   "eligible": 229,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Saxon Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Rockefeller State Park Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Kensico Dam Plaza",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Cranberry Lake Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-wed-late",
+   "title": "White Plains, Wednesday 10:30pm, 2 hours",
+   "eligible": 865,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Sundown Saloon",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Buffalo Wild Wings",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Ernie's Wine Bar & Eats",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Bridge View Tavern",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Growlers",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Lake View",
+     "category": "viewpoint",
+     "status": "check_first",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    }
+   ],
+   "relaxations": []
+  },
+  {
    "id": "bronxville-sat-outdoors-lover",
    "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
    "eligible": 124,

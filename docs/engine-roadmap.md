@@ -378,7 +378,10 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
   - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
     offers (cuisines, diets, must-haves) on its card.
-  - Add golden scenarios for the new areas once their real data is ingested.
+  - Golden scenarios for the new areas: White Plains done (six searches on its 18 Oct captures,
+    seeded on its own so its reach over Bronxville's doesn't move Bronxville's). Its Friday date
+    leans on the few places that list hours (a Barnes & Noble, a Baskin-Robbins): the venues' own
+    websites (batch 8) should change that. Next: Yonkers and Port Chester.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.
