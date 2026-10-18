@@ -5,7 +5,7 @@ import { leadCuisine } from "./cuisine.js";
 import { ageLimitOf } from "./feasibility.js";
 import { happyHourAt } from "./offers.js";
 import { parkStepText } from "./parking.js";
-import { fmtDuration, fmtTime } from "./format.js";
+import { fmtDuration, fmtTime, fmtUntil } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
 
 /**
@@ -139,7 +139,7 @@ export function explain(e: Evaluation, tz: string, cuisines: readonly string[] =
     const wait = t.conditions.find((x) => x.kind === "wait");
     if (wait?.minutes) parts.push(`~${wait.minutes.min}–${wait.minutes.max} min wait`);
     else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
-    if (t.closesAt) parts.push(t.closesAtIsEstimate ? `until dusk (~${fmtTime(t.closesAt, tz)})` : `until ${fmtTime(t.closesAt, tz)}`);
+    if (t.closesAt) parts.push(t.closesAtIsEstimate ? `until dusk (~${fmtTime(t.closesAt, tz)})` : `until ${fmtUntil(t.closesAt, t.arrival, tz)}`);
   }
   // Cold or heat outdoors is worth knowing before leaving; rain is a caveat of its own.
   const weather = t.conditions.find((x) => x.kind === "weather" && (x.level === "cold" || x.level === "hot"));

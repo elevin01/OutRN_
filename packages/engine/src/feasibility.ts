@@ -58,6 +58,13 @@ export function partyYoungest(ctx: Pick<RequestContext, "youngestAge" | "company
 }
 
 /** Whether anyone under 18 is going: a family of unknown ages, or a youngest age under 18, whatever the company. */
+/** "Open late" is the evening's: a close at 9pm or after (past midnight too), not a library's 5pm. */
+const OPEN_LATE_FROM_HOUR = 21;
+function closesLate(closesAt: Date, arrival: Date, timeZone: string): boolean {
+  const c = localClock(closesAt, timeZone);
+  return c.date !== localClock(arrival, timeZone).date || c.hour >= OPEN_LATE_FROM_HOUR;
+}
+
 export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company">): boolean {
   const youngest = partyYoungest(ctx);
   return youngest === "minor" || (typeof youngest === "number" && youngest < 18);
@@ -407,7 +414,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // A binding closure is this visit's closing time, shown and reasoned about like one.
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
-  if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
+  if (closesAt && closesAt >= addMinutes(userDeadline, 60) && closesLate(closesAt, arrival, ctx.timezone)) reasons.push("OPEN_LATE");
   const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }

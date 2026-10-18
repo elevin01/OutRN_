@@ -111,6 +111,20 @@ describe("feasibility: opening hours", () => {
     expect(e.cta).toBe("check");
   });
 
+  it("open late is the evening's: a 10pm or 2am close well past your time, not a library's 5pm", () => {
+    const at = (hours: string, date: string, minutes: number) => one(venue({ category: "cafe", hours, point: NEAR }), ctx(date, minutes)).reasons;
+    expect(at("Mo-Su 09:00-17:00", "2026-10-25 11:00", 180)).not.toContain("OPEN_LATE");
+    expect(at("Mo-Su 09:00-22:00", "2026-10-24 17:00", 120)).toContain("OPEN_LATE");
+    expect(at("Mo-Su 18:00-02:00", "2026-10-24 20:00", 180)).toContain("OPEN_LATE");
+  });
+
+  it("a range that ends when it starts (10:00-10:00) is read as written but approximate: Check first, never 'open all night'", () => {
+    const slip = one(venue({ category: "bookshop", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
+    expect(slip.class).toBe("check_first");
+    expect(slip.unresolved).toContain("HOURS_APPROXIMATE");
+    expect(explain(slip, TZ).factLine).toMatch(/until 7pm tomorrow/);
+  });
+
   it("stale hours (low confidence) → Check first with HOURS_UNVERIFIED", () => {
     const e = one(venue({ category: "cafe", hours: "Mo-Su 07:00-20:00", hoursConf: 0.31 }), ctx("2026-10-03 15:00", 120));
     expect(e.class).toBe("check_first");
