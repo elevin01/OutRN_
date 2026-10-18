@@ -319,6 +319,26 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     public information), so published hours still decide whether one is open, and a centre with a
     listed event keeps its own row. Tuckahoe now ranks #12 at 1am and about #40 at 10pm.
   - Golden: unchanged.
+- **Part 8 (this PR): likely open.** Most places list no hours (in White Plains, 9 in 10
+  restaurants), so Ready meant "one of the few with hours", however far: on a Saturday at 7:30pm
+  White Plains had 9 Ready places and 475 Check first, and its first page was a hotel lounge, a
+  Barnes & Noble 29 minutes away and a restaurant 25 minutes away, past the whole downtown.
+  - A Check-first place whose hours are the one thing to check (`HOURS_UNKNOWN` alone), that a source
+    says still operates (a published `business_status`: Overture, or a mapper's survey), ranks with the
+    Ready ones when most places of its kind that list hours are open from its arrival for a useful
+    visit: at least 8 of them, 4 in 5 open (`LIKELY_OPEN`). The sample is every loaded place of the
+    category with published hours read exactly, per 15-minute arrival slot.
+  - Ranking only. It stays Check first, with "hours not listed" as its caveat and a reason saying why
+    it is offered: "most places like it nearby are open then (77 of 85 that list hours)" (an
+    estimate). Its merit pays 0.02 for having to check and 0.25 times the share shut then, so a
+    likely-open place a short drive away comes before a Ready one across the county, never before a
+    Ready one about as good and as near (a 90% share costs what about 11 more minutes of driving does).
+  - White Plains, Saturday 7:30pm: O'Connor's Public House (12 min) is #2, and the second and third
+    pages are downtown bars and restaurants (11 to 13 min) with the Cabin (Ready, 25 min) among them,
+    where they were Buffalo Wild Wings, Carvel 29 minutes away, two cafés and two parks after dark.
+  - Golden: two LES slots. Ray's Pizza & Bagel Cafe (Overture says it operates) is #3 for pizza, and
+    Best Damn Cookies #6 on the Friday date, in place of il laboratorio del gelato. Bronxville unchanged.
+  - Engine time: about 20% more (White Plains, 2,613 candidates: 119 ms warm, was 97).
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
@@ -446,3 +466,6 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
    (05:30–18:30 for dawn and dusk), flagged approximate. `evaluateHours` now puts each day's real times
    at the place into the rule before the library reads it, so a December park closes at 4:32pm, and
    such hours are no longer approximate.
+9. **Likely open** (batch 6, part 8): should a place with no listed hours rank with the Ready ones
+   when most places like it nearby are open then (still labelled Check first, with the reason on its
+   card)? It's in place now; veto it in review to keep Ready strictly first.

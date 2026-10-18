@@ -89,6 +89,8 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   }
   if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
   if (dawnToDusk) add("DAWN_TO_DUSK", "usually open dawn to dusk", { duskAt: t.closesAtIsEstimate ? iso(t.closesAt) : null, isEstimate: true });
+  // Its own hours stay unknown (the caveat says so); this is why it is offered anyway.
+  if (has("LIKELY_OPEN") && e.likelyOpen) add("LIKELY_OPEN", `most places like it nearby are open then (${e.likelyOpen.open} of ${e.likelyOpen.listed} that list hours)`, { open: e.likelyOpen.open, listed: e.likelyOpen.listed, isEstimate: true });
   if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
   if (has("FREE")) add("FREE", e.price.isEstimate ? "usually free" : "free");
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");

@@ -877,15 +877,17 @@
     },
     {
      "rank": 6,
-     "name": "il laboratorio del gelato",
+     "name": "Best Damn Cookies",
      "category": "dessert",
-     "status": "ready",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "LIKELY_OPEN"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
     }
    ],
    "relaxations": []
@@ -1259,6 +1261,19 @@
     },
     {
      "rank": 3,
+     "name": "Ray's Pizza & Bagel Cafe",
+     "category": "cafe",
+     "status": "check_first",
+     "reasons": [
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 4,
      "name": "Kelly's",
      "category": "bar",
      "status": "ready",
@@ -1270,7 +1285,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 5,
      "name": "Prince Street Pizza",
      "category": "restaurant",
      "status": "ready",
@@ -1281,19 +1296,8 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Emmy Squared",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Rubirosa",
+     "name": "Emmy Squared",
      "category": "restaurant",
      "status": "ready",
      "reasons": [

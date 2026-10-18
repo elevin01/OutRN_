@@ -1,17 +1,17 @@
 import { ACTIVITY_OF_CATEGORY, cuisineGroups, ownValue } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
-import { compareEvaluations, merit } from "./score.js";
+import { compareEvaluations, merit, standing } from "./score.js";
 import { TASTE } from "./taste.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
 /**
  * Diversity and the fewer-than-three rule.
  *
- * Class beats diversity: a Ready option is never displaced by a Check-first one just because it
- * would add a new activity type. Within a class, a broad request prefers distinct activity types
- * first, then fills from the same class, where a repeat of what was just shown (the same kind of
- * place, the same cuisine) costs a little: a slightly lower-scored Thai place comes before a third
- * Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
+ * Standing beats diversity: a Ready option (or a likely-open one, see standing) is never displaced
+ * by a Check-first one just because it would add a new activity type. Within a standing, a broad
+ * request prefers distinct activity types first, then fills from the same standing, where a repeat
+ * of what was just shown (the same kind of place, the same cuisine) costs a little: a slightly
+ * lower-scored Thai place comes before a third Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
  * a cuisine): respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
  * A child venue is not shown beside its parent. Never fill a third slot by silently relaxing a
  * constraint; name the relaxation instead.
@@ -104,9 +104,9 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   // first, then the rest by merit (which weighs the match). Without a like in that class, variety
   // is across everything they don't skip, as without a taste.
   const likes = (e: Evaluation) => (e.scores.taste ?? 0.5) > 0.5;
-  const likedIn = new Set(eligible.filter(likes).map((e) => e.class));
+  const likedIn = new Set(eligible.filter(likes).map(standing));
   const admissible = (e: Evaluation, pass: Pass): boolean => {
-    if ((pass.cls !== "any" && e.class !== pass.cls) || taken.has(e)) return false;
+    if ((pass.cls !== "any" && standing(e) !== pass.cls) || taken.has(e)) return false;
     const parent = e.candidate.parentVenueId;
     if (usedVenues.has(e.candidate.venueId)) return false;
     if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;
@@ -115,7 +115,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     // person skips: it waits for its score.
     if (pass.diverse && e.dayPart === "off") return false;
     if (pass.diverse && (e.scores.taste ?? 0.5) < 0.5) return false;
-    if (pass.diverse && likedIn.has(e.class) && !likes(e)) return false;
+    if (pass.diverse && likedIn.has(standing(e)) && !likes(e)) return false;
     return true;
   };
   const take = (e: Evaluation) => {
@@ -143,7 +143,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
       let best: Evaluation | null = null;
       let bestScore = Number.NEGATIVE_INFINITY;
       for (const e of eligible) {
-        if (e.class !== pass.cls) continue;
+        if (standing(e) !== pass.cls) continue;
         const m = merit(e);
         if (m <= bestScore) break;
         if (!admissible(e, pass)) continue;

@@ -5,7 +5,7 @@
   "candidateCount": 80,
   "durationMs": 42,
   "engineVersion": "0.7.0",
-  "weightsVersion": "2026-10-02.1",
+  "weightsVersion": "2026-10-18.1",
   "context": {
     "now": "2026-10-03T22:30:00.000Z",
     "mode": "walk",

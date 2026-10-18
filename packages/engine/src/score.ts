@@ -1,6 +1,6 @@
 import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
 import { destinationOf } from "./destination.js";
-import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
+import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, ResultClass, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
 import { dayPart, type DayPart } from "./daypart.js";
@@ -9,6 +9,7 @@ import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestU
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
 import { cuisinesOf } from "./cuisine.js";
+import { LIKELY_OPEN } from "./likely.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -217,13 +218,25 @@ export function scoreCandidate(
  */
 export function merit(e: Evaluation): number {
   const s = e.scores;
-  if (s.taste !== undefined) return s.taste * TASTE.merit.taste + s.appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty;
-  return s.appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
+  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + s.appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : s.appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
+  // Likely open, not known to be: less the cost of checking, and of the times places like it are shut then.
+  return e.likelyOpen ? m - LIKELY_OPEN.checkCost - (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost : m;
 }
 
-/** Ordering within the eligible set: class, then merit. */
+/**
+ * Where an option ranks: Ready, and Check first on its hours alone where places like it are likely
+ * open then (LIKELY_OPEN), lead; the rest of Check first follows. Its class (the card's label) is its own.
+ */
+export function standing(e: Evaluation): ResultClass {
+  return e.class === "check_first" && e.likelyOpen ? "ready" : e.class;
+}
+
+/** Ordering within the eligible set: standing, then merit. */
 export function compareEvaluations(a: Evaluation, b: Evaluation): number {
-  const rank = (e: Evaluation) => (e.class === "ready" ? 0 : e.class === "check_first" ? 1 : 2);
+  const rank = (e: Evaluation) => {
+    const s = standing(e);
+    return s === "ready" ? 0 : s === "check_first" ? 1 : 2;
+  };
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
   const wa = merit(a);
   const wb = merit(b);
