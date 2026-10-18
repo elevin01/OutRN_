@@ -105,10 +105,16 @@ export function microdataHours(html: string): string[] {
   const out: string[] = [];
   const re = /itemprop\s*=\s*["']openingHours["']/gi;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) && out.length < 14) {
-    const start = html.lastIndexOf("<", m.index);
-    const end = html.indexOf(">", m.index);
-    if (start === -1 || end === -1) continue;
+  let seen = 0;
+  // The tag around each attribute is looked for nearby only, and only so many are looked at: a scan
+  // of the whole page per match is quadratic (a 1 MB page of bare attributes took 26 s).
+  while ((m = re.exec(html)) && out.length < 14 && seen++ < 200) {
+    const before = html.slice(Math.max(0, m.index - 512), m.index);
+    const lt = before.lastIndexOf("<");
+    const gt = html.slice(m.index, m.index + 512).indexOf(">");
+    if (lt === -1 || gt === -1) continue;
+    const start = m.index - before.length + lt;
+    const end = m.index + gt;
     const tag = html.slice(start, end + 1);
     const attr = /\b(?:content|datetime)\s*=\s*["']([^"']{1,120})["']/i.exec(tag);
     let value = attr?.[1];
@@ -131,7 +137,9 @@ const DAY_NAMES: ReadonlyArray<readonly [RegExp, number]> = [
   [/^fri(?:day)?s?$/, 5],
   [/^sat(?:urday)?s?$/, 6],
 ];
-const DAY = "(?:mon(?:day)?|tue(?:s|sday)?|wed(?:s|nesday)?|thu(?:r|rs|rsday)?|fri(?:day)?|sat(?:urday)?|sun(?:day)?)s?\\.?";
+// Each spelling of a day has one reading only ("tues" is tue+s, never tue + plural s): a list of
+// days a regex could split two ways is matched in 2^n tries ("Tues, Tues, …" on one line hung a run).
+const DAY = "(?:mon(?:days?|s)?|tue(?:sdays?|s)?|wed(?:nesdays?|s)?|thu(?:rsdays?|rs|r|s)?|fri(?:days?|s)?|sat(?:urdays?|s)?|sun(?:days?|s)?)\\.?";
 const DAY_SPEC = `(?:daily|every ?day|7 days(?: a week)?|seven days(?: a week)?|weekdays|weekends|${DAY}(?:\\s*(?:-|to|thru|through)\\s*${DAY})?(?:\\s*(?:,|&|and|/|\\+)\\s*${DAY}(?:\\s*(?:-|to|thru|through)\\s*${DAY})?)*)`;
 const TIME = "(?:noon|midnight|\\d{1,2}(?::\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?|a|p)?)";
 const RANGE = `${TIME}\\s*(?:-|to|until|till|'til)\\s*${TIME}`;

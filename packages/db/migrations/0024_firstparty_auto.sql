@@ -30,3 +30,12 @@ update source_policies
        notes = 'JSON-LD first; for hours, then microdata, then the page''s own words read strictly (no LLM). Facts extracted are evidence-linked; raw HTML is not retained.',
        updated_at = now()
  where id = 'firstparty';
+
+-- What a site found this way states is written as its own source: nobody checked the site is the
+-- venue's, so it is trusted below the founder's own checks (a hand-registered site stays above them).
+insert into source_policies (id, name, product, license, terms_url, reviewed_at, allowed_ops, retention_days, attribution, geography, rate_limit, enabled, open_conditions, notes)
+select 'firstparty_found', 'Venues'' own websites, found automatically', product, license, terms_url, reviewed_at, allowed_ops, retention_days, attribution,
+       'sites found from venues'' listed websites (not checked by hand)', rate_limit, enabled, open_conditions,
+       'Facts from sites firstparty discover found: below founder checks in trust; never admission. Fetching is governed by the firstparty policy.'
+  from source_policies where id = 'firstparty'
+on conflict (id) do nothing;

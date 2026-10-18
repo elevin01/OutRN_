@@ -6,7 +6,8 @@ import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import { materializeSubjects, writeFacts } from "@outrn/facts";
 import { extractPage, FetchBlocked, FetchFailed, sameSite, type FirstPartyExtraction, type RobotsPolicy } from "@outrn/sources";
-import { discoverSites, factsFromExtraction, runFirstParty, type SiteFetcher } from "../src/firstparty-job.js";
+import { discoverSites, factsFromExtraction, registerSite, runFirstParty, type SiteFetcher } from "../src/firstparty-job.js";
+import { setFounderFact } from "../src/founder.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /** Venues' own websites, found and read as robots.txt allows: against a real Postgres + PostGIS (outrn_test, reset per file). */
@@ -127,7 +128,8 @@ describe.skipIf(!available)("venues' own websites", () => {
     const s = await runFirstParty(db, { areaSlug: "les", fetcher: web, now: () => NOW });
     expect(s).toMatchObject({ sites: 3, hours: 2, robots: 1, failed: 0 });
     const kitchen = await hoursOf("Essex Kitchen");
-    expect(kitchen?.source_ids).toContain("firstparty");
+    // Found, not registered by hand: its own source, trusted below the founder.
+    expect(kitchen?.source_ids).toContain("firstparty_found");
     expect(kitchen?.evidence_class).toBe("published");
     expect(kitchen?.value.weekly).toHaveLength(7);
     expect((await hoursOf("Attorney Coffee"))?.value.weekly).toHaveLength(7);
@@ -166,7 +168,7 @@ describe.skipIf(!available)("venues' own websites", () => {
     await db.query(`update firstparty_sites set last_fetched_at = null`);
     await db.query(`delete from firstparty_hosts`);
     await runFirstParty(db, { areaSlug: "les", fetcher: fakeWeb({}, { "https://www.essexkitchen-nyc.com/": page(`<p>New site, coming soon</p>`) }), now: () => NOW });
-    expect((await hoursOf("Essex Kitchen"))?.source_ids ?? []).not.toContain("firstparty");
+    expect((await hoursOf("Essex Kitchen"))?.source_ids ?? []).not.toContain("firstparty_found");
     // Two venues on one town site: its pages' words are the town's, not theirs.
     await db.query(`update firstparty_sites set url = 'https://www.lesparks-nyc.org/' || substr(md5(venue_id::text), 1, 6), last_fetched_at = null`);
     await db.query(`delete from firstparty_hosts`);
@@ -277,14 +279,32 @@ describe.skipIf(!available)("venues' own websites", () => {
     expect(saved).not.toContain("var x");
     expect(JSON.parse(saved).sites[0]).toMatchObject({ venue: expect.stringMatching(/^osm:/), url: "https://www.essexkitchen-nyc.com/", status: "ok" });
     // As in a fresh database: no site, no hours from it.
-    await db.query(`update facts set superseded_at = now() where source_id = 'firstparty'`);
+    await db.query(`update facts set superseded_at = now() where source_id in ('firstparty', 'firstparty_found')`);
     await db.query(`delete from firstparty_sites`);
     await materializeSubjects(db, "venue", [await venueId("Essex Kitchen")]);
-    expect((await hoursOf("Essex Kitchen"))?.source_ids ?? []).not.toContain("firstparty");
+    expect((await hoursOf("Essex Kitchen"))?.source_ids ?? []).not.toContain("firstparty_found");
     const s = await runFirstParty(db, { fromFile: path });
     expect(s.hours).toBe(1);
-    expect((await hoursOf("Essex Kitchen"))?.source_ids).toContain("firstparty");
+    expect((await hoursOf("Essex Kitchen"))?.source_ids).toContain("firstparty_found");
     expect((await siteOf("Essex Kitchen"))?.last_status).toBe("replay: ok");
+  });
+});
+
+describe.skipIf(!available)("a site found, not checked", () => {
+  it("never lifts members_only, and stands below the founder's own check (which it contests)", async () => {
+    const id = await venueId("Essex Bar");
+    const site = "https://www.essex-members-club.example/";
+    await writeFacts(db, [{ subjectKind: "venue", subjectId: id, attribute: "admission", value: { requirement: "members_only" }, evidenceClass: "published", sourceId: "osm", evidence: "access=private", fetchedAt: NOW, confidence: 0.7 }]);
+    await registerSite(db, id, site, "auto: its own website; no source publishes its hours", true);
+    await setFounderFact(db, { venueId: id, attribute: "opening_hours", value: { osm: "Mo-Su 09:00-12:00" }, evidence: "called 10/17: 9 to noon only", verifiedAt: new Date("2026-10-17T15:00:00Z") });
+    const ld = `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "Restaurant", name: "Essex Members Club", acceptsReservations: false })}</script>`;
+    await runFirstParty(db, { areaSlug: "les", fetcher: fakeWeb({}, { [site]: page(`${ld}${HOURS}`) }), now: () => NOW });
+    const cur = async (attribute: string) =>
+      (await db.query<{ value: unknown; source_ids: string[]; conflict: boolean }>(`select value, source_ids, conflict from current_facts where subject_kind = 'venue' and subject_id = $1 and attribute = $2`, [id, attribute])).rows[0];
+    expect((await cur("admission"))?.value).toEqual({ requirement: "members_only" });
+    const hours = await cur("opening_hours");
+    expect(hours?.source_ids).toEqual(["founder"]);
+    expect(hours?.conflict).toBe(true);
   });
 });
 
@@ -294,5 +314,10 @@ describe("facts from a venue's own page", () => {
     expect(factsFromExtraction(x([{ attribute: "opening_hours", value: { osm: "whenever we like" }, evidence: "x", status: "stated", method: "jsonld" }]), "v")).toEqual([]);
     expect(factsFromExtraction(x([{ attribute: "opening_hours", value: { osm: "Mo-Su 11:00-22:00" }, evidence: "x", status: "stated", method: "jsonld" }]), "v")[0]).toMatchObject({ confidence: 0.85, sourceId: "firstparty" });
     expect(factsFromExtraction(x([{ attribute: "opening_hours", value: { weekly: [{ weekday: 1, startMin: 660, endMin: 1320 }] }, evidence: "x", status: "stated", method: "text" }]), "v")[0]).toMatchObject({ confidence: 0.75 });
+    // A found site's facts are its own source, and say nothing of admission.
+    const admission: FirstPartyExtraction["facts"][number] = { attribute: "admission", value: { requirement: "walk_in" }, evidence: "x", status: "stated" };
+    expect(factsFromExtraction(x([admission]), "v", true)).toEqual([]);
+    expect(factsFromExtraction(x([admission]), "v")[0]).toMatchObject({ sourceId: "firstparty" });
+    expect(factsFromExtraction(x([{ attribute: "opening_hours", value: { osm: "Mo-Su 11:00-22:00" }, evidence: "x", status: "stated", method: "jsonld" }]), "v", true)[0]).toMatchObject({ sourceId: "firstparty_found" });
   });
 });

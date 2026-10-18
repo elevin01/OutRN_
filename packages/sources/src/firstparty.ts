@@ -190,12 +190,17 @@ function priceFromOffers(offers: unknown): ExtractedEvent["price"] {
  * the result reads is the caller's to check.
  */
 export function osmHoursFromSchema(s: string): string {
+  // Spaces first: `\s*-` over a long run of spaces is tried from each of them (quadratic).
   return s
-    .replace(/\s*[-–]\s*(?=\d)/g, "-")
-    .replace(/(\d{2}:\d{2})\s+(?=(?:Mo|Tu|We|Th|Fr|Sa|Su|PH)\b)/g, "$1; ")
     .replace(/\s+/g, " ")
+    .replace(/ ?[-–] ?(?=\d)/g, "-")
+    .replace(/(\d{2}:\d{2}) (?=(?:Mo|Tu|We|Th|Fr|Sa|Su|PH)\b)/g, "$1; ")
     .trim();
 }
+
+/** The most events one page may add, and the longest title kept: a page is untrusted and may list thousands. */
+const MAX_EVENTS_PER_PAGE = 100;
+const MAX_TITLE = 200;
 
 export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Date): FirstPartyExtraction {
   const nodes = flattenGraph(blocks);
@@ -213,8 +218,8 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       if (parsed) facts.push({ attribute: "opening_hours", value: { weekly: parsed.weekly }, evidence: parsed.evidence, status: "stated", method: "jsonld" });
       else if (typeof n["openingHours"] === "string" || Array.isArray(n["openingHours"])) {
         const s = (Array.isArray(n["openingHours"]) ? (n["openingHours"] as unknown[]).filter((x) => typeof x === "string").join("; ") : (n["openingHours"] as string)).trim();
-        // An empty value (a site template's placeholder) states nothing.
-        if (/\d/.test(s)) facts.push({ attribute: "opening_hours", value: { osm: osmHoursFromSchema(s) }, evidence: `"openingHours": ${JSON.stringify(s)}`, status: "stated", method: "jsonld" });
+        // An empty value (a site template's placeholder) states nothing, and a page of text is no hours.
+        if (/\d/.test(s) && s.length <= 1000) facts.push({ attribute: "opening_hours", value: { osm: osmHoursFromSchema(s) }, evidence: `"openingHours": ${JSON.stringify(s)}`, status: "stated", method: "jsonld" });
       }
       if (typeof n["priceRange"] === "string") {
         const tier = (n["priceRange"].match(/\$/g) ?? []).length;
@@ -233,7 +238,7 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
         facts.push({ attribute: "admission", value: { requirement: accepts ? "reservation_available" : "walk_in" }, evidence: `"acceptsReservations": ${JSON.stringify(v)}`, status: "stated" });
       }
     }
-    if (ts.some((t) => t === "Event" || t.endsWith("Event"))) {
+    if (ts.some((t) => t === "Event" || t.endsWith("Event")) && events.length < MAX_EVENTS_PER_PAGE) {
       const start = typeof n["startDate"] === "string" ? new Date(n["startDate"]) : null;
       if (!start || Number.isNaN(start.getTime())) continue;
       const end = typeof n["endDate"] === "string" ? new Date(n["endDate"]) : null;
@@ -242,7 +247,7 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       const offers = n["offers"];
       const soldOut = Array.isArray(offers) ? offers.some((o) => typeof (o as Record<string, unknown>)?.["availability"] === "string" && String((o as Record<string, unknown>)["availability"]).endsWith("SoldOut")) : offers && typeof offers === "object" && String((offers as Record<string, unknown>)["availability"] ?? "").endsWith("SoldOut");
       events.push({
-        title: typeof n["name"] === "string" ? n["name"] : "(untitled event)",
+        title: (typeof n["name"] === "string" ? n["name"].replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, MAX_TITLE) : "") || "(untitled event)",
         kinds: [...new Set(ts.map((t) => ownValue(EVENT_TYPE_INTERESTS, t)).filter((k): k is Interest => k !== undefined))].slice(0, 4),
         start,
         end: end && !Number.isNaN(end.getTime()) ? end : null,
