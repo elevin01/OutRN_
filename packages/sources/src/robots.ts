@@ -111,11 +111,11 @@ export function robotsAllows(policy: RobotsPolicy, pathAndQuery: string): boolea
   return best ? best.allow : true;
 }
 
-/** Read a site's robots.txt (`origin` is scheme://host[:port]). */
-export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string } ): Promise<RobotsPolicy> {
+/** Read a site's robots.txt (`origin` is scheme://host[:port]), for the source that will read the site (default: first-party). */
+export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string; sourceId?: string }): Promise<RobotsPolicy> {
   try {
     const res = await guardedFetch(`${origin}/robots.txt`, {
-      sourceId: "firstparty",
+      sourceId: opts.sourceId ?? "firstparty",
       ...(opts.throttleKey ? { throttleKey: opts.throttleKey } : {}),
       accept: "text/plain, */*;q=0.5",
       maxBytes: MAX_ROBOTS_BYTES,

@@ -372,8 +372,21 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
 - **Events.** NYC Parks' public events are in (`outrn ingest nyc-parks`, NYC Open Data, live in
   `pnpm real`, switched on once its terms are reviewed): about a hundred within reach of the Lower
   East Side, nearly three hundred of the Bronx, withdrawn when no area's read lists them any more.
-  Next: first-party JSON-LD events, library and community calendars, and cinema showtimes (the
-  programme gap from the 26 Sep audit).
+  **Library and town calendars: done** (`outrn ingest calendars`). A survey of 104 calendars around
+  the launch areas (18 Oct 2026) found 41 readable feeds; the 21 within reach are a reviewed list:
+  eight libraries' LibCal or WordPress calendars, two nature centers, Westchester County Parks, and
+  ten towns' and villages' CivicPlus or iCalendar calendars. robots.txt first, 10 s between a
+  host's requests at least (CivicPlus towns share one pace), at most 12 pages of a paged feed. A
+  library's events go to its venue, or to another place an event names nearby (an open mic at a
+  restaurant, a concert in the park next door); a town's are matched by the place's name (its own
+  words: "Edith G. Read Wildlife Sanctuary" is Edith Read Wildlife Sanctuary) or its address (one
+  venue there, or one place for events), or left out. Meetings, closings, classes of service and
+  online events are left out. 21 of 21 feeds read; about 580 of the next 30 days' events placed
+  (Harrison's library 139, Greenburgh's 79, the Greenwich Arts Council 28, the Bruce Museum 13).
+  Not readable: LibraryMarket's calendars (Bronxville, Scarsdale, Mount Pleasant, the Yonkers
+  branches), Google Calendar files (Hastings' library), NYPL (a bot challenge; it would need NYPL's
+  cooperation). Next: first-party JSON-LD events and cinema showtimes (the programme gap from the
+  26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the

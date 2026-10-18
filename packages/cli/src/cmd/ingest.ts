@@ -3,7 +3,7 @@ import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
 import { OSM_MAX_DATA_AGE_DAYS } from "@outrn/sources";
-import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
+import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestCalendars, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -129,6 +129,24 @@ export function registerIngest(program: Command): void {
       console.log(`  events     ${s.written} of ${s.events} written (of ${s.rows} in the city) · ${s.sitesCreated} new event sites · ${s.withdrawn} withdrawn (no longer listed) · ${s.rejected.length} left out`);
       for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
       if (s.rejected.length) process.exitCode = 1;
+    });
+
+  ingest
+    .command("calendars")
+    .description("Add events from libraries', towns' and nature centers' own calendars (a reviewed list of feeds; robots.txt obeyed)")
+    .option("--area <slug>", "only this area's events (default: every area)")
+    .option("--from-file <path>", "replay a saved read instead of reading the feeds")
+    .option("--save <path>", "save what each feed gave, for replay")
+    .option("--days <n>", "how far ahead to read", (v) => parseInt(v, 10))
+    .action(async (o: { area?: string; fromFile?: string; save?: string; days?: number }) => {
+      const db = getDb();
+      const t0 = Date.now();
+      const s = await ingestCalendars(db, { ...(o.area ? { areaSlug: o.area } : {}), ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), ...(o.days ? { days: o.days } : {}), log: (l) => console.log(l) });
+      const read = s.reads.filter((r) => r.status === "ok");
+      console.log(`calendars · ${read.length} of ${s.reads.length} feeds read (${s.reads.filter((r) => r.status === "robots").length} kept out by robots.txt, ${s.reads.filter((r) => r.status === "failed").length} failed) · ${Date.now() - t0} ms`);
+      console.log(`  skipped    ${Object.entries(s.skipped).map(([k, n]) => `${k} ${n}`).join(", ")}`);
+      for (const a of s.areas) console.log(`  ${a.area.padEnd(13)}${a.written} written · ${a.withdrawn} withdrawn · ${a.rejected.length} left out`);
+      for (const a of s.areas) for (const r of a.rejected) console.log(`  left out   ${a.area} #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
     });
 
   program

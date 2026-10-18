@@ -68,7 +68,8 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
 checks their places against Overture Maps, adds the destinations around them, switches those areas
 on, fetches their weather from the National Weather Service and their NYC Parks events from NYC Open
-Data (both optional: without them, plans go without, and it says so), and starts the API.
+Data (both optional: without them, plans go without, and it says so), replays the library and town
+calendars when `fixtures/live/calendars.json` holds a read, and starts the API.
 
 **NYC Parks events** (`pnpm outrn ingest nyc-parks --area <slug>`): the next two weeks of public
 events in the city's parks, refreshed daily by NYC Parks (about a thousand: classes, tours,
@@ -81,6 +82,20 @@ their own). An event the area's next read no longer lists is withdrawn once no a
 walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
 two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
 read for it: migration `0021` has the one statement that switches it on and records the review.
+
+**Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
+libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
+storytimes, LEGO clubs, author talks, concerts, nature walks, a town's parade. The feeds are a reviewed
+list (`packages/ingest/src/calendars.ts`) of the ones a survey of 104 calendars found readable:
+LibCal and other iCalendar feeds, WordPress's The Events Calendar (Westchester County Parks, nature
+centers) and CivicPlus town calendars. Each host's robots.txt is asked first (a calendar that keeps
+crawlers out, like LibraryMarket's, Google Calendar's files and NYPL's site, is not read), its requests
+10 s apart or more. A library's events are at the library (or at the other place an event names); a
+town's are matched to a venue by the place's name or address, or left out. Meetings, closings,
+services, classes of service and online events are left out. Kept: title, times, the event's own
+link, kinds from its categories, for children, registration and price only as stated. `pnpm capture`
+saves a read (`fixtures/live/calendars.json`) and `pnpm real` replays it. On 18 October 2026: 21 of 21
+feeds read, about 580 events in the next 30 days placed.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that

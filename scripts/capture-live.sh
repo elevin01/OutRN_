@@ -3,7 +3,8 @@
 # golden scenarios to replay offline. Needs network access: overpass-api.de for places,
 # www.wikidata.org + commons.wikimedia.org for photos, overturemaps-us-west-2.s3.us-west-2.amazonaws.com
 # for Overture Maps places (whether each place still operates, websites, phones), and the venues' own
-# websites for the hours no source publishes (as each site's robots.txt allows; CAPTURE_SITES=0 skips them).
+# websites for the hours no source publishes (as each site's robots.txt allows; CAPTURE_SITES=0 skips them),
+# and then, once for all areas, libraries' and towns' own event calendars (CAPTURE_CALENDARS=0 skips them).
 #
 #   pnpm capture                    # every area
 #   pnpm capture yonkers white_plains
@@ -186,6 +187,22 @@ for slug in "${slugs[@]}"; do
   rm -rf "$stage"
   stage=""
 done
+
+# Libraries', towns' and nature centers' own calendars, once for every area (a reviewed list of feeds,
+# as each host's robots.txt allows, its requests 10 s apart). Optional: when they can't be read, the
+# previous capture stays. CAPTURE_CALENDARS=0 skips it.
+if [ "${CAPTURE_CALENDARS:-1}" != "0" ]; then
+  echo
+  echo "== calendars"
+  cal_stage="$(mktemp -d)"
+  if out="$(pnpm -s outrn ingest calendars --save "${cal_stage}/calendars.json" 2>&1)" && [ -s "${cal_stage}/calendars.json" ]; then
+    printf '%s\n' "$out" | grep -E '^calendars' | sed 's/^/   /'
+    mv -f "${cal_stage}/calendars.json" fixtures/live/calendars.json
+  else
+    echo "   note: the calendars could not be read this time; fixtures/live/calendars.json is kept as it was" >&2
+  fi
+  rm -rf "$cal_stage"
+fi
 
 echo
 ls -la fixtures/live
