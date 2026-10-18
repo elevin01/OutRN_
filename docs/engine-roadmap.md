@@ -375,8 +375,14 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
     (`afternoon`) keeps a page with photos for the apps' demo mode.
   - Golden: unchanged (none of its scenarios has a far destination with a near one like it).
-  - Seen, not fixed: hours a mapper mistyped (a gallery "10:00-06:00", a bookshop "10:00-10:00"),
-    and most local places listing no hours, which reading their own sites addresses.
+  - Seen, not fixed: most local places listing no hours, which reading their own sites addresses.
+  - **Hours a mapper mistyped.** Hauser & Wirth "Mo-Fr 10:00-06:00" (for 18:00), a Barnes & Noble
+    "Fr, Sa 10:00-10:00", St. Agnes Library to midnight. At a place that closes by the evening
+    (museum, gallery, library, bookshop, garden), a close past 11pm or into the next morning is read
+    as unknown hours, Check first with "the hours listed look mistyped" (`doubtfulHours`,
+    `HOURS_DOUBTFUL`), and such hours don't count among the kind's habits for "likely open". Round
+    the clock (a study hall 24/7, a museum's viewing windows) and late hours where late is the point
+    (bars, cafés, music venues) are read as listed.
   - **The same place twice.** OSM maps a park as an old point and its outline, a shop twice, a
     preserve in parts; Overture's copy of a place OSM has under another category (Jay Heritage Center
     as a park and an attraction) escaped identity, which never merges across categories. A list now

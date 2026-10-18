@@ -4,7 +4,7 @@
   {
    "id": "les-sat-morning",
    "title": "LES, Saturday 10am, 3 hours, walking",
-   "eligible": 1983,
+   "eligible": 1984,
    "top": [
     {
      "rank": 1,
@@ -85,7 +85,7 @@
   {
    "id": "les-sat-afternoon",
    "title": "LES, Saturday 2pm, 2 hours",
-   "eligible": 2010,
+   "eligible": 2011,
    "top": [
     {
      "rank": 1,
@@ -168,7 +168,7 @@
   {
    "id": "les-sat-afternoon-free",
    "title": "LES, Saturday 2pm, 2 hours, free only",
-   "eligible": 386,
+   "eligible": 387,
    "top": [
     {
      "rank": 1,
@@ -254,7 +254,7 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 2049,
+   "eligible": 2050,
    "top": [
     {
      "rank": 1,
@@ -334,7 +334,7 @@
   {
    "id": "les-sat-late",
    "title": "LES, Saturday 10:30pm, 2 hours",
-   "eligible": 1521,
+   "eligible": 1522,
    "top": [
     {
      "rank": 1,
@@ -491,7 +491,7 @@
   {
    "id": "les-sun-family",
    "title": "LES, Sunday 1pm, 4 hours, family",
-   "eligible": 2014,
+   "eligible": 2015,
    "top": [
     {
      "rank": 1,
@@ -976,7 +976,7 @@
   {
    "id": "les-sat-long",
    "title": "LES, Saturday noon, 5 hours",
-   "eligible": 2091,
+   "eligible": 2092,
    "top": [
     {
      "rank": 1,
@@ -1626,7 +1626,7 @@
   {
    "id": "les-sat-evening-music-lover",
    "title": "LES, Saturday 6:30pm, 3 hours, loves live music",
-   "eligible": 2049,
+   "eligible": 2050,
    "top": [
     {
      "rank": 1,
@@ -1709,7 +1709,7 @@
   {
    "id": "les-sat-afternoon-art-no-bars",
    "title": "LES, Saturday 2pm, 2 hours, loves art, skips bars",
-   "eligible": 2010,
+   "eligible": 2011,
    "top": [
     {
      "rank": 1,
@@ -1795,7 +1795,7 @@
   {
    "id": "les-sat-evening-family-loves-drinks",
    "title": "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks",
-   "eligible": 1959,
+   "eligible": 1960,
    "top": [
     {
      "rank": 1,
@@ -1901,18 +1901,6 @@
     },
     {
      "rank": 3,
-     "name": "Hauser & Wirth",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "The Grand Delancey",
      "category": "bar",
      "status": "ready",
@@ -1924,7 +1912,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Soft Swerve",
      "category": "dessert",
      "status": "ready",
@@ -1936,7 +1924,7 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
@@ -1944,6 +1932,17 @@
       "ENOUGH_TIME",
       "OPEN_LATE",
       "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }

@@ -1,6 +1,6 @@
 import { dayPart } from "./daypart.js";
 import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
-import { evaluateHours, isHoursValue } from "@outrn/facts";
+import { evaluateHours, isHoursValue, type HoursValue } from "@outrn/facts";
 import SunCalc from "suncalc";
 import { maxTravelFor, openDawnToDusk } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
@@ -77,6 +77,21 @@ export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company"
  * minimum (a listed occurrence brings its own duration), and a bare venue must not borrow that zero.
  */
 export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, number>>> = { cinema: 120, theatre: 120, live_music: 90 };
+
+/** Places that close by the evening: a gallery, a library, a bookshop. */
+const DAYTIME: ReadonlySet<Category> = new Set(["museum", "gallery", "library", "bookshop", "garden"]);
+
+/**
+ * Hours that look mistyped for the kind of place: a close past 11pm, or into the next morning, at a
+ * place that closes by the evening ("10:00-06:00" for 18:00, "10:00-10:00" for 22:00, a library to
+ * midnight). Round the clock (00:00-24:00, 24/7) is left as listed: a viewing window, a study hall.
+ */
+export function doubtfulHours(category: Category, hours: HoursValue): boolean {
+  if (!DAYTIME.has(category)) return false;
+  const spans: [number, number][] =
+    "osm" in hours ? [...hours.osm.matchAll(/\b(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\b/g)].map((m) => [Number(m[1]) * 60 + Number(m[2]), Number(m[3]) * 60 + Number(m[4])]) : hours.weekly.map((w) => [w.startMin, w.endMin]);
+  return spans.some(([start, end]) => start > 0 && (end <= start || end > 23 * 60));
+}
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
@@ -364,8 +379,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   }
   hoursConfidence = hoursFact.confidence;
   const ev = evaluateHours(hoursFact.value, arrival, c.timezone, c.point);
-  if (ev.parseError) {
-    unresolved.push("HOURS_UNKNOWN");
+  const doubtful = !ev.parseError && doubtfulHours(c.category, hoursFact.value);
+  if (ev.parseError || doubtful) {
+    unresolved.push(doubtful ? "HOURS_DOUBTFUL" : "HOURS_UNKNOWN");
     const kitchen = kitchenGate();
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);

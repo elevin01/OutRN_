@@ -4,6 +4,7 @@ import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
+import { doubtfulHours } from "./feasibility.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { orderForDisplay } from "./select.js";
 import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
@@ -65,6 +66,22 @@ function ctx(date: string, minutes: number, over: Partial<RequestContext> = {}):
 const one = (c: Candidate, x: RequestContext) => evaluateAll([c], x, POLICIES)[0]!;
 
 describe("feasibility: opening hours", () => {
+  it("hours that look mistyped for the kind of place are read as unknown, not as open all night", () => {
+    // A gallery "10:00-06:00" (for 18:00) at 9pm: not open till 6am, but Check first with the doubt named.
+    const late = one(venue({ category: "gallery", hours: "Mo-Fr 10:00-06:00" }), ctx("2026-10-02 21:00", 120));
+    expect(late.class).toBe("check_first");
+    expect(late.unresolved).toEqual(["HOURS_DOUBTFUL"]);
+    expect(late.timing!.closesAt).toBeNull();
+    expect(caveatNotes(late).map((n) => n.text).join(" ")).toMatch(/hours listed look mistyped/);
+    for (const [category, hours] of [["bookshop", "Su 10:00-19:00; Fr, Sa 10:00-10:00"], ["library", "Mo, Fr, Sa 10:00-00:00; Tu-Th 10:00-19:00"], ["museum", "Mo-Su 10:00-24:00"]] as const)
+      expect(doubtfulHours(category, { osm: hours }), `${category} ${hours}`).toBe(true);
+    // Late hours where late is the point, a close at 11pm, round the clock, and explicit intervals.
+    for (const [category, hours] of [["bar", "Mo-Su 17:00-04:00"], ["cafe", "Mo-Su 10:00-04:00"], ["library", "Mo-Th 09:00-23:00"], ["library", "24/7"], ["museum", "Sa-Su 12:00-18:00; 00:00-24:00"], ["bookshop", "Th-Sa 09:00-23:00"]] as const)
+      expect(doubtfulHours(category, { osm: hours }), `${category} ${hours}`).toBe(false);
+    expect(doubtfulHours("gallery", { weekly: [{ weekday: 1, startMin: 600, endMin: 1800 }] })).toBe(true);
+    expect(doubtfulHours("gallery", { weekly: [{ weekday: 1, startMin: 600, endMin: 1080 }] })).toBe(false);
+  });
+
   it("open now but closes before a worthwhile visit → NOT_ENOUGH_TIME", () => {
     const e = one(venue({ category: "restaurant", hours: "Mo-Su 12:00-19:00" }), ctx("2026-10-03 18:20", 180));
     // arrival 18:33, kitchen closes 18:20 (19:00 − 40) → no time
@@ -119,14 +136,19 @@ describe("feasibility: opening hours", () => {
     expect(at("Mo-Su 18:00-02:00", "2026-10-24 20:00", 180)).toContain("OPEN_LATE");
   });
 
-  it("a range that ends when it starts (10:00-10:00) is read as written but approximate: Check first, never 'open all night'", () => {
+  it("a range that ends when it starts (10:00-10:00) is Check first, never 'open all night'", () => {
+    // At a bookshop it looks mistyped: its hours are doubted, and no close is claimed (it was "until 7pm tomorrow").
     const slip = one(venue({ category: "bookshop", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
     expect(slip.class).toBe("check_first");
-    expect(slip.unresolved).toContain("HOURS_APPROXIMATE");
-    expect(explain(slip, TZ).factLine).toMatch(/until 7pm tomorrow/);
-    // Nor is it "open late": approximate hours claim no late close.
+    expect(slip.unresolved).toEqual(["HOURS_DOUBTFUL"]);
+    expect(explain(slip, TZ).factLine).not.toMatch(/until/);
     expect(slip.reasons).not.toContain("OPEN_LATE");
     expect(explain(slip, TZ).sentence).not.toMatch(/open late/);
+    // Where late hours are plausible it is read as written but approximate.
+    const bar = one(venue({ category: "bar", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
+    expect(bar.class).toBe("check_first");
+    expect(bar.unresolved).toContain("HOURS_APPROXIMATE");
+    expect(bar.reasons).not.toContain("OPEN_LATE");
   });
 
   it("stale hours (low confidence) → Check first with HOURS_UNVERIFIED", () => {

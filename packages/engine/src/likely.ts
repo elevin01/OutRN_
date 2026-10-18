@@ -1,5 +1,6 @@
 import { addMinutes } from "@outrn/core";
 import { evaluateHours, isHoursValue, type HoursValue } from "@outrn/facts";
+import { doubtfulHours } from "./feasibility.js";
 import type { Candidate, CategoryPolicy, Evaluation } from "./types.js";
 
 /**
@@ -55,7 +56,8 @@ export function openShares(candidates: readonly Candidate[], policies: Map<strin
   for (const c of candidates) {
     if (c.kind === "occurrence") continue;
     const f = c.facts.opening_hours;
-    if (!f || f.evidenceClass === "estimate" || !isHoursValue(f.value)) continue;
+    // Hours that look mistyped (a gallery to 6am) say nothing of the kind's habits.
+    if (!f || f.evidenceClass === "estimate" || !isHoursValue(f.value) || doubtfulHours(c.category, f.value)) continue;
     const list = listed.get(c.category) ?? [];
     list.push(c);
     listed.set(c.category, list);
