@@ -28,6 +28,8 @@ export interface UpsertCounts {
   new: number;
   changed: number;
   unchanged: number;
+  /** Older than what is stored (a lagging mirror): the stored version stands. */
+  older: number;
   tombstoned: number;
 }
 
@@ -55,23 +57,58 @@ export interface SnapshotHolder {
  * no wider than this one, where it could have kept it; and beyond the area's reach. A record is
  * withdrawn once no area holds it: another area's snapshot (from a mirror of another age, say) may
  * still have it. A smaller snapshot says nothing of the rest of the area.
+ *
+ * `asOf` is when the snapshot's data was current (its `osm3s.timestamp_osm_base`; null when it doesn't
+ * say). An older snapshot than what is stored never wins: an element's older version leaves the newer
+ * one standing; a record withdrawn by newer data stays withdrawn unless a newer version of it comes
+ * (undeleted, or edited back into shape); and a snapshot older than the area's last one withdraws and
+ * lets go of nothing, since what it lacks may be newer than it.
  */
-export async function upsertOsmElements(q: Queryable, runId: string, holder: SnapshotHolder, extent: SnapshotExtent, elements: OsmElement[], fetchedAt: Date): Promise<{ counts: UpsertCounts; touchedIds: string[] }> {
+export async function upsertOsmElements(
+  q: Queryable,
+  runId: string,
+  holder: SnapshotHolder,
+  extent: SnapshotExtent,
+  elements: OsmElement[],
+  fetchedAt: Date,
+  asOf: Date | null,
+): Promise<{ counts: UpsertCounts; touchedIds: string[]; behind: Date | null }> {
   const policy = await assertSourceAllowed(q, "osm", "retain");
   const retentionUntil = policy.retention_days ? new Date(fetchedAt.getTime() + policy.retention_days * 86_400_000) : null;
-  const counts: UpsertCounts = { fetched: elements.length, new: 0, changed: 0, unchanged: 0, tombstoned: 0 };
+  const counts: UpsertCounts = { fetched: elements.length, new: 0, changed: 0, unchanged: 0, older: 0, tombstoned: 0 };
   const touched: string[] = [];
   const seen: string[] = [];
+  // The newest data this area's earlier snapshots were (each run's cursor), when this one is older.
+  const areaAsOf = asOf
+    ? (
+        await q.query<{ as_of: Date | null }>(
+          `select max((cursor->>'osm_base')::timestamptz) as as_of from ingestion_runs
+            where source_id = 'osm' and area_id = $1 and status = 'succeeded' and id <> $2`,
+          [holder.areaId, runId],
+        )
+      ).rows[0]?.as_of ?? null
+    : null;
+  const behind = asOf && areaAsOf && asOf < areaAsOf ? areaAsOf : null;
   for (const el of elements) {
     const raw = { type: el.type, id: el.id, point: el.point, tags: el.tags, version: el.version, timestamp: el.sourceUpdatedAt?.toISOString() ?? null };
     const kind = isOsmParking(el.tags) ? "parking" : "venue";
     const hash = contentHash({ tags: el.tags, point: el.point });
-    seen.push(el.externalId);
-    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string }>(
-      `select id, content_hash, deleted_at, kind from source_entities where source_id = 'osm' and external_id = $1`,
+    const existing = await q.query<{ id: string; content_hash: string; deleted_at: Date | null; kind: string; version: number | null; withdrawn_as_of: Date | null }>(
+      `select id, content_hash, deleted_at, kind, (raw->>'version')::int as version, withdrawn_as_of from source_entities where source_id = 'osm' and external_id = $1`,
       [el.externalId],
     );
     const prev = existing.rows[0];
+    const versions = prev && prev.version !== null && el.version !== null ? el.version - prev.version : null;
+    const olderThanStored = versions !== null && versions < 0;
+    // Withdrawn by newer data (or while the area has newer data than this): only a newer version brings it back.
+    const olderThanWithdrawal = !!prev?.deleted_at && !(versions !== null && versions > 0) && (behind !== null || (asOf !== null && prev.withdrawn_as_of !== null && asOf < prev.withdrawn_as_of));
+    if (prev && (olderThanStored || olderThanWithdrawal)) {
+      counts.older++;
+      // Still there, as far as this snapshot goes: held, at the version stored.
+      if (!prev.deleted_at) seen.push(el.externalId);
+      continue;
+    }
+    seen.push(el.externalId);
     if (!prev) {
       const ins = await q.query<{ id: string }>(
         `insert into source_entities (source_id, external_id, kind, raw, content_hash, geom, first_seen_run_id, last_seen_run_id, source_updated_at, fetched_at, retention_until)
@@ -85,7 +122,7 @@ export async function upsertOsmElements(q: Queryable, runId: string, holder: Sna
     const changed = prev.content_hash !== hash || prev.deleted_at !== null || prev.kind !== kind;
     await q.query(
       `update source_entities set raw = $2, content_hash = $3, geom = ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography,
-              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, kind = $10
+              last_seen_run_id = $6, source_updated_at = $7, fetched_at = $8, retention_until = $9, deleted_at = null, withdrawn_as_of = null, kind = $10
         where id = $1`,
       [prev.id, JSON.stringify(raw), hash, el.point.lon, el.point.lat, runId, el.sourceUpdatedAt, fetchedAt, retentionUntil, kind],
     );
@@ -96,14 +133,16 @@ export async function upsertOsmElements(q: Queryable, runId: string, holder: Sna
       counts.unchanged++;
     }
   }
-  // The area holds what this snapshot has: from outside its circle when its point is past it.
+  // The area holds what this snapshot has: from outside its circle when its point is past it. One
+  // older than the area's last keeps the holds that one made as they are.
   await q.query(
     `insert into osm_area_records (area_id, source_entity_id, run_id, outside_of_m)
      select $1, id, $2, case when ST_DWithin(geom, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6) then null else ceil($6)::int end
        from source_entities where source_id = 'osm' and external_id = any($3::text[])
-     on conflict (area_id, source_entity_id) do update set run_id = excluded.run_id, outside_of_m = excluded.outside_of_m`,
+     on conflict (area_id, source_entity_id) ${behind ? "do nothing" : "do update set run_id = excluded.run_id, outside_of_m = excluded.outside_of_m"}`,
     [holder.areaId, runId, seen, extent.lon, extent.lat, extent.radiusM],
   );
+  if (behind) return { counts, touchedIds: touched, behind };
   // And lets go of what it held that this snapshot lacks: inside the circle; from outside a circle no
   // wider than this one, that this snapshot could have kept; and beyond anything the area keeps
   // (stored before records were kept by their point).
@@ -121,17 +160,17 @@ export async function upsertOsmElements(q: Queryable, runId: string, holder: Sna
   // Withdrawn once no area holds it: what this area let go of, and what it lacks inside its circle
   // that no one held (nothing the snapshot doesn't have is left standing for want of a holder).
   const tomb = await q.query<{ id: string }>(
-    `update source_entities s set deleted_at = now()
+    `update source_entities s set deleted_at = now(), withdrawn_as_of = $6
       where s.source_id = 'osm' and s.kind in ('venue', 'parking') and s.deleted_at is null
         and not (s.external_id = any($1::text[]))
         and (s.id = any($5::uuid[]) or ST_DWithin(s.geom, ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography, $4))
         and not exists (select 1 from osm_area_records o where o.source_entity_id = s.id)
       returning s.id`,
-    [seen, extent.lon, extent.lat, extent.radiusM, released],
+    [seen, extent.lon, extent.lat, extent.radiusM, released, asOf],
   );
   counts.tombstoned = tomb.rowCount ?? 0;
   touched.push(...tomb.rows.map((r) => r.id));
-  return { counts, touchedIds: touched };
+  return { counts, touchedIds: touched, behind: null };
 }
 
 export async function sourceAttribution(q: Queryable, sourceId: string): Promise<string | null> {

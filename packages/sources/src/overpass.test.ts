@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildAreaQuery, loadAreaFromFile, normalizeElements } from "./overpass.js";
+import { buildAreaQuery, loadAreaFromFile, normalizeElements, osmDataAgeDays } from "./overpass.js";
 import { OSM_CATEGORY_KEYS, OSM_QUALIFIED_TAGS, OSM_TAG_CATEGORIES } from "./osm-tags.js";
 
 describe("Overpass area query", () => {
@@ -57,5 +57,16 @@ describe("a saved capture's extent", () => {
     ]) {
       await expect(loadAreaFromFile(saved(extent)), extent).rejects.toThrow();
     }
+  });
+});
+
+describe("how old a mirror's data is", () => {
+  const at = new Date("2026-10-18T00:43:00Z");
+  it("is the time since its base, in days, and unknown when it doesn't say", () => {
+    expect(osmDataAgeDays({ osm3s: { timestamp_osm_base: "2026-10-18T00:41:00Z" }, elements: [] }, at)).toBeCloseTo(2 / 1440, 6);
+    // One of a public mirror's servers, answering in October with June's data.
+    expect(Math.floor(osmDataAgeDays({ osm3s: { timestamp_osm_base: "2026-06-01T08:52:28Z" }, elements: [] }, at)!)).toBe(138);
+    expect(osmDataAgeDays({ elements: [] }, at)).toBeNull();
+    expect(osmDataAgeDays({ osm3s: { timestamp_osm_base: "yesterday" }, elements: [] }, at)).toBeNull();
   });
 });
