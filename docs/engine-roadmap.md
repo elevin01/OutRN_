@@ -352,14 +352,16 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     own kind). White Plains now opens with Greenburgh Nature Center, then Cranberry Lake Preserve and
     Kensico Dam Plaza; Inwood Hill and Fort Tryon fall from #9 and #12 to #23 and #29.
   - **Long Island was half an hour away.** Straight-line travel cannot see the Sound: a bookshop in
-    Locust Valley was "29 min" from Rye and Mamaroneck. A trip from the mainland to the north shore
-    now goes round by the Throgs Neck Bridge (`tripMetres`; the Sound line moved from the
-    destinations job into core): ~34 km and ~55 minutes from Mamaroneck at noon. Never shorter than the
-    straight line, so search radii hold.
+    Locust Valley was "29 min" from Rye and Mamaroneck. A trip whose straight line crosses the middle
+    of the Sound now goes round by the Throgs Neck Bridge (`crossesTheSound`, `tripMetres`): ~34 km and
+    ~55 minutes from Mamaroneck at noon. A trip along one shore never does, however near the water (New
+    Rochelle to its Davenport Neck) or in Queens. The destinations job's own test of what is across
+    (with its margin) stays a filter on what it adds. Never shorter than the straight line, so search
+    radii hold.
   - **Parks at 10:30pm.** Parks OSM tags 24/7 (Brite Avenue Park, Davis Brook Park) were Ready on a
     Wednesday night, so they came before every bar that lists no hours. A Ready place outdoors in
-    the dark now ranks with Check first, by merit (`standing`); its card still says it is open. A
-    café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
+    the dark (known to be open, or likely open) now ranks with Check first, by merit (`standing`); its
+    card still says what it did. A café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
     beach was "fair" until 11pm); a lookout keeps the city lights.
   - **A casino in the "active" mood.** Empire City's subtype read as games first; it is now
     nightlife first and half a game.

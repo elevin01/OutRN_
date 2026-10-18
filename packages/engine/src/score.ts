@@ -238,16 +238,16 @@ export function merit(e: Evaluation): number {
 
 /**
  * Where an option ranks: Ready, and Check first on its hours alone where places like it are likely
- * open then (LIKELY_OPEN), lead; the rest of Check first follows. A Ready place outdoors in the dark
- * (a park open all night at 10:30pm: dayPart "off") ranks with Check first, by merit, which its hour
- * already costs: being open is not enough to come before every bar worth checking. A café at 9pm
- * keeps its standing: it is a poor idea for the hour, not a dark lawn. Its class (the card's label)
- * is its own.
+ * open then (LIKELY_OPEN), lead; the rest of Check first follows. A place outdoors in the dark that
+ * would lead (a park open all night at 10:30pm, or likely open: dayPart "off") ranks with Check
+ * first, by merit, which its hour already costs: being open is not enough to come before every bar
+ * worth checking. A café at 9pm keeps its standing: it is a poor idea for the hour, not a dark lawn.
+ * Its class (the card's label) is its own.
  */
 export function standing(e: Evaluation): ResultClass {
-  if (e.class === "check_first" && e.likelyOpen) return "ready";
-  if (e.class === "ready" && e.dayPart === "off" && isOutdoor(e.candidate)) return "check_first";
-  return e.class;
+  const s = e.class === "check_first" && e.likelyOpen ? "ready" : e.class;
+  // Likely open or known to be, a dark lawn is no better for it.
+  return s === "ready" && e.dayPart === "off" && isOutdoor(e.candidate) ? "check_first" : s;
 }
 
 /** Ordering within the eligible set: standing, then merit. */

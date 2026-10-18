@@ -646,6 +646,38 @@ describe("appeal signals", () => {
     expect(recommend([park, bar], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["park", "bar"]);
   });
 
+  it("a park likely open after dark ranks with Check first too: losing its hours never lifts it past a bar (PR #56 review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const operating = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status: "operating" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const unknownPark = operating(venue({ id: "unknown-park", category: "park", hours: null }));
+    const knownPark = venue({ id: "known-park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: null });
+    const peers = Array.from({ length: 8 }, (_, i) => venue({ id: `peer-${i}`, category: "park", hours: "24/7", point: FAR }));
+    const late = recommend([unknownPark, knownPark, bar, ...peers], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES);
+    const u = late.all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(u.class).toBe("check_first");
+    expect(u.likelyOpen).toBeDefined();
+    expect(u.dayPart).toBe("off");
+    expect(standing(u)).toBe("check_first");
+    expect(standing(late.all.find((e) => e.candidate.id === "known-park")!)).toBe("check_first");
+    const order = late.ordered.map((e) => e.candidate.id).filter((id) => !id.startsWith("peer-"));
+    expect(order[0]).toBe("bar");
+    // By day the likely-open park leads with the Ready ones; an indoor café at 9pm keeps its standing.
+    const day = recommend([unknownPark, bar, ...peers], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).all.find((e) => e.candidate.id === "unknown-park")!;
+    expect(standing(day)).toBe("ready");
+    const cafe = recommend([venue({ id: "cafe", category: "cafe", hours: "Mo-Su 07:00-23:00" })], ctx("2026-10-03 21:00", 120, { sunset }), POLICIES).all[0]!;
+    expect(cafe.dayPart).toBe("off");
+    expect(standing(cafe)).toBe("ready");
+  });
+
+  it("an everyday drive to the mainland's own shore stays in reach: a café on New Rochelle's Davenport Neck (PR #56 review)", () => {
+    const newRochelle = { lat: 40.9115, lon: -73.783 };
+    const cafe = venue({ id: "shore-cafe", category: "cafe", hours: "24/7", point: { lat: 40.905, lon: -73.772 } });
+    const e = one(cafe, ctx("2026-10-03 12:00", 180, { origin: newRochelle, mode: "drive" }));
+    expect(e.class).toBe("ready");
+    expect(e.timing!.travel.minutes).toBeLessThanOrEqual(12);
+  });
+
   it("travel counts against the time the user has: the same walk weighs more in an hour than in an evening", () => {
     const near = venue({ id: "near", category: "bookshop", hours: "Mo-Su 09:00-22:00" });
     const farther = venue({ id: "farther", category: "bookshop", hours: "Mo-Su 09:00-22:00", point: { lat: 40.7265, lon: -73.987 } });

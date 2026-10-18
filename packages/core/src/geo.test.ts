@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acrossTheSound, estimateTravel, haversineMetres, maxReachMetres, parkingBufferAt, tripMetres, type LatLon, type ParkingRule } from "./geo.js";
+import { acrossTheSound, crossesTheSound, estimateTravel, haversineMetres, maxReachMetres, parkingBufferAt, tripMetres, type LatLon, type ParkingRule } from "./geo.js";
 
 const ORIGIN: LatLon = { lat: 40.941, lon: -73.835 };
 /** A point `m` metres due north of the origin. */
@@ -54,6 +54,31 @@ describe("travel estimates", () => {
     expect(estimateTravel(mamaroneck, ryePlayland, "drive", { hourLocal: 12 }).minutes).toBeLessThan(25);
     // Never shorter than the straight line, so a search radius from maxReachMetres still finds everything.
     expect(tripMetres(mamaroneck, locustValley)).toBeGreaterThan(haversineMetres(mamaroneck, locustValley));
+  });
+
+  it("only a trip whose straight line crosses the Sound goes round: one shore's own trips never do, near the water or in Queens (PR #56 review)", () => {
+    // New Rochelle's center and the Davenport Avenue shore, 1.2 km apart on the mainland: the destinations
+    // job's margin counts the shore as across, but the trip doesn't cross the water.
+    const newRochelle: LatLon = { lat: 40.9115, lon: -73.783 };
+    const davenport: LatLon = { lat: 40.905, lon: -73.772 };
+    expect(acrossTheSound(davenport)).toBe(true);
+    expect(crossesTheSound(newRochelle, davenport)).toBe(false);
+    expect(tripMetres(newRochelle, davenport)).toBe(haversineMetres(newRochelle, davenport));
+    expect(estimateTravel(newRochelle, davenport, "drive", { hourLocal: 12 }).minutes).toBeLessThanOrEqual(12);
+    expect(estimateTravel(newRochelle, davenport, "walk").minutes).toBeLessThanOrEqual(20);
+    // Two places in Queens on either side of where the Sound line starts: one island, a short walk.
+    const bayside: LatLon = { lat: 40.76, lon: -73.78 };
+    const nearby: LatLon = { lat: 40.76, lon: -73.77 };
+    expect(crossesTheSound(bayside, nearby)).toBe(false);
+    expect(estimateTravel(bayside, nearby, "walk").minutes).toBeLessThanOrEqual(15);
+    // Across it, either way round; and a north shore trip from New Rochelle (Kings Point) too.
+    const mamaroneck: LatLon = { lat: 40.9384, lon: -73.7423 };
+    const locustValley: LatLon = { lat: 40.8754, lon: -73.597 };
+    expect(crossesTheSound(mamaroneck, locustValley)).toBe(true);
+    expect(crossesTheSound(locustValley, mamaroneck)).toBe(true);
+    expect(crossesTheSound(newRochelle, { lat: 40.82, lon: -73.735 })).toBe(true);
+    // Greenwich to Bayville, Connecticut to the north shore.
+    expect(crossesTheSound({ lat: 41.03, lon: -73.62 }, { lat: 40.91, lon: -73.56 })).toBe(true);
   });
 
   it("the parking rule applies by local hour, wrapping past midnight", () => {
