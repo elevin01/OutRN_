@@ -279,7 +279,7 @@ async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstP
     await materializeSubjects(tx, "venue", [venueId]);
   });
   // A feed read whole that lists nothing still says the site's earlier events are gone.
-  if (events.length || eventsComplete) s.occurrences += (await writeSiteEvents(db, { venueId, host: new URL(x.url).hostname }, events, now, { complete: eventsComplete })).written;
+  if (events.length || eventsComplete) s.occurrences += (await writeSiteEvents(db, { venueId, host: new URL(x.url).hostname, auto }, events, now, { complete: eventsComplete })).written;
 }
 
 interface HostRow {

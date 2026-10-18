@@ -45,7 +45,7 @@ afterAll(async () => {
 });
 
 const NOW = new Date("2026-10-03T16:00:00Z");
-const jazz = (types: string[], kinds: ExtractedEvent["kinds"]): ExtractedEvent => ({ title: "Thursday Jazz", kinds, start: new Date("2026-10-08T23:00:00Z"), end: null, status: "scheduled", price: null, url: null, evidence: "Thursday Jazz", types, allDay: false, free: false, location: [] });
+const jazz = (types: string[], kinds: ExtractedEvent["kinds"]): ExtractedEvent => ({ title: "Thursday Jazz", kinds, start: new Date("2026-10-08T23:00:00Z"), end: null, status: "scheduled", price: null, url: null, evidence: "Thursday Jazz", types, allDay: false, free: false, location: [], minAge: null });
 const kindsOf = async (occurrenceId: string) =>
   (await db.query<{ value: unknown }>(`select value from current_facts where subject_kind = 'occurrence' and subject_id = $1 and attribute = 'event_kind'`, [occurrenceId])).rows[0]?.value;
 

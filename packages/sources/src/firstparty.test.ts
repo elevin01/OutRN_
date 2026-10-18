@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventsFeedOf, extractFromJsonLd, extractJsonLdBlocks, extractPage, openingHoursFromSpec, schemaDate } from "./firstparty.js";
+import { eventsFeedOf, extractFromJsonLd, extractJsonLdBlocks, extractPage, openingHoursFromSpec, schemaDate, typicalMinAge } from "./firstparty.js";
 
 const html = `<html><head>
 <script type="application/ld+json">
@@ -155,12 +155,23 @@ describe("a venue's own events: where its site lists them, and what each says", 
     const x = extractFromJsonLd(
       [
         { "@context": "https://schema.org", "@type": "MusicEvent", name: "Jazz Trio", startDate: "2026-10-24T20:00", location: { "@type": "Place", name: "Garcia's", address: { "@type": "PostalAddress", streetAddress: "149 Westchester Ave", addressLocality: "Port Chester" } }, offers: { price: "0", priceCurrency: "USD" } },
-        { "@type": ["TheaterEvent", "ChildrensEvent"], name: "Puppet Show", startDate: "2026-10-25", location: "Main Stage", isAccessibleForFree: true },
+        { "@type": ["TheaterEvent", "ChildrensEvent"], name: "Puppet Show", startDate: "2026-10-25", location: "Main Stage", isAccessibleForFree: true, typicalAgeRange: "All ages" },
+        { "@type": "ComedyEvent", name: "Late Show", startDate: "2026-10-25T23:00", typicalAgeRange: "21+" },
       ],
       "https://www.theatre.example.org/",
       new Date("2026-10-18T12:00:00Z"),
     );
-    expect(x.events[0]).toMatchObject({ title: "Jazz Trio", start: new Date("2026-10-25T00:00:00.000Z"), allDay: false, types: ["MusicEvent"], location: ["Garcia's", "149 Westchester Ave", "Port Chester"], free: false });
-    expect(x.events[1]).toMatchObject({ allDay: true, types: ["TheaterEvent", "ChildrensEvent"], location: ["Main Stage"], free: true });
+    expect(x.events[0]).toMatchObject({ title: "Jazz Trio", start: new Date("2026-10-25T00:00:00.000Z"), allDay: false, types: ["MusicEvent"], location: ["Garcia's", "149 Westchester Ave", "Port Chester"], free: false, minAge: null });
+    expect(x.events[1]).toMatchObject({ allDay: true, types: ["TheaterEvent", "ChildrensEvent"], location: ["Main Stage"], free: true, minAge: 0 });
+    expect(x.events[2]).toMatchObject({ title: "Late Show", minAge: 21 });
+    expect(x.events[2]!.evidence).toContain('"typicalAgeRange":"21+"');
+  });
+
+  it("reads the youngest age an event admits from its typicalAgeRange, and nothing else (PR #61 review)", () => {
+    const cases: [unknown, number | null][] = [
+      ["21+", 21], ["18 +", 18], ["18 and over", 18], ["16 & up", 16], ["Ages 18-30", 18], ["18-", 18], ["7–9", 7], ["All ages", 0], ["all-ages", 0], ["21", 21],
+      ["Adults", null], ["30-60", null], ["100+", null], ["", null], [21, null], [null, null], ["21+".repeat(20), null],
+    ];
+    for (const [v, want] of cases) expect(typicalMinAge(v), String(v)).toBe(want);
   });
 });

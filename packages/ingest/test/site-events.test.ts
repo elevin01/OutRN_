@@ -173,6 +173,30 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await scheduled()).toEqual([]);
   });
 
+  it("take an age they state as the event's age limit; a found site keeps them all at its own venue (PR #61 review)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const site = { venueId: playhouse, host: "found.delanceyplayhouse.example", auto: true };
+    await writeSiteEvents(
+      db,
+      site,
+      [
+        event({ uid: "a", title: "Midnight Comedy", start: "2026-10-04T03:00:00.000Z", categories: ["Comedy", "Kids"], minAge: 21 }),
+        event({ uid: "b", title: "Craft Beer Social", start: "2026-10-04T22:00:00.000Z", minAge: 0 }),
+        event({ uid: "c", title: "Puppet Matinee", start: "2026-10-04T16:00:00.000Z", categories: ["Kids"], minAge: 0 }),
+        event({ uid: "d", title: "Jazz After Dark", start: "2026-10-05T01:00:00.000Z", location: ["Attorney Arts Center", "100 Attorney St"] }),
+      ],
+      NOW,
+    );
+    expect(await factsOf("Midnight Comedy")).toMatchObject({ age_limit: { minAge: 21 } });
+    expect(await factsOf("Midnight Comedy")).not.toHaveProperty("audience");
+    // "All ages" on a drink event is not taken: the engine's 21+ estimate stands.
+    expect(await factsOf("Craft Beer Social")).not.toHaveProperty("age_limit");
+    expect(await factsOf("Puppet Matinee")).toMatchObject({ age_limit: { minAge: 0 }, audience: { kids: true } });
+    // Found, not checked: its events stay at its own venue, whatever place they name.
+    expect((await at("Delancey Playhouse")).map((o) => o.title)).toContain("Jazz After Dark");
+    expect((await at("Attorney Arts Center")).map((o) => o.title)).not.toContain("Jazz After Dark");
+  });
+
   it("back its host off when the events feed asks us to wait (429, 503): the host's next site waits too (PR #61 review)", async () => {
     for (const status of [429, 503]) {
       await db.query(`delete from firstparty_sites`);

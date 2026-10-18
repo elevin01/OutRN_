@@ -57,6 +57,8 @@ export interface ExtractedEvent {
   free: boolean;
   /** Where it says it is held, a line each (the place's name, its street, its town); empty when it says nothing. */
   location: string[];
+  /** The youngest it admits, from its typicalAgeRange ("21+"; "All ages" is 0), or null when it says no age. */
+  minAge: number | null;
 }
 
 /**
@@ -297,11 +299,12 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
         status: soldOut ? "sold_out" : status,
         price: priceFromOffers(offers),
         url: typeof n["url"] === "string" ? n["url"] : null,
-        evidence: JSON.stringify({ name: n["name"], startDate: n["startDate"], endDate: n["endDate"], eventStatus: n["eventStatus"] }).slice(0, 1000),
+        evidence: JSON.stringify({ name: n["name"], startDate: n["startDate"], endDate: n["endDate"], eventStatus: n["eventStatus"], typicalAgeRange: n["typicalAgeRange"] }).slice(0, 1000),
         types: ts.filter((t) => t === "Event" || t.endsWith("Event") || t === "Festival").slice(0, 4),
         allDay: begins.allDay,
         free: n["isAccessibleForFree"] === true || n["isAccessibleForFree"] === "true" || n["isAccessibleForFree"] === "True",
         location: eventLocation(n["location"]),
+        minAge: typicalMinAge(n["typicalAgeRange"]),
       });
     }
   }
@@ -387,6 +390,19 @@ function sameSiteUrl(href: string, here: URL): string | null {
   to.hash = "";
   if (to.protocol === "http:" && here.protocol === "https:") to.protocol = "https:";
   return to.toString();
+}
+
+/**
+ * The youngest an event admits, from its schema.org typicalAgeRange: "21+", "18 and over", "Ages 18-30"
+ * (its lower bound), "All ages" (0). Null for anything else, and for an age over 25 (a range of years,
+ * not an age limit).
+ */
+export function typicalMinAge(v: unknown): number | null {
+  if (typeof v !== "string" || v.length > 40) return null;
+  const s = v.trim().toLowerCase();
+  if (/^all[\s-]*ages?$/.test(s)) return 0;
+  const m = /^(?:ages?\s+)?(\d{1,2})\s*(?:\+|plus|-|–|(?:and|&)\s+(?:up|over|older)|(?:-|–|to)\s*\d{1,3})?$/.exec(s);
+  return m && Number(m[1]) <= 25 ? Number(m[1]) : null;
 }
 
 /** A venue page: same-host pacing (throttleKey) is the caller's, at least `minIntervalMs` apart. */

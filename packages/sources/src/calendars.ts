@@ -35,6 +35,8 @@ export interface CalendarEvent {
   cost: string | null;
   /** The start of its description, as plain text. */
   text: string;
+  /** The youngest it admits, when the feed says (a venue page's typicalAgeRange). */
+  minAge?: number;
 }
 
 const MAX_TEXT = 1000;

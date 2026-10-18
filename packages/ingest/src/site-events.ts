@@ -77,6 +77,7 @@ export function calendarEventsOf(events: readonly ExtractedEvent[]): CalendarEve
     recurring: false,
     cost: costOf(e),
     text: "",
+    ...(e.minAge !== null ? { minAge: e.minAge } : {}),
   }));
 }
 
@@ -141,12 +142,12 @@ export interface SiteEventsSummary {
 
 /**
  * Write a venue's events from its own site, at the venue unless one names another place we know
- * within 3 km. The same event twice (on its page and in its feed) is one. Only when `complete` (its
- * feed read whole) is what this site listed before and no longer lists, up to the last day read,
- * withdrawn; the events this site's pages once wrote straight into occurrences (keyed by host) give
- * way to these.
+ * within 3 km (a site found for the venue, `auto`, keeps them all at it). The same event twice (on
+ * its page and in its feed) is one. Only when `complete` (its feed read whole) is what this site
+ * listed before and no longer lists, up to the last day read, withdrawn; the events this site's pages
+ * once wrote straight into occurrences (keyed by host) give way to these.
  */
-export async function writeSiteEvents(db: Db, site: { venueId: string; host: string }, events: readonly CalendarEvent[], now: Date, opts: { complete?: boolean } = {}): Promise<SiteEventsSummary> {
+export async function writeSiteEvents(db: Db, site: { venueId: string; host: string; auto?: boolean }, events: readonly CalendarEvent[], now: Date, opts: { complete?: boolean } = {}): Promise<SiteEventsSummary> {
   const summary: SiteEventsSummary = { written: 0, withdrawn: 0, skipped: {}, areas: [] };
   const venue = await venueOf(db, site.venueId);
   if (!venue) return summary;
@@ -165,7 +166,8 @@ export async function writeSiteEvents(db: Db, site: { venueId: string; host: str
       skip(input.skip);
       continue;
     }
-    const place = (await placeOf(db, e.location, venue.point, OFF_SITE_M, memo)) ?? own;
+    // A site found for a venue (auto) is nobody's checked word: it never places events at another venue.
+    const place = site.auto ? own : ((await placeOf(db, e.location, venue.point, OFF_SITE_M, memo)) ?? own);
     const twin = `${place.venueId}|${matchKey(input.title)}|${input.start}`;
     if (seen.has(twin)) {
       skip("duplicate");
@@ -245,6 +247,7 @@ const instant = (v: unknown): Date | null => {
   const d = typeof v === "string" || v instanceof Date ? new Date(v) : null;
   return d && !Number.isNaN(d.getTime()) ? d : null;
 };
+const ageOf = (v: unknown): number | null => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v <= 25 ? v : null);
 
 /** A page's events as a capture holds them: the fields this version reads, with what an older capture lacks left empty. */
 export function reviveExtractedEvents(raw: unknown): ExtractedEvent[] {
@@ -270,6 +273,7 @@ export function reviveExtractedEvents(raw: unknown): ExtractedEvent[] {
       allDay: e["allDay"] === true,
       free: e["free"] === true,
       location: strings(e["location"], 3),
+      minAge: ageOf(e["minAge"]),
     });
   }
   return out;
@@ -298,6 +302,7 @@ export function reviveCalendarEvents(raw: unknown): CalendarEvent[] | null {
       recurring: e["recurring"] === true,
       cost: str(e["cost"], 100),
       text: str(e["text"], 1000) ?? "",
+      ...(ageOf(e["minAge"]) !== null ? { minAge: ageOf(e["minAge"])! } : {}),
     });
   }
   return out;
