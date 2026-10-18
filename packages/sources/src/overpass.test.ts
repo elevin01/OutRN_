@@ -1,5 +1,8 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildAreaQuery, normalizeElements } from "./overpass.js";
+import { buildAreaQuery, loadAreaFromFile, normalizeElements } from "./overpass.js";
 import { OSM_CATEGORY_KEYS, OSM_QUALIFIED_TAGS, OSM_TAG_CATEGORIES } from "./osm-tags.js";
 
 describe("Overpass area query", () => {
@@ -31,3 +34,28 @@ describe("parking", () => {
   });
 });
 
+
+describe("a saved capture's extent", () => {
+  const saved = (extent: string) => {
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "capture.json");
+    // Written as text: JSON.parse reads 1e999 as Infinity.
+    writeFileSync(path, `{"elements": [], "outrn_extent": ${extent}}`);
+    return path;
+  };
+
+  it("is read back as the circle it was saved with", async () => {
+    expect((await loadAreaFromFile(saved(`{"lat": 40.7185, "lon": -73.988, "radius_m": 1500}`))).extent).toEqual({ lat: 40.7185, lon: -73.988, radiusM: 1500 });
+  });
+
+  it("is refused when it could not be a circle on the map: an endless, empty or negative radius, a point off the globe", async () => {
+    for (const extent of [
+      `{"lat": 40.7185, "lon": -73.988, "radius_m": 1e999}`,
+      `{"lat": 40.7185, "lon": -73.988, "radius_m": 0}`,
+      `{"lat": 40.7185, "lon": -73.988, "radius_m": -1500}`,
+      `{"lat": 140.7, "lon": -73.988, "radius_m": 1500}`,
+      `{"lat": 40.7185, "lon": -273.9, "radius_m": 1500}`,
+    ]) {
+      await expect(loadAreaFromFile(saved(extent)), extent).rejects.toThrow();
+    }
+  });
+});

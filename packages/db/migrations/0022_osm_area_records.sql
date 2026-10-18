@@ -22,9 +22,18 @@ create index if not exists osm_area_records_entity_idx on osm_area_records (sour
 -- Server-side only, like every other table (0005): no policy, so no anonymous access.
 alter table osm_area_records enable row level security;
 
--- Records stored before this table: held by the area whose snapshot last saw them.
-insert into osm_area_records (area_id, source_entity_id, run_id)
-select r.area_id, s.id, s.last_seen_run_id
-  from source_entities s join ingestion_runs r on r.id = s.last_seen_run_id
+-- Records stored before this table: held by the area whose snapshot last saw them, from outside that
+-- snapshot's circle when their point lies past it (a park that met it), so a later snapshot can let
+-- go of them; held from inside, a park deleted upstream would never be withdrawn. The circle is the
+-- run's radius (a replay's capture was saved at it); erring wide only keeps a record longer.
+insert into osm_area_records (area_id, source_entity_id, run_id, outside_of_m)
+select r.area_id, s.id, s.last_seen_run_id,
+       case when c.radius_m > 0 and not ST_DWithin(s.geom, a.center, c.radius_m) then ceil(c.radius_m)::int end
+  from source_entities s
+  join ingestion_runs r on r.id = s.last_seen_run_id
+  join service_areas a on a.id = r.area_id
+  cross join lateral (
+    select coalesce((r.params->>'radius_m')::float8, (r.params->>'override')::float8, a.radius_m::float8, 1500) as radius_m
+  ) c
  where s.source_id = 'osm' and s.deleted_at is null and r.area_id is not null
 on conflict (area_id, source_entity_id) do nothing;

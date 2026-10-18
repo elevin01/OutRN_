@@ -109,7 +109,7 @@ export function captureWithExtent(response: OverpassResponse, extent: SnapshotEx
   return { ...response, outrn_extent: { lat: extent.lat, lon: extent.lon, radius_m: extent.radiusM } };
 }
 
-const CaptureExtentSchema = z.object({ outrn_extent: z.object({ lat: z.number(), lon: z.number(), radius_m: z.number() }).optional() });
+const CaptureExtentSchema = z.object({ outrn_extent: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), radius_m: z.number().finite().positive() }).optional() });
 
 export async function fetchArea(center: LatLon, radiusM: number, opts: { minIntervalMs?: number } = {}): Promise<OverpassFetchResult> {
   const url = process.env["OVERPASS_URL"] ?? "https://overpass-api.de/api/interpreter";

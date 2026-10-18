@@ -239,6 +239,35 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
       expect(await live("Far Shore Refuge")).toBe(false);
       expect((await overtureReadBox(db, "les")).east).toBeLessThan(-73.9);
     });
+
+    // The database as it was before 0022, after a run of this radius: the migration backfills who holds what.
+    const backfillAfter = async (runId: string, radiusM: number) => {
+      await db.query(`update ingestion_runs set params = params || jsonb_build_object('radius_m', $2::int) where id = $1`, [runId, radiusM]);
+      await db.query(`delete from osm_area_records`);
+      await migrate(db, undefined, { reapply: ["0022_osm_area_records.sql"] });
+    };
+
+    it("a park a pre-0022 live read kept just past its circle is withdrawn once the area's next snapshot no longer has it", async () => {
+      // A live read of 1,500 m kept a park whose point is 2 km out (it meets the circle).
+      const band = { ...edge, id: 990021, tags: { name: "Probe Band Park", leisure: "park" } };
+      const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, band], null) });
+      await backfillAfter(before.runId, 1500);
+      expect(await live("Probe Band Park")).toBe(true);
+      // Deleted upstream: the area's next snapshot (1,500 m, extent known) doesn't have it.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Probe Band Park")).toBe(false);
+    });
+
+    it("a park a pre-0022 wide replay kept inside its circle is not withdrawn by a smaller snapshot", async () => {
+      const kept = { ...edge, id: 990023, tags: { name: "Probe Kept Park", leisure: "park" } };
+      const before = await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near, kept], { ...LES, radius_m: 2500 }) });
+      await backfillAfter(before.runId, 2500);
+      // A 1,500 m snapshot says nothing of it; the next 2,500 m one does.
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 1500 }) });
+      expect(await live("Probe Kept Park")).toBe(true);
+      await ingestOsmArea(db, { areaSlug: "les", fromFile: await capture([near], { ...LES, radius_m: 2500 }) });
+      expect(await live("Probe Kept Park")).toBe(false);
+    });
   });
 
   it("a mapper's survey supersedes the stored claims: status becomes published, hours carry the survey date, the ledger keeps both", async () => {
