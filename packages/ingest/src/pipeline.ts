@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { DEFAULT_MAX_TRAVEL_MINUTES, maxReachMetres, parkingBufferAt, type Category, type ParkingRule } from "@outrn/core";
+import { DEFAULT_MAX_TRAVEL_MINUTES, haversineMetres, maxReachMetres, parkingBufferAt, type Category, type ParkingRule } from "@outrn/core";
 import { assertSourceAllowed, getArea, loadParkingRule, withTx, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { materializeSubjects, retractSourceFacts, retractSourceFactsExcept, writeFacts } from "@outrn/facts";
 import { resolveOne, type ResolveOutcome } from "@outrn/identity";
@@ -50,6 +50,11 @@ export interface IngestSummary {
  * town at road speed, but the everyday catalog stays this size: a wide drive area's Overpass read
  * stays under its 25 MB limit, and what is worth the longer drive is not every corner deli on the way.
  */
+/** How far past the circle a place's point may be: a park that meets it, its middle a little beyond. */
+export function outsideSlackM(radiusM: number): number {
+  return Math.max(1000, radiusM / 4);
+}
+
 export function ingestExtentFor(area: Pick<ServiceAreaRow, "radius_m" | "travel_mode">, parking: ParkingRule | null): { catchmentM: number; reachM: number; radiusM: number } {
   const catchmentM = area.radius_m ?? 1500;
   const reachM = Math.round(maxReachMetres(area.travel_mode, DEFAULT_MAX_TRAVEL_MINUTES[area.travel_mode], { parkingBufferForHour: (h) => parkingBufferAt(parking, h), townSpeed: true }));
@@ -72,9 +77,13 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     // A replay without a saved extent is treated as covering the catchment only (the old capture size).
     const extent: SnapshotExtent = result.extent ?? { ...center, radiusM: opts.radiusM ?? area.radius_m ?? 1500 };
     if (opts.saveTo && !opts.fromFile) await writeFile(opts.saveTo, JSON.stringify(captureWithExtent(result.response, extent)), "utf8");
-    const { elements, baseTimestamp, dropped } = normalizeElements(result.response);
+    const { elements: read, baseTimestamp, dropped } = normalizeElements(result.response);
+    // A way or relation that meets the circle can have its point far outside it (a refuge whose units
+    // run along the coast): no place of this area, and it would stretch every read built on the
+    // area's venues. Only where the extent is known: an older capture without one may hold a wider fetch.
+    const elements = result.extent ? read.filter((e) => haversineMetres(extent, e.point) <= extent.radiusM + outsideSlackM(extent.radiusM)) : read;
     // Watch the size on wide drive areas: the Overpass fetch refuses a response over 25 MB.
-    log(`fetched ${elements.length} elements, ${(result.bytes / 1_048_576).toFixed(1)} MB (${dropped} dropped: no name and not parking, or no geometry)`);
+    log(`fetched ${elements.length} elements, ${(result.bytes / 1_048_576).toFixed(1)} MB (${dropped} dropped: no name and not parking, or no geometry; ${read.length - elements.length} with their point far outside the area)`);
 
     const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);

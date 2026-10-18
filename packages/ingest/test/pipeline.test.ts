@@ -153,6 +153,18 @@ describe.skipIf(!available)("supply pipeline on the synthetic LES fixture", () =
     expect(gone.rows[0]!.deleted).toBe(true);
   });
 
+  it("a way that meets the circle with its point far outside it is no place of the area, in a capture that knows its extent", async () => {
+    const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: unknown[] };
+    const far = { type: "relation", id: 990001, center: { lat: 40.9, lon: -73.7 }, tags: { name: "Far Shore Refuge", leisure: "nature_reserve" } };
+    const near = { type: "way", id: 990002, center: { lat: 40.7205, lon: -73.9875 }, tags: { name: "Near Edge Garden", leisure: "garden" } };
+    const path = join(mkdtempSync(join(tmpdir(), "outrn-")), "les-extent.json");
+    writeFileSync(path, JSON.stringify({ ...fixture, elements: [...fixture.elements, far, near], outrn_extent: { lat: 40.7185, lon: -73.988, radius_m: 1500 } }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: path });
+    const named = async (name: string) => (await db.query(`select 1 from source_entities where raw->'tags'->>'name' = $1`, [name])).rowCount;
+    expect(await named("Far Shore Refuge")).toBe(0);
+    expect(await named("Near Edge Garden")).toBe(1);
+  });
+
   it("a mapper's survey supersedes the stored claims: status becomes published, hours carry the survey date, the ledger keeps both", async () => {
     const fixture = JSON.parse(await import("node:fs").then((fs) => fs.readFileSync(FIXTURE, "utf8"))) as { elements: { lat: number; lon: number; timestamp: string; tags: Record<string, string> }[] };
     const el = fixture.elements.find((e) => e.tags["name"] === "Grand Kitchen")!;
