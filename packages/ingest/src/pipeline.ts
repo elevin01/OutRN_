@@ -85,7 +85,10 @@ export async function ingestOsmArea(db: Db, opts: IngestOptions): Promise<Ingest
     // Watch the size on wide drive areas: the Overpass fetch refuses a response over 25 MB.
     log(`fetched ${elements.length} elements, ${(result.bytes / 1_048_576).toFixed(1)} MB (${dropped} dropped: no name and not parking, or no geometry; ${read.length - elements.length} with their point far outside the area)`);
 
-    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, extent, elements, result.fetchedAt));
+    // The farthest the area keeps a record: its own reach (or a wider override), and the slack past it.
+    const reachM = Math.max(derived.radiusM, radiusM, extent.radiusM);
+    const holder = { areaId: area.id, keepM: extent.radiusM + outsideSlackM(extent.radiusM), areaReach: { ...center, radiusM: reachM + outsideSlackM(reachM) } };
+    const rawOut = await withTx(db, (tx) => upsertOsmElements(tx, runId, holder, extent, elements, result.fetchedAt));
     log(`raw: ${rawOut.counts.new} new, ${rawOut.counts.changed} changed, ${rawOut.counts.unchanged} unchanged, ${rawOut.counts.tombstoned} tombstoned`);
 
     // Unchanged records still need processing when the rules that turn tags into facts changed since,

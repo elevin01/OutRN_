@@ -518,7 +518,13 @@ interface VenueRow {
 async function areaVenues(q: Queryable, areaId: string): Promise<VenueRow[]> {
   return (
     await q.query<VenueRow>(
-      `select id, name_key, category, ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues where area_id = $1 and publish_state <> 'merged' order by id`,
+      // A venue no source speaks for any more (its record withdrawn) is no venue of the area: it
+      // neither widens the read nor takes Overture's claims.
+      `select id, name_key, category, ST_Y(geom::geometry) as lat, ST_X(geom::geometry) as lon from venues v
+        where area_id = $1 and publish_state <> 'merged'
+          and exists (select 1 from entity_links l join source_entities s on s.id = l.source_entity_id
+                       where l.venue_id = v.id and l.superseded_by is null and l.decision <> 'rejected' and s.deleted_at is null)
+        order by id`,
       [areaId],
     )
   ).rows;
