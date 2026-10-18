@@ -98,22 +98,20 @@ export function normalizeRobotsPath(s: string): string {
 function patternMatches(pattern: string, path: string): boolean {
   const anchored = pattern.endsWith("$");
   const parts = (anchored ? pattern.slice(0, -1) : pattern).split("*");
-  let at = 0;
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i]!;
-    if (i === 0) {
-      if (!path.startsWith(part)) return false;
-      at = part.length;
-      continue;
-    }
-    const found = path.indexOf(part, at);
+  const first = parts[0]!;
+  if (!path.startsWith(first)) return false;
+  // No `*`: a `$` rule is the whole path ("Allow: /$" is the home page, not every path ending in "/").
+  if (parts.length === 1) return !anchored || path.length === first.length;
+  let at = first.length;
+  // The middle parts at their earliest, which leaves the most room for the rest.
+  for (let i = 1; i < parts.length - 1; i++) {
+    const found = path.indexOf(parts[i]!, at);
     if (found === -1) return false;
-    at = found + part.length;
+    at = found + parts[i]!.length;
   }
-  if (!anchored) return true;
-  // Anchored: the last literal part must end the path (a trailing `*` before `$` matches anything).
   const last = parts[parts.length - 1]!;
-  return last === "" || path.endsWith(last);
+  // Anchored: the last part ends the path, after the others; else anywhere after them.
+  return anchored ? path.length - last.length >= at && path.endsWith(last) : path.indexOf(last, at) !== -1;
 }
 
 /** Whether `pathAndQuery` ("/menu?x=1") may be read under these rules. /robots.txt itself always may. */
@@ -154,7 +152,9 @@ export async function fetchRobots(origin: string, opts: { userAgent: string; thr
     return { status: "ok", ...parsed };
   } catch (e) {
     if (e instanceof RequestRefused) throw e;
-    if (e instanceof FetchFailed && e.status !== undefined && e.status >= 400 && e.status < 500) return { status: "none", rules: [], crawlDelayS: null };
+    // A 4xx is no robots.txt, so everything may be read; but 429 is the site asking us to slow down, not
+    // telling us it has none (Google reads it as a server error too): nothing is read until it answers.
+    if (e instanceof FetchFailed && e.status !== undefined && e.status >= 400 && e.status < 500 && e.status !== 429) return { status: "none", rules: [], crawlDelayS: null };
     // Too large to read is read as far as it goes elsewhere; here it is a site we won't guess at.
     if (e instanceof FetchBlocked) return { status: "unreachable", rules: [], crawlDelayS: null };
     return { status: "unreachable", rules: [], crawlDelayS: null };

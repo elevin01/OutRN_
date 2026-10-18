@@ -101,3 +101,25 @@ describe("microdata and hours links", () => {
     expect(hoursLinks(html, "https://www.venue.example/")).toEqual(["https://www.venue.example/hours-and-location", "https://www.venue.example/visit", "https://www.venue.example/contact"]);
   });
 });
+
+describe("crafted pages read in linear time", () => {
+  it("reads a line of many days without trying every way to split it (it was 2^n)", () => {
+    const t0 = performance.now();
+    // 48 day names on one line: exponential before (24 of them took 19 s), milliseconds now.
+    expect(hoursFromText(["Tues, ".repeat(48) + "x"])).toBeNull();
+    expect(hoursFromText(["Thurs/".repeat(48) + "x"])).toBeNull();
+    expect(hoursFromText(visibleLines(page(`<p>${"Tues & Thurs, ".repeat(20)}x</p>`)))).toBeNull();
+    expect(performance.now() - t0).toBeLessThan(500);
+    // Every spelling still reads.
+    expect(read(`<p>Tues & Thurs: 9am - 5pm</p><p>Mons, Weds, Fris: 10am - 4pm</p><p>Saturdays and Sundays: noon - 6pm</p>`)?.weekly).toHaveLength(7);
+    expect(read(`<p>Thur - Sun: 11am - 10pm</p><p>Tue-Wed: 5pm - 10pm</p>`)?.weekly.map((x) => x.weekday)).toEqual([0, 2, 3, 4, 5, 6]);
+  });
+
+  it("looks for microdata's tag nearby only (a megabyte of bare attributes took 26 s)", () => {
+    const t0 = performance.now();
+    expect(microdataHours("<" + 'itemprop="openingHours" '.repeat(40_000) + ">")).toEqual([]);
+    expect(microdataHours('itemprop="openingHours" '.repeat(40_000))).toEqual([]);
+    expect(performance.now() - t0).toBeLessThan(500);
+    expect(microdataHours(`${"<p>x</p>".repeat(1000)}<meta itemprop="openingHours" content="Mo-Fr 09:00-17:00">`)).toEqual(["Mo-Fr 09:00-17:00"]);
+  });
+});

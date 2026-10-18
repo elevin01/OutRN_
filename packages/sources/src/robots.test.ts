@@ -44,6 +44,15 @@ describe("robots.txt (RFC 9309)", () => {
     expect(normalizeRobotsPath("/%7euser/%41%2f%3F")).toBe("/~user/A%2F%3F");
   });
 
+  it("reads a $ rule without * as the whole path: \"Allow: /$\" is the home page, not every path ending in /", () => {
+    const home = policy(`User-agent: *\nAllow: /$\nDisallow: /\n`);
+    expect([robotsAllows(home, "/"), robotsAllows(home, "/hours/"), robotsAllows(home, "/private/")]).toEqual([true, false, false]);
+    const exact = policy(`User-agent: *\nDisallow: /x$\n`);
+    expect([robotsAllows(exact, "/x"), robotsAllows(exact, "/x/y/x"), robotsAllows(exact, "/xy")]).toEqual([false, true, true]);
+    expect(robotsAllows(policy(`User-agent: *\nDisallow: /*/menu$\n`), "/a/menu")).toBe(false);
+    expect(robotsAllows(policy(`User-agent: *\nDisallow: /a*b$\n`), "/ab")).toBe(false);
+  });
+
   it("reads an empty Disallow as no rule, comments as nothing, and the crawl delay (capped)", () => {
     expect(robotsAllows(policy(`User-agent: * # everyone\nDisallow:\n`), "/anything")).toBe(true);
     expect(policy(`User-agent: *\nCrawl-delay: 10\n`).crawlDelayS).toBe(10);

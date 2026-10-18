@@ -57,6 +57,16 @@ interface SiteRow {
   venue_id: string;
   url: string;
   fetch_interval_h: number;
+  auto: boolean;
+}
+
+/**
+ * The source a site's facts are written as. A site registered by hand is one the founder checked is
+ * the venue's ("firstparty", trusted above a founder's call); one found from a listed website
+ * (OSM's, Overture's) nobody has checked, so it is "firstparty_found", trusted below the founder.
+ */
+export function siteSource(auto: boolean): "firstparty" | "firstparty_found" {
+  return auto ? "firstparty_found" : "firstparty";
 }
 
 /**
@@ -154,17 +164,20 @@ function readable(f: FirstPartyExtraction["facts"][number], at: Date): boolean {
   return !evaluateHours({ osm: v.osm }, at, "America/New_York").parseError;
 }
 
-export function factsFromExtraction(x: FirstPartyExtraction, venueId: string): FactInput[] {
+export function factsFromExtraction(x: FirstPartyExtraction, venueId: string, auto = false): FactInput[] {
   const out: FactInput[] = [];
   for (const f of x.facts) {
     if (f.status === "not_stated" || !readable(f, x.fetchedAt)) continue;
+    // Whether a site takes reservations says nothing of who may come in: from a site nobody checked
+    // it must not stand in for a private club's members_only (a template's acceptsReservations: false).
+    if (auto && f.attribute === "admission") continue;
     out.push({
       subjectKind: "venue",
       subjectId: venueId,
       attribute: f.attribute as Attribute,
       value: f.value,
       evidenceClass: "published",
-      sourceId: "firstparty",
+      sourceId: siteSource(auto),
       evidence: `${x.url} :: ${f.evidence}`,
       fetchedAt: x.fetchedAt,
       sourceUpdatedAt: null,
@@ -224,14 +237,15 @@ function revive(x: FirstPartyExtraction): FirstPartyExtraction {
 // ---------------------------------------------------------------------------------------------
 
 /** Write what a site stated for a venue: its facts, its events, and, when a page was read and states no hours, no hours from it any more. */
-async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary): Promise<void> {
+async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean): Promise<void> {
+  const source = siteSource(auto);
   await withTx(db, async (tx) => {
-    const w = await writeFacts(tx, factsFromExtraction(x, venueId).map((f) => ({ ...f, ingestionRunId: runId })));
+    const w = await writeFacts(tx, factsFromExtraction(x, venueId, auto).map((f) => ({ ...f, ingestionRunId: runId })));
     s.facts += w.inserted;
     // Hours its own site no longer states (moved, or taken down) stop counting as published.
     if (!x.facts.some((f) => f.attribute === "opening_hours")) {
       await tx.query(
-        `update facts set superseded_at = now() where subject_kind = 'venue' and subject_id = $1 and source_id = 'firstparty' and attribute = 'opening_hours' and superseded_at is null`,
+        `update facts set superseded_at = now() where subject_kind = 'venue' and subject_id = $1 and source_id in ('firstparty', 'firstparty_found') and attribute = 'opening_hours' and superseded_at is null`,
         [venueId],
       );
     }
@@ -248,9 +262,9 @@ async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstP
       // What the venue's own page says the event is (a MusicEvent is live music): it ranks for taste.
       const id = r.rows[0]?.id;
       if (id && ev.kinds.length) {
-        await writeFacts(tx, [{ subjectKind: "occurrence", subjectId: id, attribute: "event_kind", value: { interests: ev.kinds }, evidenceClass: "published", sourceId: "firstparty", evidence: `${x.url} :: ${ev.evidence}`.slice(0, 1200), fetchedAt: x.fetchedAt, sourceUpdatedAt: null, confidence: 0.85, lineageGroup: `firstparty:${new URL(x.url).hostname}` }]);
+        await writeFacts(tx, [{ subjectKind: "occurrence", subjectId: id, attribute: "event_kind", value: { interests: ev.kinds }, evidenceClass: "published", sourceId: source, evidence: `${x.url} :: ${ev.evidence}`.slice(0, 1200), fetchedAt: x.fetchedAt, sourceUpdatedAt: null, confidence: 0.85, lineageGroup: `firstparty:${new URL(x.url).hostname}` }]);
         kinded.push(id);
-      } else if (id && (await retractSourceFacts(tx, "occurrence", id, "firstparty"))) {
+      } else if (id && (await retractSourceFacts(tx, "occurrence", id, source))) {
         // This path only writes event_kind: a plain Event withdraws the old MusicEvent kind.
         kinded.push(id);
       }
@@ -376,7 +390,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
   const areaId = opts.areaSlug ? (await getArea(db, opts.areaSlug)).id : null;
   const due = (
     await db.query<SiteRow>(
-      `select f.id, f.venue_id, f.url, f.fetch_interval_h from firstparty_sites f join venues v on v.id = f.venue_id
+      `select f.id, f.venue_id, f.url, f.fetch_interval_h, f.auto from firstparty_sites f join venues v on v.id = f.venue_id
         where f.enabled and ($3::uuid is null or v.area_id = $3)
           and ($2 or f.last_fetched_at is null or f.last_fetched_at < now() - (f.fetch_interval_h || ' hours')::interval)
         order by f.last_fetched_at nulls first, f.id limit $1`,
@@ -447,7 +461,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           s.noJsonLd++;
         } else s.ok++;
         if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-        await writeExtraction(db, runId, site.venue_id, x, s);
+        await writeExtraction(db, runId, site.venue_id, x, s, site.auto);
       } catch (e) {
         if (e instanceof RequestRefused && e.reason !== "robots") {
           // Its host's requests for today are spent, or it asked us to wait: this site is not due-marked,
@@ -543,7 +557,7 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void):
     const x = revive(site.read);
     s.ok++;
     if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-    await writeExtraction(db, runId, venueId, x, s);
+    await writeExtraction(db, runId, venueId, x, s, true);
   }
   if (unmatched) log(`  ${unmatched} captured sites name venues not in this database (another area's, or gone)`);
   await finishRun(db, runId, { status: "succeeded", counts: { ...s } as unknown as Record<string, number> });
