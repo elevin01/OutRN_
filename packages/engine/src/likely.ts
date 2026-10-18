@@ -29,9 +29,26 @@ export interface OpenShare {
 const SLOT_MINUTES = 15;
 
 /**
+ * Whether a place's hours say anything about its kind then: not one closed, temporarily or for good
+ * (by any source, or a published closing date by the end of the visit), taken out by the founder, or
+ * open only to members. Its hours would count it open when no one can go.
+ */
+function availablePeer(c: Candidate, at: Date): boolean {
+  if (c.excluded) return false;
+  const status = (c.facts.business_status?.value as { status?: unknown } | undefined)?.status;
+  if (typeof status === "string" && status.startsWith("closed")) return false;
+  const closure = c.facts.scheduled_closure;
+  const closesAt = closure && closure.evidenceClass !== "estimate" ? (closure.value as { at?: unknown }).at : undefined;
+  if (typeof closesAt === "string" && new Date(closesAt).getTime() <= at.getTime()) return false;
+  return (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement !== "members_only";
+}
+
+/**
  * For each kind of place, the share of those that list hours (published, not estimated, read exactly)
- * and are open from an arrival for the kind's shortest useful visit. Every loaded place counts,
- * however far: they are the same town's habits.
+ * and are open for the kind's shortest useful visit from any arrival in the 15 minutes: open at the
+ * slot's start and still open its shortest visit after the slot's end, so no arrival it stands for is
+ * promised more than its peers give. Every loaded place counts, however far: they are the same town's
+ * habits.
  */
 export function openShares(candidates: readonly Candidate[], policies: Map<string, CategoryPolicy>, fallbackMinUseful: number): (category: string, arrival: Date) => OpenShare {
   const listed = new Map<string, Candidate[]>();
@@ -49,9 +66,10 @@ export function openShares(candidates: readonly Candidate[], policies: Map<strin
     const key = `${category}@${slot.getTime()}`;
     const hit = memo.get(key);
     if (hit) return hit;
-    const until = addMinutes(slot, policies.get(category)?.minUsefulMinutes ?? fallbackMinUseful);
+    const until = addMinutes(slot, SLOT_MINUTES + (policies.get(category)?.minUsefulMinutes ?? fallbackMinUseful));
     const share: OpenShare = { open: 0, listed: 0 };
     for (const c of listed.get(category) ?? []) {
+      if (!availablePeer(c, until)) continue;
       const hours = c.facts.opening_hours!.value as HoursValue;
       const at = evaluateHours(hours, slot, c.timezone, c.point);
       if (at.parseError || at.approximate) continue;

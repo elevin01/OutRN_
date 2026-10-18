@@ -2121,6 +2121,33 @@ describe("likely open: no hours listed, where most places like it nearby are ope
     expect(mark([unlisted(), ...listed("bar", 9, 1)]).likelyOpen).toBeUndefined();
   });
 
+  it("counts no place no one can go to: closed for now or for good, excluded, or members only", () => {
+    const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const mark = (peers: Candidate[]) => evaluateAll([unlisted, ...peers], at(), POLICIES).find((e) => e.candidate.id === "unlisted")!.likelyOpen;
+    const open24 = () => listed("restaurant", 8, 0).map((c) => venue({ id: c.id, category: "restaurant", hours: "24/7", point: FAR }));
+    const withStatus = (c: Candidate, status: string): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    expect(mark(open24())).toEqual({ open: 8, listed: 8 });
+    expect(mark(open24().map((c) => withStatus(c, "closed_temporarily")))).toBeUndefined();
+    expect(mark(open24().map((c) => withStatus(c, "closed_permanently")))).toBeUndefined();
+    expect(mark(open24().map((c) => ({ ...c, excluded: true })))).toBeUndefined();
+    expect(mark(open24().map((c) => venue({ id: c.id, category: "restaurant", hours: "24/7", point: FAR, admission: "members_only" })))).toBeUndefined();
+    // Closing for good at 8pm, before the visit would end.
+    const closing = open24().map((c) => ({ ...c, facts: { ...c.facts, scheduled_closure: { value: { at: fromLocal("2026-10-03", 20 * 60, TZ).toISOString() }, confidence: 0.8, evidenceClass: "published" as const, validUntil: null, independentSources: 1 } } }));
+    expect(mark(closing)).toBeUndefined();
+  });
+
+  it("promises no arrival more of a visit than its peers give: one late in its quarter hour is judged from the quarter's end", () => {
+    const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
+    const peers = (close: string) => listed("restaurant", 8, 0).map((c) => venue({ id: c.id, category: "restaurant", hours: `Mo-Su 11:00-${close}`, point: FAR }));
+    const run = (close: string) => evaluateAll([unlisted, ...peers(close)], ctx("2026-10-03 19:29", 180), POLICIES).find((e) => e.candidate.id === "unlisted")!;
+    const e = run("20:30");
+    // It gets there a few minutes before 7:45: an hour's meal there ends after 8:30, when its peers close.
+    expect(e.timing!.arrival.getTime()).toBeGreaterThan(fromLocal("2026-10-03", 19 * 60 + 38, TZ).getTime());
+    expect(e.timing!.arrival.getTime()).toBeLessThan(fromLocal("2026-10-03", 19 * 60 + 45, TZ).getTime());
+    expect(e.likelyOpen).toBeUndefined();
+    expect(run("21:00").likelyOpen).toEqual({ open: 8, listed: 8 });
+  });
+
   it("counts only hours a place lists and that read exactly", () => {
     const unlisted = operating(venue({ id: "unlisted", category: "restaurant", hours: null }));
     const estimated = listed("restaurant", 9, 1).map((c) => ({ ...c, facts: { ...c.facts, opening_hours: { ...c.facts.opening_hours!, evidenceClass: "estimate" as const } } }));
