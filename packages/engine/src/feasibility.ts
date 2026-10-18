@@ -1,6 +1,6 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
-import { evaluateHours, isHoursValue, type HoursValue } from "@outrn/facts";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type OpenInterval, type Restroom } from "@outrn/core";
+import { evaluateHours, isHoursValue } from "@outrn/facts";
 import SunCalc from "suncalc";
 import { maxTravelFor, openDawnToDusk } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
@@ -82,15 +82,16 @@ export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, numbe
 const DAYTIME: ReadonlySet<Category> = new Set(["museum", "gallery", "library", "bookshop", "garden"]);
 
 /**
- * Hours that look mistyped for the kind of place: a close past 11pm, or into the next morning, at a
- * place that closes by the evening ("10:00-06:00" for 18:00, "10:00-10:00" for 22:00, a library to
- * midnight). Round the clock (00:00-24:00, 24/7) is left as listed: a viewing window, a study hall.
+ * Whether the close of one interval of a place's hours looks mistyped for its kind: past 11pm, or
+ * into the next morning, at a place that closes by the evening ("10:00-06:00" for 18:00, "10:00-10:00"
+ * for 22:00, a library to midnight). Only that interval is doubted: the schedule's other days, its
+ * closed days and other seasons, and this interval's opening are read as listed. One open from
+ * midnight (round the clock, a 24/7 study hall) is not doubted.
  */
-export function doubtfulHours(category: Category, hours: HoursValue): boolean {
+export function doubtfulClose(category: Category, interval: OpenInterval, timeZone: string): boolean {
   if (!DAYTIME.has(category)) return false;
-  const spans: [number, number][] =
-    "osm" in hours ? [...hours.osm.matchAll(/\b(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})\b/g)].map((m) => [Number(m[1]) * 60 + Number(m[2]), Number(m[3]) * 60 + Number(m[4])]) : hours.weekly.map((w) => [w.startMin, w.endMin]);
-  return spans.some(([start, end]) => start > 0 && (end <= start || end > 23 * 60));
+  const opens = localClock(interval.open, timeZone).minutes;
+  return opens > 0 && opens + minutesBetween(interval.open, interval.close) > 23 * 60;
 }
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
@@ -379,9 +380,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   }
   hoursConfidence = hoursFact.confidence;
   const ev = evaluateHours(hoursFact.value, arrival, c.timezone, c.point);
-  const doubtful = !ev.parseError && doubtfulHours(c.category, hoursFact.value);
-  if (ev.parseError || doubtful) {
-    unresolved.push(doubtful ? "HOURS_DOUBTFUL" : "HOURS_UNKNOWN");
+  if (ev.parseError) {
+    unresolved.push("HOURS_UNKNOWN");
     const kitchen = kitchenGate();
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
@@ -399,7 +399,10 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
         reasons.push("WAIT_FOR_OPENING");
       } else return out("CLOSED_ON_ARRIVAL");
     }
-    closesAt = ev.interval.close;
+    // A close that looks mistyped (a gallery to 6am) is no close: the visit is bounded by the window
+    // alone, Check first with the doubt named. The opening, and every other day, stand as listed.
+    if (doubtfulClose(c.category, ev.interval, c.timezone)) unresolved.push("HOURS_DOUBTFUL");
+    else closesAt = ev.interval.close;
   }
   // Published kitchen hours decide when a meal can start, whether or not the venue ever closes.
   const kitchen = kitchenGate();

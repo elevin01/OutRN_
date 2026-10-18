@@ -4,7 +4,7 @@ import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
-import { doubtfulHours } from "./feasibility.js";
+import { openShares } from "./likely.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { orderForDisplay } from "./select.js";
 import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
@@ -66,20 +66,55 @@ function ctx(date: string, minutes: number, over: Partial<RequestContext> = {}):
 const one = (c: Candidate, x: RequestContext) => evaluateAll([c], x, POLICIES)[0]!;
 
 describe("feasibility: opening hours", () => {
-  it("hours that look mistyped for the kind of place are read as unknown, not as open all night", () => {
-    // A gallery "10:00-06:00" (for 18:00) at 9pm: not open till 6am, but Check first with the doubt named.
+  it("a close that looks mistyped for the kind of place is no close: Check first, never open all night", () => {
+    // A gallery "10:00-06:00" (for 18:00) at 9pm on a Friday: not open till 6am, but Check first with the doubt named.
     const late = one(venue({ category: "gallery", hours: "Mo-Fr 10:00-06:00" }), ctx("2026-10-02 21:00", 120));
     expect(late.class).toBe("check_first");
     expect(late.unresolved).toEqual(["HOURS_DOUBTFUL"]);
     expect(late.timing!.closesAt).toBeNull();
+    expect(late.reasons).not.toContain("OPEN_LATE");
     expect(caveatNotes(late).map((n) => n.text).join(" ")).toMatch(/hours listed look mistyped/);
-    for (const [category, hours] of [["bookshop", "Su 10:00-19:00; Fr, Sa 10:00-10:00"], ["library", "Mo, Fr, Sa 10:00-00:00; Tu-Th 10:00-19:00"], ["museum", "Mo-Su 10:00-24:00"]] as const)
-      expect(doubtfulHours(category, { osm: hours }), `${category} ${hours}`).toBe(true);
-    // Late hours where late is the point, a close at 11pm, round the clock, and explicit intervals.
-    for (const [category, hours] of [["bar", "Mo-Su 17:00-04:00"], ["cafe", "Mo-Su 10:00-04:00"], ["library", "Mo-Th 09:00-23:00"], ["library", "24/7"], ["museum", "Sa-Su 12:00-18:00; 00:00-24:00"], ["bookshop", "Th-Sa 09:00-23:00"]] as const)
-      expect(doubtfulHours(category, { osm: hours }), `${category} ${hours}`).toBe(false);
-    expect(doubtfulHours("gallery", { weekly: [{ weekday: 1, startMin: 600, endMin: 1800 }] })).toBe(true);
-    expect(doubtfulHours("gallery", { weekly: [{ weekday: 1, startMin: 600, endMin: 1080 }] })).toBe(false);
+    // A library to midnight, a museum to 24:00.
+    expect(one(venue({ category: "library", hours: "Mo, Fr, Sa 10:00-00:00; Tu-Th 10:00-19:00" }), ctx("2026-10-03 21:00", 120)).unresolved).toContain("HOURS_DOUBTFUL");
+    expect(one(venue({ category: "museum", hours: "Mo-Su 10:00-24:00" }), ctx("2026-10-03 14:00", 120)).unresolved).toContain("HOURS_DOUBTFUL");
+  });
+
+  it("only the interval the visit uses is doubted: closed days, other days' closes and other seasons stand (PR #60 review)", () => {
+    const gallery = (hours: string) => venue({ category: "gallery", hours, admission: "walk_in" });
+    const weekly = gallery("Mo-Fr 10:00-06:00; Sa 10:00-18:00; Su off");
+    // Sunday is off, and Saturday closes at 6pm: both as listed.
+    expect(one(weekly, ctx("2026-10-18 12:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    expect(one(weekly, ctx("2026-10-17 19:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    // Saturday's own close stands (the schedule is approximate as listed: Saturday's rule overrides Friday's night).
+    const saturday = one(weekly, ctx("2026-10-17 12:00", 120));
+    expect(saturday.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(saturday.timing!.closesAt!.getTime()).toBe(fromLocal("2026-10-17", 18 * 60, TZ).getTime());
+    // A weekday's open still holds: before 10am, it waits for the opening.
+    const early = one(weekly, ctx("2026-10-16 09:30", 120));
+    expect(early.reasons).toContain("WAIT_FOR_OPENING");
+    expect(early.unresolved).toContain("HOURS_DOUBTFUL");
+    // A mistyped range in a season not in force says nothing of this one.
+    const seasons = gallery("Jan-Mar Mo-Su 10:00-06:00; Apr-Dec Mo-Su 09:00-18:00");
+    expect(one(seasons, ctx("2026-10-18 19:00", 120))).toMatchObject({ class: "ineligible", excludedBy: "CLOSED_ON_ARRIVAL" });
+    expect(one(seasons, ctx("2026-10-18 12:00", 120)).class).toBe("ready");
+    // A time in a quoted comment is not hours.
+    const noted = one(gallery('Mo-Su 09:00-18:00 open "last updated from 10:00-06:00"'), ctx("2026-10-18 12:00", 120));
+    expect(noted.class).toBe("ready");
+    expect(noted.unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(noted.timing!.closesAt!.getTime()).toBe(fromLocal("2026-10-18", 18 * 60, TZ).getTime());
+    // Late where late is the point, a close at 11pm, and round the clock are read as listed.
+    expect(one(venue({ category: "bar", hours: "Mo-Su 17:00-04:00" }), ctx("2026-10-03 23:00", 120)).unresolved).not.toContain("HOURS_DOUBTFUL");
+    expect(one(venue({ category: "library", hours: "Mo-Su 09:00-23:00" }), ctx("2026-10-03 20:00", 120)).class).toBe("ready");
+    expect(one(venue({ category: "library", hours: "24/7" }), ctx("2026-10-03 23:30", 60)).unresolved).not.toContain("HOURS_DOUBTFUL");
+  });
+
+  it("peers' hours count for likely open by the interval then: a mistyped close then is skipped, a quoted comment is not (PR #60 review)", () => {
+    const peers = (hours: string) => Array.from({ length: 8 }, (_, i) => venue({ id: `g${i}`, category: "gallery", hours }));
+    const noon = fromLocal("2026-10-17", 12 * 60, TZ);
+    expect(openShares(peers('Mo-Su 09:00-18:00 open "last updated from 10:00-06:00"'), POLICIES, 30)("gallery", noon)).toEqual({ open: 8, listed: 8 });
+    // A weekday's mistyped close says nothing of a Saturday they are closed: they count, closed.
+    expect(openShares(peers("Mo-Fr 10:00-06:00"), POLICIES, 30)("gallery", noon)).toEqual({ open: 0, listed: 8 });
+    expect(openShares(peers("Mo-Su 10:00-06:00"), POLICIES, 30)("gallery", fromLocal("2026-10-16", 21 * 60, TZ))).toEqual({ open: 0, listed: 0 });
   });
 
   it("open now but closes before a worthwhile visit → NOT_ENOUGH_TIME", () => {
@@ -140,7 +175,7 @@ describe("feasibility: opening hours", () => {
     // At a bookshop it looks mistyped: its hours are doubted, and no close is claimed (it was "until 7pm tomorrow").
     const slip = one(venue({ category: "bookshop", hours: "Su 10:00-19:00; Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00", point: NEAR }), ctx("2026-10-24 20:00", 180));
     expect(slip.class).toBe("check_first");
-    expect(slip.unresolved).toEqual(["HOURS_DOUBTFUL"]);
+    expect(slip.unresolved).toContain("HOURS_DOUBTFUL");
     expect(explain(slip, TZ).factLine).not.toMatch(/until/);
     expect(slip.reasons).not.toContain("OPEN_LATE");
     expect(explain(slip, TZ).sentence).not.toMatch(/open late/);
