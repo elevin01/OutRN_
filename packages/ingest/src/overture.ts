@@ -187,8 +187,8 @@ export function matchVenue(v: MatchVenue, index: PlaceIndex): OvertureMatch[] {
   return out.sort((a, b) => rank[a.name] - rank[b.name] || (b.place.confidence ?? 0) - (a.place.confidence ?? 0) || a.metres - b.metres);
 }
 
-/** Sites that are not the venue's own: a social profile or a delivery listing is no website. */
-const NOT_OWN_SITE = /(^|\.)(facebook|fb|instagram|twitter|x|tiktok|yelp|tripadvisor|doordash|grubhub|ubereats|seamless|postmates|linktr|google|goo|opentable|resy)\.[a-z.]+$/;
+/** Sites that are not the venue's own: a social profile, a delivery listing or a directory page is no website. */
+const NOT_OWN_SITE = /(^|\.)(facebook|fb|instagram|twitter|x|tiktok|yelp|tripadvisor|doordash|grubhub|ubereats|seamless|postmates|linktr|google|goo|opentable|resy|geocaching|cityseekr)\.[a-z.]+$/;
 
 /** Words too common to tie a domain, or a closure, to a venue: "pizza" is in pizzahut.com too. */
 const GENERIC_WORDS = new Set([
@@ -377,6 +377,8 @@ const BARE_TAGS: Readonly<Partial<Record<Category, Record<string, string>>>> = {
   restaurant: { amenity: "restaurant" }, cafe: { amenity: "cafe" }, dessert: { amenity: "ice_cream" }, bar: { amenity: "bar" }, gallery: { tourism: "gallery" },
   live_music: { amenity: "music_venue" }, nightclub: { amenity: "nightclub" }, arcade: { leisure: "amusement_arcade" }, market: { amenity: "marketplace" },
   activity: { amenity: "karaoke_box" },
+  // What a destination becomes (see ingestDestinations): walk-in, and free unless it is a beach.
+  park: { leisure: "park" }, garden: { leisure: "garden" }, viewpoint: { tourism: "viewpoint" }, waterfront: { natural: "beach" },
 };
 
 /**
@@ -645,7 +647,7 @@ async function chainNames(q: Queryable): Promise<Set<string>> {
 }
 
 /** The place as a source record (source_entities), for identity links: its id, and whether it is new. */
-async function upsertPlace(q: Queryable, runId: string, p: OverturePlace, fetchedAt: Date): Promise<{ id: string; inserted: boolean }> {
+export async function upsertPlace(q: Queryable, runId: string, p: OverturePlace, fetchedAt: Date): Promise<{ id: string; inserted: boolean }> {
   const r = await q.query<{ id: string; inserted: boolean }>(
     `insert into source_entities (source_id, external_id, kind, raw, content_hash, geom, first_seen_run_id, last_seen_run_id, source_updated_at, fetched_at)
      values ('overture', $1, 'venue', $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography, $6, $6, $7, $8)
@@ -694,6 +696,10 @@ async function addNewPlaces(
   const refreshed = new Set<string>();
   const index = await nameIndex(tx, capture.bbox);
   const chains = await chainNames(tx);
+  // A venue made for a destination (ingestDestinations) is that job's to refresh and withdraw, not this read's.
+  const destinations = new Set(
+    (await tx.query<{ id: string }>(`select distinct subject_id as id from facts where subject_kind = 'venue' and source_id = 'curated' and attribute = 'destination' and superseded_at is null`)).rows.map((r) => r.id),
+  );
   const write = async (venueId: string, p: OverturePlace, category: Category) => {
     const f = placeFacts(venueId, p, category, runId, now);
     const w = await writeFacts(tx, f);
@@ -712,7 +718,7 @@ async function addNewPlaces(
     const mine = known.get(p.id);
     if (mine) {
       // Made from this place on an earlier run (in any area): refreshed while it still qualifies.
-      if (mine.only && "category" in gate) {
+      if (mine.only && !destinations.has(mine.venueId) && "category" in gate) {
         await upsertPlace(tx, runId, p, now);
         await write(mine.venueId, p, gate.category);
         refreshed.add(p.id);
@@ -760,7 +766,7 @@ async function addNewPlaces(
   // qualifying, or now matched by a venue from another source. Only inside the read's box: a smaller
   // read says nothing about the rest.
   for (const v of known.values()) {
-    if (!v.only || v.areaId !== area.id || refreshed.has(v.placeId) || !inside(capture.bbox, v, 0)) continue;
+    if (!v.only || v.areaId !== area.id || refreshed.has(v.placeId) || destinations.has(v.venueId) || !inside(capture.bbox, v, 0)) continue;
     const retracted = await retractSourceFacts(tx, "venue", v.venueId, "overture");
     await tx.query(`update source_entities set deleted_at = coalesce(deleted_at, $2) where id = $1`, [v.sourceEntityId, now]);
     if (retracted) {
