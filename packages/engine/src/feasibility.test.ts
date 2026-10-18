@@ -646,6 +646,39 @@ describe("appeal signals", () => {
     expect(recommend([park, bar], ctx("2026-10-03 14:00", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["park", "bar"]);
   });
 
+  it("after dark, a family's bar or 21+ casino never rises past the park (the demotion lifts no adult place for a minor)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const park = venue({ id: "park", category: "park", hours: "24/7" });
+    const bar = venue({ id: "bar", category: "bar", hours: "Mo-Su 12:00-02:00" });
+    const casino = venue({ id: "casino", category: "activity", subtype: "casino", hours: "24/7" });
+    casino.facts.age_limit = { value: { minAge: 21 }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    for (const party of [{ company: "family" as const }, { youngestAge: 10 }]) {
+      const late = recommend([bar, casino, park], ctx("2026-10-03 22:30", 120, { sunset, ...party }), POLICIES);
+      expect(late.ordered.map((e) => e.candidate.id), JSON.stringify(party)).toEqual(["park", "bar", "casino"]);
+    }
+    // Adults out late: the bar comes before the dark lawn, as above.
+    expect(recommend([bar, park], ctx("2026-10-03 22:30", 120, { sunset }), POLICIES).ordered.map((e) => e.candidate.id)).toEqual(["bar", "park"]);
+    // A love is kept on the first page, but not one a family may not be let into (16+, ages unknown).
+    const arcade = venue({ id: "arcade", category: "activity", subtype: "amusement_arcade", hours: "Mo-Su 10:00-22:00" });
+    arcade.facts.age_limit = { value: { minAge: 16 }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    const others = ["a", "b", "c", "d"].map((id) => venue({ id, category: "bookshop", hours: "Mo-Su 09:00-22:00" }));
+    const day = recommend([arcade, ...others], ctx("2026-10-03 14:00", 120, { sunset, company: "family", taste: [["games", 1]] }), POLICIES);
+    const a = day.all.find((e) => e.candidate.id === "arcade")!;
+    expect(a.unresolved).toContain("AGE_LIMIT_UNCERTAIN");
+    expect(day.ordered.slice(0, 3).map((e) => e.candidate.id)).not.toContain("arcade");
+  });
+
+  it("no sunset window once a park or waterfront is dark for the day; a viewpoint keeps its twenty minutes after (PR #56 re-review)", () => {
+    const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
+    const at = (c: Candidate, clock: string) => evaluateAll([c], ctx(clock, 120, { sunset }), POLICIES)[0]!;
+    const waterfront = venue({ id: "water", category: "waterfront", hours: "24/7" });
+    expect(at(waterfront, "2026-10-03 18:20").reasons).toContain("SUNSET_WINDOW");
+    const dark = at(waterfront, "2026-10-03 18:45");
+    expect(dark.dayPart).toBe("off");
+    expect(dark.reasons).not.toContain("SUNSET_WINDOW");
+    expect(at(venue({ id: "view", category: "viewpoint", hours: "24/7" }), "2026-10-03 18:42").reasons).toContain("SUNSET_WINDOW");
+  });
+
   it("a park likely open after dark ranks with Check first too: losing its hours never lifts it past a bar (PR #56 review)", () => {
     const sunset = fromLocal("2026-10-03", 18 * 60 + 35, TZ);
     const operating = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, business_status: { value: { status: "operating" }, confidence: 0.75, evidenceClass: "published", validUntil: null, independentSources: 1 } } });

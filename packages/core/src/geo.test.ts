@@ -81,6 +81,42 @@ describe("travel estimates", () => {
     expect(crossesTheSound({ lat: 41.03, lon: -73.62 }, { lat: 40.91, lon: -73.56 })).toBe(true);
   });
 
+  it("a trip exactly through one of the line's vertices crosses it; one that only touches it does not (PR #56 re-review)", () => {
+    // (-73.7, 40.9) is a vertex: due south through it, and on a slant through it, either way round.
+    const north: LatLon = { lat: 40.95, lon: -73.7 };
+    const south: LatLon = { lat: 40.85, lon: -73.7 };
+    expect(crossesTheSound(north, south)).toBe(true);
+    expect(crossesTheSound(south, north)).toBe(true);
+    expect(tripMetres(north, south)).toBeGreaterThan(haversineMetres(north, south));
+    expect(crossesTheSound({ lat: 40.95, lon: -73.75 }, { lat: 40.85, lon: -73.65 })).toBe(true);
+    expect(crossesTheSound({ lat: 40.85, lon: -73.65 }, { lat: 40.95, lon: -73.75 })).toBe(true);
+    // Ending on the vertex, or running along to it and back to the side it came from, is not crossing.
+    expect(crossesTheSound(north, { lat: 40.9, lon: -73.7 })).toBe(false);
+    expect(crossesTheSound({ lat: 40.95, lon: -73.75 }, { lat: 40.9, lon: -73.7 })).toBe(false);
+  });
+
+  it("from the Bronx shore east of the bridge the north shore is across too; the Bronx's own trips stay straight (PR #56 re-review)", () => {
+    const cityIsland: LatLon = { lat: 40.8468, lon: -73.7868 };
+    const pelhamBay: LatLon = { lat: 40.8672, lon: -73.8101 };
+    const throggsNeck: LatLon = { lat: 40.8198, lon: -73.8166 };
+    for (const [from, to] of [
+      [cityIsland, { lat: 40.8198, lon: -73.7351 }], // Kings Point
+      [cityIsland, { lat: 40.8518, lon: -73.7193 }], // Sands Point
+      [pelhamBay, { lat: 40.8007, lon: -73.7285 }], // Great Neck
+    ] as const) {
+      expect(crossesTheSound(from, to)).toBe(true);
+      expect(tripMetres(from, to)).toBeGreaterThan(haversineMetres(from, to));
+    }
+    for (const [from, to] of [
+      [cityIsland, pelhamBay],
+      [throggsNeck, cityIsland],
+      [pelhamBay, { lat: 40.9115, lon: -73.783 }], // New Rochelle
+    ] as const)
+      expect(tripMetres(from, to)).toBe(haversineMetres(from, to));
+    // The destinations job's filter is as it was: City Island is not across.
+    expect(acrossTheSound(cityIsland)).toBe(false);
+  });
+
   it("the parking rule applies by local hour, wrapping past midnight", () => {
     expect(parkingBufferAt(WESTCHESTER, 17)).toBe(8);
     expect(parkingBufferAt(WESTCHESTER, 18)).toBe(5);

@@ -163,7 +163,8 @@ export function scoreCandidate(
     appeal += APPEAL_WEIGHTS.hoursConfirmed;
     extra.push("HOURS_CONFIRMED");
   }
-  if (ctx.sunset && outdoor && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
+  // Not once the place is dark for the day ("off": a park or waterfront after sunset), which the window would contradict.
+  if (ctx.sunset && outdoor && part !== "off" && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
     const m = minutesBetween(t.arrival, ctx.sunset);
     // No forecast keeps the window as before; a forecast must say it is dry, not merely not say rain.
     const clear = !ctx.weather || dry;
@@ -250,11 +251,22 @@ export function standing(e: Evaluation): ResultClass {
   return s === "ready" && e.dayPart === "off" && isOutdoor(e.candidate) ? "check_first" : s;
 }
 
-/** Ordering within the eligible set: standing, then merit. */
+/**
+ * A doubt the party may go in at all: a bar with a child along, a place likely 21+. These come only
+ * with an age in the request (feasibility), and such a place ranks after every other option: nothing
+ * that moves the rest (a dark lawn's demotion, a taste, an appeal) lifts it onto a family's first page.
+ */
+const AGE_DOUBTS: ReadonlySet<string> = new Set(["AGE_LIMIT_LIKELY", "AGE_LIMIT_UNCERTAIN", "KIDS_UNCERTAIN"]);
+export function hasAgeDoubt(e: Evaluation): boolean {
+  return e.unresolved.some((c) => AGE_DOUBTS.has(c));
+}
+
+/** Ordering within the eligible set: standing, then merit; an age doubt for the party last. */
 export function compareEvaluations(a: Evaluation, b: Evaluation): number {
   const rank = (e: Evaluation) => {
     const s = standing(e);
-    return s === "ready" ? 0 : s === "check_first" ? 1 : 2;
+    const r = s === "ready" ? 0 : s === "check_first" ? 1 : 2;
+    return r <= 1 && hasAgeDoubt(e) ? 1.5 : r;
   };
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
   const wa = merit(a);

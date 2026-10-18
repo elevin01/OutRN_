@@ -45,28 +45,44 @@ export function acrossTheSound(p: LatLon): boolean {
   return p.lat <= Math.max(40.905, line);
 }
 
-/** Which side of segment p→q the point r is on (sign of the cross product, in degrees: the area is small). */
-function side(p: readonly [number, number], q: readonly [number, number], r: readonly [number, number]): number {
-  return Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+/** Where a trip across the Sound crosses it: the Throgs Neck Bridge, the crossing nearest the mainland we serve. */
+const THROGS_NECK: LatLon = { lat: 40.8005, lon: -73.7929 };
+
+/**
+ * The Sound's middle as a trip crosses it: from the bridge, between City Island and Fort Totten, then
+ * the line above. West to east, one latitude for each longitude.
+ */
+const CROSSING_LINE: readonly (readonly [lon: number, lat: number])[] = [[THROGS_NECK.lon, THROGS_NECK.lat], ...SOUND_LINE];
+
+/** The crossing line's latitude at a longitude within it. */
+function crossingLat(lon: number): number {
+  for (let i = 1; i < CROSSING_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [CROSSING_LINE[i - 1]!, CROSSING_LINE[i]!];
+    if (lon <= x1) return y0 + ((lon - x0) / (x1 - x0)) * (y1 - y0);
+  }
+  return CROSSING_LINE[CROSSING_LINE.length - 1]![1];
 }
 
 /**
  * Whether the straight line between two places crosses the middle of the Sound: one on each shore,
- * east of Throgs Neck. Two places on one shore never do, however near the water (New Rochelle's
- * center and its Davenport Neck), and neither do two in Queens.
+ * east of the Throgs Neck Bridge. Two places on one shore never do, however near the water (New
+ * Rochelle's center and its Davenport Neck, City Island and Pelham Bay), and neither do two in Queens.
+ * Over the longitudes the trip and the line share, the trip is north of the line, then south of it
+ * (or the other way): both are straight between the line's vertices and the ends of that stretch, so
+ * the side at those points says it, a trip through a vertex included. Touching the line is not crossing.
  */
 export function crossesTheSound(a: LatLon, b: LatLon): boolean {
-  const pa: [number, number] = [a.lon, a.lat];
-  const pb: [number, number] = [b.lon, b.lat];
-  for (let i = 1; i < SOUND_LINE.length; i++) {
-    const [p, q] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
-    if (side(p, q, pa) * side(p, q, pb) < 0 && side(pa, pb, p) * side(pa, pb, q) < 0) return true;
-  }
-  return false;
+  const [west, east] = a.lon <= b.lon ? [a, b] : [b, a];
+  const from = Math.max(west.lon, CROSSING_LINE[0]![0]);
+  const to = Math.min(east.lon, CROSSING_LINE[CROSSING_LINE.length - 1]![0]);
+  if (!(from <= to)) return false;
+  // Due north or south: the two ends are the whole of it.
+  if (west.lon === east.lon) return Math.sign(west.lat - crossingLat(from)) * Math.sign(east.lat - crossingLat(from)) < 0;
+  const tripLat = (lon: number) => west.lat + ((lon - west.lon) / (east.lon - west.lon)) * (east.lat - west.lat);
+  const at = [from, ...CROSSING_LINE.map(([lon]) => lon).filter((lon) => lon > from && lon < to), to];
+  const sides = new Set(at.map((lon) => Math.sign(tripLat(lon) - crossingLat(lon))));
+  return sides.has(1) && sides.has(-1);
 }
-
-/** Where a trip across the Sound crosses it: the Throgs Neck Bridge, the crossing nearest the mainland we serve. */
-const THROGS_NECK: LatLon = { lat: 40.8005, lon: -73.7929 };
 
 /**
  * The straight-line distance a trip covers: as the crow flies, or, when that line crosses the

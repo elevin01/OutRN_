@@ -354,15 +354,22 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - **Long Island was half an hour away.** Straight-line travel cannot see the Sound: a bookshop in
     Locust Valley was "29 min" from Rye and Mamaroneck. A trip whose straight line crosses the middle
     of the Sound now goes round by the Throgs Neck Bridge (`crossesTheSound`, `tripMetres`): ~34 km and
-    ~55 minutes from Mamaroneck at noon. A trip along one shore never does, however near the water (New
-    Rochelle to its Davenport Neck) or in Queens. The destinations job's own test of what is across
+    ~55 minutes from Mamaroneck at noon. The line starts at the bridge, so City Island and Pelham Bay
+    to Kings Point or Great Neck go round too; a trip exactly through one of its vertices crosses it.
+    A trip along one shore never does, however near the water (New Rochelle to its Davenport Neck,
+    City Island to Pelham Bay) or in Queens. The destinations job's own test of what is across
     (with its margin) stays a filter on what it adds. Never shorter than the straight line, so search
     radii hold.
   - **Parks at 10:30pm.** Parks OSM tags 24/7 (Brite Avenue Park, Davis Brook Park) were Ready on a
     Wednesday night, so they came before every bar that lists no hours. A Ready place outdoors in
     the dark (known to be open, or likely open) now ranks with Check first, by merit (`standing`); its
     card still says what it did. A café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
-    beach was "fair" until 11pm); a lookout keeps the city lights.
+    beach was "fair" until 11pm); a lookout keeps the city lights. A dark shore earns no sunset window.
+  - **The dark lawn's demotion put a family's bar first.** With the park after dark moved down, a bar
+    and a likely-21+ casino came before it at 10:30pm for a family. A place with an age doubt for the
+    party (`AGE_LIMIT_LIKELY`, `AGE_LIMIT_UNCERTAIN`, `KIDS_UNCERTAIN`, which come only with an age or a
+    family in the request) now ranks after every other eligible option (`hasAgeDoubt`): no class
+    pass, variety pass or love keeps one on the first page. Adults' order is unchanged.
   - **A casino in the "active" mood.** Empire City's subtype read as games first; it is now
     nightlife first and half a game.
   - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
