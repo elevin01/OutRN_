@@ -20,7 +20,7 @@ import {
   type RobotsPolicy,
 } from "@outrn/sources";
 import { CALENDAR_DAYS } from "./calendars.js";
-import { calendarEventsOf, readSiteFeed, writeSiteEvents, type SiteFeedReader } from "./site-events.js";
+import { calendarEventsOf, readSiteFeed, reviveCalendarEvents, reviveExtractedEvents, writeSiteEvents, type SiteFeedReader } from "./site-events.js";
 
 /**
  * First-party extraction job: for every due site in firstparty_sites, fetch, extract (JSON-LD, and
@@ -254,7 +254,8 @@ async function venueByKey(q: Queryable, key: string): Promise<string | null> {
 }
 
 function revive(x: FirstPartyExtraction): FirstPartyExtraction {
-  return { ...x, fetchedAt: new Date(x.fetchedAt), events: x.events.map((e) => ({ ...e, start: new Date(e.start), end: e.end ? new Date(e.end) : null })) };
+  // Its events checked as JSON: a capture from before a field was kept has only the older ones.
+  return { ...x, fetchedAt: new Date(x.fetchedAt), events: reviveExtractedEvents(x.events) };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -489,9 +490,11 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           if (!page.eventsFeed) return;
           const reader: SiteFeedReader = { text: (u, o) => fetcher.text(u, { ...o, gate }), page: (u) => fetcher.page(u, { gate, text: false }) };
           const now = clock();
-          const r = await readSiteFeed(page.eventsFeed, reader, { now, until: new Date(now.getTime() + CALENDAR_DAYS * 86_400_000), timeZone: SITE_TIME_ZONE });
+          const { read: r, slowDown } = await readSiteFeed(page.eventsFeed, reader, { now, until: new Date(now.getTime() + CALENDAR_DAYS * 86_400_000), timeZone: SITE_TIME_ZONE });
           feedEvents = r.events;
-          if (r.status !== "ok") log(`  ${site.url} events (${page.eventsFeed.format}) → ${r.status}${r.error ? `: ${oneLine(r.error)}` : ""}`);
+          // A feed that asked us to slow down backs its host off like any page of it would.
+          const waited = slowDown ? `, waiting ${Math.ceil(await backOff(slowDown, new URL(page.eventsFeed.url).host))} h` : "";
+          if (r.status !== "ok") log(`  ${site.url} events (${page.eventsFeed.format}) → ${r.status}${r.error ? `: ${oneLine(r.error)}` : ""}${waited}`);
         };
         for (const step of site.lists_events ? [eventsFeed, hoursPage] : [hoursPage, eventsFeed]) await step();
         events = [...feedEvents, ...calendarEventsOf(x.events)];
@@ -599,7 +602,7 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void, 
     const x = revive(site.read);
     s.ok++;
     if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-    const events = Array.isArray(site.events) ? site.events : calendarEventsOf(x.events);
+    const events = reviveCalendarEvents(site.events) ?? calendarEventsOf(x.events);
     await writeExtraction(db, runId, venueId, x, s, true, events, now, site.hoursUnread === true);
   }
   if (unmatched) log(`  ${unmatched} captured sites name venues not in this database (another area's, or gone)`);

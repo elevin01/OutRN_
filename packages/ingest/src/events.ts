@@ -174,6 +174,20 @@ export interface IngestEventsOptions {
    * one that has not ended and that no area lists any more is withdrawn.
    */
   complete?: boolean;
+  /**
+   * Run in the same transaction once the events are written, with each one written (its venue,
+   * title and start): what replaces an older record of the same events retires it here, so both
+   * happen or neither does.
+   */
+  afterWrite?: (tx: Queryable, written: readonly WrittenEvent[]) => Promise<void>;
+}
+
+/** An event as ingestEvents wrote it. */
+export interface WrittenEvent {
+  occurrenceId: string;
+  venueId: string;
+  title: string;
+  start: Date;
 }
 
 export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOptions): Promise<EventsSummary> {
@@ -201,6 +215,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
     await withTx(db, async (tx) => {
       const venues = new Set<string>();
       const occurrences: string[] = [];
+      const written: WrittenEvent[] = [];
       for (const c of unique) {
         const e = c.input;
         let venueId = c.venueId;
@@ -234,6 +249,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
         );
         const occurrenceId = occ.rows[0]!.id;
         occurrences.push(occurrenceId);
+        written.push({ occurrenceId, venueId: venueId!, title: e.title, start: c.start });
         const facts = eventFacts(c, occurrenceId, atSite, source, runId, now);
         const w = await writeFacts(tx, facts);
         if (w.rejected.length) throw new Error(`event ${e.id}: facts rejected: ${w.rejected.map((r) => `${r.attribute}: ${r.reason}`).join("; ")}`);
@@ -261,6 +277,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
         );
         summary.withdrawn = withdrawn.rowCount ?? 0;
       }
+      if (opts.afterWrite) await opts.afterWrite(tx, written);
       if (occurrences.length) await materializeSubjects(tx, "occurrence", occurrences, now);
       if (venues.size) await materializeSubjects(tx, "venue", [...venues], now);
       await audit(tx, { actor: opts.actor ?? source, action: "events.ingest", targetKind: "area", targetId: area.id, after: { source, written: summary.written, sites_created: summary.sitesCreated, withdrawn: summary.withdrawn, rejected: summary.rejected.length } });

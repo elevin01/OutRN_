@@ -1,4 +1,4 @@
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -49,8 +49,10 @@ const event = (over: Partial<CalendarEvent> & { title: string; start: string }):
 describe.skipIf(!available)("a venue's own events", () => {
   it("are at the venue, or at another place one names nearby; not for children when about drink; once; never withdrawn for missing", async () => {
     const playhouse = await venueId("Delancey Playhouse");
-    // The way the job once wrote a site's events: straight into occurrences, keyed by host. A future one gives way.
+    // The way the job once wrote a site's events: straight into occurrences, keyed by host. One this
+    // listing has again gives way to it; one it does not have stays (a listing is never the whole).
     await db.query(`insert into occurrences (venue_id, title, start_at, end_at, status, recurrence_key) values ($1, 'Old Show', '2026-10-10T23:00:00Z', null, 'scheduled', 'delanceyplayhouse.example:Old Show:2026-10-10T23:00:00.000Z')`, [playhouse]);
+    await db.query(`insert into occurrences (venue_id, title, start_at, end_at, status, recurrence_key) values ($1, 'Hamlet', '2026-10-03T23:00:00Z', null, 'scheduled', 'delanceyplayhouse.example:Hamlet:2026-10-03T23:00:00.000Z')`, [playhouse]);
     // Another source already lists the open rehearsal there.
     await ingestEvents(db, { source: "calendars", events: [{ id: "town/rehearsal", title: "Open Rehearsal", start: "2026-10-04T18:00:00.000Z", place: { venue: playhouse } }] }, { areaSlug: "les", now: NOW });
     const s = await writeSiteEvents(
@@ -68,7 +70,14 @@ describe.skipIf(!available)("a venue's own events", () => {
       NOW,
     );
     expect(s.skipped).toMatchObject({ duplicate: 2, over: 1 });
-    expect((await at("Delancey Playhouse")).map((o) => `${o.title} (${o.status})`)).toEqual(["Hamlet (scheduled)", "Puppet Show (scheduled)", "Family Beer Garden (scheduled)", "Open Rehearsal (scheduled)", "Old Show (withdrawn)"]);
+    expect((await at("Delancey Playhouse")).map((o) => `${o.title} (${o.status}${o.key?.startsWith("delanceyplayhouse") ? ", old" : ""})`)).toEqual([
+      "Hamlet (scheduled)",
+      "Hamlet (withdrawn, old)",
+      "Puppet Show (scheduled)",
+      "Family Beer Garden (scheduled)",
+      "Open Rehearsal (scheduled)",
+      "Old Show (scheduled, old)",
+    ]);
     expect((await at("Attorney Arts Center")).map((o) => o.title)).toEqual(["Jazz Night"]);
     expect(await factsOf("Hamlet")).toMatchObject({ event_kind: { interests: ["theatre"] }, price: { min: 25, max: 40, currency: "USD" }, website: { value: "https://delanceyplayhouse.example/hamlet" } });
     expect(await factsOf("Puppet Show")).toMatchObject({ audience: { kids: true }, price: { free: true } });
@@ -76,7 +85,19 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect((await at("Delancey Playhouse")).find((o) => o.title === "Hamlet")!.key).toMatch(/^venue_events:site-delanceyplayhouse\.example\//);
     // A later read with only some of them: nothing is withdrawn for missing.
     await writeSiteEvents(db, { venueId: playhouse, host: "delanceyplayhouse.example" }, [event({ uid: "4", title: "Puppet Show", start: "2026-10-04T15:00:00.000Z" })], NOW);
-    expect((await at("Delancey Playhouse")).filter((o) => o.status === "scheduled").map((o) => o.title)).toEqual(["Hamlet", "Puppet Show", "Family Beer Garden", "Open Rehearsal"]);
+    expect((await at("Delancey Playhouse")).filter((o) => o.status === "scheduled").map((o) => o.title)).toEqual(["Hamlet", "Puppet Show", "Family Beer Garden", "Open Rehearsal", "Old Show"]);
+  });
+
+  it("leave an old row as it was when the write that would replace it fails (PR #61 review)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    await db.query(`insert into occurrences (venue_id, title, start_at, end_at, status, recurrence_key) values ($1, 'Macbeth', '2026-10-05T23:00:00Z', null, 'scheduled', 'delanceyplayhouse.example:Macbeth:2026-10-05T23:00:00.000Z')`, [playhouse]);
+    await db.query(`update source_policies set enabled = false where id = 'venue_events'`);
+    try {
+      await expect(writeSiteEvents(db, { venueId: playhouse, host: "delanceyplayhouse.example" }, [event({ uid: "m", title: "Macbeth", start: "2026-10-05T23:00:00.000Z" })], NOW)).rejects.toThrow();
+    } finally {
+      await db.query(`update source_policies set enabled = true where id = 'venue_events'`);
+    }
+    expect((await at("Delancey Playhouse")).filter((o) => o.title === "Macbeth").map((o) => o.status)).toEqual(["scheduled"]);
   });
 
   it("are read where the home page says the site lists them, through the job's gate, and replay from a capture", async () => {
@@ -121,6 +142,62 @@ describe.skipIf(!available)("a venue's own events", () => {
     const r = await runFirstParty(db, { fromFile: join(dir, "sites.json"), now: () => NOW });
     expect(r.occurrences).toBe(2);
     expect((await at("Broome Playhouse")).map((o) => o.title)).toEqual(["The Seagull", "Wine & Verse"]);
+  });
+
+  it("back its host off when the events feed asks us to wait (429, 503): the host's next site waits too (PR #61 review)", async () => {
+    for (const status of [429, 503]) {
+      await db.query(`delete from firstparty_sites`);
+      await db.query(`delete from firstparty_hosts`);
+      await registerSite(db, await venueId("Delancey Playhouse"), "https://stages.example.org/delancey", "test", true);
+      await registerSite(db, await venueId("Broome Playhouse"), "https://stages.example.org/broome", "test", true);
+      const asked: string[] = [];
+      const fetcher: SiteFetcher = {
+        async robots(origin, gate) {
+          await gate(new URL(`${origin}/robots.txt`));
+          return { status: "none", rules: [], crawlDelayS: null };
+        },
+        async page(url, o) {
+          await o.gate(new URL(url));
+          asked.push(new URL(url).pathname);
+          return extractPage(`<html><body class="tribe-events"></body></html>`, url, NOW);
+        },
+        async text(url, o) {
+          await o.gate(new URL(url));
+          asked.push(new URL(url).pathname);
+          throw Object.assign(new FetchFailed(`${status} from stages.example.org`, status, 7200), { host: "stages.example.org" });
+        },
+      };
+      const s = await runFirstParty(db, { areaSlug: "les", fetcher, now: () => NOW });
+      expect(asked, String(status)).toEqual([asked[0], "/wp-json/tribe/events/v1/events"]);
+      expect(s.deferred, String(status)).toBe(1);
+      const until = (await db.query<{ retry_after: Date }>(`select retry_after from firstparty_hosts where host = 'stages.example.org'`)).rows[0]!.retry_after;
+      expect(until.getTime(), String(status)).toBeGreaterThanOrEqual(NOW.getTime() + 6 * 3_600_000);
+    }
+  });
+
+  it("replay from a capture saved before feeds were read: its page events, with only the fields it kept (PR #61 review)", async () => {
+    const delancey = await venueId("Delancey Playhouse");
+    await db.query(`delete from occurrences where venue_id = $1`, [delancey]);
+    const key = (await db.query<{ key: string }>(`select se.source_id || ':' || se.external_id as key from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = $1 and se.source_id = 'osm' limit 1`, [delancey])).rows[0]!.key;
+    const dir = mkdtempSync(join(tmpdir(), "outrn-old-capture-"));
+    const old = {
+      outrn_capture: "firstparty-sites",
+      area: "les",
+      fetchedAt: NOW.toISOString(),
+      sites: [
+        {
+          venue: key,
+          url: "https://delanceyplayhouse.example/",
+          status: "ok",
+          read: { url: "https://delanceyplayhouse.example/", fetchedAt: NOW.toISOString(), facts: [], blocks: 1, types: ["TheaterEvent"], events: [{ title: "Uncle Vanya", kinds: ["theatre"], start: "2026-10-04T23:00:00.000Z", end: null, status: "scheduled", price: null, url: null, evidence: "Uncle Vanya" }, { title: 42, start: "soon" }] },
+        },
+      ],
+    };
+    writeFileSync(join(dir, "old.json"), JSON.stringify(old));
+    const r = await runFirstParty(db, { fromFile: join(dir, "old.json"), now: () => NOW });
+    expect(r.occurrences).toBe(1);
+    expect((await at("Delancey Playhouse")).map((o) => o.title)).toEqual(["Uncle Vanya"]);
+    expect(await factsOf("Uncle Vanya")).toMatchObject({ event_kind: { interests: ["theatre"] } });
   });
 
   it("read a theatre's events page before its hours page: a host's few requests a day go to what it is for", async () => {
