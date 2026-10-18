@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { fromLocal, haversineMetres, type Interest, type LatLon } from "@outrn/core";
+import { fromLocal, haversineMetres, ownValue, type Interest, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, getArea, loadParkingRule, type Db } from "@outrn/db";
 import { fetchNycParksEvents, parseNycParksCapture, type NycParksCapture, type NycParksEventRow } from "@outrn/sources";
 import { ingestEvents, type EventInput, type EventsSummary } from "./events.js";
@@ -68,7 +68,7 @@ export function decodeEntities(s: string): string {
     .replace(/&#(\d{1,7});|&#x([0-9a-f]{1,6});|&([a-z]+);/gi, (m, dec: string | undefined, hex: string | undefined, name: string | undefined) => {
       const code = dec ? Number(dec) : hex ? parseInt(hex, 16) : null;
       if (code !== null) return code > 0x1f && code <= 0x10ffff && !(code >= 0x7f && code <= 0x9f) ? String.fromCodePoint(code) : " ";
-      return ENTITIES[name!.toLowerCase()] ?? m;
+      return ownValue(ENTITIES, name!.toLowerCase()) ?? m;
     })
     .replace(/\s+/g, " ")
     .trim();
@@ -175,7 +175,7 @@ export function nycParksEvents(rows: readonly NycParksEventRow[], area: { center
     }
     const title = clip(decodeEntities(r.title), 200);
     const description = decodeEntities(r.description ?? "");
-    const kinds = [...new Set(categories.map((c) => INTERESTS_OF[c]).filter((k): k is Interest => k !== undefined))].slice(0, 4);
+    const kinds = [...new Set(categories.map((c) => ownValue(INTERESTS_OF, c)).filter((k): k is Interest => k !== undefined))].slice(0, 4);
     const { admission, closed } = entry(r);
     // A cancelled event stays listed, its title saying so ("CANCELED: Zumba").
     const cancelled = /^\W*cancell?ed\b/i.test(title);

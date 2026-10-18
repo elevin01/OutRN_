@@ -52,7 +52,8 @@ function decodeEntities(s: string): string {
 
 /** HTML as plain text, a line per break or block: tags dropped, entities decoded, spaces collapsed. */
 export function plainLines(html: string): string[] {
-  return decodeEntities(html.replace(/<(?:br|\/p|\/div|\/li|\/h\d)\b[^>]{0,200}>/gi, "\n").replace(/<[^>]{0,2000}>/g, " "))
+  // A tag never spans another "<": a run of them is each tried once, not 2000 characters on (quadratic).
+  return decodeEntities(html.replace(/<(?:br|\/p|\/div|\/li|\/h\d)\b[^<>]{0,200}>/gi, "\n").replace(/<[^<>]{0,2000}>/g, " "))
     .split("\n")
     .map((l) => l.replace(/\s+/g, " ").trim())
     .filter(Boolean);
@@ -303,7 +304,7 @@ const MONTHS = ["january", "february", "march", "april", "may", "june", "july", 
 
 /** "October 22, 2026" → "2026-10-22". */
 function writtenDate(s: string): string | null {
-  const m = /([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})/.exec(s);
+  const m = /\b([A-Za-z]{3,9})\s+(\d{1,2}),\s*(\d{4})/.exec(s);
   if (!m) return null;
   const month = MONTHS.indexOf(m[1]!.toLowerCase());
   if (month < 0) return null;
@@ -329,7 +330,8 @@ export function parseCivicPlusRss(xml: string, timeZone: string): CalendarEvent[
     const title = plain(xmlTag(block, "title") ?? "", 300);
     const dates = xmlTag(block, "calendarEvent:EventDates") ?? "";
     const times = writtenTimes(xmlTag(block, "calendarEvent:EventTimes") ?? "");
-    const days = [...dates.matchAll(/[A-Za-z]+\s+\d{1,2},\s*\d{4}/g)].map((m) => writtenDate(m[0])).filter((d): d is string => d !== null);
+    // A month is a word of its own: from inside a run of letters nothing is tried (that was quadratic).
+    const days = [...dates.slice(0, 2000).matchAll(/\b[A-Za-z]{3,9}\s+\d{1,2},\s*\d{4}/g)].map((m) => writtenDate(m[0])).filter((d): d is string => d !== null);
     if (!title || !days.length) continue;
     const allDay = times.length === 0;
     const start = fromLocal(days[0]!, times[0] ?? 0, timeZone);

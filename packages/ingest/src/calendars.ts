@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
-import { haversineMetres, matchKey, type Interest, type LatLon } from "@outrn/core";
+import { haversineMetres, isDrinkTitle, matchKey, ownValue, type Interest, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, getArea, listAreas, loadParkingRule, type Db, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { parseCalendarCapture, readCalendar, type CalendarCapture, type CalendarEvent, type CalendarFeedRef, type CalendarRead } from "@outrn/sources";
 import type { RobotsPolicy } from "@outrn/sources";
@@ -143,7 +143,8 @@ export function calendarEventInput(feed: CalendarFeed, e: CalendarEvent, now: Da
   if (NOT_AN_OUTING.test(title) || e.categories.some((c) => NOT_AN_OUTING_CATEGORY.test(c.trim()))) return { skip: "not_an_outing" };
   const about = [...e.categories, ...(feed.venue ? e.location : [])].join(" · ");
   const kinds = [...new Set(KIND_WORDS.filter(([re]) => re.test(e.categories.join(" · "))).map(([, k]) => k))].slice(0, 4);
-  const forKids = FOR_KIDS.test(title) || FOR_KIDS.test(about);
+  // A drink event is not for children, whatever its calendar files it under ("Family Beer Garden").
+  const forKids = (FOR_KIDS.test(title) || FOR_KIDS.test(about)) && !isDrinkTitle(title);
   const words = `${title}. ${e.text}`;
   const admission = REGISTER_NOT_NEEDED.test(words) ? "walk_in" : REGISTER.test(words) ? "reservation" : undefined;
   // A feed's own cost field decides; only without one is its description read for "free".
@@ -208,7 +209,7 @@ const STREET_WORDS: Readonly<Record<string, string>> = { ave: "avenue", av: "ave
 function addressOf(line: string): { number: string; street: string } | null {
   const m = /^(\d{1,6}[a-z]?)\s+([A-Za-z0-9 .'-]{3,80})$/i.exec(line.split(",")[0]!.trim());
   if (!m) return null;
-  const street = m[2]!.toLowerCase().replace(/\./g, "").split(/\s+/).map((w) => STREET_WORDS[w] ?? w).join(" ").trim();
+  const street = m[2]!.toLowerCase().replace(/\./g, "").split(/\s+/).map((w) => ownValue(STREET_WORDS, w) ?? w).join(" ").trim();
   return street ? { number: m[1]!.toLowerCase(), street } : null;
 }
 /** Kinds of place that hold events, preferred when an address holds more than one venue. */

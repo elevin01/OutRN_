@@ -105,6 +105,14 @@ describe("calendar events, one at a time", () => {
     // The same event (same uid and start) has the same id run after run.
     expect((calendarEventInput(lib, LIBRARY[0]!, NOW, until) as { id: string }).id).toBe((baby as { id: string }).id);
   });
+
+  it("never marks a drink event for children, whatever its calendar files it under", () => {
+    const beer = event({ uid: "t-9", title: "Family Beer Garden", start: "2026-10-04T17:00:00.000Z", end: "2026-10-04T20:00:00.000Z", location: ["Pitt Park"], categories: ["Family Events"] });
+    expect(calendarEventInput(FEEDS[1]!, beer, NOW, until)).not.toHaveProperty("forKids");
+    const wine = event({ uid: "t-10", title: "Kids' Craft & Wine Night", start: "2026-10-04T22:00:00.000Z", location: ["Pitt Park"] });
+    expect(calendarEventInput(FEEDS[1]!, wine, NOW, until)).not.toHaveProperty("forKids");
+    expect(calendarEventInput(FEEDS[1]!, event({ uid: "t-11", title: "Family Fun Day", start: "2026-10-04T17:00:00.000Z", location: ["Pitt Park"] }), NOW, until)).toMatchObject({ forKids: true });
+  });
 });
 
 describe.skipIf(!available)("calendars into an area", () => {

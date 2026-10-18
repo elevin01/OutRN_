@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CALENDAR_MAX_PAGES, FeedInvalid, parseCalendarCapture, parseCivicPlusRss, parseICalendar, parseTecPage, readCalendar, type CalendarFeedRef, type CalendarReadOptions } from "./calendars.js";
+import { CALENDAR_MAX_PAGES, FeedInvalid, parseCalendarCapture, parseCivicPlusRss, parseICalendar, parseTecPage, plainLines, readCalendar, type CalendarFeedRef, type CalendarReadOptions } from "./calendars.js";
 import type { RobotsPolicy } from "./robots.js";
 
 const TZ = "America/New_York";
@@ -145,6 +145,18 @@ describe("CivicPlus calendar RSS", () => {
     expect(parade!.uid).toBe("https://town.example.gov/Calendar.aspx?EID=4553/639262696280000000");
     // No time: all day, from the first date to the last.
     expect(exhibit).toMatchObject({ allDay: true, start: "2026-10-13T04:00:00.000Z", end: "2026-10-30T04:00:00.000Z", location: ["Town Hall"] });
+  });
+});
+
+describe("crafted feeds read in linear time", () => {
+  it("strips tags and reads written dates without rescanning runs of '<' or of letters", () => {
+    const t0 = performance.now();
+    expect(plainLines("<".repeat(400_000))).toHaveLength(1);
+    const item = (dates: string, description: string) => `<item><title>x</title><calendarEvent:EventDates>${dates}</calendarEvent:EventDates><description>${description}</description></item>`;
+    parseCivicPlusRss(`<rss>${item("a".repeat(80_000), "")}${item("October 22, 2026", "<".repeat(4000)).repeat(500)}</rss>`, TZ);
+    parseTecPage({ events: Array.from({ length: 50 }, (_, i) => ({ id: i, title: "x", utc_start_date: "2026-10-20 13:30:00", description: "<".repeat(80_000) })) });
+    expect(performance.now() - t0).toBeLessThan(2000);
+    expect(plainLines("<p>Pine Ridge <b>Park</b></p><br/>32 Garibaldi Pl")).toEqual(["Pine Ridge Park", "32 Garibaldi Pl"]);
   });
 });
 
