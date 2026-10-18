@@ -147,12 +147,19 @@ function sunWindow(rule: string, timeZone: string, lat: number, lon: number, day
   });
 }
 
+/**
+ * A range that ends when it starts ("Fr,Sa 10:00-10:00"): the library reads 24 hours, but it is
+ * nearly always a slip for a close that evening (10:00-22:00). Read as written, flagged approximate.
+ */
+const SAME_TIME_RANGE = /(?<![\d:])(\d{1,2}:\d{2})\s*-\s*\1(?![\d:])/;
+
 export function parseOsmHours(rule: string): ParsedRule {
   return remember(parsed, rule, PARSED_MAX, () => {
     try {
       const oh = new opening_hours(rule, NOMINATIM, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
       const warnings = oh.getWarnings();
-      return { oh, error: null, approximate: warnings.length > 0 || /SH/.test(rule), publicHolidays: /\bPH\b/.test(rule) };
+      // Quoted comments ("call 10:00-10:00") are not hours.
+      return { oh, error: null, approximate: warnings.length > 0 || /SH/.test(rule) || SAME_TIME_RANGE.test(rule.replace(QUOTED, "")), publicHolidays: /\bPH\b/.test(rule) };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false, publicHolidays: false };
