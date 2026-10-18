@@ -28,14 +28,14 @@
     "categories": [
       "bar"
     ],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 120,
     "originIsDefault": true,
-    "travelModeIsDefault": true,
-    "eventsOnly": false
+    "travelModeIsDefault": true
   },
   "items": [
     {
@@ -63,7 +63,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000023",
+      "id": "00000000-0000-4000-8000-000000000021",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
@@ -133,7 +133,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000023",
+      "placeId": "00000000-0000-4000-8000-000000000021",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -185,7 +185,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000026",
+      "id": "00000000-0000-4000-8000-000000000023",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: probably 21+ only",
@@ -255,7 +255,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000026",
+      "placeId": "00000000-0000-4000-8000-000000000023",
       "reasons": [
         {
           "code": "ENOUGH_TIME",

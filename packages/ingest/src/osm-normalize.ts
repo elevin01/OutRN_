@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-09-29.16";
+export const OSM_NORMALIZE_VERSION = "2026-10-18.17";
 
 export interface OsmRecord {
   externalId: string;
@@ -225,6 +225,22 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 }
 /** Categories that group several kinds of place; their subtype is what the category alone cannot say. */
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
+
+/**
+ * What kind of bar it is, which the category alone cannot say and an evening turns on: a sports
+ * bar's big screens, a pub, a brewery's taproom, a wine or cocktail bar. From its tags first
+ * (sport=*, amenity=pub, craft=brewery, drink:wine, drink:cocktail), else its name; null for a bar
+ * that says nothing more.
+ */
+export function barStyle(t: Record<string, string>): string | null {
+  const name = (t["name"] ?? "").toLowerCase();
+  if (t["sport"] || /\bsports? (bar|grill|pub|lounge)\b/.test(name)) return "sports_bar";
+  if (t["drink:wine"] === "yes" || t["drink:wine"] === "served" || t["bar"] === "wine" || /\b(wine|vino|enoteca)\b/.test(name)) return "wine_bar";
+  if (t["drink:cocktail"] === "yes" || t["cocktails"] === "yes" || t["bar"] === "cocktail" || /\b(cocktails?|lounge|speakeasy|mixology)\b/.test(name)) return "cocktail_bar";
+  if (t["craft"] === "brewery" || t["microbrewery"] === "yes" || t["brewery"] || /\b(brew(ing|ery|house|pub)|taproom|tap room|beer hall)\b/.test(name)) return "brewery";
+  if (t["amenity"] === "pub" || /\b(pub|tavern|ale ?house|saloon)\b/.test(name)) return "pub";
+  return null;
+}
 /**
  * OSM internet_access → wlan | yes | wired | terminal | no. "wifi" is wlan, and wlan names the kind in
  * a list ("yes, wifi"). "yes" alone is internet of an unknown kind. A list that says "no" and
@@ -364,6 +380,13 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
   const subtype = subtypeFromOsmTags(t);
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
+  // A bar's style: published from a tag that says it, estimated from its name alone.
+  const style = category === "bar" ? barStyle(t) : null;
+  if (style) {
+    const fromTags = barStyle({ ...t, name: "" }) === style;
+    if (fromTags) pub("subtype", { value: style }, categoryEvidence(t) ?? style, 0.8);
+    else facts.push({ ...base, attribute: "subtype", value: { value: style }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
+  }
   const cuisines = category && CUISINE_CATEGORIES.has(category) ? cuisineSlugs(t["cuisine"]) : [];
   if (cuisines.length) pub("cuisine", { values: cuisines }, `cuisine=${t["cuisine"]!.trim().slice(0, 200)}`, 0.8);
   // No cuisine tag: what the name says it serves ("Joe's Pizza", "Taqueria Diana"), as an estimate.

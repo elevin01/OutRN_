@@ -1,24 +1,24 @@
 {
   "id": "00000000-0000-4000-8000-00000000002e",
-  "name": "Ridge Coffee",
+  "name": "Grand Kitchen",
   "category": {
-    "id": "cafe",
-    "label": "Cafe"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.728686,
-    "lon": -73.980324
+    "lat": 40.726906,
+    "lon": -73.992709
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T00:00:00.000Z",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 8pm"
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 08:00-20:00",
-      "detail": "Open now until 8pm",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.548,
+        "confidence": 0.59,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -63,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
-      "attribute": "admission",
-      "label": "Admission",
-      "value": "Walk in",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Korean",
       "detail": null,
       "provenance": {
         "sources": [
@@ -83,15 +83,38 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.55,
+        "evidence": "published",
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Reservation required",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -109,12 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -132,25 +155,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-07-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://ridgecoffee.example/",
-    "phone": "+1 212 555 1346"
+    "websiteUrl": null,
+    "phone": "+1 212 555 5266"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=driving"
     },
     "links": []
   },

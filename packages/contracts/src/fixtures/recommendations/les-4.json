@@ -26,14 +26,14 @@
     "cuisines": [],
     "features": [],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 180,
     "originIsDefault": true,
-    "travelModeIsDefault": true,
-    "eventsOnly": false
+    "travelModeIsDefault": true
   },
   "items": [
     {
@@ -136,7 +136,10 @@
           "required": false
         }
       ],
-      "subtype": null,
+      "subtype": {
+        "id": "pub",
+        "label": "Pub"
+      },
       "ageLimit": {
         "minAge": 21,
         "evidence": "estimate"

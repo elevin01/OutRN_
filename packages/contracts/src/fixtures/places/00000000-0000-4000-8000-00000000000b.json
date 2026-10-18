@@ -5,7 +5,10 @@
     "id": "bar",
     "label": "Bar"
   },
-  "subtype": null,
+  "subtype": {
+    "id": "pub",
+    "label": "Pub"
+  },
   "timezone": "America/New_York",
   "location": {
     "lat": 40.716973,
@@ -41,7 +44,7 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.512,
+        "confidence": 0.509,
         "verifiedAt": null,
         "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
@@ -72,6 +75,29 @@
         "conflict": false,
         "freshness": "last edited in OSM Dec 2024",
         "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "subtype",
+      "label": "Kind",
+      "value": "Pub",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Dec 2024",
+        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
       }
     },
     {

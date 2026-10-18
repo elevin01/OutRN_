@@ -227,7 +227,11 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     and bars, shown on the details page ("Cuisine: Italian, pizza"), and settable by the founder.
   - **Variety within a type.** After one of each activity, each next slot goes to the best place
     once a repeat of the last three shown is paid for: 0.03 of merit per same category, 0.05 per
-    same cuisine group (Italian and pizza are one; sushi and ramen are one) or activity subtype.
+    same cuisine group (Italian and pizza are one; sushi and ramen are one), activity subtype or
+    bar style (a pub, a wine bar, a cocktail bar, a sports bar, a brewery: from OSM's tags, else
+    the name). On a date, a pub, a sports bar, a casino and a restaurant whose every cuisine is
+    casual (pizza, burgers) neither get the date bonus nor keep their appeal: the wine bar and the
+    dinner come first.
     A near-tie goes to the different place; a clearly better one keeps its slot. Class still comes
     first, and a category chip still gets only that category, with its cuisines varied.
   - **Worth the trip.** From 90 minutes, and fully from four hours, half the travel score is the

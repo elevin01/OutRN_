@@ -289,11 +289,11 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-00000000000b",
+      "id": "00000000-0000-4000-8000-00000000001c",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000b",
-      "name": "Delancey Tavern",
-      "placeName": "Delancey Tavern",
+      "placeId": "00000000-0000-4000-8000-00000000001c",
+      "name": "Ridge Bar",
+      "placeName": "Ridge Bar",
       "photos": [],
       "category": {
         "id": "bar",
@@ -302,29 +302,34 @@
       "subtype": null,
       "cuisines": [],
       "diets": [],
-      "features": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "interests": [
         "drinks"
       ],
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.716973,
-        "lon": -73.998882
+        "lat": 40.713276,
+        "lon": -74.00022
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 16,
+          "minutes": 20,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:51:00.000Z",
-        "usefulMinutes": 159,
+        "arriveAt": "2026-10-03T22:55:00.000Z",
+        "usefulMinutes": 155,
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
         "visit": {
           "style": "visit",
           "label": "Visit",
@@ -342,9 +347,9 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:51:00.000Z",
+          "at": "2026-10-03T22:55:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:51pm"
+          "text": "Arrive around 6:55pm"
         },
         {
           "kind": "wrap_up",
@@ -377,7 +382,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 159
+            "usefulMinutes": 155
           },
           "required": false
         },
@@ -385,22 +390,22 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
+            "closesAt": "2026-10-04T07:00:00.000Z"
           },
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking",
-        "websiteUrl": "https://delanceytavern.example/",
-        "phone": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
+        "websiteUrl": "https://ridgebar.example/",
+        "phone": "+1 212 555 6471",
         "links": []
       }
     }
