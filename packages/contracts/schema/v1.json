@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.9.0",
+  "contract": "1.10.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -643,6 +643,9 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "eventsOnly": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -913,6 +916,9 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "eventsOnly": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -934,7 +940,8 @@
               "originIsDefault",
               "backBy",
               "visitStyle",
-              "taste"
+              "taste",
+              "eventsOnly"
             ],
             "additionalProperties": false
           },
@@ -2985,6 +2992,9 @@
               ],
               "additionalProperties": false
             }
+          },
+          "eventsOnly": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3791,6 +3801,9 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "eventsOnly": {
+                "type": "boolean"
               }
             },
             "required": [

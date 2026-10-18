@@ -49,6 +49,8 @@ export interface RequestContext {
   /** Items shown recently on this device, and items dismissed. */
   seenIds?: string[];
   dismissedIds?: string[];
+  /** Only events: what is on, for a "happening soon" nudge. */
+  eventsOnly?: boolean;
   timezone: string;
   /**
    * The forecast over the start of the plan (see weatherFor), if one is loaded: the lowest and

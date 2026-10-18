@@ -28,4 +28,4 @@ export const ROUTES = {
 export type RouteName = keyof typeof ROUTES;
 
 /** Sent on every response as `x-outrn-contract`. Minor/patch bumps are additive; a major bump is a new route prefix. */
-export const CONTRACT_VERSION = "1.9.0";
+export const CONTRACT_VERSION = "1.10.0";

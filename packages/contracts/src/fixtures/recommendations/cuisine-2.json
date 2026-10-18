@@ -34,7 +34,8 @@
     "atIsExplicit": false,
     "windowMinutes": 120,
     "originIsDefault": true,
-    "travelModeIsDefault": true
+    "travelModeIsDefault": true,
+    "eventsOnly": false
   },
   "items": [
     {

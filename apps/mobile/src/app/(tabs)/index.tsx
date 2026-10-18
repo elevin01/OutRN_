@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { router } from "expo-router";
 import type { RecommendationResponse } from "@outrn/contracts";
 import { useApp } from "../../state/app";
@@ -15,12 +15,26 @@ import {
   s,
 } from "../../components/ui";
 import { ActivityExperience } from "../../components/ActivityExperience";
+import { HappeningPill } from "../../components/HappeningPill";
+import { happeningSoon } from "../../lib/happening";
 import { demoMode } from "../../lib/api";
 import { isExpired } from "../../lib/presentation";
 
 export default function NowScreen() {
-  const { areas, query, result, busy, error, search, initialize, taste, tasteHydrated } =
-    useApp();
+  const {
+    areas,
+    query,
+    result,
+    busy,
+    error,
+    search,
+    initialize,
+    taste,
+    tasteHydrated,
+    happening,
+    hiddenNudges,
+    hideNudge,
+  } = useApp();
   const [backPage, setBackPage] = useState<string>();
   // Quick picks, once, on first open: what this person likes leads from the first search on.
   const offeredPicks = useRef(false);
@@ -46,6 +60,19 @@ export default function NowScreen() {
     else void initialize();
   };
   const expired = result && !demoMode && isExpired(result, now);
+  // Happening soon: an event starting within two hours, one this person loves first; not one already
+  // on the shortlist, and not one hidden this session.
+  const happeningNow = demoMode && happening ? Date.parse(happening.asOf) : now;
+  const nudge = happeningSoon(
+    happening && {
+      ...happening,
+      items: happening.items.filter(
+        (i) =>
+          !hiddenNudges.has(i.id) && !result?.items.some((r) => r.id === i.id),
+      ),
+    },
+    happeningNow,
+  );
   if (!busy && !error && result && !expired && areas?.areas.length)
     return (
       <ActivityDeck
@@ -53,6 +80,17 @@ export default function NowScreen() {
         result={result}
         refresh={refresh}
         startAtEnd={backPage === `${result.requestId}:${result.page.offset}`}
+        banner={
+          nudge && happening ? (
+            <HappeningPill
+              item={nudge}
+              timezone={happening.area.timezone}
+              now={happeningNow}
+              onOpen={() => router.push({ pathname: "/happening", params: { id: nudge.id } })}
+              onHide={() => hideNudge(nudge.id)}
+            />
+          ) : undefined
+        }
         page={(cursor, backwards) => {
           setBackPage(
             backwards
@@ -116,11 +154,13 @@ function ActivityDeck({
   startAtEnd,
   page,
   refresh,
+  banner,
 }: {
   result: RecommendationResponse;
   startAtEnd: boolean;
   page: (cursor: string, backwards: boolean) => void;
   refresh: () => void;
+  banner?: ReactNode;
 }) {
   const [index, setIndex] = useState(
     startAtEnd ? Math.max(0, result.items.length - 1) : 0,
@@ -148,6 +188,7 @@ function ActivityDeck({
         onPrevious={previous}
         onNext={next}
         onRefresh={refresh}
+        banner={banner}
       />
     );
   return (

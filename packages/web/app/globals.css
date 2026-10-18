@@ -223,3 +223,11 @@ footer { border-top: 1px solid var(--line); color: var(--muted); display: flex; 
 .card-photo figcaption a { color: inherit; }
 .detail-photos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 0 0 28px; }
 .detail-photos .card-photo { margin: 0; }
+
+/* Happening soon: events starting within two hours, above the results. */
+.happening-strip { margin: 0 0 24px; padding: 16px 20px; border-radius: 20px; background: #FBE5D9; }
+.happening-strip .eyebrow { display: flex; align-items: center; gap: 6px; color: #AD361A; margin: 0 0 8px; }
+.happening-strip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.happening-strip a { display: flex; flex-wrap: wrap; gap: 4px 10px; color: inherit; text-decoration: none; }
+.happening-strip a:hover strong { text-decoration: underline; }
+.happening-strip span { color: #626A60; }

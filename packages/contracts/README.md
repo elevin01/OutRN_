@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.9.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.10.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,9 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.10.0** (additive). Happening soon:
+  - A request may ask for events only (`eventsOnly: true`): what is on, ranked as any search is (taste, age rules for a party with a minor, a walk-in pop-up joined late). It is for a "happening soon" nudge beside the main search; the apps run it with the same choices as the main search.
+  - `ResolvedRequest.eventsOnly` says whether it did (`false` by default). Snapshots stored by a 1.9 API page with `eventsOnly: false`.
 - **1.9.0** (additive). What an option is:
   - `RecommendationItem.interests` lists what kind of outing it is, as interest ids from `AreasResponse.filters.interests`, at most 4: an event by its kinds or its title, a place by what it is (a gallery is `art`, a bar `drinks`). Empty when it is none of them.
   - It is what a device that keeps a taste learns from: going to an option, saving it or turning it down nudges the person's weights for its interests. The learning stays on the device; the API only ever receives the resulting `taste`.
