@@ -77,7 +77,7 @@ describe("a range that ends when it starts", () => {
   it("is approximate (a slip for an evening close), and nothing else is for it", () => {
     const at = fromLocal("2026-10-24", 20 * 60, "America/New_York");
     expect(evaluateHours({ osm: "Mo-Th 10:00-21:00; Fr,Sa 10:00-10:00" }, at, "America/New_York").approximate).toBe(true);
-    for (const osm of ["Mo-Su 10:00-22:00", "24/7", "Mo-Su 00:00-24:00", "Mo-Fr 10:00-10:30"]) expect(evaluateHours({ osm }, at, "America/New_York").approximate, osm).toBe(false);
+    for (const osm of ["Mo-Su 10:00-22:00", "24/7", "Mo-Su 00:00-24:00", "Mo-Fr 10:00-10:30", 'Mo-Su 09:00-17:00 "call 10:00-10:00"']) expect(evaluateHours({ osm }, at, "America/New_York").approximate, osm).toBe(false);
   });
 });
 

@@ -414,7 +414,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // A binding closure is this visit's closing time, shown and reasoned about like one.
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
-  if (closesAt && closesAt >= addMinutes(userDeadline, 60) && closesLate(closesAt, arrival, ctx.timezone)) reasons.push("OPEN_LATE");
+  // Only on hours read exactly: approximate ones (a 10:00-10:00 slip read as all night) claim no late close.
+  if (closesAt && !ev.approximate && closesAt >= addMinutes(userDeadline, 60) && closesLate(closesAt, arrival, ctx.timezone)) reasons.push("OPEN_LATE");
   const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }

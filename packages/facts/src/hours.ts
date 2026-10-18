@@ -158,7 +158,8 @@ export function parseOsmHours(rule: string): ParsedRule {
     try {
       const oh = new opening_hours(rule, NOMINATIM, { mode: 0, tag_key: "opening_hours", map_value: undefined, warnings_severity: undefined, locale: undefined });
       const warnings = oh.getWarnings();
-      return { oh, error: null, approximate: warnings.length > 0 || /SH/.test(rule) || SAME_TIME_RANGE.test(rule), publicHolidays: /\bPH\b/.test(rule) };
+      // Quoted comments ("call 10:00-10:00") are not hours.
+      return { oh, error: null, approximate: warnings.length > 0 || /SH/.test(rule) || SAME_TIME_RANGE.test(rule.replace(QUOTED, "")), publicHolidays: /\bPH\b/.test(rule) };
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       return { oh: null, error: msg.split("\n")[0] ?? "parse error", approximate: false, publicHolidays: false };

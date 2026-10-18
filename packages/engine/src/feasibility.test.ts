@@ -123,6 +123,9 @@ describe("feasibility: opening hours", () => {
     expect(slip.class).toBe("check_first");
     expect(slip.unresolved).toContain("HOURS_APPROXIMATE");
     expect(explain(slip, TZ).factLine).toMatch(/until 7pm tomorrow/);
+    // Nor is it "open late": approximate hours claim no late close.
+    expect(slip.reasons).not.toContain("OPEN_LATE");
+    expect(explain(slip, TZ).sentence).not.toMatch(/open late/);
   });
 
   it("stale hours (low confidence) → Check first with HOURS_UNVERIFIED", () => {
