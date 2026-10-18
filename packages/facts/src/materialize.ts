@@ -30,6 +30,7 @@ const SOURCE_TRUST: Record<string, number> = {
   firstparty: 0.9, // a venue's own site, registered by hand
   founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
   firstparty_found: 0.8, // a site found from a listed website, not checked to be the venue's: below the founder
+  venue_events: 0.8, // what a venue's site lists as its events: as a found site's word
   user_observation: 0.7,
   osm: 0.6,
   overture: 0.6, // conflated from several map providers: as trusted as OSM, never above a check

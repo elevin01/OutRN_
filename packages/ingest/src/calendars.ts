@@ -68,7 +68,7 @@ const MAX_EVENT_DAYS = 14;
 /** A feed's events are the place's when its venue is within this of where the list puts it. */
 const VENUE_MATCH_M = 1_500;
 /** How far from its own a library's event may be held at another place it names. */
-const OFF_SITE_M = 3_000;
+export const OFF_SITE_M = 3_000;
 
 /** Not something to go out to: a meeting, a closing, a service, a class of service, anything online. */
 const NOT_AN_OUTING = /\b(boards?(?! games?)|meetings?(?! room)|commission|committee|hearings?|(?:common|town|city|village|senior) council|council meeting|closed|closings?|closures?|court|work session|budget|elections?|voting|deadline|office hours|collection|pick-?up|drop-?off|recycl\w*|tax(?:es)?|filing|applications?|blood drive|vaccin\w*|flu shots?|medicare|citizenship|esl|english (?:as a (?:second|new) language|class(?:es)?)|tutoring|homework|test prep|jobs?|careers?|resumes?|interview|notary|passports?|orientation|volunteer\w*|volunteen\w*|info(?:rmation)? session|postponed|tech help|computer help|(?:safe|defensive) driving)\b/i;
@@ -129,7 +129,7 @@ function statedPrice(cost: string): EventInput["price"] | undefined {
 export type CalendarSkip = "over" | "later" | "all_day" | "long" | "online" | "not_an_outing" | "no_place" | "duplicate";
 
 /** One event as the events file has it, all but its place; or why it is left out. */
-export function calendarEventInput(feed: CalendarFeed, e: CalendarEvent, now: Date, until: Date): Omit<EventInput, "place"> | { skip: CalendarSkip } {
+export function calendarEventInput(feed: Pick<CalendarFeed, "id" | "venue">, e: CalendarEvent, now: Date, until: Date): Omit<EventInput, "place"> | { skip: CalendarSkip } {
   const start = new Date(e.start);
   const end = e.end ? new Date(e.end) : null;
   if (Number.isNaN(start.getTime())) return { skip: "no_place" };
@@ -164,7 +164,7 @@ export function calendarEventInput(feed: CalendarFeed, e: CalendarEvent, now: Da
   };
 }
 
-interface Placed {
+export interface Placed {
   venueId: string;
   area: string;
 }
@@ -238,7 +238,7 @@ function placeLines(lines: string[]): string[] {
 }
 
 /** Where an event is, by the place its lines name or, failing that, the address they give. */
-async function placeOf(q: Queryable, lines: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
+export async function placeOf(q: Queryable, lines: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
   for (const line of placeLines(lines)) {
     const key = `name:${matchKey(line)}`;
     if (!memo.has(key)) memo.set(key, await venueNamed(q, [line], at, radiusM));

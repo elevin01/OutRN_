@@ -1,22 +1,26 @@
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { websiteUrl, type Attribute, type FactInput } from "@outrn/core";
 import { assertSourceAllowed, getArea, withTx, type Db, type Queryable } from "@outrn/db";
-import { evaluateHours, materializeSubjects, retractSourceFacts, writeFacts } from "@outrn/facts";
+import { evaluateHours, materializeSubjects, writeFacts } from "@outrn/facts";
 import {
   currentUserAgent,
   fetchAndExtract,
   fetchRobots,
   finishRun,
+  guardedFetch,
   robotsAllows,
   sameSite,
   startRun,
   FetchBlocked,
   FetchFailed,
   RequestRefused,
+  type CalendarEvent,
   type FirstPartyExtraction,
   type RequestGate,
   type RobotsPolicy,
 } from "@outrn/sources";
+import { CALENDAR_DAYS } from "./calendars.js";
+import { calendarEventsOf, readSiteFeed, writeSiteEvents, type SiteFeedReader } from "./site-events.js";
 
 /**
  * First-party extraction job: for every due site in firstparty_sites, fetch, extract (JSON-LD, and
@@ -58,6 +62,8 @@ interface SiteRow {
   url: string;
   fetch_interval_h: number;
   auto: boolean;
+  /** Its venue is a kind whose site is read for its events (EVENT_VENUES): they come before its hours page. */
+  lists_events: boolean;
 }
 
 /**
@@ -76,6 +82,8 @@ export function siteSource(auto: boolean): "firstparty" | "firstparty_found" {
 export interface SiteFetcher {
   robots(origin: string, gate: RequestGate): Promise<RobotsPolicy>;
   page(url: string, opts: { gate: RequestGate; text: boolean }): Promise<FirstPartyExtraction>;
+  /** A feed's text (The Events Calendar's JSON, iCalendar), of the content types given. */
+  text(url: string, opts: { gate: RequestGate; accept: string; contentTypes: string[] }): Promise<string>;
 }
 
 export function liveSiteFetcher(): SiteFetcher {
@@ -83,10 +91,18 @@ export function liveSiteFetcher(): SiteFetcher {
   return {
     robots: (origin, gate) => fetchRobots(origin, { userAgent, beforeRequest: gate }),
     page: (url, o) => fetchAndExtract(url, { beforeRequest: o.gate, text: o.text }),
+    text: async (url, o) =>
+      (await guardedFetch(url, { sourceId: "firstparty", beforeRequest: o.gate, accept: o.accept, allowedContentTypes: o.contentTypes, maxBytes: 8 * 1024 * 1024, timeoutMs: 30_000, retries: 1, sameSiteRedirects: true })).text,
   };
 }
 
 /** The source policy's limits (0024): hosts at a time, a host's requests apart, and requests per host a day. */
+/** An error as one short line: some carry the page they got ("404 from x: <!doctype html>…"). */
+const oneLine = (s: string) => s.replace(/\s+/g, " ").slice(0, 120);
+
+/** The launch areas' zone: a site's date and time with no offset is read in it, and its feed asked for in it. */
+const SITE_TIME_ZONE = "America/New_York";
+
 export const FIRSTPARTY_LIMITS = { hostsAtOnce: 8, minIntervalMs: 5000, perHostPerDay: 4, robotsMaxAgeH: 24, backoffH: 6, refusedRecheckH: 720 } as const;
 
 export async function registerSite(q: Queryable, venueId: string, url: string, reason: string, auto = false): Promise<void> {
@@ -110,6 +126,9 @@ export function ownSiteUrl(raw: string | null | undefined): string | null {
   return NOT_OWN_SITE.test(new URL(url).hostname) ? null : url;
 }
 
+/** Kinds of place whose own site is read for its events, whatever source publishes their hours. Not cinemas: showtimes are not events. */
+export const EVENT_VENUES: ReadonlySet<string> = new Set(["theatre", "live_music", "arts_centre", "museum", "community"]);
+
 export interface DiscoverSummary {
   /** Venues with a website and no published hours. */
   candidates: number;
@@ -126,15 +145,15 @@ export interface DiscoverSummary {
 export async function discoverSites(db: Db, opts: { areaSlug?: string; limit?: number } = {}): Promise<DiscoverSummary> {
   const areaId = opts.areaSlug ? (await getArea(db, opts.areaSlug)).id : null;
   const rows = (
-    await db.query<{ id: string; website: string | null }>(
-      `select v.id, w.value->>'value' as website from venues v
+    await db.query<{ id: string; website: string | null; listsEvents: boolean }>(
+      `select v.id, w.value->>'value' as website, v.category = any($3::text[]) as "listsEvents" from venues v
          join current_facts w on w.subject_kind = 'venue' and w.subject_id = v.id and w.attribute = 'website'
          left join current_facts h on h.subject_kind = 'venue' and h.subject_id = v.id and h.attribute = 'opening_hours'
         where v.publish_state <> 'merged' and ($1::uuid is null or v.area_id = $1)
-          and (h.subject_id is null or h.evidence_class = 'estimate')
+          and (h.subject_id is null or h.evidence_class = 'estimate' or v.category = any($3::text[]))
           and not exists (select 1 from firstparty_sites f where f.venue_id = v.id)
         order by v.id limit $2`,
-      [areaId, opts.limit ?? 100_000],
+      [areaId, opts.limit ?? 100_000, [...EVENT_VENUES]],
     )
   ).rows;
   const s: DiscoverSummary = { candidates: rows.length, registered: 0, notOwn: 0 };
@@ -144,7 +163,7 @@ export async function discoverSites(db: Db, opts: { areaSlug?: string; limit?: n
       s.notOwn++;
       continue;
     }
-    await registerSite(db, r.id, url, "auto: its own website; no source publishes its hours", true);
+    await registerSite(db, r.id, url, r.listsEvents ? "auto: its own website lists its events" : "auto: its own website; no source publishes its hours", true);
     s.registered++;
   }
   return s;
@@ -198,6 +217,8 @@ interface CapturedSite {
   status: string;
   /** What was read, when anything was. */
   read?: FirstPartyExtraction;
+  /** Its events as read: its page's and its feed's (absent in a capture from before feeds were read). */
+  events?: CalendarEvent[];
 }
 
 export interface FirstPartyCapture {
@@ -236,9 +257,11 @@ function revive(x: FirstPartyExtraction): FirstPartyExtraction {
 
 // ---------------------------------------------------------------------------------------------
 
-/** Write what a site stated for a venue: its facts, its events, and, when a page was read and states no hours, no hours from it any more. */
-async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean): Promise<void> {
-  const source = siteSource(auto);
+/**
+ * Write what a site stated for a venue: its facts, and, when a page was read and states no hours, no
+ * hours from it any more; then its events (see site-events.ts), as the source venue_events.
+ */
+async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstPartyExtraction, s: FirstPartyRunSummary, auto: boolean, events: readonly CalendarEvent[], now: Date): Promise<void> {
   await withTx(db, async (tx) => {
     const w = await writeFacts(tx, factsFromExtraction(x, venueId, auto).map((f) => ({ ...f, ingestionRunId: runId })));
     s.facts += w.inserted;
@@ -249,29 +272,9 @@ async function writeExtraction(db: Db, runId: string, venueId: string, x: FirstP
         [venueId],
       );
     }
-    const kinded: string[] = [];
-    for (const ev of x.events) {
-      const r = await tx.query<{ id: string }>(
-        `insert into occurrences (venue_id, title, start_at, end_at, status, recurrence_key)
-         values ($1, $2, $3, $4, $5, $6)
-         on conflict (recurrence_key) where recurrence_key is not null do update set end_at = excluded.end_at, status = excluded.status
-         returning id`,
-        [venueId, ev.title, ev.start, ev.end, ev.status, `${new URL(x.url).hostname}:${ev.title}:${ev.start.toISOString()}`],
-      );
-      s.occurrences += r.rowCount ?? 0;
-      // What the venue's own page says the event is (a MusicEvent is live music): it ranks for taste.
-      const id = r.rows[0]?.id;
-      if (id && ev.kinds.length) {
-        await writeFacts(tx, [{ subjectKind: "occurrence", subjectId: id, attribute: "event_kind", value: { interests: ev.kinds }, evidenceClass: "published", sourceId: source, evidence: `${x.url} :: ${ev.evidence}`.slice(0, 1200), fetchedAt: x.fetchedAt, sourceUpdatedAt: null, confidence: 0.85, lineageGroup: `firstparty:${new URL(x.url).hostname}` }]);
-        kinded.push(id);
-      } else if (id && (await retractSourceFacts(tx, "occurrence", id, source))) {
-        // This path only writes event_kind: a plain Event withdraws the old MusicEvent kind.
-        kinded.push(id);
-      }
-    }
-    if (kinded.length) await materializeSubjects(tx, "occurrence", kinded);
     await materializeSubjects(tx, "venue", [venueId]);
   });
+  if (events.length) s.occurrences += (await writeSiteEvents(db, { venueId, host: new URL(x.url).hostname }, events, now)).written;
 }
 
 interface HostRow {
@@ -383,18 +386,18 @@ export interface RunOptions {
 
 export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<FirstPartyRunSummary> {
   const log = opts.log ?? (() => undefined);
-  if (opts.fromFile) return replayFirstParty(db, opts.fromFile, log);
+  if (opts.fromFile) return replayFirstParty(db, opts.fromFile, log, (opts.now ?? (() => new Date()))());
   await assertSourceAllowed(db, "firstparty", "fetch");
   const fetcher = opts.fetcher ?? liveSiteFetcher();
   const clock = opts.now ?? (() => new Date());
   const areaId = opts.areaSlug ? (await getArea(db, opts.areaSlug)).id : null;
   const due = (
     await db.query<SiteRow>(
-      `select f.id, f.venue_id, f.url, f.fetch_interval_h, f.auto from firstparty_sites f join venues v on v.id = f.venue_id
+      `select f.id, f.venue_id, f.url, f.fetch_interval_h, f.auto, v.category = any($4::text[]) as lists_events from firstparty_sites f join venues v on v.id = f.venue_id
         where f.enabled and ($3::uuid is null or v.area_id = $3)
           and ($2 or f.last_fetched_at is null or f.last_fetched_at < now() - (f.fetch_interval_h || ' hours')::interval)
         order by f.last_fetched_at nulls first, f.id limit $1`,
-      [opts.limit ?? 50, opts.force ?? false, areaId],
+      [opts.limit ?? 50, opts.force ?? false, areaId, [...EVENT_VENUES]],
     )
   ).rows;
   // Hosts many venues share (a town's parks pages, a chain's store pages): only their structured data is read.
@@ -430,6 +433,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
       let status = "ok";
       let recheck: number | undefined;
       let x: FirstPartyExtraction | undefined;
+      let events: CalendarEvent[] = [];
       try {
         try {
           x = await fetcher.page(site.url, { gate, text: textAllowed(host, sharedHosts) });
@@ -441,27 +445,43 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           x = await fetcher.page(to, { gate, text: textAllowed(t.host.toLowerCase(), sharedHosts) });
           status = `ok (moved to ${t.host})`;
         }
-        // No hours on the page: the site's page for them, through the same gate.
-        if (!x.facts.some((f) => f.attribute === "opening_hours") && x.hoursLinks?.length) {
-          const from = new URL(x.url);
-          const link = x.hoursLinks.map((l) => new URL(l)).find((l) => sameSite(l.host, from.host));
-          if (link) {
-            try {
-              const y = await fetcher.page(link.toString(), { gate, text: textAllowed(link.host.toLowerCase(), sharedHosts) });
-              const hours = y.facts.filter((f) => f.attribute === "opening_hours");
-              if (hours.length) x = { ...x, url: y.url, facts: [...x.facts.filter((f) => f.attribute !== "opening_hours"), ...hours], events: [...x.events, ...y.events] };
-            } catch (e) {
-              // The page itself was read: a refused or failed hours page leaves it as it was.
-              if (!(e instanceof RequestRefused || e instanceof FetchBlocked || e instanceof FetchFailed)) throw e;
-            }
+        // A host's requests a day are few (robots.txt, the page, one or two more): a theatre's or music
+        // room's events come before its hours page, a restaurant's hours before its events.
+        const page = x;
+        const hoursPage = async () => {
+          // No hours on the page: the site's page for them, through the same gate.
+          if (page.facts.some((f) => f.attribute === "opening_hours") || !page.hoursLinks?.length) return;
+          const from = new URL(page.url);
+          const link = page.hoursLinks.map((l) => new URL(l)).find((l) => sameSite(l.host, from.host));
+          if (!link) return;
+          try {
+            const y = await fetcher.page(link.toString(), { gate, text: textAllowed(link.host.toLowerCase(), sharedHosts) });
+            const hours = y.facts.filter((f) => f.attribute === "opening_hours");
+            if (hours.length) x = { ...x!, url: y.url, facts: [...x!.facts.filter((f) => f.attribute !== "opening_hours"), ...hours], events: [...x!.events, ...y.events] };
+          } catch (e) {
+            // The page itself was read: a refused or failed hours page leaves it as it was.
+            if (!(e instanceof RequestRefused || e instanceof FetchBlocked || e instanceof FetchFailed)) throw e;
           }
-        }
+        };
+        // Its events where the page says the site lists them, through the same gate (a feed refused or
+        // failed leaves the page's own).
+        let feedEvents: CalendarEvent[] = [];
+        const eventsFeed = async () => {
+          if (!page.eventsFeed) return;
+          const reader: SiteFeedReader = { text: (u, o) => fetcher.text(u, { ...o, gate }), page: (u) => fetcher.page(u, { gate, text: false }) };
+          const now = clock();
+          const r = await readSiteFeed(page.eventsFeed, reader, { now, until: new Date(now.getTime() + CALENDAR_DAYS * 86_400_000), timeZone: SITE_TIME_ZONE });
+          feedEvents = r.events;
+          if (r.status !== "ok") log(`  ${site.url} events (${page.eventsFeed.format}) → ${r.status}${r.error ? `: ${oneLine(r.error)}` : ""}`);
+        };
+        for (const step of site.lists_events ? [eventsFeed, hoursPage] : [hoursPage, eventsFeed]) await step();
+        events = [...feedEvents, ...calendarEventsOf(x.events)];
         if (!x.blocks && !x.facts.length && !x.events.length) {
           status = status === "ok" ? "no_jsonld" : status;
           s.noJsonLd++;
         } else s.ok++;
         if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-        await writeExtraction(db, runId, site.venue_id, x, s, site.auto);
+        await writeExtraction(db, runId, site.venue_id, x, s, site.auto, events, clock());
       } catch (e) {
         if (e instanceof RequestRefused && e.reason !== "robots") {
           // Its host's requests for today are spent, or it asked us to wait: this site is not due-marked,
@@ -488,12 +508,12 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
           recheck = FIRSTPARTY_LIMITS.refusedRecheckH;
           s.blocked++;
         } else {
-          status = `error: ${(e as Error).message.slice(0, 120)}`;
+          status = `error: ${oneLine((e as Error).message)}`;
           s.failed++;
         }
       }
       await finish(site, status, recheck);
-      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: status.startsWith("robots") ? "robots" : status, ...(x ? { read: x } : {}) });
+      captured.push({ venue: (await venueKey(db, site.venue_id)) ?? site.venue_id, url: site.url, status: status.startsWith("robots") ? "robots" : status, ...(x ? { read: x, events } : {}) });
     }
   };
 
@@ -537,7 +557,7 @@ async function keptWith(captured: CapturedSite[], earlierPath: string): Promise<
 }
 
 /** Replay a saved run: register each site for its venue (found by source record) and write what it stated. */
-async function replayFirstParty(db: Db, path: string, log: (l: string) => void): Promise<FirstPartyRunSummary> {
+async function replayFirstParty(db: Db, path: string, log: (l: string) => void, now: Date): Promise<FirstPartyRunSummary> {
   const raw = JSON.parse(await readFile(path, "utf8")) as Partial<FirstPartyCapture>;
   if (raw.outrn_capture !== "firstparty-sites" || !Array.isArray(raw.sites)) throw new Error(`${path} is not a first-party sites capture (outrn firstparty run --save)`);
   const runId = await startRun(db, { sourceId: "firstparty", kind: "replay", params: { from_file: path, area: raw.area ?? null } });
@@ -557,7 +577,8 @@ async function replayFirstParty(db: Db, path: string, log: (l: string) => void):
     const x = revive(site.read);
     s.ok++;
     if (x.facts.some((f) => f.attribute === "opening_hours")) s.hours++;
-    await writeExtraction(db, runId, venueId, x, s, true);
+    const events = Array.isArray(site.events) ? site.events : calendarEventsOf(x.events);
+    await writeExtraction(db, runId, venueId, x, s, true, events, now);
   }
   if (unmatched) log(`  ${unmatched} captured sites name venues not in this database (another area's, or gone)`);
   await finishRun(db, runId, { status: "succeeded", counts: { ...s } as unknown as Record<string, number> });
