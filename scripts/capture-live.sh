@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Records real data for every area (or the ones named) into fixtures/live, for `pnpm real` and the
 # golden scenarios to replay offline. Needs network access: overpass-api.de for places,
-# www.wikidata.org + commons.wikimedia.org for photos, and overturemaps-us-west-2.s3.us-west-2.amazonaws.com
-# for Overture Maps places (whether each place still operates, websites, phones).
+# www.wikidata.org + commons.wikimedia.org for photos, overturemaps-us-west-2.s3.us-west-2.amazonaws.com
+# for Overture Maps places (whether each place still operates, websites, phones), and the venues' own
+# websites for the hours no source publishes (as each site's robots.txt allows; CAPTURE_SITES=0 skips them).
 #
 #   pnpm capture                    # every area
 #   pnpm capture yonkers white_plains
 #   CAPTURE_PAUSE_SECONDS=30 pnpm capture   # seconds between areas (default 10)
 #
 # Each area is recorded into a staging directory next to fixtures/live and replaces
-# fixtures/live/<area>.json, <area>-photos.json, <area>-overture.json and <area>-destinations.json only once every step for it
+# fixtures/live/<area>.json, <area>-photos.json, <area>-overture.json and <area>-destinations.json (and
+# <area>-sites.json, when the websites could be read) only once every step for it
 # has succeeded, so a failed capture leaves the previous set exactly as it was. The database is the script's own
 # (outrn_capture on the local cluster, recreated each run). It runs on macOS's Bash 3.2.
 #
@@ -112,6 +114,8 @@ for slug in "${slugs[@]}"; do
   new_overture="${stage}/${slug}-overture.json"
   destinations="fixtures/live/${slug}-destinations.json"
   new_destinations="${stage}/${slug}-destinations.json"
+  sites="fixtures/live/${slug}-sites.json"
+  new_sites="${stage}/${slug}-sites.json"
 
   problem=""
   if ! pnpm -s outrn ingest osm --area "$slug" --save "$new_osm"; then
@@ -144,6 +148,21 @@ for slug in "${slugs[@]}"; do
     fi
   fi
 
+  # The venues' own websites, for the hours no source publishes: as their robots.txt allows, a
+  # site's requests 5 s apart and at most four a day, eight sites at a time (slow: minutes per area).
+  # Optional: when it can't be done, the previous sites capture stays and the rest is saved.
+  # CAPTURE_SITES=0 skips it.
+  if [ -z "$problem" ] && [ "${CAPTURE_SITES:-1}" != "0" ]; then
+    # --keep: a site this run could not read (asked us to wait, an error) keeps what the last capture read.
+    if out="$(pnpm -s outrn firstparty discover --area "$slug" && pnpm -s outrn firstparty run --area "$slug" --limit 100000 --save "$new_sites" --keep "$sites")"; then
+      printf '%s\n' "$out" | grep -E "^[0-9]+ venues|^sites" | sed 's/^/   websites: /'
+    else
+      printf '%s\n' "$out" | tail -n 1 >&2
+      echo "   note: the venues' websites could not be read this time; ${sites} is kept as it was" >&2
+      rm -f "$new_sites"
+    fi
+  fi
+
   if [ -n "$problem" ]; then
     echo "   ${slug} (${problem}) failed: kept the previous capture as it was" >&2
     failed="${failed:+${failed}, }${slug} (${problem})"
@@ -154,6 +173,7 @@ for slug in "${slugs[@]}"; do
     fi
     mv -f "$new_overture" "$overture"
     mv -f "$new_destinations" "$destinations"
+    if [ -s "$new_sites" ]; then mv -f "$new_sites" "$sites"; fi
     mv -f "$new_osm" "$osm"
     if $photos_supported; then
       echo "   saved ${osm}, ${photos}, ${overture} and ${destinations}"

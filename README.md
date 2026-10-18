@@ -89,7 +89,8 @@ fails to replay stops it with an error before the API starts.
 `pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
 photos, their Overture places and their destinations into `fixtures/live`, on a machine that can reach overpass-api.de,
 www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com.
-`pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT` first. Each area is
+`pnpm capture yonkers white_plains` does just those, and reads the venues' own websites for their hours
+(slow: minutes per area; `CAPTURE_SITES=0` skips it). Set `OUTRN_USER_AGENT` first. Each area is
 recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json`,
 `<area>-overture.json` and `<area>-destinations.json` only once every step for it has succeeded, so a failed capture keeps the
 previous set as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
@@ -163,6 +164,35 @@ to dusk, as a park is; gardens, estates, the zoo and amusement parks stay Check 
 are known.
 Around Bronxville the read adds about 100. `--save` keeps only the few hundred records the selection
 reads, so a capture replays the same destinations.
+
+**Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
+places list none). `outrn firstparty discover --area <slug>` registers the website of each venue with no
+published hours, when it is the venue's own: never a social network, review site, map, booking or
+ordering service. `outrn firstparty run --area <slug>` then reads them:
+- **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a
+  site whose robots.txt can't be reached, is not read. Its crawl delay is kept.
+- **Politely:** every request (each redirect hop and retry too, and robots.txt reads) passes one
+  gate first: its host isn't backing off, its robots.txt allows that very path (compared as RFC 9309
+  says, percent-encoding and all), and one of the host's four requests for the day is reserved for it.
+  A host's requests are at least 5 s apart, eight sites at a time. A site that answers 429 or 503 is
+  left alone for six hours or more; one that refuses (403), or that robots.txt keeps us from, is asked
+  again in a month. Moving between its www. and bare name is followed; moving to another host is
+  followed once, through that host's own gate.
+- **What is read:** schema.org JSON-LD (hours, phone, price range, events); for hours, then
+  microdata, then the hours the page writes out ("Mon – Thu: 11:30am – 9pm"), read strictly: nothing
+  without am or pm, nothing under a happy hour, delivery or kitchen heading (until the next heading or
+  the section's end) or caption, no season's or
+  holiday's hours, no page giving two sets of hours for a day, and no weekday-only hours that say
+  nothing of the weekend (an office's). On a government site, or one many venues share (a town's
+  parks, a chain's stores), only structured data counts. When the page states no hours, its own
+  "Hours", "Visit", "Location" or "Contact" page is read instead.
+- **What is kept:** the facts, with the words or JSON they were read from as evidence (published,
+  0.85 from structured data, 0.75 from the page's words), never the HTML. Hours a site no longer
+  states stop counting. `--save` keeps what each site stated for `pnpm real` to replay; a run that
+  could read no site saves nothing (and exits non-zero), and `--keep <earlier capture>` keeps its
+  reads for sites this run couldn't read.
+- **What it finds:** White Plains, October 2026: 237 sites registered, 103 read, opening hours from 61
+  (a quarter of them); robots.txt kept us off 42, 15 refused us, and 29 events came with the pages.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.

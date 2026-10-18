@@ -27,8 +27,9 @@ export const MATERIALIZE_POLICY_VERSION = "2026-09-29.1";
 const CLASS_RANK: Record<EvidenceClass, number> = { published: 3, observation: 2, estimate: 1 };
 
 const SOURCE_TRUST: Record<string, number> = {
-  firstparty: 0.9,
+  firstparty: 0.9, // a venue's own site, registered by hand
   founder: 0.85, // checked by the founder (a call, a visit); below the venue's own site
+  firstparty_found: 0.8, // a site found from a listed website, not checked to be the venue's: below the founder
   user_observation: 0.7,
   osm: 0.6,
   overture: 0.6, // conflated from several map providers: as trusted as OSM, never above a check

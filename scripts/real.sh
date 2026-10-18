@@ -11,7 +11,8 @@
 # Each fixtures/live/<area>.json is ingested and the area switched on (served); a
 # fixtures/live/<area>-photos.json next to it brings its photos, <area>-overture.json checks its
 # places against Overture Maps (still operating, closed, websites and phones), and
-# <area>-destinations.json adds the places worth a longer outing around it (preserves, gardens, lookouts). A capture named after something
+# <area>-destinations.json adds the places worth a longer outing around it (preserves, gardens, lookouts), and
+# <area>-sites.json what the venues' own websites stated (their hours, mostly). A capture named after something
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
 # before the API starts, so what is served is never a silent subset. Capture more with `pnpm capture`.
 #
@@ -70,7 +71,7 @@ shopt -s nullglob
 served=""
 for file in fixtures/live/*.json; do
   slug="$(basename "$file" .json)"
-  case "$slug" in *-photos | *-overture | *-destinations) continue ;; esac
+  case "$slug" in *-photos | *-overture | *-destinations | *-sites) continue ;; esac
   echo
   echo "== ${slug}"
   known="$(area_count "$slug")" || fail "could not look up ${slug} in ${DB_NAME}"
@@ -118,6 +119,16 @@ for file in fixtures/live/*.json; do
       fail "${slug}: ${destinations} did not replay (see above), so nothing is served. Re-record it with pnpm capture ${slug}, or move it out of fixtures/live."
     fi
     summary "$out" "places|venues"
+  fi
+
+  # What the venues' own websites stated (their hours, mostly), as recorded by pnpm capture.
+  sites="fixtures/live/${slug}-sites.json"
+  if [ -f "$sites" ]; then
+    if ! out="$(pnpm -s outrn firstparty run --from-file "$sites" 2>&1)"; then
+      if [ -n "$out" ]; then printf '%s\n' "$out" >&2; fi
+      fail "${slug}: ${sites} did not replay (see above), so nothing is served. Re-record it with pnpm capture ${slug}, or move it out of fixtures/live."
+    fi
+    summary "$out" "^sites" | sed 's/^/  websites   /'
   fi
 
   # `areas launch` refuses an area with no eligible venues; any other failure is a real one.

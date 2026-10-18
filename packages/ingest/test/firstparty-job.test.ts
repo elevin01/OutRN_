@@ -10,7 +10,12 @@ import { ingestOsmArea } from "../src/pipeline.js";
 /** The first-party job's events, against a real Postgres + PostGIS (outrn_test, reset per file); the page is stubbed. */
 
 const page = vi.hoisted(() => ({ current: null as FirstPartyExtraction | null }));
-vi.mock("@outrn/sources", async (original) => ({ ...(await original<typeof import("@outrn/sources")>()), fetchAndExtract: async () => page.current! }));
+// The site has no robots.txt: every page may be read.
+vi.mock("@outrn/sources", async (original) => ({
+  ...(await original<typeof import("@outrn/sources")>()),
+  fetchAndExtract: async () => page.current!,
+  fetchRobots: async () => ({ status: "none", rules: [], crawlDelayS: null }),
+}));
 
 const BASE = process.env["DATABASE_URL"] ?? "postgres://outrn@127.0.0.1:54329/outrn";
 const TEST_URL = BASE.replace(/\/[^/]+$/, "/outrn_test");
