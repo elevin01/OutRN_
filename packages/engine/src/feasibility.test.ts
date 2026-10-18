@@ -5,6 +5,7 @@ import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
 import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { evaluateAll, recommend } from "./recommend.js";
+import { orderForDisplay } from "./select.js";
 import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
@@ -417,6 +418,34 @@ describe("selection: diversity and fewer than three", () => {
     const s = recommend(cands, ctx("2026-10-03 15:00", 180), POLICIES);
     expect(s.items.map((e) => e.candidate.category).sort()).toEqual(["bookshop", "park", "restaurant"]);
     expect(s.fewerThanThree).toBe(false);
+  });
+
+  it("one place under two records shows once, whichever category each gives it; the same name farther off is another place", () => {
+    const north = (m: number) => ({ lat: NEAR.lat + m / 111_000, lon: NEAR.lon });
+    const cands = [
+      // OSM's outline of a park and its old point, 45 m apart.
+      venue({ id: "park-way", name: "Columbus Park", category: "park", hours: "Mo-Su 06:00-22:00" }),
+      venue({ id: "park-node", name: "Columbus Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(45) }),
+      // A museum OSM has as a park and Overture as a museum, 25 m apart.
+      venue({ id: "jay-osm", name: "Jay Heritage Center", category: "park", hours: "Mo-Su 06:00-22:00", point: north(-25) }),
+      venue({ id: "jay-overture", name: "Jay Heritage Center", category: "museum", hours: "Mo-Su 10:00-20:00" }),
+      // Two branches of a chain 400 m apart are two places.
+      venue({ id: "sb-1", name: "Starbucks", category: "cafe", hours: "Mo-Su 06:00-22:00" }),
+      venue({ id: "sb-2", name: "Starbucks", category: "cafe", hours: "Mo-Su 06:00-22:00", point: north(400) }),
+      // A preserve's two parts 600 m apart are one place; two parks of one name 1.4 km apart are two.
+      venue({ id: "marsh-1", name: "Marshlands Conservancy", category: "park", hours: "Mo-Su 06:00-22:00", point: north(100) }),
+      venue({ id: "marsh-2", name: "Marshlands Conservancy", category: "park", hours: "Mo-Su 06:00-22:00", point: north(700) }),
+      venue({ id: "green-1", name: "Green Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(-100) }),
+      venue({ id: "green-2", name: "Green Park", category: "park", hours: "Mo-Su 06:00-22:00", point: north(1300) }),
+    ];
+    const x = ctx("2026-10-03 15:00", 180);
+    const all = orderForDisplay(evaluateAll(cands, x, POLICIES), x);
+    const ids = all.map((e) => e.candidate.id);
+    expect(ids.filter((id) => id.startsWith("park-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("jay-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("sb-")).sort()).toEqual(["sb-1", "sb-2"]);
+    expect(ids.filter((id) => id.startsWith("marsh-"))).toHaveLength(1);
+    expect(ids.filter((id) => id.startsWith("green-")).sort()).toEqual(["green-1", "green-2"]);
   });
 
   it("a narrowed request respects the category and skips activity diversity", () => {

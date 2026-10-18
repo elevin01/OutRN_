@@ -375,10 +375,17 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
     (`afternoon`) keeps a page with photos for the apps' demo mode.
   - Golden: unchanged (none of its scenarios has a far destination with a near one like it).
-  - Seen, not fixed: the same place twice where OSM maps it as a point and an area, or where a
-    destination made from Overture before any nearby area's OSM had it (59 such parks; none reached
-    the first three pages); hours a mapper mistyped (a gallery "10:00-06:00", a bookshop
-    "10:00-10:00"); and most local places listing no hours, which reading their own sites addresses.
+  - Seen, not fixed: hours a mapper mistyped (a gallery "10:00-06:00", a bookshop "10:00-10:00"),
+    and most local places listing no hours, which reading their own sites addresses.
+  - **The same place twice.** OSM maps a park as an old point and its outline, a shop twice, a
+    preserve in parts; Overture's copy of a place OSM has under another category (Jay Heritage Center
+    as a park and an attraction) escaped identity, which never merges across categories. A list now
+    shows a name once within 150 m, or 1 km for grounds (park, garden, shore, attraction), whatever
+    the records' category or source (`SAME_PLACE_M`, `SAME_GROUNDS_M`, select.ts). Over the 12 areas
+    and 8 requests' first five pages, the 6 repeats (Marshlands Conservancy, Rockefeller State Park
+    Preserve, Columbus Park, Greenburgh Nature Center) are gone; the 5 left are a chain's branches
+    1.3–8.6 km apart in a café list, which are different places. The records stay as they are:
+    merging them is identity's work, with review.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
