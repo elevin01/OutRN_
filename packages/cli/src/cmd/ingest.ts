@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
-import { ingestDestinations, ingestEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
+import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -94,13 +94,29 @@ export function registerIngest(program: Command): void {
     .command("events")
     .description("Add or update events from a file: what is happening, when and where (a venue we know, or a place of its own such as a pier for fireworks)")
     .requiredOption("--area <slug>", "service area slug")
-    .requiredOption("--from-file <path>", 'JSON: { "source": "founder", "events": [{ "id", "title", "start", "end"?, "place": { "venue" } | { "name", "lat", "lon" }, "kinds"?, "url"?, "price"?, "admission"?, "minAge"?, "status"?, "evidence" }] }')
+    .requiredOption("--from-file <path>", 'JSON: { "source": "founder", "events": [{ "id", "title", "start", "end"?, "place": { "venue" } | { "name", "lat", "lon" }, "kinds"?, "forKids"?, "url"?, "price"?, "admission"?, "minAge"?, "status"?, "evidence" }] }')
     .action(async (o: { area: string; fromFile: string }) => {
       const db = getDb();
       const t0 = Date.now();
       const s = await ingestEvents(db, JSON.parse(readFileSync(o.fromFile, "utf8")), { areaSlug: o.area });
       console.log(`run ${s.runId} · area ${s.area} · source ${s.source} · ${Date.now() - t0} ms`);
       console.log(`  events     ${s.written} of ${s.events} written · ${s.sitesCreated} new event sites · ${s.rejected.length} left out`);
+      for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
+      if (s.rejected.length) process.exitCode = 1;
+    });
+
+  ingest
+    .command("nyc-parks")
+    .description("Add the area's NYC Parks events (NYC Open Data, the next two weeks): classes, tours, festivals, film nights, concerts")
+    .requiredOption("--area <slug>", "service area slug")
+    .option("--from-file <path>", "replay a saved read instead of reading the table")
+    .option("--save <path>", "save the rows the area holds, for replay")
+    .action(async (o: { area: string; fromFile?: string; save?: string }) => {
+      const db = getDb();
+      const t0 = Date.now();
+      const s = await ingestNycParksEvents(db, { areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
+      console.log(`run ${s.runId} · area ${s.area} · source ${s.source} · ${Date.now() - t0} ms`);
+      console.log(`  events     ${s.written} of ${s.events} written (of ${s.rows} in the city) · ${s.sitesCreated} new event sites · ${s.withdrawn} withdrawn (no longer listed) · ${s.rejected.length} left out`);
       for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
       if (s.rejected.length) process.exitCode = 1;
     });

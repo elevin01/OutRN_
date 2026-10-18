@@ -110,6 +110,7 @@ export const FACT_VALUE_SCHEMAS = {
   event_kind: z.object({ interests: z.array(z.string().refine(isInterest, "not an interest")).min(1).max(4) }).strict(),
   // Why, in a line ("carriage roads around a lake"): lower case, to sit in a sentence on the card.
   destination: z.object({ kind: z.enum(DESTINATION_KINDS), note: z.string().min(3).max(120).optional() }).strict(),
+  audience: z.object({ kids: z.literal(true) }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

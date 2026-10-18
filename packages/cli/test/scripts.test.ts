@@ -113,10 +113,21 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
     expect(r.out).toContain("API STARTED");
   });
 
-  it("fetches no weather when no area is served", () => {
+  it("fetches each served area's NYC Parks events after the weather, and serves an area without them when they can't be fetched", () => {
+    const r = real({ STUB_FAIL_EVENTS: "bronxville" });
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/== events \(NYC Parks\)\n +bronxville: not refreshed: error: fetch failed for data\.cityofnewyork\.us/);
+    expect(r.out).toMatch(/ +les: 94 of 94 written/);
+    const calls = r.pnpmCalls.map((c) => c.split(" | ")[0]);
+    expect(calls.indexOf("pnpm -s outrn ingest nyc-parks --area les")).toBeGreaterThan(calls.indexOf("pnpm -s outrn weather refresh"));
+    expect(r.out).toMatch(/Serving bronxville les on/);
+  });
+
+  it("fetches no weather or events when no area is served", () => {
     const r = real({ STUB_NO_VENUES: "les bronxville" });
     expect(r.status, r.out).toBe(0);
     expect(r.log).not.toMatch(/weather refresh/);
+    expect(r.log).not.toMatch(/nyc-parks/);
     expect(r.out).toMatch(/Serving no areas/);
   });
 

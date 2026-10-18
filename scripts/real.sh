@@ -15,8 +15,9 @@
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
 # before the API starts, so what is served is never a silent subset. Capture more with `pnpm capture`.
 #
-# The served areas' weather is then fetched from the National Weather Service (api.weather.gov). It is
-# optional: when it can't be fetched, that is said, and plans ignore the weather.
+# The served areas' weather is then fetched from the National Weather Service (api.weather.gov), and
+# their NYC Parks events from NYC Open Data (data.cityofnewyork.us). Both are optional: when they
+# can't be fetched, that is said, and plans go without them.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -146,6 +147,21 @@ if [ -n "$served" ]; then
   fi
 fi
 
+# Events are optional too, and live like the weather: NYC Parks' next two weeks (NYC Open Data), for
+# every served area within reach of the city. An area with none near it gets none. The source is off
+# until its terms are reviewed (migration 0021 says how to switch it on); until then this says so.
+if [ -n "$served" ]; then
+  echo
+  echo "== events (NYC Parks)"
+  for slug in $served; do
+    if out="$(pnpm -s outrn ingest nyc-parks --area "$slug" 2>&1)"; then
+      echo "   ${slug}: $(printf '%s\n' "$out" | grep -m1 '^ *events  ' | sed 's/^ *events *//')"
+    else
+      echo "   ${slug}: not refreshed: $(printf '%s\n' "$out" | tail -n 1)"
+    fi
+  done
+fi
+
 cat <<EOF
 
 Serving ${served:-no areas} on http://${HOST}:${PORT}  (ctrl-c stops it)
@@ -157,7 +173,8 @@ Serving ${served:-no areas} on http://${HOST}:${PORT}  (ctrl-c stops it)
 
 Recommendations are for right now, where the area is. Only areas with a capture in fixtures/live
 are served; \`pnpm capture\` records the rest (needs network access). Forecasts count for 12 hours:
-run \`pnpm outrn weather refresh\` (hourly is plenty) while this runs for longer.
+run \`pnpm outrn weather refresh\` (hourly is plenty) while this runs for longer, and
+\`pnpm outrn ingest nyc-parks --area <slug>\` daily for new events.
 EOF
 export OUTRN_WEB_ORIGINS="${OUTRN_WEB_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081}"
 HOST="$HOST" PORT="$PORT" exec pnpm --silent --filter @outrn/api start

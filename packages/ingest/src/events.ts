@@ -53,6 +53,8 @@ const EventInput = z
     url: z.string().max(2000).optional(),
     /** What it is, as interest ids (live_music, festivals…). */
     kinds: z.array(z.string()).min(1).max(4).optional(),
+    /** Made for children, as the source says ("Best for Kids"). */
+    forKids: z.literal(true).optional(),
     /** Minimum age to get in, as the event states it. */
     minAge: z.number().int().min(0).max(25).optional(),
     admission: z.enum(["walk_in", "ticket", "reservation"]).optional(),
@@ -73,6 +75,8 @@ export interface EventsSummary {
   events: number;
   written: number;
   sitesCreated: number;
+  /** Events an earlier listing had that no area's listing has any more (complete listings only). */
+  withdrawn: number;
   rejected: { index: number; id: string | null; reason: string }[];
 }
 
@@ -145,6 +149,7 @@ function eventFacts(c: Checked, occurrenceId: string, atSite: boolean, sourceId:
   });
   const out: FactInput[] = [];
   if (c.kinds.length) out.push(pub("event_kind", { interests: c.kinds }, 0.8));
+  if (e.forKids) out.push(pub("audience", { kids: true }, 0.8));
   if (c.url) out.push(pub("website", { value: c.url }, 0.8));
   if (e.admission) out.push(pub("admission", { requirement: e.admission }, 0.8));
   if (e.price) out.push(pub("price", "free" in e.price ? { currency: "USD", free: true } : { currency: "USD", min: e.price.min, max: e.price.max ?? e.price.min }, 0.8));
@@ -163,6 +168,12 @@ export interface IngestEventsOptions {
   areaSlug: string;
   now?: Date;
   actor?: string;
+  /**
+   * The file is everything the source lists for the area (a feed read whole, not a hand-made list):
+   * an event this area's previous listing had and this one does not loses the area's listing, and
+   * one that has not ended and that no area lists any more is withdrawn.
+   */
+  complete?: boolean;
 }
 
 export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOptions): Promise<EventsSummary> {
@@ -175,7 +186,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
   const { radiusM } = ingestExtentFor(area, await loadParkingRule(db, area.slug));
   const center = { lat: Number(area.lat), lon: Number(area.lon) };
   const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: "events", params: { events: events.length } });
-  const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, rejected: [] };
+  const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, withdrawn: 0, rejected: [] };
   try {
     const checked: Checked[] = [];
     for (const [i, raw] of events.entries()) {
@@ -208,7 +219,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
           const site = await eventSiteFor(tx, { sourceEntityId: se.rows[0]!.id, areaId: area.id, timezone: area.timezone, record: { name: e.place.name, category: "event_site", point, website: null, phone: null, housenumber: null, street: null, brand: null, xids: {} } });
           venueId = site.venueId;
           if (site.created) summary.sitesCreated++;
-          const siteFact = (attribute: FactInput["attribute"], value: unknown): FactInput => ({ subjectKind: "venue", subjectId: site.venueId, attribute, value, evidenceClass: "published", sourceId: source, evidence: `${source}: where "${e.title}" is held`, sourceUpdatedAt: now, fetchedAt: now, confidence: 0.8, lineageGroup: source, ingestionRunId: runId });
+          const siteFact = (attribute: FactInput["attribute"], value: unknown): FactInput => ({ subjectKind: "venue", subjectId: site.venueId, attribute, value, evidenceClass: "published", sourceId: source, evidence: `${source}: where its events are held`, sourceUpdatedAt: now, fetchedAt: now, confidence: 0.8, lineageGroup: source, ingestionRunId: runId });
           const w = await writeFacts(tx, [siteFact("name", { value: e.place.name }), siteFact("category", { value: "event_site" }), siteFact("business_status", { status: "operating" })]);
           if (w.rejected.length) throw new Error(`site facts rejected: ${w.rejected.map((r) => `${r.attribute}: ${r.reason}`).join("; ")}`);
         }
@@ -233,11 +244,28 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
         }
         summary.written++;
       }
+      if (opts.complete) {
+        // This read is the area's listing now: its own rows, refreshed; the rest of its previous one gone.
+        await tx.query(
+          `insert into event_listings (source_id, area_id, occurrence_id, run_id, seen_at) select $1, $2, o, $4, $5 from unnest($3::uuid[]) o
+           on conflict (source_id, area_id, occurrence_id) do update set run_id = excluded.run_id, seen_at = excluded.seen_at`,
+          [source, area.id, occurrences, runId, now],
+        );
+        const unlisted = (await tx.query<{ occurrence_id: string }>(`delete from event_listings where source_id = $1 and area_id = $2 and run_id <> $3 returning occurrence_id`, [source, area.id, runId])).rows.map((r) => r.occurrence_id);
+        // Withdrawn once no area lists it, unless it is already over (its record stands as it was).
+        const withdrawn = await tx.query(
+          `update occurrences o set status = 'withdrawn', updated_at = now()
+            where o.id = any($1::uuid[]) and o.status in ('scheduled', 'sold_out') and coalesce(o.end_at, o.start_at + interval '${DEFAULT_EVENT_HOURS} hours') > $2
+              and not exists (select 1 from event_listings l where l.occurrence_id = o.id and l.source_id = $3)`,
+          [unlisted, now, source],
+        );
+        summary.withdrawn = withdrawn.rowCount ?? 0;
+      }
       if (occurrences.length) await materializeSubjects(tx, "occurrence", occurrences, now);
       if (venues.size) await materializeSubjects(tx, "venue", [...venues], now);
-      await audit(tx, { actor: opts.actor ?? source, action: "events.ingest", targetKind: "area", targetId: area.id, after: { source, written: summary.written, sites_created: summary.sitesCreated, rejected: summary.rejected.length } });
+      await audit(tx, { actor: opts.actor ?? source, action: "events.ingest", targetKind: "area", targetId: area.id, after: { source, written: summary.written, sites_created: summary.sitesCreated, withdrawn: summary.withdrawn, rejected: summary.rejected.length } });
     });
-    await finishRun(db, runId, { status: summary.rejected.length && !summary.written ? "failed" : summary.rejected.length ? "partial" : "succeeded", counts: { events: summary.events, written: summary.written, sites_created: summary.sitesCreated, rejected: summary.rejected.length } });
+    await finishRun(db, runId, { status: summary.rejected.length && !summary.written ? "failed" : summary.rejected.length ? "partial" : "succeeded", counts: { events: summary.events, written: summary.written, sites_created: summary.sitesCreated, withdrawn: summary.withdrawn, rejected: summary.rejected.length } });
     return summary;
   } catch (err) {
     await finishRun(db, runId, { status: "failed", error: (err as Error).message.slice(0, 500) });

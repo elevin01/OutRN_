@@ -42,6 +42,7 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - event_kind         : { interests: Interest[] }  what an event is (1–4 interests), as its source classifies it
  *  - destination        : { kind: DestinationKind, note?: string }  a place worth going out of the way for (a
  *                         preserve, gardens, a beach, a lookout, an estate) and, in a line, why
+ *  - audience           : { kids: true }  an event made for children, as its source says ("Best for Kids")
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -76,6 +77,7 @@ export const ATTRIBUTES = [
   "age_limit",
   "event_kind",
   "destination",
+  "audience",
   "crowd_level",
   "queue",
   "open_state",

@@ -345,7 +345,11 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   suggests State Line Lookout for the sunset. Next: OSM for their hours, size and trails (gardens,
   estates, the zoo and Playland stay Check first until their hours are known), Wikidata for what is notable,
   and lists for the other areas.
-- **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
+- **Events.** NYC Parks' public events are in (`outrn ingest nyc-parks`, NYC Open Data, live in
+  `pnpm real`, switched on once its terms are reviewed): about a hundred within reach of the Lower
+  East Side, nearly three hundred of the Bronx, withdrawn when no area's read lists them any more.
+  Next: first-party JSON-LD events, library and community calendars, and cinema showtimes (the
+  programme gap from the 26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the

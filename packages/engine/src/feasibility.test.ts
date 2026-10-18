@@ -1862,6 +1862,34 @@ describe("pop-ups: an event site is nothing but its events", () => {
     expect(one(lawn("ticket"), ctx("2026-10-10 18:20", 150)).excludedBy).toBe("EVENT_STARTED");
   });
 
+  it("lets you leave a walk-in pop-up when it's time to go, a festival afternoon in the park, but not a ticketed one", () => {
+    const fair = (admission: string) => {
+      const c = venue({ kind: "occurrence", id: `fair-${admission}`, category: "event_site", hours: null, admission, occurrence: { id: `fair-${admission}`, title: "Harvest Festival", start: fromLocal("2026-10-24", 14 * 60, TZ), end: fromLocal("2026-10-24", 18 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      c.venueId = "site";
+      return c;
+    };
+    // Free from 1:30pm to 4pm: two hours of a four-hour festival.
+    const walkIn = one(fair("walk_in"), ctx("2026-10-24 13:30", 150));
+    expect(walkIn.excludedBy).toBeNull();
+    expect(walkIn.timing!.latestFinish.getTime()).toBe(fromLocal("2026-10-24", 16 * 60, TZ).getTime());
+    expect(one(fair("ticket"), ctx("2026-10-24 13:30", 150)).excludedBy).toBe("EVENT_ENDS_AFTER_DEADLINE");
+    // Still only with enough of it left to be worth going: ten minutes is not an afternoon.
+    expect(one(fair("walk_in"), ctx("2026-10-24 13:30", 40)).excludedBy).toBe("NOT_ENOUGH_TIME");
+  });
+
+  it("an event made for children leads for a family and sinks for grown-ups out on their own", () => {
+    const at = (id: string, forKids: boolean) => {
+      const c = venue({ kind: "occurrence", id, category: "event_site", hours: null, price: { currency: "USD", free: true }, occurrence: { id, title: id, start: fromLocal("2026-10-24", 14 * 60, TZ), end: fromLocal("2026-10-24", 16 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      c.venueId = `site-${id}`;
+      if (forKids) c.facts.audience = { value: { kids: true }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    const order = (over: Partial<RequestContext>) => recommend([at("Kids in Motion", true), at("Salsa Social", false)], ctx("2026-10-24 13:30", 180, over), POLICIES).items.map((i) => i.candidate.id);
+    expect(order({})).toEqual(["Salsa Social", "Kids in Motion"]);
+    expect(order({ company: "friends" })).toEqual(["Salsa Social", "Kids in Motion"]);
+    expect(order({ company: "family", youngestAge: 6 })[0]).toBe("Kids in Motion");
+  });
+
   it("is never an option without an event, whatever it lists, even in the evening", () => {
     const withSite = site();
     withSite.facts.website = { value: { value: "https://example.org" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
