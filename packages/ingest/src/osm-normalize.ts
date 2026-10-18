@@ -228,17 +228,33 @@ const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
 
 /**
  * What kind of bar it is, which the category alone cannot say and an evening turns on: a sports
- * bar's big screens, a pub, a brewery's taproom, a wine or cocktail bar. From its tags first
- * (sport=*, amenity=pub, craft=brewery, drink:wine, drink:cocktail), else its name; null for a bar
- * that says nothing more.
+ * bar's big screens, a pub, a brewery's taproom, a wine or cocktail bar. A tag that says it decides
+ * (sport=*, drink:wine, drink:cocktail, craft=brewery, amenity=pub), whatever the name; only a bar
+ * no tag classifies is read by its name. Null for a bar that says nothing more.
  */
-export function barStyle(t: Record<string, string>): string | null {
-  const name = (t["name"] ?? "").toLowerCase();
-  if (t["sport"] || /\bsports? (bar|grill|pub|lounge)\b/.test(name)) return "sports_bar";
-  if (t["drink:wine"] === "yes" || t["drink:wine"] === "served" || t["bar"] === "wine" || /\b(wine|vino|enoteca)\b/.test(name)) return "wine_bar";
-  if (t["drink:cocktail"] === "yes" || t["cocktails"] === "yes" || t["bar"] === "cocktail" || /\b(cocktails?|lounge|speakeasy|mixology)\b/.test(name)) return "cocktail_bar";
-  if (t["craft"] === "brewery" || t["microbrewery"] === "yes" || t["brewery"] || /\b(brew(ing|ery|house|pub)|taproom|tap room|beer hall)\b/.test(name)) return "brewery";
-  if (t["amenity"] === "pub" || /\b(pub|tavern|ale ?house|saloon)\b/.test(name)) return "pub";
+export function barStyle(t: Record<string, string>): { style: string; fromTags: boolean } | null {
+  const tagged = barStyleFromTags(t);
+  if (tagged) return { style: tagged, fromTags: true };
+  const named = barStyleFromName(t["name"] ?? "");
+  return named ? { style: named, fromTags: false } : null;
+}
+
+function barStyleFromTags(t: Record<string, string>): string | null {
+  if (t["sport"]) return "sports_bar";
+  if (t["drink:wine"] === "yes" || t["drink:wine"] === "served" || t["bar"] === "wine") return "wine_bar";
+  if (t["drink:cocktail"] === "yes" || t["cocktails"] === "yes" || t["bar"] === "cocktail") return "cocktail_bar";
+  if (t["craft"] === "brewery" || t["microbrewery"] === "yes" || t["brewery"]) return "brewery";
+  if (t["amenity"] === "pub") return "pub";
+  return null;
+}
+
+function barStyleFromName(raw: string): string | null {
+  const name = raw.toLowerCase();
+  if (/\bsports? (bar|grill|pub|lounge)\b/.test(name)) return "sports_bar";
+  if (/\b(wine|vino|enoteca)\b/.test(name)) return "wine_bar";
+  if (/\b(cocktails?|lounge|speakeasy|mixology)\b/.test(name)) return "cocktail_bar";
+  if (/\b(brew(ing|ery|house|pub)|taproom|tap room|beer hall)\b/.test(name)) return "brewery";
+  if (/\b(pub|tavern|ale ?house|saloon)\b/.test(name)) return "pub";
   return null;
 }
 /**
@@ -382,11 +398,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
   // A bar's style: published from a tag that says it, estimated from its name alone.
   const style = category === "bar" ? barStyle(t) : null;
-  if (style) {
-    const fromTags = barStyle({ ...t, name: "" }) === style;
-    if (fromTags) pub("subtype", { value: style }, categoryEvidence(t) ?? style, 0.8);
-    else facts.push({ ...base, attribute: "subtype", value: { value: style }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
-  }
+  if (style?.fromTags) pub("subtype", { value: style.style }, categoryEvidence(t) ?? style.style, 0.8);
+  else if (style) facts.push({ ...base, attribute: "subtype", value: { value: style.style }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
   const cuisines = category && CUISINE_CATEGORIES.has(category) ? cuisineSlugs(t["cuisine"]) : [];
   if (cuisines.length) pub("cuisine", { values: cuisines }, `cuisine=${t["cuisine"]!.trim().slice(0, 200)}`, 0.8);
   // No cuisine tag: what the name says it serves ("Joe's Pizza", "Taqueria Diana"), as an estimate.

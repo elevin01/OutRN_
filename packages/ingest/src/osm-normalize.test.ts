@@ -116,6 +116,10 @@ describe("OSM normalization", () => {
       expect(fact(rec({ name, amenity: "bar" }), "subtype"), name).toMatchObject({ evidenceClass: "estimate", confidence: 0.5, value: { value: style } });
     }
     expect(fact(rec({ name: "Whistling Rail", amenity: "bar" }), "subtype")).toBeUndefined();
+    // A tag decides over the name, whichever style the name suggests.
+    expect(fact(rec({ name: "The Velvet Lounge", amenity: "pub" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" } });
+    expect(fact(rec({ name: "The Wine Bar", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" } });
+    expect(fact(rec({ name: "Sully's Sports Bar", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "cocktail_bar" } });
     // Only a bar's: a wine shop's or a restaurant's name says nothing of a bar.
     expect(fact(rec({ name: "Wine Palace", amenity: "restaurant" }), "subtype")).toBeUndefined();
   });
