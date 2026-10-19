@@ -111,6 +111,10 @@ describe.skipIf(!available)("venues' own websites", () => {
     expect(await siteOf("Ludlow Kitchen")).toBeUndefined();
     expect(await siteOf("Broome Kitchen")).toBeUndefined();
     expect((await discoverSites(db, { areaSlug: "les" })).registered).toBe(0);
+    // A theatre's or museum's own site is read for its events, whatever source publishes its hours.
+    const reason = async (name: string) => (await db.query<{ reason: string }>(`select reason from firstparty_sites where venue_id = $1`, [await venueId(name)])).rows[0]?.reason;
+    expect(await reason("Delancey Playhouse")).toBe("auto: its own website lists its events");
+    expect(await reason("Orchard Museum")).toBe("auto: its own website lists its events");
     // The fixture's other sites (its made-up domains) aren't read in these tests.
     await db.query(`delete from firstparty_sites where url like '%.example%'`);
   });

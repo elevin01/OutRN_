@@ -443,7 +443,21 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   (Harrison's library 139, Greenburgh's 79, the Greenwich Arts Council 28, the Bruce Museum 13).
   Not readable: LibraryMarket's calendars (Bronxville, Scarsdale, Mount Pleasant, the Yonkers
   branches), Google Calendar files (Hastings' library), NYPL (a bot challenge; it would need NYPL's
-  cooperation). Next: first-party JSON-LD events and cinema showtimes (the programme gap from the
+  cooperation).
+  **Venues' own event listings: done** (`outrn firstparty run`, source `venue_events`). Every
+  theatre, music room, arts center, museum and community center with its own website is read for its
+  events, whatever source has its hours: The Events Calendar's REST API, an iCalendar feed its home
+  page links, or its events page's JSON-LD, through the first-party gate, the events page before the
+  hours page. Written as calendars' events are (placement, kinds, minors rules), never withdrawn for
+  missing. A live read of the 345 such sites in the 12 areas (18 Oct): 165 read, 41 kept out by
+  robots.txt (10 of them The Events Calendar's API), 22 deferred (a day's requests spent); 334 events
+  at 19 venues in the next 30 days (the Capitol Theatre 20, Jazz On Main 12, New York Comedy Club 38,
+  the Museum of the Moving Image 48). A date and time a site writes without an offset is now its own
+  clock (it was read as UTC: four hours early).
+  Seen, not changed: a ticketed show with no end time is Check first (tickets, an estimated end), so
+  it ranks after every Ready place and seldom reaches the first page (Trombone Shorty at the Capitol
+  Theatre, 8pm Saturday, is eligible with appeal 0.97). Whether an evening's event should take a first-
+  page place is a ranking decision of its own. Next: cinema showtimes (the programme gap from the
   26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
