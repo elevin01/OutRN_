@@ -259,13 +259,16 @@ describe.skipIf(!available)("a venue's own events", () => {
         event({ uid: "h", title: "Home Matinee", start: "2026-10-05T18:00:00.000Z", location: ["Delancey Playhouse", "1 Delancey St, New York"] }),
         event({ uid: "r", title: "Studio Reading", start: "2026-10-05T19:00:00.000Z", location: ["Rashkoff Room - Downstairs"] }),
         event({ uid: "x", title: "Puppet Lab", start: "2026-10-05T20:00:00.000Z", location: ["Inside Art"] }),
+        // Another branch by its own name and address, which a loose match of names takes for this venue.
+        event({ uid: "u", title: "Uptown Branch Show", start: "2026-10-05T22:00:00.000Z", location: ["Delancey Playhouse Upper West Side", "236 W 78th Street", "New York, NY 10024"] }),
       ],
       NOW,
     );
-    expect(s.skipped).toMatchObject({ elsewhere: 1 });
+    expect(s.skipped).toMatchObject({ elsewhere: 2 });
     const titles = (await at("Delancey Playhouse")).map((o) => o.title);
     expect(titles).toEqual(expect.arrayContaining(["Home Matinee", "Studio Reading", "Puppet Lab"]));
     expect(titles).not.toContain("Gala in Vienna");
+    expect(titles).not.toContain("Uptown Branch Show");
   });
 
   it("leave out a place elsewhere however the page or feed writes it: one JSON-LD string, an iCalendar LOCATION's lines (PR #62 review)", async () => {

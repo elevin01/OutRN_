@@ -154,11 +154,14 @@ describe.skipIf(!available)("calendars into an area", () => {
       "BEGIN:VEVENT", "UID:v@lib", "DTSTART:20261005T170000Z", "SUMMARY:Library Gala in Vienna", "LOCATION:Bank Austria im Alten Rathaus\\nWipplingerstrasse 6-8\\n1010 Vienna\\nAustria", "END:VEVENT",
       "BEGIN:VEVENT", "UID:b@lib", "DTSTART:20261005T190000Z", "SUMMARY:Book Talk at the Bruce", "LOCATION:Bruce Museum\\, 1 Museum Drive\\, Greenwich\\, CT 06830", "END:VEVENT",
       "BEGIN:VEVENT", "UID:r@lib", "DTSTART:20261005T210000Z", "SUMMARY:Poetry in the Rashkoff Room", "LOCATION:Rashkoff Room\\nDownstairs", "END:VEVENT",
+      // Another branch, which a loose match of names takes for the library itself.
+      "BEGIN:VEVENT", "UID:s@lib", "DTSTART:20261005T220000Z", "SUMMARY:Storytime at Seward", "LOCATION:Suffolk Library Seward Park Branch\\, 192 East Broadway\\, New York\\, NY 10002", "END:VEVENT",
       "END:VCALENDAR", "",
     ].join("\r\n");
     const s = await ingestCalendars(db, { areaSlug: "les", feeds: [FEEDS[0]!], read: answering({ "suffolk-library": ics }, new Map()) as never, now: NOW });
-    expect(s.skipped).toMatchObject({ elsewhere: 2 });
+    expect(s.skipped).toMatchObject({ elsewhere: 3 });
     const here = (await occurrences()).filter((o) => o.venue === "Suffolk Library").map((o) => o.title);
+    expect(here).not.toContain("Storytime at Seward");
     expect(here).toContain("Poetry in the Rashkoff Room");
     expect(here).not.toContain("Library Gala in Vienna");
     expect(here).not.toContain("Book Talk at the Bruce");

@@ -392,9 +392,10 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
         continue;
       }
       // A town's event is where it says; a library's is at the library unless it names another
-      // place we know nearby (an open mic at a restaurant), and left out when it names one we don't.
+      // place we know nearby (an open mic at a restaurant), and left out when it names one we don't,
+      // or one a loose match of names takes for the library itself (another branch of it).
       const placed = feed.places ? await placeOf(db, e.location, feed.places.at, feed.places.radiusM, memo) : own && (await placeOf(db, e.location, feed.venue!.at, OFF_SITE_M, memo));
-      if (own && !placed && namesAnotherPlace(e.location, feed.venue!.aliases)) {
+      if (own && (!placed || placed.venueId === own.venueId) && namesAnotherPlace(e.location, feed.venue!.aliases)) {
         summary.skipped.elsewhere++;
         continue;
       }

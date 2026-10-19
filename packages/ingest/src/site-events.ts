@@ -172,8 +172,11 @@ export async function writeSiteEvents(db: Db, site: { venueId: string; host: str
     // At the venue, or at another place it names that we know nearby. One it names elsewhere (a
     // touring date, another branch) is left out: a site found for a venue (auto) is nobody's checked
     // word, so it never places an event at another venue either.
+    // A loose match of names may take another branch for the venue itself ("New York Comedy Club
+    // Upper West Side"): what the event names is checked against the venue's own name all the same.
     const placed = await placeOf(db, e.location, venue.point, OFF_SITE_M, memo);
-    if ((placed && placed.venueId !== site.venueId && site.auto) || (!placed && namesAnotherPlace(e.location, [venue.name]))) {
+    const atVenue = !placed || placed.venueId === site.venueId;
+    if ((!atVenue && site.auto) || (atVenue && namesAnotherPlace(e.location, [venue.name]))) {
       skip("elsewhere");
       continue;
     }
