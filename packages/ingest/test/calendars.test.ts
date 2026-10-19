@@ -148,6 +148,25 @@ describe("where an event names a place of its own, apart from its venue", () => 
 });
 
 describe.skipIf(!available)("calendars into an area", () => {
+  it("leaves out a library event at a place elsewhere, from the library's own iCalendar feed (PR #62 review)", async () => {
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0",
+      "BEGIN:VEVENT", "UID:v@lib", "DTSTART:20261005T170000Z", "SUMMARY:Library Gala in Vienna", "LOCATION:Bank Austria im Alten Rathaus\\nWipplingerstrasse 6-8\\n1010 Vienna\\nAustria", "END:VEVENT",
+      "BEGIN:VEVENT", "UID:b@lib", "DTSTART:20261005T190000Z", "SUMMARY:Book Talk at the Bruce", "LOCATION:Bruce Museum\\, 1 Museum Drive\\, Greenwich\\, CT 06830", "END:VEVENT",
+      "BEGIN:VEVENT", "UID:r@lib", "DTSTART:20261005T210000Z", "SUMMARY:Poetry in the Rashkoff Room", "LOCATION:Rashkoff Room\\nDownstairs", "END:VEVENT",
+      "END:VCALENDAR", "",
+    ].join("\r\n");
+    const s = await ingestCalendars(db, { areaSlug: "les", feeds: [FEEDS[0]!], read: answering({ "suffolk-library": ics }, new Map()) as never, now: NOW });
+    expect(s.skipped).toMatchObject({ elsewhere: 2 });
+    const here = (await occurrences()).filter((o) => o.venue === "Suffolk Library").map((o) => o.title);
+    expect(here).toContain("Poetry in the Rashkoff Room");
+    expect(here).not.toContain("Library Gala in Vienna");
+    expect(here).not.toContain("Book Talk at the Bruce");
+    // The next test starts from no calendar events.
+    await db.query(`delete from event_listings where source_id = 'calendars'`);
+    await db.query(`delete from occurrences where recurrence_key like 'calendars:%'`);
+  });
+
   it("puts a library's events at the library, a town's at the place each names, and leaves the rest out", async () => {
     const dir = mkdtempSync(join(tmpdir(), "outrn-cal-"));
     const s = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: fake(reads()) as never, now: NOW, saveTo: join(dir, "calendars.json") });

@@ -249,9 +249,12 @@ function placeLines(lines: string[]): string[] {
  * that is none of the venue's own names. A room or an exhibit in the venue gives no address
  * ("Rashkoff Room", "Inside Art"), and an address alone may be the venue's own.
  */
-export function namesAnotherPlace(lines: readonly string[], venueNames: readonly string[]): boolean {
+export function namesAnotherPlace(given: readonly string[], venueNames: readonly string[]): boolean {
+  const lines = locationLines(given);
   const name = lines[0];
-  if (!name || !placeLines([name]).length || !lines.slice(1, 3).some((l) => /\d|,/.test(l))) return false;
+  // Then a street (a number), or a town and more ("Tarrytown, NY").
+  const rest = lines.slice(1, 4);
+  if (!name || !placeLines([name]).length || !(rest.some((l) => /\d/.test(l)) || rest.length >= 2)) return false;
   if (!distinctive(tokensOf(matchKey(name)))) return false;
   const which = (s: string) => new Set([...tokensOf(matchKey(s))].filter((w) => !GENERIC_WORDS.has(w)));
   const named = which(name);
@@ -267,14 +270,23 @@ export function namesAnotherPlace(lines: readonly string[], venueNames: readonly
 /** Words that say what kind of place a name is, beyond GENERIC_WORDS: "Lyndhurst Mansion" is Lyndhurst. */
 const PLACE_KINDS = new Set(["mansion", "museum", "gallery", "playhouse", "estate", "campus", "stage", "arena", "amphitheater", "amphitheatre", "pavilion", "ballroom", "club", "cafe", "inn", "hotel", "farm", "preserve", "arts", "art"]);
 
+/**
+ * An event's location, a line for each part: a feed may give the place, its street and its town in one
+ * string ("Bruce Museum, 1 Museum Drive, Greenwich", as a page's JSON-LD often does) or a line each.
+ */
+function locationLines(lines: readonly string[]): string[] {
+  return lines.flatMap((l) => l.split(/[,\n]/)).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 6);
+}
+
 /** Where an event is, by the place its lines name or, failing that, the address they give. */
-export async function placeOf(q: Queryable, lines: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
-  for (const line of placeLines(lines)) {
+export async function placeOf(q: Queryable, given: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
+  // A place's name heads its line ("Bruce Museum, 1 Museum Drive"); the town after it names no place.
+  for (const line of placeLines(given.map((l) => l.split(/[,\n]/)[0]!.replace(/\s+/g, " ").trim()).filter(Boolean))) {
     const key = `name:${matchKey(line)}`;
     if (!memo.has(key)) memo.set(key, await venueNamed(q, [line], at, radiusM));
     if (memo.get(key)) return memo.get(key)!;
   }
-  for (const line of lines.slice(0, 2)) {
+  for (const line of locationLines(given).slice(0, 3)) {
     if (!/^\d/.test(line)) continue;
     const key = `address:${line.toLowerCase()}`;
     if (!memo.has(key)) memo.set(key, await venueAt(q, line, at, radiusM));
