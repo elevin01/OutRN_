@@ -173,6 +173,30 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await scheduled()).toEqual([]);
   });
 
+  it("withdraw nothing when the source is switched off, even for a feed read whole that lists nothing (PR #61 review)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const site = { venueId: playhouse, host: "off.delanceyplayhouse.example", auto: true };
+    const statuses = async () => (await db.query<{ title: string; status: string }>(`select title, status from occurrences where recurrence_key like 'venue_events:site-off.delanceyplayhouse.example/%' order by title`)).rows.map((o) => `${o.title} ${o.status}`);
+    await writeSiteEvents(db, site, [event({ uid: "a", title: "Uncle Vanya", start: "2026-10-05T23:00:00.000Z" }), event({ uid: "b", title: "Matinee", start: "2026-10-07T18:00:00.000Z" })], NOW);
+    expect(await statuses()).toEqual(["Matinee scheduled", "Uncle Vanya scheduled"]);
+    for (const [off, on, why] of [
+      [`update source_policies set enabled = false where id = 'venue_events'`, `update source_policies set enabled = true where id = 'venue_events'`, /disabled/],
+      [`update source_policies set kill_switch = true where id = 'venue_events'`, `update source_policies set kill_switch = false where id = 'venue_events'`, /kill switch/],
+    ] as const) {
+      await db.query(off);
+      try {
+        await expect(writeSiteEvents(db, site, [], NOW, { complete: true })).rejects.toThrow(why);
+        await expect(writeSiteEvents(db, site, [event({ uid: "b", title: "Matinee", start: "2026-10-07T18:00:00.000Z" })], NOW, { complete: true })).rejects.toThrow(why);
+      } finally {
+        await db.query(on);
+      }
+      expect(await statuses(), String(why)).toEqual(["Matinee scheduled", "Uncle Vanya scheduled"]);
+    }
+    // Switched on again, the same empty read withdraws them.
+    expect((await writeSiteEvents(db, site, [], NOW, { complete: true })).withdrawn).toBe(2);
+    expect(await statuses()).toEqual(["Matinee withdrawn", "Uncle Vanya withdrawn"]);
+  });
+
   it("take an age they state as the event's age limit; a found site never places one at another venue (PR #61 review)", async () => {
     const playhouse = await venueId("Delancey Playhouse");
     const site = { venueId: playhouse, host: "found.delanceyplayhouse.example", auto: true };

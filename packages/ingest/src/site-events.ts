@@ -1,5 +1,5 @@
 import { isInterest, matchKey, ownValue, type Interest, type LatLon } from "@outrn/core";
-import type { Db, Queryable } from "@outrn/db";
+import { assertSourceAllowed, type Db, type Queryable } from "@outrn/db";
 import { FetchFailed, readCalendar, type CalendarEvent, type CalendarRead, type EventsFeed, type ExtractedEvent, type FirstPartyExtraction } from "@outrn/sources";
 import { CALENDAR_DAYS, calendarEventInput, namesAnotherPlace, OFF_SITE_M, placeOf, type CalendarFeed, type CalendarSkip, type Placed } from "./calendars.js";
 import { ingestEvents, type EventInput, type EventsSummary, type WrittenEvent } from "./events.js";
@@ -149,6 +149,9 @@ export interface SiteEventsSummary {
  */
 export async function writeSiteEvents(db: Db, site: { venueId: string; host: string; auto?: boolean }, events: readonly CalendarEvent[], now: Date, opts: { complete?: boolean } = {}): Promise<SiteEventsSummary> {
   const summary: SiteEventsSummary = { written: 0, withdrawn: 0, skipped: {}, areas: [] };
+  // Before anything is written or withdrawn: a feed read whole that lists nothing reaches no
+  // ingestEvents call (which checks it too), and must not withdraw for a source that is switched off.
+  await assertSourceAllowed(db, VENUE_EVENTS_SOURCE, "retain");
   const venue = await venueOf(db, site.venueId);
   if (!venue) return summary;
   const feed: Pick<CalendarFeed, "id" | "venue"> = { id: `site-${site.host}`.slice(0, 80), venue: { aliases: [venue.name], at: venue.point } };
