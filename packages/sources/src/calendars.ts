@@ -180,7 +180,8 @@ function icsEvent(props: Map<string, IcsProperty[]>, timeZone: string): Calendar
     end: end && end > start.at ? end.toISOString() : null,
     allDay: start.allDay,
     // A TEXT value: its commas, escaped or not, part the place from its address.
-    location: icsText(one("LOCATION")?.value ?? "").split(",").map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean),
+    // A line each: its commas and its escaped line breaks part a place's name from its street and town.
+    location: icsText(one("LOCATION")?.value ?? "").split(/[,\n]/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean),
     categories: (props.get("CATEGORIES") ?? []).flatMap((p) => icsList(p.value)),
     url: url || null,
     cancelled: one("STATUS")?.value.trim().toUpperCase() === "CANCELLED",

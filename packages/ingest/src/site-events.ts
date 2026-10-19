@@ -1,7 +1,7 @@
 import { isInterest, matchKey, ownValue, type Interest, type LatLon } from "@outrn/core";
 import { assertSourceAllowed, type Db, type Queryable } from "@outrn/db";
 import { FetchFailed, readCalendar, type CalendarEvent, type CalendarRead, type EventsFeed, type ExtractedEvent, type FirstPartyExtraction } from "@outrn/sources";
-import { CALENDAR_DAYS, calendarEventInput, OFF_SITE_M, placeOf, type CalendarFeed, type CalendarSkip, type Placed } from "./calendars.js";
+import { CALENDAR_DAYS, calendarEventInput, namesAnotherPlace, OFF_SITE_M, placeOf, type CalendarFeed, type CalendarSkip, type Placed } from "./calendars.js";
 import { ingestEvents, type EventInput, type EventsSummary, type WrittenEvent } from "./events.js";
 
 /**
@@ -169,8 +169,18 @@ export async function writeSiteEvents(db: Db, site: { venueId: string; host: str
       skip(input.skip);
       continue;
     }
-    // A site found for a venue (auto) is nobody's checked word: it never places events at another venue.
-    const place = site.auto ? own : ((await placeOf(db, e.location, venue.point, OFF_SITE_M, memo)) ?? own);
+    // At the venue, or at another place it names that we know nearby. One it names elsewhere (a
+    // touring date, another branch) is left out: a site found for a venue (auto) is nobody's checked
+    // word, so it never places an event at another venue either.
+    // A loose match of names may take another branch for the venue itself ("New York Comedy Club
+    // Upper West Side"): what the event names is checked against the venue's own name all the same.
+    const placed = await placeOf(db, e.location, venue.point, OFF_SITE_M, memo);
+    const atVenue = !placed || placed.venueId === site.venueId;
+    if ((!atVenue && site.auto) || (atVenue && namesAnotherPlace(e.location, [venue.name]))) {
+      skip("elsewhere");
+      continue;
+    }
+    const place = placed ?? own;
     const twin = `${place.venueId}|${matchKey(input.title)}|${input.start}`;
     if (seen.has(twin)) {
       skip("duplicate");

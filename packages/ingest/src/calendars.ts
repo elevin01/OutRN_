@@ -126,7 +126,7 @@ function statedPrice(cost: string): EventInput["price"] | undefined {
   return max > min ? { min, max, currency: "USD" } : { min, currency: "USD" };
 }
 
-export type CalendarSkip = "over" | "later" | "all_day" | "long" | "online" | "not_an_outing" | "no_place" | "duplicate";
+export type CalendarSkip = "over" | "later" | "all_day" | "long" | "online" | "not_an_outing" | "no_place" | "elsewhere" | "duplicate";
 
 /** One event as the events file has it, all but its place; or why it is left out. */
 export function calendarEventInput(feed: Pick<CalendarFeed, "id" | "venue">, e: CalendarEvent, now: Date, until: Date): Omit<EventInput, "place"> | { skip: CalendarSkip } {
@@ -243,14 +243,50 @@ function placeLines(lines: string[]): string[] {
   return lines.filter((l) => !/^\d/.test(l) && !/\b[A-Z]{2}\s+\d{5}\b/.test(l) && !/\b(room|floor|suite|lobby|chambers)\b/i.test(l)).slice(0, 3);
 }
 
+/**
+ * Whether an event's lines name a place of its own, apart from its venue: a name that says which
+ * place (not a room or a floor), then a street or a town ("Bruce Museum | 1 Museum Drive | Greenwich"),
+ * that is none of the venue's own names. A room or an exhibit in the venue gives no address
+ * ("Rashkoff Room", "Inside Art"), and an address alone may be the venue's own.
+ */
+export function namesAnotherPlace(given: readonly string[], venueNames: readonly string[]): boolean {
+  const lines = locationLines(given);
+  const name = lines[0];
+  // Then a street (a number), or a town and more ("Tarrytown, NY").
+  const rest = lines.slice(1, 4);
+  if (!name || !placeLines([name]).length || !(rest.some((l) => /\d/.test(l)) || rest.length >= 2)) return false;
+  if (!distinctive(tokensOf(matchKey(name)))) return false;
+  const which = (s: string) => new Set([...tokensOf(matchKey(s))].filter((w) => !GENERIC_WORDS.has(w)));
+  const named = which(name);
+  // The venue by a shorter name ("At the Society" for the Society of Illustrators), or by a longer one
+  // that only says what kind of place it is ("Lyndhurst Mansion"); not another place that shares a
+  // word of its name ("Greenwich Historical Society" is not the Greenwich Library).
+  return !venueNames.some((v) => {
+    const own = which(v);
+    return own.size > 0 && (isSubset(named, own) || (isSubset(own, named) && [...named].every((w) => own.has(w) || PLACE_KINDS.has(w))));
+  });
+}
+
+/** Words that say what kind of place a name is, beyond GENERIC_WORDS: "Lyndhurst Mansion" is Lyndhurst. */
+const PLACE_KINDS = new Set(["mansion", "museum", "gallery", "playhouse", "estate", "campus", "stage", "arena", "amphitheater", "amphitheatre", "pavilion", "ballroom", "club", "cafe", "inn", "hotel", "farm", "preserve", "arts", "art"]);
+
+/**
+ * An event's location, a line for each part: a feed may give the place, its street and its town in one
+ * string ("Bruce Museum, 1 Museum Drive, Greenwich", as a page's JSON-LD often does) or a line each.
+ */
+function locationLines(lines: readonly string[]): string[] {
+  return lines.flatMap((l) => l.split(/[,\n]/)).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 6);
+}
+
 /** Where an event is, by the place its lines name or, failing that, the address they give. */
-export async function placeOf(q: Queryable, lines: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
-  for (const line of placeLines(lines)) {
+export async function placeOf(q: Queryable, given: string[], at: LatLon, radiusM: number, memo: Map<string, Placed | null>): Promise<Placed | null> {
+  // A place's name heads its line ("Bruce Museum, 1 Museum Drive"); the town after it names no place.
+  for (const line of placeLines(given.map((l) => l.split(/[,\n]/)[0]!.replace(/\s+/g, " ").trim()).filter(Boolean))) {
     const key = `name:${matchKey(line)}`;
     if (!memo.has(key)) memo.set(key, await venueNamed(q, [line], at, radiusM));
     if (memo.get(key)) return memo.get(key)!;
   }
-  for (const line of lines.slice(0, 2)) {
+  for (const line of locationLines(given).slice(0, 3)) {
     if (!/^\d/.test(line)) continue;
     const key = `address:${line.toLowerCase()}`;
     if (!memo.has(key)) memo.set(key, await venueAt(q, line, at, radiusM));
@@ -335,7 +371,7 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
     if (opts.saveTo) await writeFile(opts.saveTo, JSON.stringify(capture), "utf8");
   }
 
-  const summary: CalendarsIngestSummary = { reads: [], skipped: { over: 0, later: 0, all_day: 0, long: 0, online: 0, not_an_outing: 0, no_place: 0, duplicate: 0 }, areas: [] };
+  const summary: CalendarsIngestSummary = { reads: [], skipped: { over: 0, later: 0, all_day: 0, long: 0, online: 0, not_an_outing: 0, no_place: 0, elsewhere: 0, duplicate: 0 }, areas: [] };
   const byArea = new Map<string, EventInput[]>();
   const seen = new Set<string>();
   const ok = new Set<string>();
@@ -356,8 +392,14 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
         continue;
       }
       // A town's event is where it says; a library's is at the library unless it names another
-      // place we know nearby (an open mic at a restaurant).
-      const place = feed.places ? await placeOf(db, e.location, feed.places.at, feed.places.radiusM, memo) : own && ((await placeOf(db, e.location, feed.venue!.at, OFF_SITE_M, memo)) ?? own);
+      // place we know nearby (an open mic at a restaurant), and left out when it names one we don't,
+      // or one a loose match of names takes for the library itself (another branch of it).
+      const placed = feed.places ? await placeOf(db, e.location, feed.places.at, feed.places.radiusM, memo) : own && (await placeOf(db, e.location, feed.venue!.at, OFF_SITE_M, memo));
+      if (own && (!placed || placed.venueId === own.venueId) && namesAnotherPlace(e.location, feed.venue!.aliases)) {
+        summary.skipped.elsewhere++;
+        continue;
+      }
+      const place = feed.places ? placed : own && (placed ?? own);
       if (!place || !scopes.some((s) => s.area.slug === place!.area)) {
         summary.skipped.no_place++;
         continue;
