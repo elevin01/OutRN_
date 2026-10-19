@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import { readCalendar, type CalendarEvent, type CalendarRead, type CalendarReadOptions } from "@outrn/sources";
-import { calendarEventInput, ingestCalendars, type CalendarFeed } from "../src/calendars.js";
+import { calendarEventInput, ingestCalendars, namesAnotherPlace, type CalendarFeed } from "../src/calendars.js";
 import { ingestOsmArea } from "../src/pipeline.js";
 
 /** Library and town calendars, replayed from prepared reads, against a real Postgres + PostGIS (outrn_test, reset per file). */
@@ -54,6 +54,8 @@ const LIBRARY: CalendarEvent[] = [
   event({ uid: "lib-6", title: "Last week's film", start: "2026-09-26T22:00:00.000Z", end: "2026-09-27T00:00:00.000Z" }),
   event({ uid: "lib-7", title: "Halloween Crafts", start: "2026-10-31T18:00:00.000Z", end: "2026-10-31T19:00:00.000Z", categories: ["Crafts"] }),
   event({ uid: "lib-8", title: "Knitting Circle", start: "2026-12-05T18:00:00.000Z" }),
+  // The library's outreach at a place of its own we don't know: not at the library.
+  event({ uid: "lib-9", title: "Book Sale at the Museum", start: "2026-10-04T15:00:00.000Z", location: ["Bruce Museum", "1 Museum Drive", "Greenwich, CT 06830"] }),
 ];
 const TOWN: CalendarEvent[] = [
   event({ uid: "t-1", title: "Harvest Fair", start: "2026-10-04T15:00:00.000Z", end: "2026-10-04T19:00:00.000Z", location: ["Pitt Park", "Example, NY 10002"], url: "https://town.example.gov/Calendar.aspx?EID=1", cost: "$5", text: "Cider and pumpkins." }),
@@ -85,7 +87,7 @@ describe("calendar events, one at a time", () => {
       const r = calendarEventInput(lib, e, NOW, until);
       return "skip" in r ? r.skip : "ok";
     });
-    expect(skips).toEqual(["ok", "ok", "all_day", "not_an_outing", "online", "over", "ok", "later"]);
+    expect(skips).toEqual(["ok", "ok", "all_day", "not_an_outing", "online", "over", "ok", "later", "ok"]);
     const baby = calendarEventInput(lib, LIBRARY[0]!, NOW, until);
     expect(baby).toMatchObject({ title: "Baby Lap Time", forKids: true, admission: "reservation", url: "https://suffolk.libcal.example/event/1" });
     expect(calendarEventInput(lib, LIBRARY[1]!, NOW, until)).toMatchObject({ kinds: ["live_music"], price: { free: true } });
@@ -115,12 +117,42 @@ describe("calendar events, one at a time", () => {
   });
 });
 
+describe("where an event names a place of its own, apart from its venue", () => {
+  it("is a place by name that gives an address or a town, and is none of the venue's names (as read from live feeds)", () => {
+    const elsewhere: string[][] = [
+      ["Bruce Museum", "1 Museum Drive", "Greenwich, CT 06830"],
+      ["Bank Austria im Alten Rathaus", "Wipplingerstrasse 6-8, 1010 Vienna, Austria"],
+      ["Greenwich Historical Society", "47 Strickland Road"],
+      ["Shore Rd", "Greenwich, CT 06830"],
+    ];
+    // Another branch of the same club, by its own name and address.
+    expect(namesAnotherPlace(["New York Comedy Club Upper West Side", "236 W 78th Street"], ["New York Comedy Club"])).toBe(true);
+    for (const lines of elsewhere) expect(namesAnotherPlace(lines, ["Greenwich Library"]), lines.join(" | ")).toBe(true);
+    const here: [string[], string][] = [
+      [["Program Room"], "Greenwich Library"],
+      [["Rashkoff Room - Downstairs"], "Greenburgh Public Library"],
+      [["Conference Room", "Learning Center"], "Greenburgh Public Library"],
+      [["Inside Art"], "Children's Museum of Manhattan"],
+      [["299 Greenwich Avenue", "Greenwich, CT 06830"], "Greenwich Library"],
+      [["Village Hall", "34 School Street"], "Bayville Village Hall"],
+      [["The Capitol Theatre", "149 Westchester Ave", "Port Chester"], "The Capitol Theatre"],
+      [["Lyndhurst Mansion", "635 South Broadway, Tarrytown, NY 10591"], "Lyndhurst"],
+      [["At the Society", "128 East 63rd Street"], "Society of Illustrators"],
+      [["Mount Vernon Hotel Museum & Garden", "421 East 61st Street"], "Mount Vernon Hotel Museum"],
+      [["Flushing Meadows Corona Park", "New York City"], "Governors Ball"],
+      [["RESOBOX", "91 E 3rd Street"], "RESOBOX"],
+      [[], "Greenwich Library"],
+    ];
+    for (const [lines, venue] of here) expect(namesAnotherPlace(lines, [venue]), lines.join(" | ")).toBe(false);
+  });
+});
+
 describe.skipIf(!available)("calendars into an area", () => {
   it("puts a library's events at the library, a town's at the place each names, and leaves the rest out", async () => {
     const dir = mkdtempSync(join(tmpdir(), "outrn-cal-"));
     const s = await ingestCalendars(db, { areaSlug: "les", feeds: FEEDS, read: fake(reads()) as never, now: NOW, saveTo: join(dir, "calendars.json") });
-    expect(s.reads.map((r) => `${r.feed}:${r.status}:${r.events}`)).toEqual(["suffolk-library:ok:8", "town:ok:4"]);
-    expect(s.skipped).toMatchObject({ all_day: 1, not_an_outing: 1, online: 1, over: 1, later: 1, no_place: 1, duplicate: 1 });
+    expect(s.reads.map((r) => `${r.feed}:${r.status}:${r.events}`)).toEqual(["suffolk-library:ok:9", "town:ok:4"]);
+    expect(s.skipped).toMatchObject({ all_day: 1, not_an_outing: 1, online: 1, over: 1, later: 1, no_place: 1, elsewhere: 1, duplicate: 1 });
     expect(s.areas).toHaveLength(1);
     expect(s.areas[0]).toMatchObject({ area: "les", written: 5, withdrawn: 0, rejected: [] });
     expect((await occurrences()).map((o) => `${o.title} @ ${o.venue} (${o.status})`)).toEqual([

@@ -173,7 +173,7 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await scheduled()).toEqual([]);
   });
 
-  it("take an age they state as the event's age limit; a found site keeps them all at its own venue (PR #61 review)", async () => {
+  it("take an age they state as the event's age limit; a found site never places one at another venue (PR #61 review)", async () => {
     const playhouse = await venueId("Delancey Playhouse");
     const site = { venueId: playhouse, host: "found.delanceyplayhouse.example", auto: true };
     await writeSiteEvents(
@@ -193,9 +193,30 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await factsOf("Craft Beer Social")).not.toHaveProperty("age_limit");
     expect(await factsOf("Puppet Matinee")).toMatchObject({ audience: { kids: true } });
     expect(await factsOf("Puppet Matinee")).not.toHaveProperty("age_limit");
-    // Found, not checked: its events stay at its own venue, whatever place they name.
-    expect((await at("Delancey Playhouse")).map((o) => o.title)).toContain("Jazz After Dark");
+    // Found, not checked: one it says is at another venue is left out, not placed there or here.
+    expect((await at("Delancey Playhouse")).map((o) => o.title)).not.toContain("Jazz After Dark");
     expect((await at("Attorney Arts Center")).map((o) => o.title)).not.toContain("Jazz After Dark");
+  });
+
+  it("leave out an event its site says is at a place of its own elsewhere; keep one in a room of the venue (PR #61 follow-up)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const s = await writeSiteEvents(
+      db,
+      { venueId: playhouse, host: "tours.delanceyplayhouse.example" },
+      [
+        // A touring date: a named place with its own address, nowhere near.
+        event({ uid: "v", title: "Gala in Vienna", start: "2026-10-05T17:00:00.000Z", location: ["Bank Austria im Alten Rathaus", "Wipplingerstrasse 6-8, 1010 Vienna, Austria"] }),
+        // The venue's own name and address, a room in it, and an exhibit by name alone: all here.
+        event({ uid: "h", title: "Home Matinee", start: "2026-10-05T18:00:00.000Z", location: ["Delancey Playhouse", "1 Delancey St, New York"] }),
+        event({ uid: "r", title: "Studio Reading", start: "2026-10-05T19:00:00.000Z", location: ["Rashkoff Room - Downstairs"] }),
+        event({ uid: "x", title: "Puppet Lab", start: "2026-10-05T20:00:00.000Z", location: ["Inside Art"] }),
+      ],
+      NOW,
+    );
+    expect(s.skipped).toMatchObject({ elsewhere: 1 });
+    const titles = (await at("Delancey Playhouse")).map((o) => o.title);
+    expect(titles).toEqual(expect.arrayContaining(["Home Matinee", "Studio Reading", "Puppet Lab"]));
+    expect(titles).not.toContain("Gala in Vienna");
   });
 
   it("back its host off when the events feed asks us to wait (429, 503): the host's next site waits too (PR #61 review)", async () => {

@@ -90,8 +90,10 @@ list (`packages/ingest/src/calendars.ts`) of the ones a survey of 104 calendars 
 LibCal and other iCalendar feeds, WordPress's The Events Calendar (Westchester County Parks, nature
 centers) and CivicPlus town calendars. Each host's robots.txt is asked first (a calendar that keeps
 crawlers out, like LibraryMarket's, Google Calendar's files and NYPL's site, is not read), its requests
-10 s apart or more. A library's events are at the library (or at the other place an event names); a
-town's are matched to a venue by the place's name or address, or left out. Meetings, closings,
+10 s apart or more. A library's events are at the library, or at the other place an event names if
+we know it nearby; one that names a place of its own we don't know (a name, then its street or town:
+"Bruce Museum, 1 Museum Drive") is left out, not put at the library. A town's are matched to a venue
+by the place's name or address, or left out. Meetings, closings,
 services, classes of service and online events are left out. Kept: title, times, the event's own
 link, kinds from its categories, for children, registration and price only as stated. `pnpm capture`
 saves a read (`fixtures/live/calendars.json`) and `pnpm real` replays it. On 18 October 2026: 21 of 21
@@ -208,10 +210,12 @@ run --area <slug>` then reads them:
   for events (/events, /shows, /calendar …), read for its JSON-LD; and the page's own JSON-LD events.
   A theatre's events page comes before its hours page (a host's four requests a day go to what it is
   for). They are written as library calendars' are (`site-events.ts`, source `venue_events`): at the
-  venue unless one names another place nearby (a site found automatically keeps them all at its
-  venue), kinds from their schema.org types, an age limit only as stated (`typicalAgeRange` "21+";
-  "All ages" never lifts the venue's age rules), nothing for children about drink, a price only as stated (free only when the page says so, not for a price of 0), once
-  when another source lists the same event there. A page lists some of a venue's events, so nothing is
+  venue unless one names another place nearby; one that names a place of its own elsewhere (a touring
+  date in Vienna, another branch) is left out, and a site found automatically never places one at
+  another venue. Kinds from their schema.org types, an age limit only as stated (`typicalAgeRange`
+  "21+"; "All ages" never lifts the venue's age rules), nothing for children about drink, a price only
+  as stated (free only when the page says so, not for a price of 0), once when another source lists
+  the same event there. A page lists some of a venue's events, so nothing is
   withdrawn for missing from one. A feed read to its end (every page of The Events Calendar's API, an
   iCalendar feed) is the site's listing: what it listed before and no longer lists by its last day
   read (a show taken down or moved) is withdrawn. On a host several venues share, only a feed under
