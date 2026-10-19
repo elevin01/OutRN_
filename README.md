@@ -209,8 +209,8 @@ run --area <slug>` then reads them:
   A theatre's events page comes before its hours page (a host's four requests a day go to what it is
   for). They are written as library calendars' are (`site-events.ts`, source `venue_events`): at the
   venue unless one names another place nearby (a site found automatically keeps them all at its
-  venue), kinds from their schema.org types, an age limit only as stated (`typicalAgeRange`: "21+",
-  "All ages"), nothing for children about drink, a price only as stated (free only when the page says so, not for a price of 0), once
+  venue), kinds from their schema.org types, an age limit only as stated (`typicalAgeRange` "21+";
+  "All ages" never lifts the venue's age rules), nothing for children about drink, a price only as stated (free only when the page says so, not for a price of 0), once
   when another source lists the same event there. A page lists some of a venue's events, so nothing is
   withdrawn for missing from one. A feed read to its end (every page of The Events Calendar's API, an
   iCalendar feed) is the site's listing: what it listed before and no longer lists by its last day

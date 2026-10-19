@@ -189,9 +189,10 @@ describe.skipIf(!available)("a venue's own events", () => {
     );
     expect(await factsOf("Midnight Comedy")).toMatchObject({ age_limit: { minAge: 21 } });
     expect(await factsOf("Midnight Comedy")).not.toHaveProperty("audience");
-    // "All ages" on a drink event is not taken: the engine's 21+ estimate stands.
+    // "All ages" is no age limit of the event's: the venue's own age rules stand (a bar's 21+ estimate).
     expect(await factsOf("Craft Beer Social")).not.toHaveProperty("age_limit");
-    expect(await factsOf("Puppet Matinee")).toMatchObject({ age_limit: { minAge: 0 }, audience: { kids: true } });
+    expect(await factsOf("Puppet Matinee")).toMatchObject({ audience: { kids: true } });
+    expect(await factsOf("Puppet Matinee")).not.toHaveProperty("age_limit");
     // Found, not checked: its events stay at its own venue, whatever place they name.
     expect((await at("Delancey Playhouse")).map((o) => o.title)).toContain("Jazz After Dark");
     expect((await at("Attorney Arts Center")).map((o) => o.title)).not.toContain("Jazz After Dark");

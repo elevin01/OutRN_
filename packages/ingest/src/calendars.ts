@@ -143,8 +143,10 @@ export function calendarEventInput(feed: Pick<CalendarFeed, "id" | "venue">, e: 
   if (NOT_AN_OUTING.test(title) || e.categories.some((c) => NOT_AN_OUTING_CATEGORY.test(c.trim()))) return { skip: "not_an_outing" };
   const about = [...e.categories, ...(feed.venue ? e.location : [])].join(" · ");
   const kinds = [...new Set(KIND_WORDS.filter(([re]) => re.test(e.categories.join(" · "))).map(([, k]) => k))].slice(0, 4);
-  // An age it states is its age limit, except "all ages" on a drink event (left to the 21+ estimate).
-  const minAge = e.minAge !== undefined && !(e.minAge < 18 && isDrinkTitle(title)) ? e.minAge : undefined;
+  // An age it states counts only as a limit (18+, 21+). "All ages" or a child's range ("7-9") is who
+  // it is typically for (schema.org's typicalAgeRange), not who the door admits: it never lifts its
+  // venue's age rules (a bar's probable 21+, a club's stated one) for a party with a child.
+  const minAge = e.minAge !== undefined && e.minAge >= 18 ? e.minAge : undefined;
   // A drink event is not for children, whatever its calendar files it under ("Family Beer Garden"),
   // nor one that states it admits only adults.
   const forKids = (FOR_KIDS.test(title) || FOR_KIDS.test(about)) && !isDrinkTitle(title) && !(minAge !== undefined && minAge >= 18);
