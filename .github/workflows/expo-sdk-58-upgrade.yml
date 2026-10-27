@@ -32,7 +32,7 @@ jobs:
             git commit -m "chore(mobile): resolve SDK 58 dependencies"
             git push origin HEAD:chore/expo-sdk-58
           fi
-      - run: pnpm exec expo-doctor apps/mobile
+      - run: pnpm dlx expo-doctor apps/mobile
       - run: pnpm mobile:typecheck
       - run: pnpm --filter @outrn/mobile lint
       - name: Export native and web bundles
