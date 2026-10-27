@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ComponentRef, type ReactNode } from "react";
 import {
   AccessibilityInfo,
   findNodeHandle,
@@ -8,7 +8,6 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  type ReactNativeElement,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Copy, IconButton, colors } from "./ui";
@@ -25,7 +24,7 @@ export function Sheet({
   children: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
-  const heading = useRef<ReactNativeElement>(null);
+  const heading = useRef<ComponentRef<typeof View>>(null);
   useEffect(() => {
     if (!visible || Platform.OS === "web") return;
     const timer = setTimeout(() => {
