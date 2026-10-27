@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  type ReactNativeElement,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Copy, IconButton, colors } from "./ui";
@@ -24,7 +25,7 @@ export function Sheet({
   children: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
-  const heading = useRef<View>(null);
+  const heading = useRef<ReactNativeElement>(null);
   useEffect(() => {
     if (!visible || Platform.OS === "web") return;
     const timer = setTimeout(() => {
