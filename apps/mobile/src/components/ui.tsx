@@ -7,7 +7,6 @@ import {
   Text,
   View,
   type TextProps,
-  type ColorValue,
   type RefreshControlProps,
   type ViewStyle,
   type StyleProp,
@@ -35,7 +34,7 @@ export const Icon = ({
 }: {
   name: IconName;
   size?: number;
-  color?: ColorValue;
+  color?: string;
 }) => (
   <Feather
     name={name}
