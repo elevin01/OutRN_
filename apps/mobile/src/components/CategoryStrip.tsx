@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Pressable, ScrollView, StyleSheet } from "react-native";
+import { Pressable, ScrollView, StyleSheet, type ScrollViewInstance } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import type { CategoryGroup } from "../lib/categories";
 import { Copy } from "./ui";
@@ -17,7 +17,7 @@ export function CategoryStrip({
   onSelect: (group: CategoryGroup) => void;
 }) {
   // A new search remounts the strip at its start: bring the chosen shortcut back into view.
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const shown = useRef(false);
   return (
     <ScrollView
