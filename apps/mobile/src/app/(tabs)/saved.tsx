@@ -5,7 +5,6 @@ import {
   TextInput,
   View,
   useWindowDimensions,
-  type ViewToken,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -190,7 +189,7 @@ export default function SavedScreen() {
     fits && saved.length > 0 && !!query && !fitData && !fitError;
   const blocked = fits && (!query || fitPending || !!fitError || expired);
   const viewable = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken<Entry>[] }) => {
+    ({ viewableItems }: { viewableItems: { item: Entry }[] }) => {
       const ids = [
         ...new Set(
           viewableItems.flatMap((v) =>
@@ -393,7 +392,7 @@ export default function SavedScreen() {
     </View>
   );
   const empty = !hydrated ? (
-    storageError ? null : (
+    storageError ? undefined : (
       <Loading label="Loading your saves…" />
     )
   ) : !saved.length ? (
@@ -450,7 +449,7 @@ export default function SavedScreen() {
         onPress={clear}
       />
     )
-  ) : null;
+  ) : undefined;
 
   return (
     <SafeAreaView edges={["top", "left", "right"]} style={styles.root}>
@@ -475,7 +474,7 @@ export default function SavedScreen() {
         ListFooterComponent={
           credits.length ? (
             <Copy style={styles.credits}>{credits.join(" · ")}</Copy>
-          ) : null
+          ) : undefined
         }
         renderItem={({ item: entry }) =>
           entry.collection ? (
