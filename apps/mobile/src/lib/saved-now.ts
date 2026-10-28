@@ -14,6 +14,19 @@ export type SavedMatches = {
   response: RecommendationResponse;
 };
 
+/**
+ * A value keyed by a saved id, own keys only: a stored id is untrusted, and "constructor" or
+ * "__proto__" must not read a prototype as a match or a place's details.
+ */
+export function byId<T>(
+  values: Readonly<Record<string, T>> | undefined,
+  id: string,
+): T | undefined {
+  return values && Object.prototype.hasOwnProperty.call(values, id)
+    ? values[id]
+    : undefined;
+}
+
 /** Only the API determines fitness. Traverse its frozen pages without replacing the Now deck. */
 export async function loadSavedMatches(
   query: RecommendationRequest,

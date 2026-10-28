@@ -20,7 +20,7 @@ import {
   priceLabel,
   travelLabel,
 } from "../../lib/presentation";
-import { loadSavedMatches, type SavedMatches } from "../../lib/saved-now";
+import { byId, loadSavedMatches, type SavedMatches } from "../../lib/saved-now";
 import {
   MAX_COLLECTIONS,
   type RemovedSave,
@@ -152,7 +152,7 @@ export default function SavedScreen() {
       `${p.name} ${categoryLabel(p.category)}`
         .toLocaleLowerCase()
         .includes(text.trim().toLocaleLowerCase())) &&
-    (!fits || (!expired && !!fitData?.matches[p.id]));
+    (!fits || (!expired && !!byId(fitData?.matches, p.id)));
   const matching = saved.filter((p) => matches(p));
   if (sort === "name") matching.sort((a, b) => a.name.localeCompare(b.name));
   const entries: Entry[] = collectionView
@@ -206,7 +206,7 @@ export default function SavedScreen() {
   );
   const viewConfig = useMemo(() => ({ itemVisiblePercentThreshold: 1 }), []);
   const open = (place: SavedPlace) => {
-    const match = fits ? fitData?.matches[place.id] : undefined;
+    const match = fits ? byId(fitData?.matches, place.id) : undefined;
     const current =
       match && (demoMode || !isExpired(match.response)) ? match : undefined;
     setSavedPlan(current);
@@ -496,10 +496,10 @@ export default function SavedScreen() {
                           name={p.name}
                           category={p.category}
                           categoryLabel={
-                            details[p.id]?.category.label ||
+                            byId(details, p.id)?.category.label ||
                             categoryLabel(p.category)
                           }
-                          photos={details[p.id]?.photos}
+                          photos={byId(details, p.id)?.photos}
                           height={165}
                         />
                       </View>
@@ -525,9 +525,11 @@ export default function SavedScreen() {
           ) : (
             (() => {
               const place = entry.places[0];
-              const detail = details[place.id];
+              const detail = byId(details, place.id);
               const match =
-                fits && !expired ? fitData?.matches[place.id]?.item : undefined;
+                fits && !expired
+                  ? byId(fitData?.matches, place.id)?.item
+                  : undefined;
               const fresh =
                 detail &&
                 !failed.has(place.id) &&

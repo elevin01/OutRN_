@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { scenarios } from "@outrn/contracts/fixtures";
-import { loadSavedMatches } from "./saved-now";
+import { byId, loadSavedMatches } from "./saved-now";
 
 const base = scenarios[0].pages[0];
 const venue = {
@@ -116,5 +116,20 @@ describe("Saved Fits now API presentation", () => {
     await expect(
       loadSavedMatches(query, ["saved"], recommend, controller.signal),
     ).rejects.toThrow("cancelled");
+  });
+});
+describe("saved ids as keys", () => {
+  it("reads own keys only, so a stored id cannot read a prototype", () => {
+    const values: Record<string, number> = { a: 1 };
+    for (const id of [
+      "constructor",
+      "__proto__",
+      "toString",
+      "hasOwnProperty",
+      "valueOf",
+    ])
+      expect(byId(values, id)).toBeUndefined();
+    expect(byId(values, "a")).toBe(1);
+    expect(byId(undefined, "a")).toBeUndefined();
   });
 });

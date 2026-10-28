@@ -38,11 +38,17 @@ export function readSavedLibrary(
     if (
       record(p) &&
       nonempty(p.id) &&
+      p.id.length <= 200 &&
       nonempty(p.name) &&
       nonempty(p.category) &&
       !ids.has(p.id)
     ) {
-      places.push({ id: p.id, name: p.name, category: p.category });
+      // Bounded: what storage holds is untrusted.
+      places.push({
+        id: p.id,
+        name: p.name.slice(0, 200),
+        category: p.category.slice(0, 64),
+      });
       ids.add(p.id);
       if (places.length === MAX_SAVED) break;
     }
