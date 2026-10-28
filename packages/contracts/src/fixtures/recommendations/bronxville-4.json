@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "requestId": "00000000-0000-4000-8000-000000000017",
   "asOf": "2026-10-03T23:30:00.000Z",
   "generatedAt": "2026-10-03T23:30:00.000Z",
   "expiresAt": "2026-10-03T23:50:00.000Z",
@@ -26,6 +26,7 @@
     "cuisines": [],
     "features": [],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "drive",
     "visitStyle": "dine_in",
     "youngestAge": null,
@@ -35,284 +36,6 @@
     "travelModeIsDefault": true
   },
   "items": [
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
-          "basis": "typical",
-          "level": "quiet",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [],
-      "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-000000000018",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~8 min drive incl. parking · takes about 1h · until 1am · usually free",
-        "sentence": "A short drive, plenty of time, open late, usually free."
-      },
-      "kind": "venue",
-      "name": "Pitt Park",
-      "plan": [
-        {
-          "at": "2026-10-03T23:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 7:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T23:43:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 7:43pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "free",
-        "evidence": "estimate"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Visit",
-          "style": "visit",
-          "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
-        },
-        "travel": {
-          "mode": "drive",
-          "minutes": 8,
-          "isEstimate": true,
-          "parkingMinutes": 5
-        },
-        "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:43:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 107
-      },
-      "actions": {
-        "links": [],
-        "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934679%2C-73.840902&travelmode=driving"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000018",
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short drive",
-          "params": {
-            "mode": "drive",
-            "minutes": 8
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 107
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "FREE",
-          "text": "usually free",
-          "params": {},
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "park",
-        "label": "Park"
-      },
-      "location": {
-        "lat": 40.934679,
-        "lon": -73.840902
-      },
-      "placeName": "Pitt Park",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": {
-        "fee": "paid",
-        "kind": "lot",
-        "name": "Orchard Street Lot",
-        "text": "Orchard Street Lot (paid), ~3 min walk",
-        "location": {
-          "lat": 40.9296,
-          "lon": -73.8434
-        },
-        "walkMinutes": 3,
-        "openingHours": "Mo-Su 06:00-24:00",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-        "distanceMetres": 160
-      },
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "mexican",
-          "label": "Mexican"
-        }
-      ],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "id": "00000000-0000-4000-8000-000000000019",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Mexican · ~10 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "A short drive, plenty of time."
-      },
-      "kind": "venue",
-      "name": "Grand Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T23:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 7:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T23:37:00.000Z",
-          "kind": "park",
-          "text": "Park at Orchard Street Lot (paid), then walk ~3 min",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T23:50:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 7:50pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:20:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "drive",
-          "minutes": 10,
-          "isEstimate": true,
-          "parkingMinutes": 5
-        },
-        "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:50:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 90
-      },
-      "actions": {
-        "links": [],
-        "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929329%2C-73.841533&travelmode=driving"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000019",
-      "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short drive",
-          "params": {
-            "mode": "drive",
-            "minutes": 10
-          },
-          "required": false
-        },
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 90
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.929329,
-        "lon": -73.841533
-      },
-      "placeName": "Grand Kitchen",
-      "callToAction": "go"
-    },
     {
       "conditions": [
         {
@@ -343,7 +66,10 @@
       "cuisines": [],
       "diets": [],
       "features": [],
-      "id": "00000000-0000-4000-8000-00000000001a",
+      "interests": [
+        "books"
+      ],
+      "id": "00000000-0000-4000-8000-000000000021",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: hours not listed",
@@ -418,7 +144,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-00000000001a",
+      "placeId": "00000000-0000-4000-8000-000000000021",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -456,13 +182,267 @@
       },
       "placeName": "Forsyth Library",
       "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually quiet on Saturday evenings",
+          "basis": "typical",
+          "level": "quiet",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "books"
+      ],
+      "id": "00000000-0000-4000-8000-000000000022",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: hours not listed",
+        "summary": "~10 min drive incl. parking · takes about 30 min · price unknown",
+        "sentence": "A short drive, plenty of time."
+      },
+      "kind": "venue",
+      "name": "Pitt Books",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:45:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:45pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 30,
+          "typicalMinutes": 30
+        },
+        "travel": {
+          "mode": "drive",
+          "minutes": 10,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:45:00.000Z",
+        "closesAt": null,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 105
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929885%2C-73.833771&travelmode=driving"
+      },
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000022",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 10
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 105
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "bookshop",
+        "label": "Bookshop"
+      },
+      "location": {
+        "lat": 40.929885,
+        "lon": -73.833771
+      },
+      "placeName": "Pitt Books",
+      "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        },
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
+        }
+      ],
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-000000000023",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: hours are approximate",
+        "summary": "~9 min drive incl. parking · takes about 1h · until 12am · price unknown · usually 21+",
+        "sentence": "A short drive, plenty of time."
+      },
+      "kind": "venue",
+      "name": "Grand Ludlow Bar",
+      "plan": [
+        {
+          "at": "2026-10-03T23:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 7:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:44:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:44pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "drive",
+          "minutes": 9,
+          "isEstimate": true,
+          "parkingMinutes": 5
+        },
+        "leaveAt": "2026-10-03T23:30:00.000Z",
+        "arriveAt": "2026-10-03T23:44:00.000Z",
+        "closesAt": "2026-10-04T04:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 106
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.936794%2C-73.847237&travelmode=driving"
+      },
+      "caveats": [
+        {
+          "code": "HOURS_APPROXIMATE",
+          "text": "hours are approximate",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000023",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short drive",
+          "params": {
+            "mode": "drive",
+            "minutes": 9
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 106
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.936794,
+        "lon": -73.847237
+      },
+      "placeName": "Grand Ludlow Bar",
+      "callToAction": "check"
     }
   ],
   "page": {
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDE3IiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [

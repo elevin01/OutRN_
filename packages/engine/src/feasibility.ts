@@ -1,6 +1,8 @@
 import { dayPart } from "./daypart.js";
-import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_MAX_TRAVEL_MINUTES, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type Restroom } from "@outrn/core";
+import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type OpenInterval, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
+import SunCalc from "suncalc";
+import { maxTravelFor, openDawnToDusk } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ExclusionCode, NearbyParking, ReasonCode, RequestContext, Timing, TimingBase } from "./types.js";
 import { conditionsFor, waitMayNotFit } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
@@ -24,6 +26,30 @@ import { FOOD_CATEGORIES, isTakeout, TAKEOUT_MINUTES, takeoutOf, visitFor } from
 export const ORDER_MINUTES = 15;
 
 /**
+ * A public park with no listed hours is usually open dawn to dusk (roadmap decision 8). How sure that
+ * is: an estimate from the kind of place, not its own record.
+ */
+export const DAWN_TO_DUSK_CONFIDENCE = 0.4;
+
+/** Sunrise and sunset where the place is, on the local day of `at`. */
+function daylightOn(c: Candidate, at: Date): { rise: Date; set: Date } | null {
+  const t = SunCalc.getTimes(fromLocal(localClock(at, c.timezone).date, 12 * 60, c.timezone), c.point.lat, c.point.lon);
+  return Number.isNaN(t.sunrise.getTime()) || Number.isNaN(t.sunset.getTime()) ? null : { rise: t.sunrise, set: t.sunset };
+}
+
+/**
+ * A daylight visit to a park with no hours of its own: from arrival (or sunrise, if that still fits)
+ * to sunset or the user's deadline. Null when the visit does not fit in daylight.
+ */
+function daylightVisit(c: Candidate, arrival: Date, deadline: Date, minUsefulMinutes: number): { opensAt: Date | null; dusk: Date } | null {
+  const sun = daylightOn(c, arrival);
+  if (!sun || arrival >= sun.set) return null;
+  const opensAt = arrival < sun.rise ? sun.rise : null;
+  const end = sun.set < deadline ? sun.set : deadline;
+  return minutesBetween(opensAt ?? arrival, end) >= minUsefulMinutes ? { opensAt, dusk: sun.set } : null;
+}
+
+/**
  * Youngest person in the party: a number when known, "minor" when company is family and no age was
  * given (a child of unknown age), undefined when there is no reason to assume a minor.
  */
@@ -33,6 +59,13 @@ export function partyYoungest(ctx: Pick<RequestContext, "youngestAge" | "company
 }
 
 /** Whether anyone under 18 is going: a family of unknown ages, or a youngest age under 18, whatever the company. */
+/** "Open late" is the evening's: a close at 9pm or after (past midnight too), not a library's 5pm. */
+const OPEN_LATE_FROM_HOUR = 21;
+function closesLate(closesAt: Date, arrival: Date, timeZone: string): boolean {
+  const c = localClock(closesAt, timeZone);
+  return c.date !== localClock(arrival, timeZone).date || c.hour >= OPEN_LATE_FROM_HOUR;
+}
+
 export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company">): boolean {
   const youngest = partyYoungest(ctx);
   return youngest === "minor" || (typeof youngest === "number" && youngest < 18);
@@ -44,6 +77,24 @@ export function minorInParty(ctx: Pick<RequestContext, "youngestAge" | "company"
  * minimum (a listed occurrence brings its own duration), and a bare venue must not borrow that zero.
  */
 export const UNLISTED_PROGRAMME_MINUTES: Readonly<Partial<Record<Category, number>>> = { cinema: 120, theatre: 120, live_music: 90 };
+
+/** Places that close by the evening: a gallery, a library, a bookshop. */
+const DAYTIME: ReadonlySet<Category> = new Set(["museum", "gallery", "library", "bookshop", "garden"]);
+
+/**
+ * Whether the close of one interval of a place's hours looks mistyped for its kind: past 11pm, or
+ * into the next morning, at a place that closes by the evening ("10:00-06:00" for 18:00, "10:00-10:00"
+ * for 22:00, a library to midnight). Only that interval is doubted: the schedule's other days, its
+ * closed days and other seasons, and this interval's opening are read as listed. One open from
+ * midnight (round the clock, a 24/7 study hall) is not doubted.
+ */
+export function doubtfulClose(category: Category, interval: OpenInterval, timeZone: string): boolean {
+  if (!DAYTIME.has(category)) return false;
+  // By the wall clock on both ends, not elapsed time: a day the clocks change is 23 or 25 hours long.
+  const opens = localClock(interval.open, timeZone);
+  const closes = localClock(interval.close, timeZone);
+  return opens.minutes > 0 && (closes.date !== opens.date || closes.minutes > 23 * 60);
+}
 
 /** A venue's minimum admission age, if any fact states or estimates one (0 = no limit). */
 export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean } | null {
@@ -213,8 +264,8 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   const parkingMinutes = ctx.mode === "drive" ? parkingMinutesFor(lot, ctx.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES) : null;
   const parking = parkingMinutes === null ? {} : { parkingBufferMinutes: parkingMinutes };
   const travel = estimateTravel(ctx.origin, c.point, ctx.mode, { hourLocal: hour, ...parking });
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
-  if (travel.minutes > maxTravel) return out("TOO_FAR");
+  // A destination may be farther when there is time for it (see maxTravelFor).
+  if (travel.minutes > maxTravelFor(c, ctx)) return out("TOO_FAR");
   const departAt = ctx.now;
   let arrival = addMinutes(departAt, travel.minutes + policy.admissionBufferMinutes);
   // Waiting outside for an opening (the venue's or its kitchen's) is not a plan: when the visit starts
@@ -259,18 +310,20 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (o.status === "ended" || (o.end && o.end <= ctx.now)) return out("EVENT_STARTED");
     const cutoff = o.entryCutoff ?? o.start;
     latestArrival = cutoff;
+    // A walk-in pop-up in the open (a band on the lawn, a street fair, fireworks, a festival in the
+    // park) has no door: one can come after it starts and leave before it ends.
+    const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
     if (arrival > cutoff) {
-      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in pop-up
-      // in the open (a band on the lawn, a street fair, fireworks): no door to be late for. The plan
-      // still says it has started.
-      const walkInPopUp = c.category === "event_site" && (c.facts.admission?.value as { requirement?: unknown } | undefined)?.requirement === "walk_in";
+      // Joining late qualifies only if the source says late entry is allowed, or it is a walk-in
+      // pop-up. The plan still says it has started.
       if (o.lateEntry !== true && !walkInPopUp) return out("EVENT_STARTED");
       if (!walkInPopUp) unresolved.push("LATE_ENTRY_UNCERTAIN");
     }
     const end = o.end ?? addMinutes(o.start, 120);
     if (!o.end) unresolved.push("HOURS_APPROXIMATE");
-    // A small overrun of the user's own deadline is tolerated; none past a permanent closure.
-    if (end > addMinutes(userDeadline, 15) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
+    // A small overrun of the user's own deadline is tolerated, and a walk-in pop-up is left when it is
+    // time to go; none past a permanent closure.
+    if ((end > addMinutes(userDeadline, 15) && !walkInPopUp) || (closureAt && end > closureAt)) return out("EVENT_ENDS_AFTER_DEADLINE");
     // Arriving early is waiting, not useful time: useful time starts at the event.
     const effectiveStart = arrival < o.start ? o.start : arrival;
     latestFinish = end < deadline ? end : deadline;
@@ -280,7 +333,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (minutesBetween(ctx.now, o.start) <= 90 && o.start > ctx.now) reasons.push("EVENT_STARTS_SOON");
     hoursConfidence = 0.8; // dated occurrence from a source, status current
     closesAt = end;
-    const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: o.entryCutoff ? "event_entry" : null, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
+    const timing: TimingBase = { travel, departAt, arrival, latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: o.entryCutoff ? "event_entry" : null, latestFinish, usefulMinutes: useful, minUsefulMinutes: need, minUsefulIsEstimate: true, closesAt, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
     return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
   }
 
@@ -300,13 +353,31 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   const hoursFact = fact(c, "opening_hours");
   if (!hoursFact || !isHoursValue(hoursFact.value)) {
+    // A park with no listed hours is usually open dawn to dusk, and so is a destination one walks (a
+    // preserve, a beach: see openDawnToDusk): in daylight those are its hours, an estimate the card
+    // names, and the visit ends by dusk. After dark, or with too little daylight left,
+    // its hours stay unknown: a city park open till 1am is still an option to check. A garden is not
+    // assumed open: a community garden opens on the days it posts.
+    const daylight = openDawnToDusk(c) ? daylightVisit(c, arrival, deadline, minUsefulMinutes) : null;
+    if (daylight) {
+      if (daylight.opensAt) reasons.push("WAIT_FOR_OPENING");
+      reasons.push("DAWN_TO_DUSK");
+      const at = daylight.opensAt ?? arrival;
+      const finishAt = daylight.dusk < deadline ? daylight.dusk : deadline;
+      const useful = minutesBetween(at, finishAt);
+      if (useful < minUsefulMinutes + 20 && finishAt < userDeadline) reasons.push("CLOSES_SOON");
+      // A published closure before dusk is the closing time, as it is for any place; else dusk, an estimate.
+      const closedFirst = closureBinds && closureAt! < daylight.dusk;
+      const timing: TimingBase = { travel, departAt: leaveFor(at), arrival: at, latestArrival: null, latestArrivalIsEstimate: false, latestArrivalKind: null, latestFinish: finishAt, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: closedFirst ? closureAt : daylight.dusk, closesAtIsEstimate: !closedFirst, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
+      return finish(c, ctx, reasons, unresolved, timing, DAWN_TO_DUSK_CONFIDENCE);
+    }
     unresolved.push("HOURS_UNKNOWN");
     const kitchen = kitchenGate();
     if (typeof kitchen === "string") return out(kitchen);
     // No closing constraint known: useful time is bounded by the deadline only.
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
+    const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
     return finish(c, ctx, reasons, unresolved, timing, 0);
   }
   hoursConfidence = hoursFact.confidence;
@@ -317,7 +388,7 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
     if (typeof kitchen === "string") return out(kitchen);
     const useful = minutesBetween(arrival, deadline);
     if (useful < minUsefulMinutes) return out("NOT_ENOUGH_TIME");
-    return finish(c, ctx, reasons, unresolved, { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot }, 0);
+    return finish(c, ctx, reasons, unresolved, { travel, departAt: leaveFor(arrival), arrival, latestArrival: kitchen.latestArrival, latestArrivalIsEstimate: false, latestArrivalKind: kitchen.latestArrival ? "last_order" : null, latestFinish: deadline, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt: null, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot }, 0);
   }
   if (ev.approximate) unresolved.push("HOURS_APPROXIMATE");
   if (!ev.always) {
@@ -330,7 +401,10 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
         reasons.push("WAIT_FOR_OPENING");
       } else return out("CLOSED_ON_ARRIVAL");
     }
-    closesAt = ev.interval.close;
+    // A close that looks mistyped (a gallery to 6am) is no close: the visit is bounded by the window
+    // alone, Check first with the doubt named. The opening, and every other day, stand as listed.
+    if (doubtfulClose(c.category, ev.interval, c.timezone)) unresolved.push("HOURS_DOUBTFUL");
+    else closesAt = ev.interval.close;
   }
   // Published kitchen hours decide when a meal can start, whether or not the venue ever closes.
   const kitchen = kitchenGate();
@@ -363,8 +437,9 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
   // A binding closure is this visit's closing time, shown and reasoned about like one.
   if (closureBinds && (!closesAt || closureAt! < closesAt)) closesAt = closureAt;
   if (closesAt && minutesBetween(arrival, latestFinish) < minUsefulMinutes + 20 && latestFinish < userDeadline) reasons.push("CLOSES_SOON");
-  if (closesAt && closesAt >= addMinutes(userDeadline, 60)) reasons.push("OPEN_LATE");
-  const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
+  // Only on hours read exactly: approximate ones (a 10:00-10:00 slip read as all night) claim no late close.
+  if (closesAt && !ev.approximate && closesAt >= addMinutes(userDeadline, 60) && closesLate(closesAt, arrival, ctx.timezone)) reasons.push("OPEN_LATE");
+  const timing: TimingBase = { travel, departAt: leaveFor(arrival), arrival, latestArrival, latestArrivalIsEstimate, latestArrivalKind, latestFinish, usefulMinutes: useful, minUsefulMinutes, minUsefulIsEstimate, closesAt, closesAtIsEstimate: false, deadline: userDeadline, returnTravel, parkingMinutes, parking: lot };
   return finish(c, ctx, reasons, unresolved, timing, hoursConfidence);
 }
 

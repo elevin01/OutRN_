@@ -5,6 +5,8 @@ import { ApiProblem } from "../components/ApiProblem";
 import { CategoryShortcuts } from "../components/CategoryShortcuts";
 import { PlaceCard } from "../components/PlaceCard";
 import { SearchForm } from "../components/SearchForm";
+import { HappeningStrip } from "../components/HappeningStrip";
+import { eventsOnlyOf, happeningSoon } from "../lib/happening";
 import { api, ApiRequestError } from "../lib/api";
 import { one, type Search } from "../lib/query";
 import { formFromResolved, hrefForRequest, requestFromQuery } from "../lib/request";
@@ -16,12 +18,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
   let meta: AreasResponse | null = null;
   let output: RecommendationResponse | null = null;
   let failure: ApiRequestError | null = null;
+  // Happening soon: the same search, events only, beside a new one. Optional: a failure shows nothing.
+  let happening: RecommendationResponse | null = null;
   try {
     meta = await api.areas();
     const cursor = one(query["cursor"]);
     // "More options" and "Previous" carry only a cursor: pages of one frozen result list.
     if (cursor) output = await api.recommendations({ cursor });
-    else if (one(query["run"]) === "1") output = await api.recommendations(requestFromQuery(query, meta));
+    else if (one(query["run"]) === "1") {
+      const request = requestFromQuery(query, meta);
+      [output, happening] = await Promise.all([api.recommendations(request), api.recommendations(eventsOnlyOf(request)).catch(() => null)]);
+    }
   } catch (error) {
     if (!(error instanceof ApiRequestError)) throw error;
     // The pages' plans went stale: run the same search again, now.
@@ -67,6 +74,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             </div>
             <Link className="run-link" href={`/ops/runs/${output.requestId}`}>Inspect run <span>{output.requestId.slice(0, 8)}</span></Link>
           </div>
+          {output.page.offset === 0 && (
+            <HappeningStrip
+              items={happeningSoon({ ...happening!, items: (happening?.items ?? []).filter((h) => !output!.items.some((o) => o.id === h.id)) }, Date.parse(output.asOf))}
+              timezone={output.area.timezone}
+              now={Date.parse(output.asOf)}
+            />
+          )}
           <div className="card-grid">
             {output.items.map((item, index) => <PlaceCard key={item.id} item={item} index={output.page.offset + index} />)}
           </div>

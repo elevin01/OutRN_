@@ -40,7 +40,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -53,8 +52,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -66,7 +64,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -78,8 +75,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -112,7 +108,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -126,7 +121,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -138,19 +132,19 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
       "FREE",
       "LANDMARK"
      ],
@@ -164,7 +158,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -198,7 +191,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -211,7 +203,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -219,40 +210,41 @@
     },
     {
      "rank": 4,
-     "name": "Perrotin New York",
-     "category": "gallery",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Petrosino Square",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
       "FREE",
       "LANDMARK"
      ],
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Empirical Nonsense",
+     "rank": 5,
+     "name": "Perrotin New York",
      "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sara D. Roosevelt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -431,7 +423,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -443,8 +434,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -491,8 +481,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -538,8 +527,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -551,32 +539,32 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
+      "FREE",
       "LANDMARK"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Lombardi's Pizza",
-     "category": "restaurant",
+     "name": "Yonah Shimmel Knish Bakery",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -596,8 +584,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -607,8 +594,7 @@
      "category": "market",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
+      "SHORT_TRAVEL"
      ],
      "caveats": []
     },
@@ -632,8 +618,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -651,13 +636,14 @@
     },
     {
      "rank": 6,
-     "name": "Taikii Cafe",
-     "category": "cafe",
+     "name": "Sara D. Roosevelt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -690,7 +676,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -704,7 +689,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -736,14 +720,15 @@
     },
     {
      "rank": 6,
-     "name": "Perrotin New York",
-     "category": "gallery",
+     "name": "Peretz Square",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
      ],
      "caveats": []
     }
@@ -762,8 +747,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -786,8 +770,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -798,8 +781,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -895,15 +877,17 @@
     },
     {
      "rank": 6,
-     "name": "il laboratorio del gelato",
+     "name": "Best Damn Cookies",
      "category": "dessert",
-     "status": "ready",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "LIKELY_OPEN"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
     }
    ],
    "relaxations": []
@@ -1028,7 +1012,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1041,8 +1024,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1066,7 +1048,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -1280,6 +1261,19 @@
     },
     {
      "rank": 3,
+     "name": "Ray's Pizza & Bagel Cafe",
+     "category": "cafe",
+     "status": "check_first",
+     "reasons": [
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 4,
      "name": "Kelly's",
      "category": "bar",
      "status": "ready",
@@ -1291,7 +1285,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
+     "rank": 5,
      "name": "Prince Street Pizza",
      "category": "restaurant",
      "status": "ready",
@@ -1302,19 +1296,8 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Emmy Squared",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Rubirosa",
+     "name": "Emmy Squared",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1338,8 +1321,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1386,8 +1368,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1418,8 +1399,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1430,7 +1410,6 @@
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1454,8 +1433,7 @@
      "category": "cafe",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1466,8 +1444,7 @@
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
@@ -1479,7 +1456,6 @@
      "reasons": [
       "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1555,7 +1531,7 @@
     },
     {
      "rank": 6,
-     "name": "Kiki's",
+     "name": "MayRee",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1581,7 +1557,6 @@
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "LANDMARK"
      ],
      "caveats": []
@@ -1744,7 +1719,6 @@
      "reasons": [
       "TASTE_MATCH",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
@@ -1759,7 +1733,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1773,7 +1746,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1787,7 +1759,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1801,7 +1772,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1815,7 +1785,6 @@
       "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE"
      ],
      "caveats": []
@@ -1932,18 +1901,6 @@
     },
     {
      "rank": 3,
-     "name": "Hauser & Wirth",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "The Grand Delancey",
      "category": "bar",
      "status": "ready",
@@ -1955,7 +1912,7 @@
      "caveats": []
     },
     {
-     "rank": 5,
+     "rank": 4,
      "name": "Soft Swerve",
      "category": "dessert",
      "status": "ready",
@@ -1967,7 +1924,7 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 5,
      "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
@@ -1977,6 +1934,17 @@
       "LANDMARK"
      ],
      "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sweet Pickle Books",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
     }
    ],
    "relaxations": []
@@ -1984,7 +1952,7 @@
   {
    "id": "bronxville-sat-evening",
    "title": "Bronxville, Saturday 7:30pm, 2 hours, driving",
-   "eligible": 79,
+   "eligible": 98,
    "top": [
     {
      "rank": 1,
@@ -2063,24 +2031,37 @@
   {
    "id": "bronxville-sun-family",
    "title": "Bronxville, Sunday noon, 3 hours, family",
-   "eligible": 85,
+   "eligible": 124,
    "top": [
     {
      "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Yonkers Public Library Grinton I. Will Branch",
      "category": "library",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
       "FREE",
       "LANDMARK"
      ],
      "caveats": []
     },
     {
-     "rank": 2,
+     "rank": 3,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
@@ -2092,52 +2073,40 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Slave To the Grind",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 4,
-     "name": "Bronxville Public Library",
-     "category": "library",
+     "name": "Greenburgh Nature Center",
+     "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE",
+      "DAWN_TO_DUSK",
       "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Scalini Osteria",
-     "category": "restaurant",
+     "name": "Van Cortlandt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Dumpling + Noodle",
-     "category": "restaurant",
+     "name": "Orchard Beach",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     }
@@ -2147,10 +2116,23 @@
   {
    "id": "bronxville-mon-after-work",
    "title": "Bronxville, Monday 5:30pm, 90 minutes",
-   "eligible": 76,
+   "eligible": 91,
    "top": [
     {
      "rank": 1,
+     "name": "Hunt's Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Yonkers Public Library Grinton I. Will Branch",
      "category": "library",
      "status": "ready",
@@ -2164,19 +2146,18 @@
      "caveats": []
     },
     {
-     "rank": 2,
+     "rank": 3,
      "name": "Slave To the Grind",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
-     "rank": 3,
+     "rank": 4,
      "name": "Growlers",
      "category": "bar",
      "status": "ready",
@@ -2188,9 +2169,72 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Häagen-Dazs",
-     "category": "dessert",
+     "rank": 5,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "CLOSES_SOON",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-afternoon",
+   "title": "Bronxville, Saturday 1pm, 4 hours, driving",
+   "eligible": 147,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Yonkers Public Library Grinton I. Will Branch",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hunan III",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -2200,23 +2244,214 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Hunan III",
-     "category": "restaurant",
+     "rank": 4,
+     "name": "Orchard Beach",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE"
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Scalini Osteria",
+     "name": "Van Cortlandt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-afternoon-outdoors",
+   "title": "Bronxville, Saturday 1pm, 4 hours, loves the outdoors",
+   "eligible": 147,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Orchard Beach",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Van Cortlandt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Glen Island Park",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-sunset",
+   "title": "Bronxville, Saturday 5pm, 3 hours, driving",
+   "eligible": 119,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Ernie's Wine Bar & Eats",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Whistling Rail",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
@@ -2225,12 +2460,486 @@
    "relaxations": []
   },
   {
-   "id": "bronxville-sat-outdoors-lover",
-   "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
-   "eligible": 85,
+   "id": "white_plains-sat-family",
+   "title": "White Plains, Saturday 1pm, 4 hours, family with a 6-year-old",
+   "eligible": 949,
    "top": [
     {
      "rank": 1,
+     "name": "Rockefeller State Park Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "White Plains Public Library",
+     "category": "library",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Pokémoto",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Transom Bookshop",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Saxon Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-fri-date",
+   "title": "White Plains, Friday 7:30pm, 2½ hours, a date",
+   "eligible": 212,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Mario's Pizza & Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Barnes & Noble",
+     "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Opus Lobby Lounge",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Baskin-Robbins",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "The Cabin Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "The Brazen Fox",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-sun-evening",
+   "title": "White Plains, Sunday 6pm, 3 hours",
+   "eligible": 213,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Pokémoto",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Mario's Pizza & Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Opus Lobby Lounge",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Gong Cha",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Central Seafood",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Redefine Meals",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-wed-lunch",
+   "title": "White Plains, Wednesday 12:30pm, 1 hour, food",
+   "eligible": 20,
+   "top": [
+    {
+     "rank": 1,
+     "name": "The Pamplemousse Project",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Gong Cha",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "City Limits",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Starbucks",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Mandy Bean Specialty Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "The Formosa Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-sat-morning-active",
+   "title": "White Plains, Saturday 9:30am, 3 hours, in the mood for something active",
+   "eligible": 229,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Saxon Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Rockefeller State Park Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Kensico Dam Plaza",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Cranberry Lake Preserve",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Sprain Ridge Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Greenburgh Nature Center",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "white_plains-wed-late",
+   "title": "White Plains, Wednesday 10:30pm, 2 hours",
+   "eligible": 865,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Sundown Saloon",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Buffalo Wild Wings",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Ernie's Wine Bar & Eats",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Bridge View Tavern",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Growlers",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Lake View",
+     "category": "viewpoint",
+     "status": "check_first",
+     "reasons": [
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "bronxville-sat-outdoors-lover",
+   "title": "Bronxville, Saturday 11am, 3 hours, loves the outdoors and good food",
+   "eligible": 124,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
@@ -2243,74 +2952,57 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Scalini Osteria",
-     "category": "restaurant",
+     "rank": 3,
+     "name": "Orchard Beach",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Hunt's Woods Park",
-     "category": "park",
-     "status": "check_first",
-     "reasons": [
-      "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE"
-     ],
-     "caveats": [
-      "HOURS_APPROXIMATE"
-     ]
-    },
-    {
      "rank": 4,
-     "name": "J.C. Fogarty's",
-     "category": "restaurant",
+     "name": "State Line Lookout",
+     "category": "viewpoint",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Yonkers Public Library Grinton I. Will Branch",
-     "category": "library",
+     "name": "Greenburgh Nature Center",
+     "category": "park",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "TASTE_MATCH",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Dumpling + Noodle",
-     "category": "restaurant",
+     "name": "Van Cortlandt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     }

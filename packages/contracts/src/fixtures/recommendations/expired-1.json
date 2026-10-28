@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000038",
+  "requestId": "00000000-0000-4000-8000-00000000003d",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -32,7 +32,8 @@
     "originIsDefault": true,
     "backBy": null,
     "visitStyle": "dine_in",
-    "taste": []
+    "taste": [],
+    "eventsOnly": false
   },
   "items": [
     {
@@ -54,6 +55,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "drinks"
       ],
       "status": "ready",
       "callToAction": "go",
@@ -176,6 +180,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "books"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {
@@ -296,6 +303,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "food"
       ],
       "status": "ready",
       "callToAction": "go",
@@ -420,7 +430,7 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM4IiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDNkIiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

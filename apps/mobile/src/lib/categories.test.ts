@@ -9,6 +9,8 @@ describe("category shortcuts", () => {
     for (const { id } of ALL) expect(categoryIcon(id), id).not.toBe("map-marker-outline");
     expect(categoryIcon("something-new")).toBe("map-marker-outline");
     expect(categoryIcon("__proto__")).toBe("map-marker-outline");
+    // A pop-up's own site is a "Happening".
+    expect(categoryIcon("event_site")).toBe("calendar-star");
   });
 
   it("show only what the area offers, and hide a shortcut with nothing in it", () => {

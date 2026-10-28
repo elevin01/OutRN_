@@ -1,4 +1,5 @@
 import { RecommendationRequest, RecommendationResponse, type RecommendationItem, type RecommendationsBody, type ResolvedRequest } from "@outrn/contracts";
+import { destinationMaxTravel, minutesBetween } from "@outrn/core";
 import { findArea, type Queryable, type ServiceAreaRow } from "@outrn/db";
 import { loadCandidates, loadPolicies, MAX_OFFSET, WEATHER_SOURCE, persistRun, pruneRuns, recommend, type Candidate, type Shortlist } from "@outrn/engine";
 import { PAGE_SIZE, SNAPSHOT_RETENTION_HOURS, SNAPSHOT_TTL_MINUTES } from "../config.js";
@@ -27,7 +28,7 @@ export async function runEngine(q: Queryable, request: RecommendationRequest, op
   const { ctx, area } = resolved;
   const started = Date.now();
   const windowEnd = new Date(ctx.now.getTime() + request.windowMinutes * 60_000);
-  const [candidates, policies] = await Promise.all([loadCandidates(q, ctx.origin, ctx.mode, ctx.now, windowEnd, ctx.maxTravelMinutes, ctx.parkingBufferMinutes), loadPolicies(q)]);
+  const [candidates, policies] = await Promise.all([loadCandidates(q, ctx.origin, ctx.mode, ctx.now, windowEnd, ctx.maxTravelMinutes, ctx.parkingBufferMinutes, ctx.maxTravelMinutes ?? destinationMaxTravel(ctx.mode, minutesBetween(ctx.now, windowEnd))), loadPolicies(q)]);
   const shortlist = recommend(candidates, ctx, policies, { size: PAGE_SIZE, offset: 0 });
   const durationMs = Date.now() - started;
   const runId = opts.persist === false ? null : await persistRun(q, area.id, ctx, shortlist, durationMs);
@@ -147,9 +148,9 @@ export async function search(q: Queryable, request: RecommendationRequest, opts:
 /**
  * Fields later versions added to items, with what an older search computed for them: none. A 1.2
  * item has no conditions; a 1.3 item names no parking; a 1.4 item has no photos; a 1.5 item lists no
- * cuisines; a 1.6 item lists no diets or features.
+ * cuisines; a 1.6 item lists no diets or features; a 1.8 item lists no interests.
  */
-const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [], cuisines: [], diets: [], features: [] };
+const ITEM_DEFAULTS: Record<string, unknown> = { conditions: [], parking: null, photos: [], cuisines: [], diets: [], features: [], interests: [] };
 function upgradeItems(items: unknown): unknown {
   if (!Array.isArray(items)) return items;
   return items.map((i: unknown) => (i && typeof i === "object" ? { ...ITEM_DEFAULTS, ...i } : i));
@@ -172,6 +173,8 @@ async function upgradeResolved(q: Queryable, stored: unknown): Promise<unknown> 
   if (!("features" in r)) r = { ...r, features: [] };
   // Before 1.8 a search had no taste.
   if (!("taste" in r)) r = { ...r, taste: [] };
+  // Before 1.10 a search could not ask for events only.
+  if (!("eventsOnly" in r)) r = { ...r, eventsOnly: false };
   return r;
 }
 

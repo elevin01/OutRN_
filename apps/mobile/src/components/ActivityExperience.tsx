@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   Linking,
   Pressable,
@@ -60,6 +67,7 @@ export function ActivityExperience({
   onPrevious,
   onRefresh,
   onBack,
+  banner,
 }: {
   placeId: string;
   item?: RecommendationItem;
@@ -69,18 +77,22 @@ export function ActivityExperience({
   onPrevious?: () => void;
   onRefresh?: () => void;
   onBack?: () => void;
+  /** Under the category shortcuts: "Happening soon" on the Now deck. */
+  banner?: ReactNode;
 }) {
   const {
     saved,
     toggleSaved,
     hydrated,
     storageError,
+    tasteError,
     setOuting,
     query,
     search,
     initialize,
     areas,
     busy,
+    learn,
   } = useApp();
   const [resource, setResource] = useState<{
     id: string;
@@ -214,6 +226,7 @@ export function ActivityExperience({
       expiresAt: response.expiresAt,
       arrived: false,
     });
+    learn(item, "go");
     router.push("/outing");
   };
   const layout = (e: LayoutChangeEvent) =>
@@ -262,19 +275,31 @@ export function ActivityExperience({
             timezone={zone}
             photos={photos}
             fallback={fallback}
-            strip={strip}
+            strip={
+              strip || banner ? (
+                <>
+                  {strip}
+                  {banner}
+                </>
+              ) : undefined
+            }
             height={viewport}
             saved={saved.some((p) => p.id === placeId)}
             saveDisabled={!hydrated || !category}
             mapsDisabled={!directions || !safeExternalUrl(directions)}
-            onSave={() =>
-              category &&
+            onSave={() => {
+              if (!category) return;
+              if (item)
+                learn(
+                  item,
+                  saved.some((p) => p.id === placeId) ? "unsave" : "save",
+                );
               toggleSaved({
                 id: placeId,
                 name: place?.name || name,
                 category: category.id,
-              })
-            }
+              });
+            }}
             onMaps={maps}
             onNext={onNext}
             onBack={onBack}
@@ -301,8 +326,8 @@ export function ActivityExperience({
               <Copy style={styles.label}>Sources</Copy>
             </Pressable>
           </View>
-          {storageError && (
-            <Copy accessibilityRole="alert">{storageError}</Copy>
+          {(storageError || tasteError) && (
+            <Copy accessibilityRole="alert">{storageError ?? tasteError}</Copy>
           )}
           {linkError && (
             <Copy accessibilityRole="alert">
@@ -551,6 +576,18 @@ export function ActivityExperience({
               label="See the next activity"
               icon="arrow-right"
               onPress={onNext}
+            />
+          )}
+          {onNext && item && (
+            <Button
+              secondary
+              label="Not for me"
+              icon="thumbs-down"
+              onPress={() => {
+                // Less of this kind of thing, and not this one again this session.
+                learn(item, "not_for_me");
+                onNext();
+              }}
             />
           )}
           {onPrevious && (

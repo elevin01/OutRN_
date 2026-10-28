@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000030",
+  "requestId": "00000000-0000-4000-8000-000000000036",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -34,13 +34,14 @@
     "originIsDefault": true,
     "backBy": null,
     "visitStyle": "dine_in",
-    "taste": []
+    "taste": [],
+    "eventsOnly": false
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000031",
+      "id": "00000000-0000-4000-8000-000000000037",
       "kind": "event",
-      "placeId": "00000000-0000-4000-8000-000000000032",
+      "placeId": "00000000-0000-4000-8000-000000000038",
       "name": "The Tenement Follies",
       "placeName": "Delancey Playhouse",
       "photos": [],
@@ -52,6 +53,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "theatre"
+      ],
       "status": "check_first",
       "callToAction": "book",
       "location": {
@@ -162,9 +166,9 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000033",
+      "id": "00000000-0000-4000-8000-000000000039",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000033",
+      "placeId": "00000000-0000-4000-8000-000000000039",
       "name": "Broome Playhouse",
       "placeName": "Broome Playhouse",
       "photos": [],
@@ -176,6 +180,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "theatre"
+      ],
       "status": "check_first",
       "callToAction": "book",
       "location": {

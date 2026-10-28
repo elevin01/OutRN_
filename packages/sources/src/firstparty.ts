@@ -1,13 +1,14 @@
 import { ownValue, type Interest, type WeeklyIntervals } from "@outrn/core";
-import { guardedFetch } from "./fetch.js";
+import { guardedFetch, type RequestGate } from "./fetch.js";
+import { hoursFromText, hoursLinks, microdataHours, visibleText } from "./sitehours.js";
 
 /**
- * First-party extraction, rung 1 of the ladder: schema.org JSON-LD published by the venue
- * itself. No LLM, no prose parsing. Every extracted fact carries the JSON it came from as
- * evidence so a reviewer can check it. Raw HTML is never retained.
+ * First-party extraction from a venue's own page. Rung 1: schema.org JSON-LD. Rung 2, for opening
+ * hours only: microdata, then hours written out in the page's text, read strictly (see sitehours).
+ * No LLM. Every extracted fact carries what it was read from as evidence so a reviewer can check
+ * it. Raw HTML is never retained.
  *
- * Rungs 2 (site-specific parser) and 3 (LLM over bounded text) plug into the same
- * ExtractedFact shape; they are not implemented here.
+ * Rung 3 (LLM over bounded text) would plug into the same ExtractedFact shape; it is not implemented.
  */
 
 export type ExtractionStatus = "stated" | "not_stated" | "ambiguous";
@@ -17,6 +18,8 @@ export interface ExtractedFact {
   value: unknown;
   evidence: string;
   status: ExtractionStatus;
+  /** How it was read: structured data the venue published for machines, or its words for people. */
+  method?: "jsonld" | "microdata" | "text";
 }
 
 /** What schema.org says an event is, as interests: a MusicEvent is live music. Event, SocialEvent and the like say nothing. */
@@ -56,6 +59,8 @@ export interface FirstPartyExtraction {
   /** JSON-LD blocks found (for diagnostics) */
   blocks: number;
   types: string[];
+  /** Links to where the site states its hours, best first (only when this page states none). */
+  hoursLinks?: string[];
 }
 
 const DAY_INDEX: Record<string, number> = {
@@ -179,6 +184,24 @@ function priceFromOffers(offers: unknown): ExtractedEvent["price"] {
   return min === 0 && max === 0 ? { currency, free: true } : { min, max: max ?? min, currency };
 }
 
+/**
+ * schema.org's openingHours text as OSM's opening_hours syntax, which it nearly is: sites write
+ * "Mo 09:00 - 23:00 Tu 09:00 - 23:00" (no separator between days, spaces around the dash). Whether
+ * the result reads is the caller's to check.
+ */
+export function osmHoursFromSchema(s: string): string {
+  // Spaces first: `\s*-` over a long run of spaces is tried from each of them (quadratic).
+  return s
+    .replace(/\s+/g, " ")
+    .replace(/ ?[-–] ?(?=\d)/g, "-")
+    .replace(/(\d{2}:\d{2}) (?=(?:Mo|Tu|We|Th|Fr|Sa|Su|PH)\b)/g, "$1; ")
+    .trim();
+}
+
+/** The most events one page may add, and the longest title kept: a page is untrusted and may list thousands. */
+const MAX_EVENTS_PER_PAGE = 100;
+const MAX_TITLE = 200;
+
 export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Date): FirstPartyExtraction {
   const nodes = flattenGraph(blocks);
   const facts: ExtractedFact[] = [];
@@ -192,10 +215,11 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       if (typeof n["telephone"] === "string") facts.push({ attribute: "phone", value: { value: n["telephone"] }, evidence: `"telephone": ${JSON.stringify(n["telephone"])}`, status: "stated" });
       const spec = n["openingHoursSpecification"];
       const parsed = spec ? openingHoursFromSpec(spec) : null;
-      if (parsed) facts.push({ attribute: "opening_hours", value: { weekly: parsed.weekly }, evidence: parsed.evidence, status: "stated" });
+      if (parsed) facts.push({ attribute: "opening_hours", value: { weekly: parsed.weekly }, evidence: parsed.evidence, status: "stated", method: "jsonld" });
       else if (typeof n["openingHours"] === "string" || Array.isArray(n["openingHours"])) {
-        const s = Array.isArray(n["openingHours"]) ? (n["openingHours"] as unknown[]).filter((x) => typeof x === "string").join("; ") : (n["openingHours"] as string);
-        facts.push({ attribute: "opening_hours", value: { osm: s }, evidence: `"openingHours": ${JSON.stringify(s)}`, status: "stated" });
+        const s = (Array.isArray(n["openingHours"]) ? (n["openingHours"] as unknown[]).filter((x) => typeof x === "string").join("; ") : (n["openingHours"] as string)).trim();
+        // An empty value (a site template's placeholder) states nothing, and a page of text is no hours.
+        if (/\d/.test(s) && s.length <= 1000) facts.push({ attribute: "opening_hours", value: { osm: osmHoursFromSchema(s) }, evidence: `"openingHours": ${JSON.stringify(s)}`, status: "stated", method: "jsonld" });
       }
       if (typeof n["priceRange"] === "string") {
         const tier = (n["priceRange"].match(/\$/g) ?? []).length;
@@ -214,7 +238,7 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
         facts.push({ attribute: "admission", value: { requirement: accepts ? "reservation_available" : "walk_in" }, evidence: `"acceptsReservations": ${JSON.stringify(v)}`, status: "stated" });
       }
     }
-    if (ts.some((t) => t === "Event" || t.endsWith("Event"))) {
+    if (ts.some((t) => t === "Event" || t.endsWith("Event")) && events.length < MAX_EVENTS_PER_PAGE) {
       const start = typeof n["startDate"] === "string" ? new Date(n["startDate"]) : null;
       if (!start || Number.isNaN(start.getTime())) continue;
       const end = typeof n["endDate"] === "string" ? new Date(n["endDate"]) : null;
@@ -223,7 +247,7 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       const offers = n["offers"];
       const soldOut = Array.isArray(offers) ? offers.some((o) => typeof (o as Record<string, unknown>)?.["availability"] === "string" && String((o as Record<string, unknown>)["availability"]).endsWith("SoldOut")) : offers && typeof offers === "object" && String((offers as Record<string, unknown>)["availability"] ?? "").endsWith("SoldOut");
       events.push({
-        title: typeof n["name"] === "string" ? n["name"] : "(untitled event)",
+        title: (typeof n["name"] === "string" ? n["name"].replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, MAX_TITLE) : "") || "(untitled event)",
         kinds: [...new Set(ts.map((t) => ownValue(EVENT_TYPE_INTERESTS, t)).filter((k): k is Interest => k !== undefined))].slice(0, 4),
         start,
         end: end && !Number.isNaN(end.getTime()) ? end : null,
@@ -237,15 +261,44 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
   return { url, fetchedAt, facts, events, blocks: blocks.length, types: [...types] };
 }
 
-export async function fetchAndExtract(url: string): Promise<FirstPartyExtraction> {
+/**
+ * Everything a venue's page states: its JSON-LD; and, when that gives no hours, the hours in its
+ * microdata or written in its text; and, when the page states none at all, where on the site it
+ * might (hoursLinks).
+ */
+export function extractPage(html: string, url: string, fetchedAt: Date, opts: { text?: boolean } = {}): FirstPartyExtraction {
+  const x = extractFromJsonLd(extractJsonLdBlocks(html), url, fetchedAt);
+  if (x.facts.some((f) => f.attribute === "opening_hours")) return x;
+  const micro = microdataHours(html);
+  if (micro.length) {
+    const osm = osmHoursFromSchema(micro.join("; "));
+    x.facts.push({ attribute: "opening_hours", value: { osm }, evidence: `itemprop="openingHours": ${JSON.stringify(osm)}`, status: "stated", method: "microdata" });
+    return x;
+  }
+  // A page's own words for its hours only where they are its venue's (not a town's site, or a chain's).
+  const visible = opts.text === false ? null : visibleText(html);
+  const text = visible ? hoursFromText(visible.lines, visible) : null;
+  if (text) {
+    x.facts.push({ attribute: "opening_hours", value: { weekly: text.weekly }, evidence: `page text: ${JSON.stringify(text.evidence)}`, status: "stated", method: "text" });
+    return x;
+  }
+  return { ...x, hoursLinks: hoursLinks(html, url).slice(0, 3) };
+}
+
+/** A venue page: same-host pacing (throttleKey) is the caller's, at least `minIntervalMs` apart. */
+export async function fetchAndExtract(url: string, opts: { throttleKey?: string; minIntervalMs?: number; text?: boolean; beforeRequest?: RequestGate } = {}): Promise<FirstPartyExtraction> {
   const res = await guardedFetch(url, {
     sourceId: "firstparty",
+    ...(opts.throttleKey ? { throttleKey: opts.throttleKey } : {}),
+    ...(opts.beforeRequest ? { beforeRequest: opts.beforeRequest } : {}),
     accept: "text/html, application/xhtml+xml",
     allowedContentTypes: ["text/html", "application/xhtml+xml"],
     maxBytes: 3 * 1024 * 1024,
-    minIntervalMs: 5000,
+    minIntervalMs: opts.minIntervalMs ?? 5000,
     retries: 1,
     timeoutMs: 20_000,
+    // A site moving between its www. and bare name is the same site; anywhere else is the caller's to follow.
+    sameSiteRedirects: true,
   });
-  return extractFromJsonLd(extractJsonLdBlocks(res.text), res.url, res.fetchedAt);
+  return extractPage(res.text, res.url, res.fetchedAt, opts.text === undefined ? {} : { text: opts.text });
 }

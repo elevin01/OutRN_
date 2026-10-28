@@ -1,17 +1,17 @@
-import { ACTIVITY_OF_CATEGORY, cuisineGroups, ownValue } from "@outrn/core";
+import { ACTIVITY_OF_CATEGORY, cuisineGroups, haversineMetres, matchKey, ownValue, type LatLon } from "@outrn/core";
 import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
-import { compareEvaluations, merit } from "./score.js";
+import { compareEvaluations, hasAgeDoubt, merit, standing } from "./score.js";
 import { TASTE } from "./taste.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
 /**
  * Diversity and the fewer-than-three rule.
  *
- * Class beats diversity: a Ready option is never displaced by a Check-first one just because it
- * would add a new activity type. Within a class, a broad request prefers distinct activity types
- * first, then fills from the same class, where a repeat of what was just shown (the same kind of
- * place, the same cuisine) costs a little: a slightly lower-scored Thai place comes before a third
- * Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
+ * Standing beats diversity: a Ready option (or a likely-open one, see standing) is never displaced
+ * by a Check-first one just because it would add a new activity type. Within a standing, a broad
+ * request prefers distinct activity types first, then fills from the same standing, where a repeat
+ * of what was just shown (the same kind of place, the same cuisine) costs a little: a slightly
+ * lower-scored Thai place comes before a third Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
  * a cuisine): respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
  * A child venue is not shown beside its parent. Never fill a third slot by silently relaxing a
  * constraint; name the relaxation instead.
@@ -77,11 +77,24 @@ export const FIRST_PAGE = 3;
 function keepLovedOnFirstPage(ordered: Evaluation[]): void {
   const loved = (e: Evaluation) => (e.scores.taste ?? 0) >= TASTE.loved;
   if (ordered.length <= FIRST_PAGE || ordered.slice(0, FIRST_PAGE).some(loved)) return;
-  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off");
+  // Nor one the party may not be let into (a 16+ arcade, children's ages unknown): a love does not lift that.
+  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off" && !hasAgeDoubt(e));
   if (i < 0) return;
   const [e] = ordered.splice(i, 1);
   ordered.splice(FIRST_PAGE - 1, 0, e!);
 }
+
+/**
+ * Two places of one name this near are one place to whoever reads the list: OSM's point for a park
+ * and its outline, two points for one shop, Overture's copy of a place OSM has under another
+ * category, two branches of a chain across the street. The list shows it once. Grounds spread
+ * wider: a preserve's parts, or its entrance and the middle of its outline, are a few hundred
+ * metres apart (Marshlands Conservancy, Rockefeller State Park Preserve).
+ */
+export const SAME_PLACE_M = 150;
+export const SAME_GROUNDS_M = 1000;
+const GROUNDS: ReadonlySet<string> = new Set(["park", "garden", "waterfront", "attraction"]);
+const sameWithin = (e: Evaluation) => (GROUNDS.has(e.candidate.category) ? SAME_GROUNDS_M : SAME_PLACE_M);
 
 /** Every eligible candidate in display order. Pages ("More options") are slices of this. */
 export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluation[] {
@@ -91,6 +104,18 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   const taken = new Set<Evaluation>();
   const usedVenues = new Set<string>();
   const usedActivities = new Set<string>();
+  // Where each name already shown is (places, not events: an event's title is not a place's name).
+  const shownNames = new Map<string, { point: LatLon; within: number }[]>();
+  const nameKeys = new Map<Evaluation, string>();
+  const nameKey = (e: Evaluation) => {
+    let k = nameKeys.get(e);
+    if (k === undefined) nameKeys.set(e, (k = e.candidate.kind === "venue" ? matchKey(e.candidate.name) : ""));
+    return k;
+  };
+  const shownAlready = (e: Evaluation) => {
+    const key = nameKey(e);
+    return key !== "" && (shownNames.get(key)?.some((p) => haversineMetres(p.point, e.candidate.point) <= Math.max(p.within, sameWithin(e))) ?? false);
+  };
   // A museum café is not a destination while the museum itself qualifies: hold children back when their parent is eligible.
   const eligibleVenueIds = new Set(eligible.map((e) => e.candidate.venueId));
 
@@ -104,18 +129,21 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   // first, then the rest by merit (which weighs the match). Without a like in that class, variety
   // is across everything they don't skip, as without a taste.
   const likes = (e: Evaluation) => (e.scores.taste ?? 0.5) > 0.5;
-  const likedIn = new Set(eligible.filter(likes).map((e) => e.class));
+  const likedIn = new Set(eligible.filter(likes).map(standing));
   const admissible = (e: Evaluation, pass: Pass): boolean => {
-    if ((pass.cls !== "any" && e.class !== pass.cls) || taken.has(e)) return false;
+    if ((pass.cls !== "any" && standing(e) !== pass.cls) || taken.has(e)) return false;
+    // A doubt the party may go in at all (a bar with a child along) waits for the last pass: no
+    // variety, no class pass, no demotion of the rest puts it before what they can surely do.
+    if (pass.cls !== "any" && hasAgeDoubt(e)) return false;
     const parent = e.candidate.parentVenueId;
-    if (usedVenues.has(e.candidate.venueId)) return false;
+    if (usedVenues.has(e.candidate.venueId) || shownAlready(e)) return false;
     if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;
     if (pass.diverse && usedActivities.has(ACTIVITY_OF_CATEGORY[e.candidate.category])) return false;
     // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am), or what this
     // person skips: it waits for its score.
     if (pass.diverse && e.dayPart === "off") return false;
     if (pass.diverse && (e.scores.taste ?? 0.5) < 0.5) return false;
-    if (pass.diverse && likedIn.has(e.class) && !likes(e)) return false;
+    if (pass.diverse && likedIn.has(standing(e)) && !likes(e)) return false;
     return true;
   };
   const take = (e: Evaluation) => {
@@ -124,6 +152,8 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     usedVenues.add(e.candidate.venueId);
     if (e.candidate.parentVenueId) usedVenues.add(e.candidate.parentVenueId);
     usedActivities.add(ACTIVITY_OF_CATEGORY[e.candidate.category]);
+    const key = nameKey(e);
+    if (key !== "") shownNames.set(key, [...(shownNames.get(key) ?? []), { point: e.candidate.point, within: sameWithin(e) }]);
   };
 
   for (const pass of PASSES) {
@@ -143,7 +173,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
       let best: Evaluation | null = null;
       let bestScore = Number.NEGATIVE_INFINITY;
       for (const e of eligible) {
-        if (e.class !== pass.cls) continue;
+        if (standing(e) !== pass.cls) continue;
         const m = merit(e);
         if (m <= bestScore) break;
         if (!admissible(e, pass)) continue;

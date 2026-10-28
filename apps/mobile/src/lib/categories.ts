@@ -29,6 +29,7 @@ export type CategoryIcon =
   | "library"
   | "gamepad-variant-outline"
   | "run"
+  | "calendar-star"
   | "map-marker-outline";
 
 export interface CategoryGroup {
@@ -75,6 +76,8 @@ const ICONS: Readonly<Record<string, CategoryIcon>> = {
   bowling: "bowling",
   arcade: "gamepad-variant-outline",
   activity: "run",
+  // A pop-up's own site (a band on the lawn, a street fair): shown only through what is happening there.
+  event_site: "calendar-star",
 };
 
 /** The icon for a category id; a map pin for anything unknown. */

@@ -1,14 +1,26 @@
-import type { AreasResponse, Budget, RecommendationRequest, ResolvedRequest } from "@outrn/contracts";
+import type { AreasResponse, Budget, RecommendationRequest, ResolvedRequest, TasteWeight } from "@outrn/contracts";
 import { integer, many, one, type Search } from "./query";
 
 /** Search form (URL query) ⇄ API request. Option ids come from GET /v1/areas. */
 
 export type FormValues = Record<string, string | undefined>;
 
+/**
+ * A like or a skip ticked on the web form, as a taste for this search. The apps keep a taste on the
+ * device and learn it; the web form only says what you like now.
+ */
+export const FORM_TASTE_WEIGHT = 0.8;
+
 /** Ids the area offers, once each, in the order asked, at most `max`: anything else in a URL is dropped. */
 function offeredIds(values: string[], offered: readonly { id: string }[], max: number): string[] {
   const ids = new Set(offered.map((o) => o.id));
   return [...new Set(values)].filter((v) => ids.has(v)).slice(0, max);
+}
+
+/** The taste's interests whose weight passes `test`, comma-joined, or nothing. */
+function idsWhere(taste: readonly TasteWeight[] | undefined, test: (weight: number) => boolean): string | undefined {
+  const ids = (taste ?? []).filter((t) => test(t.weight)).map((t) => t.interest);
+  return ids.length ? ids.join(",") : undefined;
 }
 
 function sameBudget(a: Budget, b: Budget): boolean {
@@ -43,6 +55,11 @@ export function requestFromQuery(query: Search, meta: AreasResponse): Recommenda
   if (diets.length) request.diets = diets;
   const features = offeredIds(many(query["features"]), filters.features, limits.maxFeatures);
   if (features.length) request.features = features;
+  // What you like ("likes=art,live_music"), and what isn't for you ("skips=drinks"): a like wins.
+  const likes = offeredIds(many(query["likes"]), filters.interests, limits.maxTaste);
+  const skips = offeredIds(many(query["skips"]), filters.interests, limits.maxTaste).filter((id) => !likes.includes(id));
+  const taste = [...likes.map((interest) => ({ interest, weight: FORM_TASTE_WEIGHT })), ...skips.map((interest) => ({ interest, weight: -FORM_TASTE_WEIGHT }))];
+  if (taste.length) request.taste = taste.slice(0, limits.maxTaste);
   if (youngest) request.youngestAge = integer(youngest, 0, limits.youngestAge.min, limits.youngestAge.max);
   const at = one(query["at"]);
   if (at) {
@@ -67,6 +84,8 @@ export function formFromResolved(r: ResolvedRequest, meta: AreasResponse): FormV
     cuisines: r.cuisines.length > 1 ? r.cuisines.join(",") : undefined,
     diets: r.diets.length ? r.diets.join(",") : undefined,
     features: r.features.length ? r.features.join(",") : undefined,
+    likes: idsWhere(r.taste, (w) => w > 0),
+    skips: idsWhere(r.taste, (w) => w < 0),
     youngest: r.youngestAge === null ? undefined : String(r.youngestAge),
     at: r.atIsExplicit ? r.at : undefined,
   };
@@ -86,6 +105,10 @@ export function hrefForRequest(r: RecommendationRequest, meta: AreasResponse, ba
   else if (r.cuisines?.length) params.set("cuisines", r.cuisines.join(","));
   if (r.diets?.length) params.set("diets", r.diets.join(","));
   if (r.features?.length) params.set("features", r.features.join(","));
+  const likes = idsWhere(r.taste, (w) => w > 0);
+  const skips = idsWhere(r.taste, (w) => w < 0);
+  if (likes) params.set("likes", likes);
+  if (skips) params.set("skips", skips);
   if (r.youngestAge !== undefined) params.set("youngest", String(r.youngestAge));
   if (r.at) params.set("at", r.at);
   return `${base}?${params.toString()}`;

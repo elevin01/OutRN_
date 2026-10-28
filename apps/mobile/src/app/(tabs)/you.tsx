@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useApp } from "../../state/app";
+import { pickOf } from "../../lib/taste";
 import {
   Button,
   Copy,
@@ -11,7 +12,10 @@ import {
   s,
 } from "../../components/ui";
 export default function YouScreen() {
-  const { areas, query, outing } = useApp();
+  const { areas, query, outing, taste } = useApp();
+  const likes = (areas?.filters.interests ?? []).filter(
+    (i) => pickOf(taste, i.id) === "like",
+  );
   return (
     <Screen>
       <Heading>You</Heading>
@@ -34,8 +38,22 @@ export default function YouScreen() {
           onPress={() => router.push("/areas")}
         />
       </Panel>
+      <Panel>
+        <Icon name="heart" />
+        <Eyebrow>What you like</Eyebrow>
+        <Copy>
+          {likes.length
+            ? likes.map((i) => i.label).join(", ")
+            : "Tell us what you like doing, and it comes first."}
+        </Copy>
+        <Button
+          label="Your interests"
+          secondary
+          onPress={() => router.push("/interests")}
+        />
+      </Panel>
       <Button
-        label="Time, budget & interests"
+        label="Time, budget & mood"
         secondary
         icon="sliders"
         onPress={() => router.push("/filters")}
@@ -44,8 +62,10 @@ export default function YouScreen() {
         <Icon name="shield" />
         <Copy style={{ fontWeight: "700" }}>On this device</Copy>
         <Copy>
-          No account needed. Saved places stay on this device. OutRN doesn’t
-          request or track your device location.
+          No account needed. Saved places and your interests are saved on this
+          device. Searches send your interests to OutRN, which also stores them
+          with your search results. They aren’t linked to an account. OutRN
+          doesn’t request or track your device location.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>

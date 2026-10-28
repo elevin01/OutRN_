@@ -113,10 +113,21 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
     expect(r.out).toContain("API STARTED");
   });
 
-  it("fetches no weather when no area is served", () => {
+  it("fetches each served area's NYC Parks events after the weather, and serves an area without them when they can't be fetched", () => {
+    const r = real({ STUB_FAIL_EVENTS: "bronxville" });
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/== events \(NYC Parks\)\n +bronxville: not refreshed: error: fetch failed for data\.cityofnewyork\.us/);
+    expect(r.out).toMatch(/ +les: 94 of 94 written/);
+    const calls = r.pnpmCalls.map((c) => c.split(" | ")[0]);
+    expect(calls.indexOf("pnpm -s outrn ingest nyc-parks --area les")).toBeGreaterThan(calls.indexOf("pnpm -s outrn weather refresh"));
+    expect(r.out).toMatch(/Serving bronxville les on/);
+  });
+
+  it("fetches no weather or events when no area is served", () => {
     const r = real({ STUB_NO_VENUES: "les bronxville" });
     expect(r.status, r.out).toBe(0);
     expect(r.log).not.toMatch(/weather refresh/);
+    expect(r.log).not.toMatch(/nyc-parks/);
     expect(r.out).toMatch(/Serving no areas/);
   });
 
@@ -145,6 +156,25 @@ describe.each(SHELLS)("pnpm real (%s)", (shell) => {
     const r = real();
     expect(r.status).not.toBe(0);
     expect(r.out).toMatch(/les: fixtures\/live\/les-overture\.json did not replay/);
+    expect(r.out).not.toContain("Serving");
+    expect(r.out).not.toContain("API STARTED");
+  });
+
+  it("replays an area's destinations after its places, never as an area of its own", () => {
+    put("les-destinations.json", '{"outrn_capture":"overture-destinations"}');
+    const r = real();
+    expect(r.status, r.out).toBe(0);
+    expect(r.out).toMatch(/venues +60 added/);
+    expect(r.log).toMatch(/ingest destinations --area les --from-file fixtures\/live\/les-destinations\.json/);
+    expect(r.log).not.toMatch(/slug=les-destinations/);
+    expect(r.out).toMatch(/Serving bronxville les on/);
+  });
+
+  it("stops before serving anything when a saved destinations read fails to replay", () => {
+    put("les-destinations.json", "not json");
+    const r = real();
+    expect(r.status).not.toBe(0);
+    expect(r.out).toMatch(/les: fixtures\/live\/les-destinations\.json did not replay/);
     expect(r.out).not.toContain("Serving");
     expect(r.out).not.toContain("API STARTED");
   });
@@ -229,15 +259,27 @@ describe.each(SHELLS)("pnpm capture (%s)", (shell) => {
     expect(r.out).toMatch(/Failed: les \(overture\)/);
   });
 
-  it("replaces all three files when every step succeeded, and only for the areas that did", () => {
+  it("keeps the previous set when the destinations read fails, after places and Overture succeeded", () => {
+    const r = capture(["les"], { STUB_FAIL_DESTINATIONS: "les" });
+    expect(r.status).not.toBe(0);
+    expect(unchanged()).toBe(true);
+    expect(existsSync(live("les-destinations.json"))).toBe(false);
+    expect(r.log).toMatch(/ingest destinations --area les --save .*\/fixtures\/live\/\.staging\.[^/]+\/les-destinations\.json/);
+    expect(staging()).toEqual([]);
+    expect(r.out).toMatch(/Failed: les \(destinations\)/);
+  });
+
+  it("replaces all four files when every step succeeded, and only for the areas that did", () => {
     const r = capture(["les", "bronxville"], { STUB_FAIL_OSM: "bronxville" });
     expect(r.status).not.toBe(0);
     expect(bytes("les.json").toString()).toBe('{"osm":"new les"}');
     expect(bytes("les-photos.json").toString()).toBe('{"photos":"new les"}');
     expect(bytes("les-overture.json").toString()).toBe('{"outrn_capture":"overture","area":"new les"}');
+    expect(bytes("les-destinations.json").toString()).toBe('{"outrn_capture":"overture-destinations","area":"new les"}');
     expect(existsSync(live("bronxville.json"))).toBe(false);
     expect(existsSync(live("bronxville-overture.json"))).toBe(false);
     expect(existsSync(live("bronxville-photos.json"))).toBe(false);
+    expect(existsSync(live("bronxville-destinations.json"))).toBe(false);
     expect(staging()).toEqual([]);
     expect(r.out).toMatch(/Run them again: pnpm capture bronxville$/m);
 

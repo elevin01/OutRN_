@@ -60,6 +60,7 @@ export function SearchForm({ meta, defaults = {}, ops = false }: Props) {
           {filters.categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
       </label>
+      <Choices legend="What you like" name="likes" options={filters.interests} checked={defaults["likes"]} />
       <Choices legend="Diets (all served)" name="diets" options={filters.diets} checked={defaults["diets"]} />
       <Choices legend="Must-haves" name="features" options={filters.features} checked={defaults["features"]} />
       {ops && (

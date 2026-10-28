@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000002c",
+  "requestId": "00000000-0000-4000-8000-000000000033",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -28,6 +28,7 @@
       "outdoor_seating"
     ],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
@@ -80,7 +81,10 @@
           "label": "Wheelchair accessible"
         }
       ],
-      "id": "00000000-0000-4000-8000-00000000002d",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000015",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -141,7 +145,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000002d",
+      "placeId": "00000000-0000-4000-8000-000000000015",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -195,7 +199,10 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-00000000002e",
+      "interests": [
+        "cafes"
+      ],
+      "id": "00000000-0000-4000-8000-000000000034",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -256,7 +263,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000002e",
+      "placeId": "00000000-0000-4000-8000-000000000034",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -307,7 +314,10 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-00000000002f",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000035",
       "copy": {
         "action": "Book",
         "caveat": "Check first: admission not confirmed",
@@ -375,7 +385,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-00000000002f",
+      "placeId": "00000000-0000-4000-8000-000000000035",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -412,7 +422,7 @@
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [

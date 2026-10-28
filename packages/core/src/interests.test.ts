@@ -23,6 +23,8 @@ describe("interests", () => {
   it("read a subtype when it says more than the category, and never a prototype key", () => {
     expect(interestsOf({ category: "activity", subtype: "climbing" })).toEqual({ sports: 1 });
     expect(interestsOf({ category: "attraction", subtype: "zoo" })).toEqual({ outdoors: 1, museums: 0.5 });
+    // A casino is a night out first: an "active" mood (games) only half matches it.
+    expect(interestsOf({ category: "activity", subtype: "casino" })).toEqual({ nightlife: 1, games: 0.5 });
     for (const subtype of ["constructor", "__proto__", "toString", "valueOf"]) expect(interestsOf({ category: "activity", subtype })).toEqual({ games: 1 });
   });
 

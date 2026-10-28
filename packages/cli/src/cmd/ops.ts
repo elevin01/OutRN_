@@ -3,7 +3,7 @@ import { CONFIRMATION_MAX_AGE_DAYS, PROGRAMME_CATEGORIES } from "@outrn/core";
 import { audit, getDb } from "@outrn/db";
 import { materializeSubjects } from "@outrn/facts";
 import { confirmSplit, mergeVenues } from "@outrn/identity";
-import { registerSite, runFirstParty } from "@outrn/ingest";
+import { discoverSites, registerSite, runFirstParty } from "@outrn/ingest";
 
 /**
  * The two founder queues and the health strip, as commands. The web ops screens call the same
@@ -158,12 +158,36 @@ export function registerOps(program: Command): void {
       await registerSite(getDb(), venueId, url, o.reason);
       console.log(`registered ${url}`);
     });
+  fp.command("discover")
+    .description("Register the own websites of venues no source publishes hours for (never social, review, booking or ordering sites)")
+    .option("--area <slug>", "only this area's venues")
+    .action(async (o: { area?: string }) => {
+      const s = await discoverSites(getDb(), o.area ? { areaSlug: o.area } : {});
+      console.log(`${s.candidates} venues with a website and no published hours · ${s.registered} sites registered · ${s.notOwn} not their own site`);
+    });
   fp.command("run")
-    .description("Fetch due sites, extract JSON-LD, write facts and occurrences")
+    .description("Fetch due sites as their robots.txt allows; extract JSON-LD, and hours from microdata or the page's words; write facts and occurrences")
+    .option("--area <slug>", "only this area's venues' sites")
     .option("--limit <n>", "max sites this run", (v) => parseInt(v, 10), 50)
     .option("--force", "ignore fetch intervals")
-    .action(async (o: { limit: number; force?: boolean }) => {
-      const s = await runFirstParty(getDb(), { limit: o.limit, force: o.force ?? false, log: (l) => console.log(l) });
-      console.log(`sites ${s.sites} · ok ${s.ok} · no JSON-LD ${s.noJsonLd} · blocked ${s.blocked} · failed ${s.failed} · facts ${s.facts} · occurrences ${s.occurrences}`);
+    .option("--save <path>", "save what each site stated (never its HTML) for replay")
+    .option("--keep <path>", "with --save: an earlier capture whose reads are kept for sites this run could not read")
+    .option("--from-file <path>", "replay a saved run instead of fetching")
+    .action(async (o: { area?: string; limit: number; force?: boolean; save?: string; keep?: string; fromFile?: string }) => {
+      const s = await runFirstParty(getDb(), {
+        limit: o.limit,
+        force: o.force ?? false,
+        ...(o.area ? { areaSlug: o.area } : {}),
+        ...(o.save ? { saveTo: o.save } : {}),
+        ...(o.keep ? { keep: o.keep } : {}),
+        ...(o.fromFile ? { fromFile: o.fromFile } : {}),
+        log: (l) => console.log(l),
+      });
+      console.log(`sites ${s.sites} · ok ${s.ok} · hours ${s.hours} · no JSON-LD ${s.noJsonLd} · robots.txt ${s.robots} · blocked ${s.blocked} · failed ${s.failed} · later ${s.deferred} · facts ${s.facts} · occurrences ${s.occurrences}`);
+      // None could be read: say so to whoever ran it (a capture keeps its previous file then).
+      if (s.outcome === "failed") {
+        console.error("no site could be read: nothing saved");
+        process.exitCode = 1;
+      }
     });
 }

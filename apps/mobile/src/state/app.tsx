@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   useContext,
@@ -14,6 +15,14 @@ import type {
   RecommendationsBody,
 } from "@outrn/contracts";
 import { api, RequestError } from "../lib/api";
+import {
+  EMPTY_TASTE,
+  learn as learnFrom,
+  parseTaste,
+  requestTaste,
+  type Signal,
+  type Taste,
+} from "../lib/taste";
 import { useSavedLibrary } from "./saved-library";
 import type { SavedMatch } from "../lib/saved-now";
 export type { SavedPlace } from "../lib/saved-library";
@@ -23,6 +32,10 @@ export type Outing = {
   expiresAt: string;
   arrived: boolean;
 };
+const TASTE_KEY = "outrn.taste.v1";
+/** Ids the API takes as dismissed (UUIDs), and how many it takes. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_DISMISSED = 200;
 function useAppState() {
   const [areas, setAreas] = useState<AreasResponse>();
   const [query, setQuery] = useState<RecommendationRequest>();
@@ -34,10 +47,95 @@ function useAppState() {
   const [outing, setOuting] = useState<Outing>();
   const searchController = useRef<AbortController | null>(null);
   const loadController = useRef<AbortController | null>(null);
+  const [taste, setTasteState] = useState<Taste>(EMPTY_TASTE);
+  // The interests' own storage problem: Saved's retry only retries the saved library.
+  const [tasteError, setTasteError] = useState<string>();
+  const [tasteHydrated, setTasteHydrated] = useState(false);
+  const tasteRef = useRef<Taste>(EMPTY_TASTE);
+  const tasteWrites = useRef(Promise.resolve());
+  // This session only, never stored: what was already learned from (one nudge per option and action),
+  // and what was turned down (left out of fresh searches for the rest of it).
+  const learned = useRef(new Set<string>());
+  const dismissed = useRef<string[]>([]);
+  const areasRef = useRef<AreasResponse | undefined>(undefined);
+  // Happening soon: the same search, events only, beside the main one. Optional: a failure shows nothing.
+  const [happening, setHappening] = useState<RecommendationResponse>();
+  const [hiddenNudges, setHiddenNudges] = useState<ReadonlySet<string>>(new Set());
+  const happeningController = useRef<AbortController | null>(null);
+  function refreshHappening(request: RecommendationRequest) {
+    happeningController.current?.abort();
+    const controller = new AbortController();
+    happeningController.current = controller;
+    // Who is going, when, how and for how much, and the taste; not the kind of place asked for.
+    const {
+      categories: _categories,
+      cuisines: _cuisines,
+      diets: _diets,
+      features: _features,
+      visitStyle: _visitStyle,
+      ...rest
+    } = request;
+    api
+      .recommend(withTaste({ ...rest, eventsOnly: true }), controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setHappening(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setHappening(undefined);
+      });
+  }
+  /** Hide a nudge for this session (never stored). */
+  function hideNudge(id: string) {
+    setHiddenNudges((old) => new Set([...old, id]));
+  }
+  /** A fresh search carries the taste and what was turned down; a cursor replays its own. */
+  function withTaste(body: RecommendationsBody): RecommendationsBody {
+    if (!("areaId" in body)) return body;
+    const offered = areasRef.current?.filters.interests.map((i) => i.id);
+    const max = areasRef.current?.limits.maxTaste;
+    const t = requestTaste(tasteRef.current, offered).slice(0, max ?? undefined);
+    const ids = dismissed.current.slice(-MAX_DISMISSED);
+    return {
+      ...body,
+      ...(t.length ? { taste: t } : { taste: undefined }),
+      ...(ids.length ? { dismissedIds: ids } : {}),
+    };
+  }
+  function updateTaste(next: Taste) {
+    if (next === tasteRef.current) return;
+    tasteRef.current = next;
+    setTasteState(next);
+    tasteWrites.current = tasteWrites.current
+      .then(() => AsyncStorage.setItem(TASTE_KEY, JSON.stringify(next)))
+      .then(() => setTasteError(undefined))
+      .catch(() =>
+        setTasteError("Your interests could not be saved on this device."),
+      );
+  }
+  /** Going, saving or turning down an option nudges the interests it is, once per option and action. */
+  function learn(item: Pick<RecommendationItem, "id" | "interests">, signal: Signal) {
+    if (!tasteHydrated) return;
+    if (signal === "not_for_me" && UUID.test(item.id) && !dismissed.current.includes(item.id))
+      dismissed.current = [...dismissed.current, item.id].slice(-MAX_DISMISSED);
+    // Saving and unsaving undo each other; the rest count once.
+    const key = `${signal === "unsave" ? "save" : signal}:${item.id}`;
+    if (signal === "unsave") {
+      if (!learned.current.delete(key)) return;
+    } else {
+      if (learned.current.has(key)) return;
+      learned.current.add(key);
+    }
+    updateTaste(learnFrom(tasteRef.current, item.interests, signal));
+  }
   async function search(
     body: RecommendationsBody,
     nextQuery?: RecommendationRequest,
   ) {
+    if ("areaId" in body) {
+      // A new area or party must never show the previous search's event nudge while loading.
+      happeningController.current?.abort();
+      setHappening(undefined);
+    }
     searchController.current?.abort();
     const controller = new AbortController();
     searchController.current = controller;
@@ -47,8 +145,11 @@ function useAppState() {
     if (nextQuery) setQuery(nextQuery);
     else if ("areaId" in body) setQuery(body);
     try {
-      const data = await api.recommend(body, controller.signal);
-      if (!controller.signal.aborted) setResult(data);
+      const data = await api.recommend(withTaste(body), controller.signal);
+      if (!controller.signal.aborted) {
+        setResult(data);
+        if ("areaId" in body) refreshHappening(body);
+      }
     } catch (e) {
       if (!controller.signal.aborted) setError(e as RequestError);
     } finally {
@@ -63,6 +164,7 @@ function useAppState() {
       .areas(controller.signal)
       .then(async (data) => {
         if (controller.signal.aborted) return;
+        areasRef.current = data;
         setAreas(data);
         setError(undefined);
         const first = {
@@ -83,10 +185,24 @@ function useAppState() {
       });
   }
   useEffect(() => {
-    void initialize();
+    // The taste first, so the first search already carries it.
+    AsyncStorage.getItem(TASTE_KEY)
+      .then((raw) => {
+        const t = raw ? parseTaste(JSON.parse(raw)) : EMPTY_TASTE;
+        tasteRef.current = t;
+        setTasteState(t);
+      })
+      .catch(() =>
+        setTasteError("Your interests couldn’t be loaded on this device."),
+      )
+      .finally(() => {
+        setTasteHydrated(true);
+        void initialize();
+      });
     return () => {
       searchController.current?.abort();
       loadController.current?.abort();
+      happeningController.current?.abort();
     };
     // Initialization is intentionally once per mounted provider.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,6 +224,14 @@ function useAppState() {
     setSavedPlan,
     outing,
     setOuting,
+    taste,
+    tasteHydrated,
+    tasteError,
+    setTaste: updateTaste,
+    learn,
+    happening,
+    hiddenNudges,
+    hideNudge,
   };
 }
 const Context = createContext<ReturnType<typeof useAppState> | null>(null);

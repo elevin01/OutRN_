@@ -1,38 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-00000000001d",
-  "name": "Pitt Street Nightcap",
+  "name": "Delancey Kitchen",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.715594,
-    "lon": -73.996037
+    "lat": 40.929225,
+    "lon": -73.844511
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "closed",
-    "closesAt": null,
-    "opensAt": "2026-10-04T00:00:00.000Z",
-    "summary": "Closed now · opens 8pm today"
+    "state": "open",
+    "closesAt": "2026-10-04T03:00:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 11pm"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": {
-    "minAge": 21,
-    "evidence": "estimate"
-  },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 20:00-04:00",
-      "detail": "Closed now · opens 8pm today",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
           {
@@ -41,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.507,
+        "confidence": 0.489,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · published"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
@@ -64,20 +61,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     },
     {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Pizza",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,15 +83,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.5,
+        "evidence": "published",
+        "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
@@ -110,20 +107,43 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.55,
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "Yes",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -135,25 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Nov 2024",
-        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+        "freshness": "last edited in OSM Aug 2024",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
       }
     }
   ],
-  "parkingNearby": null,
+  "parkingNearby": {
+    "name": "Orchard Street Lot",
+    "kind": "lot",
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
+    "location": {
+      "lat": 40.9296,
+      "lon": -73.8434
+    },
+    "distanceMetres": 102,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
+  },
   "contact": {
     "websiteUrl": null,
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
     },
     "links": []
   },

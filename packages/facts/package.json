@@ -19,6 +19,10 @@
   "dependencies": {
     "@outrn/core": "workspace:*",
     "@outrn/db": "workspace:*",
-    "opening_hours": "^3.8.0"
+    "opening_hours": "^3.8.0",
+    "suncalc": "^1.9.0"
+  },
+  "devDependencies": {
+    "@types/suncalc": "^1.9.2"
   }
 }

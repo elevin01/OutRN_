@@ -26,6 +26,7 @@
     "cuisines": [],
     "features": [],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
@@ -35,133 +36,6 @@
     "travelModeIsDefault": true
   },
   "items": [
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "pizza",
-          "label": "Pizza"
-        }
-      ],
-      "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-000000000008",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Pizza · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 11:30pm · price unknown",
-        "sentence": "Plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Ridge Ludlow Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:52:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:52pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 12,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:52:00.000Z",
-        "closesAt": "2026-10-04T03:30:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 158
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7135",
-        "websiteUrl": "https://ridgeludlowkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718864%2C-73.979899&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000008",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 158
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T03:30:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.718864,
-        "lon": -73.979899
-      },
-      "placeName": "Ridge Ludlow Kitchen",
-      "callToAction": "go"
-    },
     {
       "conditions": [
         {
@@ -201,7 +75,10 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-000000000009",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000008",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -262,7 +139,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000009",
+      "placeId": "00000000-0000-4000-8000-000000000008",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -320,7 +197,10 @@
       ],
       "diets": [],
       "features": [],
-      "id": "00000000-0000-4000-8000-00000000000a",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000009",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -381,7 +261,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "placeId": "00000000-0000-4000-8000-000000000009",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -411,6 +291,125 @@
         "lon": -73.989173
       },
       "placeName": "Stanton Allen Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-00000000000a",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Delancey Tavern",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:51:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:51pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 16,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:51:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 159
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://delanceytavern.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 159
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": {
+        "id": "pub",
+        "label": "Pub"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.716973,
+        "lon": -73.998882
+      },
+      "placeName": "Delancey Tavern",
       "callToAction": "go"
     }
   ],

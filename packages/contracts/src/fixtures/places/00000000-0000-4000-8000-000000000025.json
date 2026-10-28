@@ -1,47 +1,54 @@
 {
-  "id": "00000000-0000-4000-8000-000000000036",
-  "name": "East River Overlook",
+  "id": "00000000-0000-4000-8000-000000000025",
+  "name": "Pitt Street Nightcap",
   "category": {
-    "id": "viewpoint",
-    "label": "Viewpoint"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.7145,
-    "lon": -73.976
+    "lat": 40.715594,
+    "lon": -73.996037
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
+    "state": "closed",
     "closesAt": null,
-    "opensAt": null,
-    "summary": null
+    "opensAt": "2026-10-04T00:00:00.000Z",
+    "summary": "Closed now · opens 8pm today"
   },
   "price": {
-    "kind": "free",
+    "kind": "unknown"
+  },
+  "ageLimit": {
+    "minAge": 21,
     "evidence": "estimate"
   },
-  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Mo-Su 20:00-04:00",
+      "detail": "Closed now · opens 8pm today",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.504,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · published"
       }
     },
     {
@@ -59,12 +66,35 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
+      }
+    },
+    {
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     },
     {
@@ -82,41 +112,18 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.6,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -128,12 +135,12 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-21T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-11-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Nov 2024",
+        "summary": "OpenStreetMap · last edited in OSM Nov 2024 · estimate"
       }
     }
   ],
@@ -144,9 +151,9 @@
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.7145%2C-73.976&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=driving"
     },
     "links": []
   },

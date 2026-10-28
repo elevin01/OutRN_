@@ -1,47 +1,51 @@
 {
   "id": "00000000-0000-4000-8000-000000000035",
-  "name": "Stanton Park",
+  "name": "Grand Kitchen",
   "category": {
-    "id": "park",
-    "label": "Park"
+    "id": "restaurant",
+    "label": "Restaurant"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.719677,
-    "lon": -73.981504
+    "lat": 40.726906,
+    "lon": -73.992709
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
-    "closesAt": null,
+    "state": "open",
+    "closesAt": "2026-10-04T03:00:00.000Z",
     "opensAt": null,
-    "summary": null
+    "summary": "Open now until 11pm"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.59,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -59,18 +63,41 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Korean",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Reservation required",
       "detail": null,
       "provenance": {
         "sources": [
@@ -79,21 +106,21 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.55,
+        "evidence": "published",
+        "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "Yes",
       "detail": null,
       "provenance": {
         "sources": [
@@ -102,21 +129,21 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.6,
+        "evidence": "published",
+        "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Outdoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -128,25 +155,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-09T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://stantonpark.example/",
-    "phone": "+1 212 555 6468"
+    "websiteUrl": null,
+    "phone": "+1 212 555 5266"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=driving"
     },
     "links": []
   },

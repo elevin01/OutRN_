@@ -32,7 +32,8 @@
     "originIsDefault": true,
     "backBy": null,
     "visitStyle": "dine_in",
-    "taste": []
+    "taste": [],
+    "eventsOnly": false
   },
   "items": [
     {
@@ -54,6 +55,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "drinks"
       ],
       "status": "ready",
       "callToAction": "go",
@@ -185,6 +189,9 @@
           "id": "outdoor_seating",
           "label": "Outdoor seating"
         }
+      ],
+      "interests": [
+        "food"
       ],
       "status": "ready",
       "callToAction": "go",
@@ -320,6 +327,9 @@
       "cuisines": [],
       "diets": [],
       "features": [],
+      "interests": [
+        "books"
+      ],
       "status": "ready",
       "callToAction": "go",
       "location": {

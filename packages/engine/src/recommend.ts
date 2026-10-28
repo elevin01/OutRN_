@@ -1,6 +1,8 @@
-import { DEFAULT_MAX_TRAVEL_MINUTES } from "@outrn/core";
+import { maxTravelFor } from "./destination.js";
+import { markDetours } from "./detour.js";
 import type { Candidate, CategoryPolicy, Evaluation, RequestContext, Shortlist } from "./types.js";
 import { evaluateFeasibility } from "./feasibility.js";
+import { markLikelyOpen, openShares } from "./likely.js";
 import { scoreCandidate } from "./score.js";
 import { tasteWeights } from "./taste.js";
 import { selectShortlist } from "./select.js";
@@ -11,18 +13,22 @@ import { selectShortlist } from "./select.js";
  */
 
 export function evaluateAll(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>): Evaluation[] {
-  const maxTravel = ctx.maxTravelMinutes ?? DEFAULT_MAX_TRAVEL_MINUTES[ctx.mode];
   const fallback: CategoryPolicy = { category: "other", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" };
   const weights = tasteWeights(ctx);
-  return candidates.map((c) => {
+  // Events only: places are not candidates at all, so nothing about them is weighed or logged.
+  const pool = ctx.eventsOnly ? candidates.filter((c) => c.kind === "occurrence") : candidates;
+  const evals: Evaluation[] = pool.map((c) => {
     const policy = policies.get(c.category) ?? fallback;
     const f = evaluateFeasibility(c, ctx, policy);
     if (f.class === "ineligible" || !f.timing) {
       return { candidate: c, class: "ineligible", excludedBy: f.excludedBy, reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
     }
-    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravel, weights);
+    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravelFor(c, ctx), weights);
     return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
   });
+  markLikelyOpen(evals, openShares(candidates, policies, fallback.minUsefulMinutes));
+  markDetours(evals, ctx);
+  return evals;
 }
 
 export function recommend(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>, opts: { size?: number; offset?: number; maxOffset?: number } = {}): Shortlist {

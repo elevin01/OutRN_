@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.8.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.10.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,13 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.10.0** (additive). Happening soon:
+  - A request may ask for events only (`eventsOnly: true`): what is on, ranked as any search is (taste, age rules for a party with a minor, a walk-in pop-up joined late). It is for a "happening soon" nudge beside the main search; the apps run it with the same choices as the main search.
+  - `ResolvedRequest.eventsOnly` says whether it did (`false` by default). Snapshots stored by a 1.9 API page with `eventsOnly: false`.
+- **1.9.0** (additive). What an option is:
+  - `RecommendationItem.interests` lists what kind of outing it is, as interest ids from `AreasResponse.filters.interests`, at most 4: an event by its kinds or its title, a place by what it is (a gallery is `art`, a bar `drinks`). Empty when it is none of them.
+  - It is what a device that keeps a taste learns from: going to an option, saving it or turning it down nudges the person's weights for its interests. The learning stays on the device; the API only ever receives the resulting `taste`.
+  - Snapshots stored by a 1.8 API page with `interests: []` on every item.
 - **1.8.0** (additive). Taste:
   - A request may carry a taste (`taste`): weights from `-1` (skip) to `1` (love) for interests from `AreasResponse.filters.interests` (live music, comedy, theatre & dance, movies, art, museums & history, restaurants, cafés & sweets, bars & drinks, nightlife, parks & outdoors, games & activities, markets & shopping, books & talks, sports, festivals & fairs), up to `limits.maxTaste`. It is a profile kept on the device and sent with each search, e.g. `[{ interest: "live_music", weight: 1 }, { interest: "drinks", weight: -1 }]`.
     - Ranking only: a taste never hides a place.
@@ -91,8 +98,8 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
   - The default `copy.summary` shows an expected wait ("~15–30 min wait") or a reported line ("short line reported").
   - Items stored by a 1.2 API page with `conditions: []`: that search computed none.
 - **1.2.0** (additive). What a visit takes, and the plan:
-  - `timing.visit` gives the visit's style (`dine_in`, `counter`, `takeout`, `visit`, `event`; open-ended), a label, the minimum the engine checked, and the typical length ("takes about 1h20"). The typical length is not a limit on the user's time.
-  - `plan` lists the card's timed steps: `leave`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` (open-ended kinds, default `text`, `isEstimate`).
+  - `timing.visit` gives the visit's style (`dine_in`, `counter`, `takeout`, `visit`, `event`, `walk`; open-ended), a label, the minimum the engine checked, and the typical length ("takes about 1h20"). The typical length is not a limit on the user's time.
+  - `plan` lists the card's timed steps: `leave`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `sunset`, `wrap_up`, `back_by` (open-ended kinds, default `text`, `isEstimate`).
   - `actions.links` on items and place details: the place's own Menu, Instagram and Facebook pages, as https links.
   - A request may ask for takeout (`visitStyle: "takeout"`): food visits become a quick stop to order and collect, and places that don't do takeout are left out. `ResolvedRequest.visitStyle` echoes it (`"dine_in"` by default).
   - The default card summary now says what the visit takes ("takes about 1h20 · until 10pm") instead of "you'd have 1h40".
@@ -125,12 +132,12 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 | Field | Values today |
 | --- | --- |
-| `reasons[].code` | `EVENT_STARTS_SOON`, `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `HAPPY_HOUR` (params `from`, `until`; `from` is null when it is on at the arrival), `OUTDOOR_SEATING`, `FRESH_REPORT`, `LANDMARK` |
+| `reasons[].code` | `EVENT_STARTS_SOON`, `DESTINATION` (a place worth going out of the way for: a preserve, gardens, a beach, a lookout, an estate. Its `text` is why, e.g. "carriage roads around Swan Lake, through woods and fields", prefixed "worth the drive: " when it is farther than an everyday outing; params `kind` (`nature`, `park`, `garden`, `beach`, `waterfront`, `viewpoint`, `estate`, `zoo`, `amusement`; open-ended), `note` (null when only its kind is known) and `beyondEveryday`), `SHORT_TRAVEL`, `WAIT_FOR_OPENING`, `ENOUGH_TIME`, `CLOSES_SOON`, `OPEN_LATE`, `DAWN_TO_DUSK` (a park with no listed hours, in daylight: "usually open dawn to dusk"; always `required`; params `duskAt`, the estimated sunset the visit ends by, and `isEstimate: true`. Its hours are inferred, so `timing.closesAt` stays null unless a published closure comes first; `finishBy` is dusk and the wrap-up step is an estimate. With it, `WAIT_FOR_OPENING` reads "opens around sunrise" and `CLOSES_SOON` "dusk soon", both with `isEstimate: true`), `HOURS_CONFIRMED`, `FREE`, `FITS_BUDGET`, `SUNSET_WINDOW`, `WEATHER_SUITABLE`, `HAPPY_HOUR` (params `from`, `until`; `from` is null when it is on at the arrival), `OUTDOOR_SEATING`, `FRESH_REPORT`, `LANDMARK` |
 | `caveats[].code` | `HOURS_UNKNOWN`, `HOURS_UNVERIFIED`, `HOURS_APPROXIMATE`, `ADMISSION_UNCONFIRMED`, `ADMISSION_UNKNOWN`, `TOUR_ONLY`, `PRICE_UNKNOWN`, `LATE_ENTRY_UNCERTAIN`, `ACCESS_LIMITED`, `AGE_LIMIT_LIKELY` (params `minAge`), `AGE_LIMIT_UNCERTAIN` (params `minAge`), `WAIT_MAY_NOT_FIT` (params `waitMinutes`), `DIET_FROM_NAME` |
 | `insufficient.relaxations[].code` | `longer_travel`, `more_time`, `different_time`, `higher_budget`, `include_paid`, `more_categories`, `any_cuisine`, `without_features`, `takeout`, `dine_in`, `stay_later` |
 | `conditions[].kind` / `level` / `basis` | `crowd` (`quiet`, `moderate`, `busy`), `wait` (`none`, `short`, `long`); basis `typical`, `report` |
-| `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event` |
-| `plan[].kind` | `leave`, `park`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `wrap_up`, `back_by` |
+| `timing.visit.style` | `dine_in`, `counter`, `takeout`, `visit`, `event`, `walk` (a destination's trails or shore: "a walk, about 1h30") |
+| `plan[].kind` | `leave`, `park`, `arrive`, `event_starts`, `order_by`, `last_entry`, `entry_by`, `sunset` (a lookout or waterfront at sunset: "Sunset at 6:36pm"), `wrap_up`, `back_by` |
 | `parking.kind` / `parkingNearby.kind` | `lot`, `garage`, `street` |
 | `category.id` | see `GET /v1/areas` → `filters.categories` |
 | `error.code` | `VALIDATION_FAILED` (400, with `fields`), `CURSOR_INVALID` (400), `UNAUTHORIZED` (401), `NOT_FOUND` (404), `CURSOR_EXPIRED` (410, with `restart`), `UNAVAILABLE` (503, retryable), `INTERNAL` (500) |

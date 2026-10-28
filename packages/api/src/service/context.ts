@@ -106,6 +106,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
   if (request.seenIds?.length) ctx.seenIds = request.seenIds;
   if (request.dismissedIds?.length) ctx.dismissedIds = request.dismissedIds;
   if (request.visitStyle === "takeout") ctx.visitStyle = "takeout";
+  if (request.eventsOnly) ctx.eventsOnly = true;
   // With a minor in the party, a like of drinking or nightlife is not applied (a skip still is): the
   // engine ignores it too, and the resolved request says what was applied.
   const taste = minorInParty(ctx) ? offered.filter((t) => !(t.weight > 0 && ADULT_INTERESTS.has(t.interest as Interest))) : offered;
@@ -142,6 +143,7 @@ export async function resolveRequest(q: Queryable, request: RecommendationReques
     backBy: backBy?.toISOString() ?? null,
     visitStyle: request.visitStyle ?? "dine_in",
     taste,
+    eventsOnly: request.eventsOnly === true,
   };
   return { area, ctx, resolved, request: deviceOrigin ? { ...request, origin: deviceOrigin } : request };
 }

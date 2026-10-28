@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000001b",
+  "requestId": "00000000-0000-4000-8000-000000000024",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -28,6 +28,7 @@
     "categories": [
       "bar"
     ],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
@@ -53,126 +54,16 @@
       "photos": [],
       "cuisines": [],
       "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-000000000022",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~22 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Ludlow Tavern",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:57:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:57pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Visit",
-          "style": "visit",
-          "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 22,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:57:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 153
-      },
-      "actions": {
-        "links": [],
-        "phone": null,
-        "websiteUrl": "https://ludlowtavern.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.73031%2C-73.988579&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000022",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 153
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "location": {
-        "lat": 40.73031,
-        "lon": -73.988579
-      },
-      "placeName": "Ludlow Tavern",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
-          "basis": "typical",
-          "level": "moderate",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [],
-      "diets": [],
       "features": [
         {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
         }
       ],
-      "id": "00000000-0000-4000-8000-000000000023",
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-00000000002b",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -180,7 +71,7 @@
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Stanton Bar",
+      "name": "Delancey Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -229,11 +120,11 @@
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": "https://stantonbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000023",
+      "placeId": "00000000-0000-4000-8000-00000000002b",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -262,10 +153,10 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.730851,
-        "lon": -73.986194
+        "lat": 40.727594,
+        "lon": -73.999704
       },
-      "placeName": "Stanton Bar",
+      "placeName": "Delancey Bar",
       "callToAction": "go"
     },
     {
@@ -285,15 +176,18 @@
       "cuisines": [],
       "diets": [],
       "features": [],
-      "id": "00000000-0000-4000-8000-000000000024",
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-00000000000a",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~25 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Essex Hester Bar",
+      "name": "Delancey Tavern",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -302,9 +196,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T23:00:00.000Z",
+          "at": "2026-10-03T22:51:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 7pm",
+          "text": "Arrive around 6:51pm",
           "isEstimate": true
         },
         {
@@ -329,30 +223,30 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 25,
+          "minutes": 16,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T23:00:00.000Z",
+        "arriveAt": "2026-10-03T22:51:00.000Z",
         "closesAt": "2026-10-04T06:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 150
+        "usefulMinutes": 159
       },
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": "https://essexhesterbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.709488%2C-73.975001&travelmode=walking"
+        "websiteUrl": "https://delanceytavern.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000024",
+      "placeId": "00000000-0000-4000-8000-00000000000a",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 150
+            "usefulMinutes": 159
           },
           "required": false
         },
@@ -365,7 +259,10 @@
           "required": false
         }
       ],
-      "subtype": null,
+      "subtype": {
+        "id": "pub",
+        "label": "Pub"
+      },
       "ageLimit": {
         "minAge": 21,
         "evidence": "estimate"
@@ -375,10 +272,134 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.709488,
-        "lon": -73.975001
+        "lat": 40.716973,
+        "lon": -73.998882
       },
-      "placeName": "Essex Hester Bar",
+      "placeName": "Delancey Tavern",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
+        }
+      ],
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-00000000002c",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~15 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Ridge Tavern",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:50:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:50pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 15,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:50:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 160
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000002c",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 160
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": {
+        "id": "pub",
+        "label": "Pub"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.720409,
+        "lon": -73.998263
+      },
+      "placeName": "Ridge Tavern",
       "callToAction": "go"
     }
   ],
@@ -386,7 +407,7 @@
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDFiIiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [

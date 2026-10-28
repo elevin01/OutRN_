@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "requestId": "00000000-0000-4000-8000-000000000017",
   "asOf": "2026-10-03T23:30:00.000Z",
   "generatedAt": "2026-10-03T23:30:00.000Z",
   "expiresAt": "2026-10-03T23:50:00.000Z",
@@ -26,6 +26,7 @@
     "cuisines": [],
     "features": [],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "drive",
     "visitStyle": "dine_in",
     "youngestAge": null,
@@ -74,7 +75,10 @@
           "label": "Outdoor seating"
         }
       ],
-      "id": "00000000-0000-4000-8000-000000000012",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-00000000001b",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -135,7 +139,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=driving"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000012",
+      "placeId": "00000000-0000-4000-8000-00000000001b",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -223,7 +227,10 @@
       ],
       "diets": [],
       "features": [],
-      "id": "00000000-0000-4000-8000-000000000013",
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-00000000001c",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -290,7 +297,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000013",
+      "placeId": "00000000-0000-4000-8000-00000000001c",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
@@ -335,28 +342,66 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "quiet",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
-      "parking": null,
+      "parking": {
+        "fee": "paid",
+        "kind": "lot",
+        "name": "Orchard Street Lot",
+        "text": "Orchard Street Lot (paid), ~2 min walk",
+        "location": {
+          "lat": 40.9296,
+          "lon": -73.8434
+        },
+        "walkMinutes": 2,
+        "openingHours": "Mo-Su 06:00-24:00",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+        "distanceMetres": 102
+      },
       "photos": [],
-      "cuisines": [],
+      "cuisines": [
+        {
+          "id": "pizza",
+          "label": "Pizza"
+        }
+      ],
       "diets": [],
-      "features": [],
-      "id": "00000000-0000-4000-8000-000000000014",
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-00000000001d",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~8 min drive incl. parking · takes about 1h · until 10pm · usually free",
-        "sentence": "A short drive, plenty of time, usually free."
+        "summary": "Pizza · ~11 min drive incl. parking · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "A short drive, plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Suffolk Park",
+      "name": "Delancey Kitchen",
       "plan": [
         {
           "at": "2026-10-03T23:30:00.000Z",
@@ -365,9 +410,15 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T23:43:00.000Z",
+          "at": "2026-10-03T23:39:00.000Z",
+          "kind": "park",
+          "text": "Park at Orchard Street Lot (paid), then walk ~2 min",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T23:51:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 7:43pm",
+          "text": "Arrive around 7:51pm",
           "isEstimate": true
         },
         {
@@ -379,45 +430,44 @@
       ],
       "event": null,
       "price": {
-        "kind": "free",
-        "evidence": "estimate"
+        "kind": "unknown"
       },
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
+          "minMinutes": 60,
+          "typicalMinutes": 80
         },
         "travel": {
           "mode": "drive",
-          "minutes": 8,
+          "minutes": 11,
           "isEstimate": true,
           "parkingMinutes": 5
         },
         "leaveAt": "2026-10-03T23:30:00.000Z",
-        "arriveAt": "2026-10-03T23:43:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
+        "arriveAt": "2026-10-03T23:51:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 107
+        "usefulMinutes": 99
       },
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": "https://suffolkpark.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.935386%2C-73.836374&travelmode=driving"
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000014",
+      "placeId": "00000000-0000-4000-8000-00000000001d",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
           "text": "a short drive",
           "params": {
             "mode": "drive",
-            "minutes": 8
+            "minutes": 11
           },
           "required": false
         },
@@ -425,36 +475,38 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 107
+            "usefulMinutes": 99
           },
           "required": false
         },
         {
-          "code": "FREE",
-          "text": "usually free",
-          "params": {},
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
           "required": false
         }
       ],
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "park",
-        "label": "Park"
+        "id": "restaurant",
+        "label": "Restaurant"
       },
       "location": {
-        "lat": 40.935386,
-        "lon": -73.836374
+        "lat": 40.929225,
+        "lon": -73.844511
       },
-      "placeName": "Suffolk Park",
+      "placeName": "Delancey Kitchen",
       "callToAction": "go"
     }
   ],
   "page": {
     "offset": 3,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6MH0"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDE3IiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDE3IiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

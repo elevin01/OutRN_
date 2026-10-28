@@ -66,20 +66,33 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 
 `pnpm real` starts the local database if it isn't running, builds a fresh `outrn_real` database
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
-checks their places against Overture Maps, switches those areas on, fetches their weather from the
-National Weather Service (optional: without it, plans ignore the weather, and it says so), and starts
-the API.
+checks their places against Overture Maps, adds the destinations around them, switches those areas
+on, fetches their weather from the National Weather Service and their NYC Parks events from NYC Open
+Data (both optional: without them, plans go without, and it says so), and starts the API.
+
+**NYC Parks events** (`pnpm outrn ingest nyc-parks --area <slug>`): the next two weeks of public
+events in the city's parks, refreshed daily by NYC Parks (about a thousand: classes, tours,
+festivals, film nights, concerts, Halloween parades). An area keeps the ones within its reach, each at
+a site of its own, as the listing says: its times, its page, its categories as interests ("Fall
+Festivals" is festivals), register first or walk in, full when registration has closed, cancelled
+when the title says so, free only when it says so without condition ("free for members" is not),
+and made for children when it is "Best for Kids" (it leads for a family and sinks for grown-ups on
+their own). An event the area's next read no longer lists is withdrawn once no area lists it. A
+walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
+two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
+read for it: migration `0021` has the one statement that switches it on and records the review.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that
 fails to replay stops it with an error before the API starts.
 
 `pnpm capture` records the other areas (Yonkers, the Bronx, White Plains, Port Chester…), their
-photos and their Overture places into `fixtures/live`, on a machine that can reach overpass-api.de,
+photos, their Overture places and their destinations into `fixtures/live`, on a machine that can reach overpass-api.de,
 www.wikidata.org, commons.wikimedia.org and overturemaps-us-west-2.s3.us-west-2.amazonaws.com.
-`pnpm capture yonkers white_plains` does just those. Set `OUTRN_USER_AGENT` first. Each area is
-recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json` and
-`<area>-overture.json` only once every step for it has succeeded, so a failed capture keeps the
+`pnpm capture yonkers white_plains` does just those, and reads the venues' own websites for their hours
+(slow: minutes per area; `CAPTURE_SITES=0` skips it). Set `OUTRN_USER_AGENT` first. Each area is
+recorded into a staging directory and replaces its `<area>.json`, `<area>-photos.json`,
+`<area>-overture.json` and `<area>-destinations.json` only once every step for it has succeeded, so a failed capture keeps the
 previous set as it was. It pauses 10 s between areas for Overpass (`CAPTURE_PAUSE_SECONDS`). Run
 `pnpm real` again afterwards and the new areas are served too.
 
@@ -88,6 +101,16 @@ people open the app from; the backtest samples origins there), and ingest covers
 farthest a trip within the mode's max travel time can reach (walk ~1.5 km; drive ~13 km at night
 with the Westchester evening parking rule). `--radius <m>` overrides it. `--save` records the extent
 in the capture so a replay only tombstones records inside the area it actually covers.
+
+Public Overpass mirrors are pools of servers that can lag one another by months (one answered in
+October with June's data). A fetch whose data (`osm3s.timestamp_osm_base`) is more than 3 days old
+is asked again, then refused with the mirror's name and the data's date: point `OVERPASS_URL` at
+another mirror, or try later (`--max-data-age <days>` to accept older). In the database, an older
+snapshot never wins over a newer one: an element's older version leaves the newer one standing, a
+place a newer snapshot found missing (in any area, even while another still held it) is neither held
+nor brought back unless it was edited after that, a snapshot older than the area's last withdraws
+nothing (`ingest osm` says so), and a data time later than the snapshot could have been taken is
+treated as unknown.
 
 **Overture Maps** (free, no key) is a second opinion on the places OSM gives us. `outrn ingest
 overture --area <slug>` reads the Overture places near the area's venues straight from Overture's
@@ -116,6 +139,60 @@ Such a venue has no hours, so it is always Check first. It loses its claims when
 longer supports it, and a venue OSM later maps at the same spot joins it rather than duplicating
 it. The Lower East Side capture adds 1,130 places, leaving out 526 as possible duplicates, 125
 chains and 212 stale records. Bronxville goes from 63 venues to 94. `--no-new-places` turns this off.
+
+**Destinations** are the places worth going out of the way for: a preserve, gardens, a beach, a
+lookout over the Hudson, an estate. `outrn ingest destinations --area <slug>` reads Overture's parks,
+nature reserves, beaches, gardens, museums and historic sites around the area, out to the farthest a
+long window may travel for one (a 60-minute drive from a drive area: about 50 km at night, six
+half-degree reads, two and a half minutes from Bronxville). A place is a destination when:
+- **It is on the curated list** (`CURATED_DESTINATIONS`, about 35 around southern Westchester and
+  the Bronx): the places anyone local would name, each with a line on why. The record of that name
+  nearest where the list puts it (within 4 km) is the place; its name, point and contact details
+  are the record's.
+- **Or its record says what it is:** a nature reserve or park whose name says preserve, sanctuary,
+  reservation, nature center or arboretum, that Overture is sure of (0.9), with a website, and not
+  across the Sound on Long Island. Beaches and state parks come only from the list: Overture files
+  some far away under local points.
+
+A destination a venue already has gets the destination fact on that venue; any other becomes a venue
+of its own (walk-in and free only for the list's places: a record alone says nothing of who may go
+in). Each area's claim is its own, so an overlapping area that does not name a place leaves another's
+claim alone. In a search, a destination may be farther than the everyday limit when there is time: half
+again from 2½ hours, double from 3½ (a 4-hour Saturday reaches a 60-minute drive), and the card says
+it is worth the drive. One you walk (a preserve, a beach, a waterfront, a lookout) is usually open dawn
+to dusk, as a park is; gardens, estates, the zoo and amusement parks stay Check first until their hours
+are known.
+Around Bronxville the read adds about 100. `--save` keeps only the few hundred records the selection
+reads, so a capture replays the same destinations.
+
+**Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
+places list none). `outrn firstparty discover --area <slug>` registers the website of each venue with no
+published hours, when it is the venue's own: never a social network, review site, map, booking or
+ordering service. `outrn firstparty run --area <slug>` then reads them:
+- **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a
+  site whose robots.txt can't be reached, is not read. Its crawl delay is kept.
+- **Politely:** every request (each redirect hop and retry too, and robots.txt reads) passes one
+  gate first: its host isn't backing off, its robots.txt allows that very path (compared as RFC 9309
+  says, percent-encoding and all), and one of the host's four requests for the day is reserved for it.
+  A host's requests are at least 5 s apart, eight sites at a time. A site that answers 429 or 503 is
+  left alone for six hours or more; one that refuses (403), or that robots.txt keeps us from, is asked
+  again in a month. Moving between its www. and bare name is followed; moving to another host is
+  followed once, through that host's own gate.
+- **What is read:** schema.org JSON-LD (hours, phone, price range, events); for hours, then
+  microdata, then the hours the page writes out ("Mon – Thu: 11:30am – 9pm"), read strictly: nothing
+  without am or pm, nothing under a happy hour, delivery or kitchen heading (until the next heading or
+  the section's end) or caption, no season's or
+  holiday's hours, no page giving two sets of hours for a day, and no weekday-only hours that say
+  nothing of the weekend (an office's). On a government site, or one many venues share (a town's
+  parks, a chain's stores), only structured data counts. When the page states no hours, its own
+  "Hours", "Visit", "Location" or "Contact" page is read instead.
+- **What is kept:** the facts, with the words or JSON they were read from as evidence (published,
+  0.85 from structured data, 0.75 from the page's words), never the HTML. Hours a site no longer
+  states stop counting. `--save` keeps what each site stated for `pnpm real` to replay; a run that
+  could read no site saves nothing (and exits non-zero), and `--keep <earlier capture>` keeps its
+  reads for sites this run couldn't read.
+- **What it finds:** White Plains, October 2026: 237 sites registered, 103 read, opening hours from 61
+  (a quarter of them); robots.txt kept us off 42, 15 refused us, and 29 events came with the pages.
 
 **Weather** comes from the National Weather Service (free, no key). `outrn weather refresh` stores
 each served area's hourly forecast; run it hourly (cron) on a machine that can reach api.weather.gov.

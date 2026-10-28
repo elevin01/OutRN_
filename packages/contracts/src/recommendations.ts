@@ -67,6 +67,11 @@ export const RecommendationRequest = z.strictObject({
    * the list; `request.taste` in the response lists what was applied. An id may appear once.
    */
   taste: z.array(TasteWeight).max(32).optional(),
+  /**
+   * Only events (`kind: "event"`), ranked as any search is: what is on, for a "happening soon"
+   * nudge beside the main search. Omit for places and events together.
+   */
+  eventsOnly: z.boolean().optional(),
 });
 export type RecommendationRequest = z.infer<typeof RecommendationRequest>;
 
@@ -109,6 +114,8 @@ export const ResolvedRequest = z.object({
   visitStyle: z.enum(["dine_in", "takeout"]),
   /** The taste applied: the request's weights for offered interests, without zeros, and without a like of drinks or nightlife when a minor is in the party. */
   taste: z.array(TasteWeight),
+  /** The request's `eventsOnly`, or false. */
+  eventsOnly: z.boolean(),
 });
 export type ResolvedRequest = z.infer<typeof ResolvedRequest>;
 
@@ -241,6 +248,13 @@ export const RecommendationItem = z.object({
   diets: z.array(Option).max(5),
   /** Must-haves the place's record states: `outdoor_seating`, `wifi`, `wheelchair` (step-free). */
   features: z.array(Option).max(3),
+  /**
+   * What kind of outing it is, as interest ids (`AreasResponse.filters.interests`): an event by its
+   * kinds or title ("Jazz on the Lawn" is `live_music`), a place by what it is (a gallery is `art`),
+   * at most 4. A device that keeps a taste learns from these what its person goes to, saves or turns
+   * down. Empty when it is none of them.
+   */
+  interests: z.array(z.string().min(1).max(40)).max(4),
   /**
    * `ready`: everything that matters checks out. `check_first`: worth going, but something in
    * `caveats` needs checking. Never recompute or upgrade this in the UI.
