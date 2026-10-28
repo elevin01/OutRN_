@@ -20,8 +20,8 @@ corepack pnpm mobile:dev               # terminal 2, Expo dev server
 For a physical phone, set `EXPO_PUBLIC_API_URL=http://YOUR_COMPUTER_LAN_IP:4000` and run the API
 with `HOST=0.0.0.0 corepack pnpm api:mock`. Both devices must be on the same network. Android
 emulator hosts usually use `http://10.0.2.2:4000`; iOS Simulator can use localhost. Restart Expo
-after changing environment variables. When running the real API beyond localhost, set `OUTRN_OPS_TOKEN`; it is a server-only secret and must never use an `EXPO_PUBLIC_` name. Native builds require the SDK 57 development environment;
-this repo does not contain signing credentials or an EAS project registration.
+after changing environment variables. When running the real API beyond localhost, set `OUTRN_OPS_TOKEN`; it is a server-only secret and must never use an `EXPO_PUBLIC_` name. Native builds require the SDK 58 development environment (Node.js 22.13+);
+this repo does not contain signing credentials or an EAS project registration. During the SDK 58 transition, Expo Go from the app stores may still only support SDK 57; use an SDK 58-compatible Expo Go build or a development build for phone testing. Verify the installed Expo Go SDK before scanning the QR code.
 
 The explicit demo switch adds a persistent invented-data banner and permits the fixture's pinned
 plan times for review. It does not change responses, rank results, or fabricate venues. The mock
