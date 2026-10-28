@@ -15,6 +15,7 @@ import {
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
+  type ScrollViewInstance,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -110,7 +111,7 @@ export function ActivityExperience({
   const { height, fontScale } = useWindowDimensions();
   const [viewport, setViewport] = useState(height - 80);
   const heroHeight = useRef(viewport);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const insets = useSafeAreaInsets();
   const [focused, setFocused] = useState(true);
   useFocusEffect(

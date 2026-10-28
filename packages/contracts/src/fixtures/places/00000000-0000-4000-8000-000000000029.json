@@ -1,46 +1,54 @@
 {
   "id": "00000000-0000-4000-8000-000000000029",
-  "name": "Hester Kitchen",
+  "name": "Stanton Bar",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "bar",
+    "label": "Bar"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.726295,
-    "lon": -73.981623
+    "lat": 40.730851,
+    "lon": -73.986194
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "unknown",
-    "closesAt": null,
+    "state": "open",
+    "closesAt": "2026-10-04T07:00:00.000Z",
     "opensAt": null,
-    "summary": null
+    "summary": "Open now until 3am"
   },
   "price": {
     "kind": "unknown"
   },
-  "ageLimit": null,
+  "ageLimit": {
+    "minAge": 21,
+    "evidence": "estimate"
+  },
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Not listed",
-      "detail": "Check before you go",
+      "value": "Tu-Sa 18:00-03:00",
+      "detail": "Open now until 3am",
       "provenance": {
-        "sources": [],
-        "evidence": "missing",
-        "confidence": null,
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.479,
         "verifiedAt": null,
-        "sourceUpdatedAt": null,
-        "retrievedAt": null,
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": null,
-        "summary": "no source lists hours · not listed"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · published"
       }
     },
     {
@@ -56,20 +64,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
       }
     },
     {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Italian",
+      "attribute": "age_limit",
+      "label": "Age limit",
+      "value": "Usually 21+ (adults only)",
       "detail": null,
       "provenance": {
         "sources": [
@@ -78,15 +86,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
-        "confidence": 0.8,
+        "evidence": "estimate",
+        "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
       }
     },
     {
@@ -102,14 +110,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
       }
     },
     {
@@ -127,35 +135,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Not accessible",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · published"
       }
     },
     {
@@ -173,25 +158,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-06-13T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jun 2024",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2024 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
+    "websiteUrl": "https://stantonbar.example/",
     "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=driving"
     },
     "links": []
   },

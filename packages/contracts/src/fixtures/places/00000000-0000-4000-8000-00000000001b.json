@@ -1,0 +1,184 @@
+{
+  "id": "00000000-0000-4000-8000-00000000001b",
+  "name": "Stanton Kitchen",
+  "category": {
+    "id": "restaurant",
+    "label": "Restaurant"
+  },
+  "subtype": null,
+  "timezone": "America/New_York",
+  "location": {
+    "lat": 40.93814,
+    "lon": -73.82182
+  },
+  "address": null,
+  "photos": [],
+  "status": "operating",
+  "hoursNow": {
+    "state": "open",
+    "closesAt": "2026-10-04T03:00:00.000Z",
+    "opensAt": null,
+    "summary": "Open now until 11pm"
+  },
+  "price": {
+    "kind": "unknown"
+  },
+  "ageLimit": null,
+  "facts": [
+    {
+      "attribute": "opening_hours",
+      "label": "Hours",
+      "value": "Mo-Su 11:00-23:00",
+      "detail": "Open now until 11pm",
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.545,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+      }
+    },
+    {
+      "attribute": "business_status",
+      "label": "Status",
+      "value": "Operating",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.5,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "cuisine",
+      "label": "Cuisine",
+      "value": "Korean",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+      }
+    },
+    {
+      "attribute": "admission",
+      "label": "Admission",
+      "value": "Walk in; reservations taken",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.45,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "Yes",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · published"
+      }
+    },
+    {
+      "attribute": "indoor_outdoor",
+      "label": "Setting",
+      "value": "Mixed",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "estimate",
+        "confidence": 0.6,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-07-17T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jul 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jul 2025 · estimate"
+      }
+    }
+  ],
+  "parkingNearby": null,
+  "contact": {
+    "websiteUrl": null,
+    "phone": null
+  },
+  "actions": {
+    "directionsUrls": {
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93814%2C-73.82182&travelmode=driving"
+    },
+    "links": []
+  },
+  "asOf": "2026-10-03T22:30:00.000Z",
+  "attributions": [
+    "© OpenStreetMap contributors"
+  ]
+}

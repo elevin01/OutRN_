@@ -16,6 +16,84 @@ export function haversineMetres(a: LatLon, b: LatLon): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/**
+ * The middle of Long Island Sound, west to east from off Throgs Neck: the line between the
+ * Westchester and Connecticut shore to the north and Long Island's north shore to the south.
+ */
+const SOUND_LINE: readonly (readonly [lon: number, lat: number])[] = [
+  [-73.775, 40.85], [-73.7, 40.9], [-73.6, 40.94], [-73.5, 40.97], [-73.4, 41.01], [-73.3, 41.03], [-73.1, 41.07], [-72.8, 41.1], [-72.3, 41.22], [-71.8, 41.3],
+];
+
+/**
+ * Whether a place counts as across the Sound for the destinations job, which leaves those out:
+ * Long Island's north shore is minutes away as the crow flies from New Rochelle and an hour by road.
+ * South of the Sound's middle, or of 40.905 (whichever is farther north), east of Throgs Neck: a
+ * margin that leaves out some of the mainland's own shore too (New Rochelle's Davenport Neck), so it
+ * is a filter on what is added, not a test of which shore a place is on (see tripMetres).
+ */
+export function acrossTheSound(p: LatLon): boolean {
+  const [first, last] = [SOUND_LINE[0]!, SOUND_LINE[SOUND_LINE.length - 1]!];
+  if (p.lon < first[0] || p.lon > last[0] || p.lat < 40.5) return false;
+  let line = first[1];
+  for (let i = 1; i < SOUND_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [SOUND_LINE[i - 1]!, SOUND_LINE[i]!];
+    if (p.lon <= x1) {
+      line = y0 + ((p.lon - x0) / (x1 - x0)) * (y1 - y0);
+      break;
+    }
+  }
+  return p.lat <= Math.max(40.905, line);
+}
+
+/** Where a trip across the Sound crosses it: the Throgs Neck Bridge, the crossing nearest the mainland we serve. */
+const THROGS_NECK: LatLon = { lat: 40.8005, lon: -73.7929 };
+
+/**
+ * The Sound's middle as a trip crosses it: from the bridge, between City Island and Fort Totten, then
+ * the line above. West to east, one latitude for each longitude.
+ */
+const CROSSING_LINE: readonly (readonly [lon: number, lat: number])[] = [[THROGS_NECK.lon, THROGS_NECK.lat], ...SOUND_LINE];
+
+/** The crossing line's latitude at a longitude within it. */
+function crossingLat(lon: number): number {
+  for (let i = 1; i < CROSSING_LINE.length; i++) {
+    const [[x0, y0], [x1, y1]] = [CROSSING_LINE[i - 1]!, CROSSING_LINE[i]!];
+    if (lon <= x1) return y0 + ((lon - x0) / (x1 - x0)) * (y1 - y0);
+  }
+  return CROSSING_LINE[CROSSING_LINE.length - 1]![1];
+}
+
+/**
+ * Whether the straight line between two places crosses the middle of the Sound: one on each shore,
+ * east of the Throgs Neck Bridge. Two places on one shore never do, however near the water (New
+ * Rochelle's center and its Davenport Neck, City Island and Pelham Bay), and neither do two in Queens.
+ * Over the longitudes the trip and the line share, the trip is north of the line, then south of it
+ * (or the other way): both are straight between the line's vertices and the ends of that stretch, so
+ * the side at those points says it, a trip through a vertex included. Touching the line is not crossing.
+ */
+export function crossesTheSound(a: LatLon, b: LatLon): boolean {
+  const [west, east] = a.lon <= b.lon ? [a, b] : [b, a];
+  const from = Math.max(west.lon, CROSSING_LINE[0]![0]);
+  const to = Math.min(east.lon, CROSSING_LINE[CROSSING_LINE.length - 1]![0]);
+  if (!(from <= to)) return false;
+  // Due north or south: the two ends are the whole of it.
+  if (west.lon === east.lon) return Math.sign(west.lat - crossingLat(from)) * Math.sign(east.lat - crossingLat(from)) < 0;
+  const tripLat = (lon: number) => west.lat + ((lon - west.lon) / (east.lon - west.lon)) * (east.lat - west.lat);
+  const at = [from, ...CROSSING_LINE.map(([lon]) => lon).filter((lon) => lon > from && lon < to), to];
+  const sides = new Set(at.map((lon) => Math.sign(tripLat(lon) - crossingLat(lon))));
+  return sides.has(1) && sides.has(-1);
+}
+
+/**
+ * The straight-line distance a trip covers: as the crow flies, or, when that line crosses the
+ * Sound, to the bridge and on from it. Never shorter than the straight line, so a search radius
+ * made from it still holds.
+ */
+export function tripMetres(from: LatLon, to: LatLon): number {
+  if (!crossesTheSound(from, to)) return haversineMetres(from, to);
+  return haversineMetres(from, THROGS_NECK) + haversineMetres(THROGS_NECK, to);
+}
+
 export type TravelMode = "walk" | "drive" | "transit";
 
 /** Default one-way travel limits by mode, minutes. A request may set its own. */
@@ -26,7 +104,12 @@ export const DEFAULT_PARKING_BUFFER_MINUTES = 8;
 
 const WALK_DETOUR = 1.3;
 const WALK_M_PER_MIN = 80; // ≈ 4.8 km/h
+/** Road distance over straight-line: town streets detour (1.4) over the first 5 km, roads beyond run straighter (1.25). */
 const DRIVE_DETOUR = 1.4;
+const DRIVE_DETOUR_FAR = 1.25;
+const DRIVE_TOWN_M = 5_000;
+/** Of the road distance, the first 4 km are driven at town speed, the rest at road speed. */
+const DRIVE_TOWN_ROAD_M = 4_000;
 const TRANSIT_DETOUR = 1.3;
 const TRANSIT_KMH = 18;
 const TRANSIT_WAIT_MIN = 8;
@@ -35,6 +118,37 @@ const TRANSIT_WAIT_MIN = 8;
 export function driveSpeedKmh(hourLocal: number): number {
   const h = hourLocal;
   return h >= 7 && h <= 10 ? 25 : h >= 16 && h <= 19 ? 25 : h >= 22 || h < 6 ? 45 : 35;
+}
+
+/**
+ * Average speed on the roads out of town (parkways, highways, county roads, with their ramps and
+ * lights): peak 40 km/h, off-peak 60 km/h, night 70 km/h. Conservative: Bronxville to Croton Point
+ * is ~35-40 min on the parkways; this says 47 at noon.
+ */
+export function roadSpeedKmh(hourLocal: number): number {
+  const h = hourLocal;
+  return h >= 7 && h <= 10 ? 40 : h >= 16 && h <= 19 ? 40 : h >= 22 || h < 6 ? 70 : 60;
+}
+
+/** Road metres for a straight-line distance (see DRIVE_DETOUR). */
+function driveRoadMetres(d: number): number {
+  return Math.min(d, DRIVE_TOWN_M) * DRIVE_DETOUR + Math.max(0, d - DRIVE_TOWN_M) * DRIVE_DETOUR_FAR;
+}
+
+/** Minutes behind the wheel for a straight-line distance at a local hour: town speed first, then road speed. */
+function driveMinutes(d: number, hourLocal: number): number {
+  const road = driveRoadMetres(d);
+  const town = Math.min(road, DRIVE_TOWN_ROAD_M);
+  return town / ((driveSpeedKmh(hourLocal) * 1000) / 60) + (road - town) / ((roadSpeedKmh(hourLocal) * 1000) / 60);
+}
+
+/** The straight-line distance `minutes` of driving covers at a local hour: the inverse of driveMinutes. */
+function driveReachMetres(minutes: number, hourLocal: number): number {
+  const townPerMin = (driveSpeedKmh(hourLocal) * 1000) / 60;
+  const townMinutes = DRIVE_TOWN_ROAD_M / townPerMin;
+  const road = minutes <= townMinutes ? minutes * townPerMin : DRIVE_TOWN_ROAD_M + (minutes - townMinutes) * ((roadSpeedKmh(hourLocal) * 1000) / 60);
+  const townRoad = DRIVE_TOWN_M * DRIVE_DETOUR;
+  return road <= townRoad ? road / DRIVE_DETOUR : DRIVE_TOWN_M + (road - townRoad) / DRIVE_DETOUR_FAR;
 }
 
 export interface TravelEstimate {
@@ -47,21 +161,20 @@ export interface TravelEstimate {
 }
 
 /**
- * v1 travel estimate. Straight-line distance × a detour factor at a speed by mode,
+ * v1 travel estimate. Straight-line distance (round by the bridge across the Sound, see tripMetres)
+ * × a detour factor at a speed by mode (a drive at town speed for its first few km, then road speed),
  * plus a fixed buffer for the mode (finding parking, waiting for a light).
  * Labeled as an estimate everywhere it is shown. Routed times come later via an adapter.
  */
 export function estimateTravel(from: LatLon, to: LatLon, mode: TravelMode, opts: { hourLocal?: number; parkingBufferMinutes?: number } = {}): TravelEstimate {
-  const d = haversineMetres(from, to);
+  const d = tripMetres(from, to);
   switch (mode) {
     case "walk": {
       const minutes = Math.ceil((d * WALK_DETOUR) / WALK_M_PER_MIN);
       return { minutes, mode, isEstimate: true, basis: `~${minutes} min walk` };
     }
     case "drive": {
-      const kmh = driveSpeedKmh(opts.hourLocal ?? 12);
-      const driveMin = (d * DRIVE_DETOUR) / ((kmh * 1000) / 60);
-      const minutes = Math.ceil(driveMin + (opts.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES));
+      const minutes = Math.ceil(driveMinutes(d, opts.hourLocal ?? 12) + (opts.parkingBufferMinutes ?? DEFAULT_PARKING_BUFFER_MINUTES));
       return { minutes, mode, isEstimate: true, basis: `~${minutes} min drive incl. parking` };
     }
     case "transit": {
@@ -74,10 +187,12 @@ export function estimateTravel(from: LatLon, to: LatLon, mode: TravelMode, opts:
 
 /**
  * The farthest straight-line distance estimateTravel can place inside `maxTravelMinutes`, over
- * every hour of the day: the inverse of the estimate above. Ingest and the request-time search
- * use it so the catalog covers exactly what the engine could ever call reachable.
+ * every hour of the day: the inverse of the estimate above. The request-time search uses it so it
+ * finds everything the engine could call reachable. `townSpeed` is the reach at town speed all the
+ * way, as the estimate was before it drove out of town at road speed: what ingest sweeps up around
+ * an area (see ingestExtentFor).
  */
-export function maxReachMetres(mode: TravelMode, maxTravelMinutes: number, opts: { parkingBufferForHour?: (hourLocal: number) => number } = {}): number {
+export function maxReachMetres(mode: TravelMode, maxTravelMinutes: number, opts: { parkingBufferForHour?: (hourLocal: number) => number; townSpeed?: boolean } = {}): number {
   switch (mode) {
     case "walk":
       return (maxTravelMinutes * WALK_M_PER_MIN) / WALK_DETOUR;
@@ -86,7 +201,7 @@ export function maxReachMetres(mode: TravelMode, maxTravelMinutes: number, opts:
       for (let h = 0; h < 24; h++) {
         const buffer = opts.parkingBufferForHour?.(h) ?? DEFAULT_PARKING_BUFFER_MINUTES;
         const driving = Math.max(0, maxTravelMinutes - buffer);
-        best = Math.max(best, (driving * ((driveSpeedKmh(h) * 1000) / 60)) / DRIVE_DETOUR);
+        best = Math.max(best, opts.townSpeed ? (driving * ((driveSpeedKmh(h) * 1000) / 60)) / DRIVE_DETOUR : driveReachMetres(driving, h));
       }
       return best;
     }

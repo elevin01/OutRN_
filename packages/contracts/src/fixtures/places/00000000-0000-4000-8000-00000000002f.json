@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-00000000002f",
-  "name": "Grand Kitchen",
+  "name": "Attorney Pitt Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.726906,
-    "lon": -73.992709
+    "lat": 40.718281,
+    "lon": -73.971661
   },
   "address": null,
   "photos": [],
@@ -28,7 +28,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
+      "value": "Tu-Su 12:00-23:00; Mo off",
       "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
@@ -38,9 +38,9 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.593,
+        "confidence": 0.588,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -63,7 +63,7 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -74,7 +74,7 @@
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Korean",
+      "value": "Italian",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,7 +86,7 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -97,7 +97,7 @@
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Reservation required",
+      "value": "Walk in; reservations taken",
       "detail": null,
       "provenance": {
         "sources": [
@@ -106,15 +106,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
-        "confidence": 0.7,
+        "evidence": "estimate",
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
         "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
@@ -132,7 +132,7 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -155,7 +155,7 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-09T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
@@ -166,14 +166,14 @@
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 5266"
+    "websiteUrl": "https://attorneypittkitchen.example/",
+    "phone": "+1 212 555 1242"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=driving"
     },
     "links": []
   },

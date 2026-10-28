@@ -12,7 +12,8 @@
       "predictiveBackGestureEnabled": true
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single"
     },
     "scheme": "outrn",
     "plugins": [

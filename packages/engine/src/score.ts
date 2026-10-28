@@ -1,5 +1,6 @@
 import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
-import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, Scores } from "./types.js";
+import { destinationOf, type DestinationView } from "./destination.js";
+import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, ResultClass, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
 import { dayPart, type DayPart } from "./daypart.js";
@@ -7,6 +8,8 @@ import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from ".
 import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
+import { cuisinesOf } from "./cuisine.js";
+import { LIKELY_OPEN } from "./likely.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
@@ -20,7 +23,7 @@ const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
  * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
  * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, notForTheCompany: 0.15 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -35,6 +38,40 @@ const COMPANY_CATEGORY_BONUS: Record<NonNullable<RequestContext["company"]>, str
   friends: ["bar", "restaurant", "live_music", "market", "park", "theatre", "bowling", "arcade", "nightclub", "activity"],
   family: ["park", "garden", "museum", "market", "dessert", "attraction", "library", "bowling", "arcade", "activity"],
 };
+
+/** Food a quick, casual meal is made of: good for friends or family, not what a date is built around. */
+const CASUAL_CUISINES: ReadonlySet<string> = new Set(["pizza", "burger", "fast_food", "chicken", "fried_chicken", "wings", "sandwich", "hot_dog", "bagel", "donut", "deli", "kebab", "fish_and_chips", "diner", "bubble_tea"]);
+/** Bars an evening for two is not built around: the big screens, the pub crowd. */
+const NOT_A_DATE_BAR: ReadonlySet<string> = new Set(["sports_bar", "pub"]);
+/** Activities that are no date: a casino floor. */
+const NOT_A_DATE_ACTIVITY: ReadonlySet<string> = new Set(["casino"]);
+
+/**
+ * Whether a place suits who is going: its category is one for that company, and, for a date, it is a
+ * place an evening for two is built around. A restaurant whose every cuisine is casual (a pizza
+ * counter, a burger joint), a pub or sports bar, and a casino are for friends, not a date. What a
+ * place is not known to be stays as its category says.
+ */
+export function suitsCompany(c: Candidate, company: NonNullable<RequestContext["company"]>): boolean {
+  if (!COMPANY_CATEGORY_BONUS[company].includes(c.category)) return false;
+  if (company !== "date") return true;
+  const subtype = (c.facts.subtype?.value as { value?: unknown } | undefined)?.value;
+  if (c.category === "bar") return !(typeof subtype === "string" && NOT_A_DATE_BAR.has(subtype));
+  if (c.category === "activity") return !(typeof subtype === "string" && NOT_A_DATE_ACTIVITY.has(subtype));
+  const cuisines = cuisinesOf(c);
+  return !(cuisines.length > 0 && cuisines.every((x) => CASUAL_CUISINES.has(x)));
+}
+
+/** How far into a long window this search is: 0 up to 90 minutes, 1 from four hours (see WORTH_THE_TRIP). */
+export function longWindowOf(ctx: RequestContext): number {
+  const windowMinutes = Math.max(1, minutesBetween(ctx.now, deadlineOf(ctx)));
+  return Math.max(0, Math.min(1, (windowMinutes - WORTH_THE_TRIP.fromMinutes) / (WORTH_THE_TRIP.fullMinutes - WORTH_THE_TRIP.fromMinutes)));
+}
+
+/** What being a destination adds to a place's appeal in this search (see scoreCandidate, and detour.ts). */
+export function destinationAppeal(dest: DestinationView, ctx: RequestContext): number {
+  return APPEAL_WEIGHTS.destination + longWindowOf(ctx) * APPEAL_WEIGHTS.destinationLongWindow + (dest.note ? APPEAL_WEIGHTS.destinationNamed : 0);
+}
 
 export function scoreCandidate(
   c: Candidate,
@@ -55,7 +92,7 @@ export function scoreCandidate(
   // getting there and back. A long trip is for a place that takes a while (a museum, a market, a
   // long meal), not a 25-minute ice cream. It counts from 90 minutes and fully from four hours.
   const worth = 1 - (2 * t.travel.minutes) / (2 * t.travel.minutes + t.visit.typicalMinutes);
-  const longWindow = Math.max(0, Math.min(1, (windowMinutes - WORTH_THE_TRIP.fromMinutes) / (WORTH_THE_TRIP.fullMinutes - WORTH_THE_TRIP.fromMinutes)));
+  const longWindow = longWindowOf(ctx);
   const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * Math.max(0, 1 - t.travel.minutes / reach) + longWindow * WORTH_THE_TRIP.share * worth;
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
@@ -65,10 +102,14 @@ export function scoreCandidate(
   // from their taste (below). Feasibility has already excluded published limits; this sinks estimated
   // ones. A bar with no known limit is still a bar: no family bonus, and it sinks like one with a limit.
   const adultForMinor = minorInParty(ctx) && ((ageLimitOf(c)?.minAge ?? 0) >= 18 || c.category === "bar" || c.category === "nightclub");
+  // An event made for children (its source says so) is a family's: the family bonus with a minor
+  // along, and it sinks in appeal (below) for grown-ups out on their own.
+  const forKids = c.kind === "occurrence" && (c.facts.audience?.value as { kids?: unknown } | undefined)?.kids === true;
   if (ctx.company) {
     if (adultForMinor) chips -= 0.25;
-    else if (COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category)) chips += 0.25;
+    else if (suitsCompany(c, ctx.company)) chips += 0.25;
   }
+  if (forKids && minorInParty(ctx)) chips += 0.25;
   chips = Math.max(0, Math.min(1, chips));
   let weather = 0.5;
   const outdoor = isOutdoor(c);
@@ -94,6 +135,18 @@ export function scoreCandidate(
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
+  // A place worth going out of the way for (a preserve, gardens, a lookout): more so with the time to
+  // go out of the way, where it outweighs the longer trip that fit holds against it, and a little more
+  // when it is one anyone local would name (the curated list, which says why).
+  const dest = c.kind === "venue" ? destinationOf(c) : null;
+  if (dest) {
+    appeal += destinationAppeal(dest, ctx);
+    extra.push("DESTINATION");
+  }
+  if (forKids && !minorInParty(ctx)) appeal -= APPEAL_WEIGHTS.kidsEventForAdults;
+  // A place of the company's kind that is no place for it (a pub, a casino floor, a pizza counter on a
+  // date) sinks, so the wine bar and the dinner come first.
+  if (ctx.company && COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category) && !suitsCompany(c, ctx.company)) appeal -= APPEAL_WEIGHTS.notForTheCompany;
   // A franchise is the same everywhere; prefer the local place unless the user asked for that kind of place.
   if (c.brand && !ctx.categories?.includes(c.category)) appeal -= APPEAL_WEIGHTS.chainPenalty;
   const arrivalHour = localClock(t.arrival, ctx.timezone).hour;
@@ -110,7 +163,8 @@ export function scoreCandidate(
     appeal += APPEAL_WEIGHTS.hoursConfirmed;
     extra.push("HOURS_CONFIRMED");
   }
-  if (ctx.sunset && outdoor && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
+  // Not once the place is dark for the day ("off": a park or waterfront after sunset), which the window would contradict.
+  if (ctx.sunset && outdoor && part !== "off" && (c.category === "viewpoint" || c.category === "waterfront" || c.category === "park")) {
     const m = minutesBetween(t.arrival, ctx.sunset);
     // No forecast keeps the window as before; a forecast must say it is dry, not merely not say rain.
     const clear = !ctx.weather || dry;
@@ -176,13 +230,44 @@ export function scoreCandidate(
  */
 export function merit(e: Evaluation): number {
   const s = e.scores;
-  if (s.taste !== undefined) return s.taste * TASTE.merit.taste + s.appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty;
-  return s.appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
+  // A destination past the everyday reach with one like it nearer pays back its bonus (detour.ts).
+  const appeal = s.appeal - (e.detour?.appeal ?? 0);
+  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
+  // Likely open, not known to be: less the cost of checking, and of the times places like it are shut then.
+  return e.likelyOpen ? m - LIKELY_OPEN.checkCost - (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost : m;
 }
 
-/** Ordering within the eligible set: class, then merit. */
+/**
+ * Where an option ranks: Ready, and Check first on its hours alone where places like it are likely
+ * open then (LIKELY_OPEN), lead; the rest of Check first follows. A place outdoors in the dark that
+ * would lead (a park open all night at 10:30pm, or likely open: dayPart "off") ranks with Check
+ * first, by merit, which its hour already costs: being open is not enough to come before every bar
+ * worth checking. A café at 9pm keeps its standing: it is a poor idea for the hour, not a dark lawn.
+ * Its class (the card's label) is its own.
+ */
+export function standing(e: Evaluation): ResultClass {
+  const s = e.class === "check_first" && e.likelyOpen ? "ready" : e.class;
+  // Likely open or known to be, a dark lawn is no better for it.
+  return s === "ready" && e.dayPart === "off" && isOutdoor(e.candidate) ? "check_first" : s;
+}
+
+/**
+ * A doubt the party may go in at all: a bar with a child along, a place likely 21+. These come only
+ * with an age in the request (feasibility), and such a place ranks after every other option: nothing
+ * that moves the rest (a dark lawn's demotion, a taste, an appeal) lifts it onto a family's first page.
+ */
+const AGE_DOUBTS: ReadonlySet<string> = new Set(["AGE_LIMIT_LIKELY", "AGE_LIMIT_UNCERTAIN", "KIDS_UNCERTAIN"]);
+export function hasAgeDoubt(e: Evaluation): boolean {
+  return e.unresolved.some((c) => AGE_DOUBTS.has(c));
+}
+
+/** Ordering within the eligible set: standing, then merit; an age doubt for the party last. */
 export function compareEvaluations(a: Evaluation, b: Evaluation): number {
-  const rank = (e: Evaluation) => (e.class === "ready" ? 0 : e.class === "check_first" ? 1 : 2);
+  const rank = (e: Evaluation) => {
+    const s = standing(e);
+    const r = s === "ready" ? 0 : s === "check_first" ? 1 : 2;
+    return r <= 1 && hasAgeDoubt(e) ? 1.5 : r;
+  };
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
   const wa = merit(a);
   const wb = merit(b);

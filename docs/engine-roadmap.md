@@ -227,7 +227,11 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     and bars, shown on the details page ("Cuisine: Italian, pizza"), and settable by the founder.
   - **Variety within a type.** After one of each activity, each next slot goes to the best place
     once a repeat of the last three shown is paid for: 0.03 of merit per same category, 0.05 per
-    same cuisine group (Italian and pizza are one; sushi and ramen are one) or activity subtype.
+    same cuisine group (Italian and pizza are one; sushi and ramen are one), activity subtype or
+    bar style (a pub, a wine bar, a cocktail bar, a sports bar, a brewery: from OSM's tags, else
+    the name). On a date, a pub, a sports bar, a casino and a restaurant whose every cuisine is
+    casual (pizza, burgers) neither get the date bonus nor keep their appeal: the wine bar and the
+    dinner come first.
     A near-tie goes to the different place; a clearly better one keeps its slot. Class still comes
     first, and a category chip still gets only that category, with its cuisines varied.
   - **Worth the trip.** From 90 minutes, and fully from four hours, half the travel score is the
@@ -315,21 +319,119 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     public information), so published hours still decide whether one is open, and a centre with a
     listed event keeps its own row. Tuckahoe now ranks #12 at 1am and about #40 at 10pm.
   - Golden: unchanged.
+- **Part 8 (this PR): likely open.** Most places list no hours (in White Plains, 9 in 10
+  restaurants), so Ready meant "one of the few with hours", however far: on a Saturday at 7:30pm
+  White Plains had 9 Ready places and 475 Check first, and its first page was a hotel lounge, a
+  Barnes & Noble 29 minutes away and a restaurant 25 minutes away, past the whole downtown.
+  - A Check-first place whose hours are the one thing to check (`HOURS_UNKNOWN` alone), that a source
+    says still operates (a published `business_status`: Overture, or a mapper's survey), ranks with the
+    Ready ones when most places of its kind that list hours are open from its arrival for a useful
+    visit: at least 8 of them, 4 in 5 open (`LIKELY_OPEN`). The sample is every loaded place of the
+    category with published hours read exactly, per 15-minute arrival slot.
+  - Ranking only. It stays Check first, with "hours not listed" as its caveat and a reason saying why
+    it is offered: "most places like it nearby are open then (77 of 85 that list hours)" (an
+    estimate). Its merit pays 0.02 for having to check and 0.25 times the share shut then, so a
+    likely-open place a short drive away comes before a Ready one across the county, never before a
+    Ready one about as good and as near (a 90% share costs what about 11 more minutes of driving does).
+  - White Plains, Saturday 7:30pm: O'Connor's Public House (12 min) is #2, and the second and third
+    pages are downtown bars and restaurants (11 to 13 min) with the Cabin (Ready, 25 min) among them,
+    where they were Buffalo Wild Wings, Carvel 29 minutes away, two cafés and two parks after dark.
+  - Golden: two LES slots. Ray's Pizza & Bagel Cafe (Overture says it operates) is #3 for pizza, and
+    Best Damn Cookies #6 on the Friday date, in place of il laboratorio del gelato. Bronxville unchanged.
+  - Engine time: about 20% more (White Plains, 2,613 candidates: 119 ms warm, was 97).
+- **Part 9 (this PR): what a search in each of the 12 areas showed.** Six searches per area (Sunday
+  evening, a family Saturday, a Friday date, a weekday lunch, an active Saturday morning, Wednesday
+  10:30pm) on the fresh captures, three pages each, read by hand.
+  - **The same far parks everywhere.** A family Saturday from White Plains, Port Chester or Rye led
+    with Tibbetts Brook, Van Cortlandt, Orchard Beach, Inwood Hill and Fort Tryon (34 to 45 minutes),
+    past Kensico Dam Plaza and Greenburgh Nature Center (20). A 4-hour window reaches twice as far for
+    a destination, and every destination in reach earned the same bonus, so a Wikidata id (the
+    landmark lift) outweighed 20 more minutes each way. Now a destination past the everyday reach
+    (30 minutes by car) pays its bonus back over the next 20 minutes when a Ready one like it is
+    within that reach (`DETOUR`, detour.ts; any walk stands in for another, anything else only its
+    own kind). White Plains now opens with Greenburgh Nature Center, then Cranberry Lake Preserve and
+    Kensico Dam Plaza; Inwood Hill and Fort Tryon fall from #9 and #12 to #23 and #29.
+  - **Long Island was half an hour away.** Straight-line travel cannot see the Sound: a bookshop in
+    Locust Valley was "29 min" from Rye and Mamaroneck. A trip whose straight line crosses the middle
+    of the Sound now goes round by the Throgs Neck Bridge (`crossesTheSound`, `tripMetres`): ~34 km and
+    ~55 minutes from Mamaroneck at noon. The line starts at the bridge, so City Island and Pelham Bay
+    to Kings Point or Great Neck go round too; a trip exactly through one of its vertices crosses it.
+    A trip along one shore never does, however near the water (New Rochelle to its Davenport Neck,
+    City Island to Pelham Bay) or in Queens. The destinations job's own test of what is across
+    (with its margin) stays a filter on what it adds. Never shorter than the straight line, so search
+    radii hold.
+  - **Parks at 10:30pm.** Parks OSM tags 24/7 (Brite Avenue Park, Davis Brook Park) were Ready on a
+    Wednesday night, so they came before every bar that lists no hours. A Ready place outdoors in
+    the dark (known to be open, or likely open) now ranks with Check first, by merit (`standing`); its
+    card still says what it did. A café at 9pm keeps its standing. Shores join parks and gardens in following the light (a sand
+    beach was "fair" until 11pm); a lookout keeps the city lights. A dark shore earns no sunset window.
+  - **The dark lawn's demotion put a family's bar first.** With the park after dark moved down, a bar
+    and a likely-21+ casino came before it at 10:30pm for a family. A place with an age doubt for the
+    party (`AGE_LIMIT_LIKELY`, `AGE_LIMIT_UNCERTAIN`, `KIDS_UNCERTAIN`, which come only with an age or a
+    family in the request) now ranks after every other eligible option (`hasAgeDoubt`): no class
+    pass, variety pass or love keeps one on the first page. Adults' order is unchanged.
+  - **A casino in the "active" mood.** Empire City's subtype read as games first; it is now
+    nightlife first and half a game.
+  - Fixtures: the 6:30pm LES pages lose Pitt Park (after dark), so a Saturday 2pm scenario
+    (`afternoon`) keeps a page with photos for the apps' demo mode.
+  - Golden: unchanged (none of its scenarios has a far destination with a near one like it).
+  - Seen, not fixed: most local places listing no hours, which reading their own sites addresses.
+  - **Hours a mapper mistyped.** Hauser & Wirth "Mo-Fr 10:00-06:00" (for 18:00), a Barnes & Noble
+    "Fr, Sa 10:00-10:00", St. Agnes Library to midnight. At a place that closes by the evening
+    (museum, gallery, library, bookshop, garden), a close past 11pm or into the next morning on the
+    interval the visit uses is no close: Check first with "the hours listed look mistyped"
+    (`doubtfulClose`, `HOURS_DOUBTFUL`), and a peer's hours then don't count among the kind's habits
+    for "likely open". Only that interval is doubted, as the hours library reads it: its opening,
+    the schedule's other days, its closed days, other seasons and quoted comments stand as listed.
+    Round the clock (a study hall 24/7, a museum's viewing windows) and late hours where late is the
+    point (bars, cafés, music venues) are read as listed.
+  - **The same place twice.** OSM maps a park as an old point and its outline, a shop twice, a
+    preserve in parts; Overture's copy of a place OSM has under another category (Jay Heritage Center
+    as a park and an attraction) escaped identity, which never merges across categories. A list now
+    shows a name once within 150 m, or 1 km for grounds (park, garden, shore, attraction), whatever
+    the records' category or source (`SAME_PLACE_M`, `SAME_GROUNDS_M`, select.ts). Over the 12 areas
+    and 8 requests' first five pages, the 6 repeats (Marshlands Conservancy, Rockefeller State Park
+    Preserve, Columbus Park, Greenburgh Nature Center) are gone; the 5 left are a chain's branches
+    1.3–8.6 km apart in a café list, which are different places. The records stay as they are:
+    merging them is identity's work, with review.
 - **Still to do:**
   - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
     outrank a Ready place. Founder checks or the museums' own sites would let them lead.
   - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
     offers (cuisines, diets, must-haves) on its card.
-  - Add golden scenarios for the new areas once their real data is ingested.
+  - Golden scenarios for the new areas: White Plains done (six searches on its 18 Oct captures,
+    seeded on its own so its reach over Bronxville's doesn't move Bronxville's). Its Friday date
+    leans on the few places that list hours (a Barnes & Noble, a Baskin-Robbins): the venues' own
+    websites (batch 8) should change that. Next: Yonkers and Port Chester.
 
 ### Batch 7: travel realism (needs data from outside this sandbox, once)
 - **Transit from GTFS.** MTA subway, MTA buses and Metro-North give station-to-station times plus walking legs, replacing the straight-line estimate. This matters most for the Bronx, Yonkers and Metro-North towns.
-- **Drive profiles.** Speed by time of day per area, then a self-hosted routing adapter (OSRM) with cached travel times.
+- **Drive profiles.** First step done: a drive goes at town speed for its first 4 km of road, then at road
+  speed (peak 40, off-peak 60, night 70 km/h) with straighter routing beyond 5 km. Bronxville to Croton
+  Point (27.6 km) is now ~47 min at noon instead of 75, so a 30-40 minute drive out of town is an option
+  again; trips around town are unchanged. Ingest still sweeps the town-speed reach around an area.
+  Next: speed by time of day per area, then a self-hosted routing adapter (OSRM) with cached travel times.
 - **Parking.** Check the new areas' parking estimates the way Bronxville's evening rule was checked.
 
 ### Batch 8: supply breadth
-- **Events.** First-party JSON-LD events, library and community calendars, and cinema showtimes (the programme gap from the 26 Sep audit).
+- **Destinations worth the drive: first step done** (`outrn ingest destinations`). The places worth
+  going out of the way for (preserves, gardens, beaches, lookouts, estates) come from Overture around
+  an area, out to a 60-minute drive: a curated list of about 35 around southern Westchester and the
+  Bronx, each with a line on why, and records that say they are a preserve, sanctuary, reservation,
+  nature center or arboretum. A long window reaches farther for them (half again from 2½ hours,
+  double from 3½), the card says "worth the drive: …", a walk reads as one ("a walk, about 1h30"),
+  and a lookout at sunset puts the sunset in the plan. Outdoor ones are usually open dawn to dusk.
+  On the captures, a 4-hour Saturday from Bronxville now leads with Twin Lakes, Orchard Beach, State
+  Line Lookout, Greenburgh Nature Center, Van Cortlandt Park and Glen Island Park, and a Monday after work
+  suggests State Line Lookout for the sunset. Next: OSM for their hours, size and trails (gardens,
+  estates, the zoo and Playland stay Check first until their hours are known), Wikidata for what is notable,
+  and lists for the other areas.
+- **Events.** NYC Parks' public events are in (`outrn ingest nyc-parks`, NYC Open Data, live in
+  `pnpm real`, switched on once its terms are reviewed): about a hundred within reach of the Lower
+  East Side, nearly three hundred of the Bronx, withdrawn when no area's read lists them any more.
+  Next: first-party JSON-LD events, library and community calendars, and cinema showtimes (the
+  programme gap from the 26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the
@@ -371,6 +473,27 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     named for karaoke is an activity, not a show.
   - **Next:** hours for these places from their own sites (first-party JSON-LD), so the best of
     them can be Ready.
+- **Hours from venues' own websites: done (this PR)** (`outrn firstparty discover` and `run`; the
+  founder's call, decision 10). Outside the city four in five places list no hours, so most local
+  places could only be Check first.
+  - **Which sites:** every venue with a website and no published hours, when the site is its own
+    (never a social network, review site, map, booking, ordering or link page). Registered
+    automatically, each with its reason; a founder can still add one by hand.
+  - **How:** robots.txt first (RFC 9309, our product token, else `*`; a site whose robots.txt can't
+    be reached is not read), cached a day per host with its crawl delay. At most four requests a day
+    per host, 5 s apart, eight hosts at a time; a 429 or 503 backs off six hours or more, a refusal
+    (403, or robots.txt) is asked again in a month. Moving between www. and the bare name is
+    followed; moving to another host once, if that host's robots.txt allows.
+  - **What:** JSON-LD (hours, phone, price, events), then microdata, then the hours the page writes
+    out, read strictly (am/pm required; not under a happy-hour, delivery, kitchen, office or
+    worship heading; no season's or holiday's hours; no two sets for a day; a weekend day stated).
+    On government sites, and sites many venues share, only structured data counts. With no hours on
+    the page, its own Hours/Visit/Location/Contact page is read. Facts are published at 0.85
+    (structured) or 0.75 (the page's words), with what they were read from as evidence.
+  - **White Plains, October 2026:** 237 sites, 103 read, hours from 61; robots.txt kept us off 42;
+    29 events came with the pages (JSON-LD events, kept as occurrences). `pnpm capture` records each
+    area's reads (`<area>-sites.json`) and `pnpm real` replays them.
+  - **Next:** `og:image` as a photo where the site's terms allow, and the menu link the site gives.
 - **`outrn ingest osm --all`**, one merged query across overlapping area extents instead of ten.
 
 ### Batch 9: learning from use
@@ -417,5 +540,14 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
    daylight left, its hours stay unknown (Check first), because a city park open until 1am is still an
    option. Gardens are not assumed: a community garden opens on the days it posts. On the captures,
    the Bronxville outdoors lover now sees four parks Ready, where before there was one, Check first.
-   Sun times come from SunCalc. The hours library reads OSM `sunrise-sunset` rules as 06:00–18:00
-   local time, a separate fix.
+   Sun times come from SunCalc. Published sun-relative hours use the real sun too: the hours library
+   read OSM `sunrise-sunset`, `dawn-dusk` and offsets like `(sunset-01:00)` as a fixed 06:00–18:00
+   (05:30–18:30 for dawn and dusk), flagged approximate. `evaluateHours` now puts each day's real times
+   at the place into the rule before the library reads it, so a December park closes at 4:32pm, and
+   such hours are no longer approximate.
+9. **Likely open** (batch 6, part 8): should a place with no listed hours rank with the Ready ones
+   when most places like it nearby are open then (still labelled Check first, with the reason on its
+   card)? It's in place now; veto it in review to keep Ready strictly first.
+10. ~~**Venues' own websites:** register each site by hand with a reviewed reason, or automatically?~~
+   Decided: automatically, respecting robots.txt and the rate limits above (batch 8). Sites that
+   aren't the venue's own are never registered.

@@ -203,6 +203,18 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     const future = { ...undated, statusUpdatedAt: "2099-01-01T00:00:00.000Z" };
     await expect(ingestOverture(db, { areaSlug: "les", fromFile: capture("future", [future]) })).rejects.toThrow(/after the capture was taken/);
   });
+
+  it("an area whose snapshot holds only places an overlapping area's ingest made them venues of has them for Overture", async () => {
+    // White Plains's (synthetic) snapshot of a small circle around Grand Kitchen: the venue is LES's, its record now White Plains's too.
+    const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: Array<{ tags?: Record<string, string>; lat?: number; lon?: number }> };
+    const grand = fixture.elements.find((e) => e.tags?.["name"] === "Grand Kitchen")!;
+    const path = join(DIR, "white-plains-osm.json");
+    writeFileSync(path, JSON.stringify({ elements: [grand], outrn_extent: { lat: grand.lat, lon: grand.lon, radius_m: 30 } }));
+    expect((await ingestOsmArea(db, { areaSlug: "white_plains", fromFile: path })).venues.created).toBe(0);
+    const s = await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains", [GRAND]) });
+    expect(s.venues.matched).toBe(1);
+    expect(await current("Grand Kitchen", "business_status")).toMatchObject({ value: { status: "operating" }, source_ids: ["overture"] });
+  });
 });
 
 describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {

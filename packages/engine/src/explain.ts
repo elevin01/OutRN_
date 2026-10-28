@@ -1,11 +1,12 @@
-import { addMinutes, INTERESTS } from "@outrn/core";
+import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DESTINATION_LABEL, INTERESTS } from "@outrn/core";
+import { destinationOf } from "./destination.js";
 import { waitCeilingMinutes } from "./conditions.js";
 import { kidFacilityLevels } from "./amenities.js";
 import { leadCuisine } from "./cuisine.js";
 import { ageLimitOf } from "./feasibility.js";
 import { happyHourAt } from "./offers.js";
 import { parkStepText } from "./parking.js";
-import { fmtDuration, fmtTime } from "./format.js";
+import { fmtDuration, fmtTime, fmtUntil } from "./format.js";
 import type { Evaluation, ReasonCode, RequestContext } from "./types.js";
 
 /**
@@ -17,6 +18,7 @@ export { fmtDuration, fmtTime } from "./format.js";
 
 const UNRESOLVED_TEXT: Partial<Record<ReasonCode, string>> = {
   HOURS_UNKNOWN: "hours not listed",
+  HOURS_DOUBTFUL: "the hours listed look mistyped",
   HOURS_UNVERIFIED: "hours not checked recently",
   HOURS_APPROXIMATE: "hours are approximate",
   ADMISSION_UNCONFIRMED: "admission not confirmed",
@@ -64,6 +66,13 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   // What this person likes comes first: it is why this option is on their list.
   if (has("TASTE_MATCH") && e.tasteLead) add("TASTE_MATCH", `matches your taste for ${INTERESTS[e.tasteLead].toLowerCase()}`, { interest: e.tasteLead });
   if (has("EVENT_STARTS_SOON")) add("EVENT_STARTS_SOON", "starts soon", { startsAt: iso(e.candidate.occurrence?.start) });
+  // What it is worth going for, and when it is farther than an everyday outing, that it is worth it.
+  const dest = has("DESTINATION") ? destinationOf(e.candidate) : null;
+  if (dest) {
+    const beyond = t.travel.minutes > DEFAULT_MAX_TRAVEL_MINUTES[t.travel.mode];
+    const why = dest.note ?? DESTINATION_LABEL[dest.kind];
+    add("DESTINATION", beyond ? `worth the ${t.travel.mode === "drive" ? "drive" : t.travel.mode === "walk" ? "walk" : "trip"}: ${why}` : why, { kind: dest.kind, note: dest.note, beyondEveryday: beyond });
+  }
   if (has("SHORT_TRAVEL")) add("SHORT_TRAVEL", t.travel.mode === "walk" ? "a short walk" : t.travel.mode === "drive" ? "a short drive" : "a short trip", { mode: t.travel.mode, minutes: t.travel.minutes });
   const happy = has("HAPPY_HOUR") ? happyHourAt(e.candidate, t.arrival, t.latestFinish) : null;
   if (happy) add("HAPPY_HOUR", happy.from ? `happy hour from ${fmtTime(happy.from, tz)}` : `happy hour until ${fmtTime(happy.until, tz)}`, { from: iso(happy.from), until: iso(happy.until) });
@@ -81,6 +90,8 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   }
   if (has("OPEN_LATE")) add("OPEN_LATE", "open late", { closesAt: iso(t.closesAt) });
   if (dawnToDusk) add("DAWN_TO_DUSK", "usually open dawn to dusk", { duskAt: t.closesAtIsEstimate ? iso(t.closesAt) : null, isEstimate: true });
+  // Its own hours stay unknown (the caveat says so); this is why it is offered anyway.
+  if (has("LIKELY_OPEN") && e.likelyOpen) add("LIKELY_OPEN", `most places like it nearby are open then (${e.likelyOpen.open} of ${e.likelyOpen.listed} that list hours)`, { open: e.likelyOpen.open, listed: e.likelyOpen.listed, isEstimate: true });
   if (has("HOURS_CONFIRMED")) add("HOURS_CONFIRMED", "hours confirmed", { verifiedAt: iso(e.candidate.facts.opening_hours?.verifiedAt) });
   if (has("FREE")) add("FREE", e.price.isEstimate ? "usually free" : "free");
   else if (has("FITS_BUDGET")) add("FITS_BUDGET", "within budget");
@@ -134,12 +145,12 @@ export function explain(e: Evaluation, tz: string, cuisines: readonly string[] =
     parts.push(`starts ${fmtTime(o.start, tz)}${o.end ? `, ends ${fmtTime(o.end, tz)}` : ""}`);
   } else {
     // What the visit takes, not how long the user may stay: their time is theirs.
-    parts.push(t.visit.style === "takeout" ? `to go, about ${fmtDuration(t.visit.typicalMinutes)}` : `takes about ${fmtDuration(t.visit.typicalMinutes)}`);
+    parts.push(t.visit.style === "takeout" ? `to go, about ${fmtDuration(t.visit.typicalMinutes)}` : t.visit.style === "walk" ? `a walk, about ${fmtDuration(t.visit.typicalMinutes)}` : `takes about ${fmtDuration(t.visit.typicalMinutes)}`);
     // A wait is time the visit costs on top: its usual range, or what a report saw.
     const wait = t.conditions.find((x) => x.kind === "wait");
     if (wait?.minutes) parts.push(`~${wait.minutes.min}–${wait.minutes.max} min wait`);
     else if (wait && wait.basis === "report" && wait.level !== "none") parts.push(`${wait.level} line reported`);
-    if (t.closesAt) parts.push(t.closesAtIsEstimate ? `until dusk (~${fmtTime(t.closesAt, tz)})` : `until ${fmtTime(t.closesAt, tz)}`);
+    if (t.closesAt) parts.push(t.closesAtIsEstimate ? `until dusk (~${fmtTime(t.closesAt, tz)})` : `until ${fmtUntil(t.closesAt, t.arrival, tz)}`);
   }
   // Cold or heat outdoors is worth knowing before leaving; rain is a caveat of its own.
   const weather = t.conditions.find((x) => x.kind === "weather" && (x.level === "cold" || x.level === "hot"));
@@ -161,7 +172,7 @@ export function explain(e: Evaluation, tz: string, cuisines: readonly string[] =
 
 /** One step of the plan, in order: when to leave, arrive, order or get in, wrap up, be back. */
 export interface PlanStep {
-  kind: "leave" | "park" | "arrive" | "event_starts" | "order_by" | "last_entry" | "entry_by" | "wrap_up" | "back_by";
+  kind: "leave" | "park" | "arrive" | "event_starts" | "order_by" | "last_entry" | "entry_by" | "sunset" | "wrap_up" | "back_by";
   at: Date;
   /** True when the time rests on an estimate (travel today; a guessed last entry). */
   isEstimate: boolean;
@@ -173,7 +184,7 @@ export interface PlanStep {
  * The plan behind a card as timed steps. Built from the same timing the engine checked, so the steps
  * never promise more than feasibility allowed.
  */
-export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | "backBy">): PlanStep[] {
+export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | "backBy" | "sunset">): PlanStep[] {
   const t = e.timing;
   if (e.class === "ineligible" || !t) return [];
   const tz = ctx.timezone;
@@ -197,6 +208,8 @@ export function planSteps(e: Evaluation, ctx: Pick<RequestContext, "timezone" | 
     else if (t.latestArrivalKind === "last_entry") steps.push({ kind: "last_entry", at: la, isEstimate: t.latestArrivalIsEstimate, text: t.latestArrivalIsEstimate ? `Last entry likely around ${at(la)}` : `Last entry ${at(la)}` });
     else steps.push({ kind: "entry_by", at: la, isEstimate: false, text: `Get in by ${at(la)}` });
   }
+  // The sunset a lookout or a waterfront is for, when the visit is there for it.
+  if (ctx.sunset && e.reasons.includes("SUNSET_WINDOW") && ctx.sunset >= t.arrival && ctx.sunset <= t.latestFinish) steps.push({ kind: "sunset", at: ctx.sunset, isEstimate: false, text: `Sunset at ${at(ctx.sunset)}` });
   const f = t.latestFinish;
   const byClose = t.closesAt !== null && f.getTime() === t.closesAt.getTime();
   // With a back-by time, the deadline already leaves room for the (estimated) trip back.

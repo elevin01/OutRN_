@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000002c",
+  "requestId": "00000000-0000-4000-8000-000000000033",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -28,14 +28,14 @@
       "outdoor_seating"
     ],
     "categories": [],
+    "eventsOnly": false,
     "travelMode": "walk",
     "visitStyle": "dine_in",
     "youngestAge": null,
     "atIsExplicit": false,
     "windowMinutes": 120,
     "originIsDefault": true,
-    "travelModeIsDefault": true,
-    "eventsOnly": false
+    "travelModeIsDefault": true
   },
   "items": [
     {
@@ -63,7 +63,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000001e",
+      "id": "00000000-0000-4000-8000-000000000026",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -124,7 +124,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000001e",
+      "placeId": "00000000-0000-4000-8000-000000000026",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -184,7 +184,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000001f",
+      "id": "00000000-0000-4000-8000-000000000027",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -245,7 +245,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000001f",
+      "placeId": "00000000-0000-4000-8000-000000000027",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -305,7 +305,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000023",
+      "id": "00000000-0000-4000-8000-000000000029",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -366,7 +366,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000023",
+      "placeId": "00000000-0000-4000-8000-000000000029",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -405,8 +405,8 @@
   "page": {
     "offset": 6,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJjIiwibyI6M30"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [

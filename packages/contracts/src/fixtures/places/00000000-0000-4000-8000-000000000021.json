@@ -1,54 +1,47 @@
 {
   "id": "00000000-0000-4000-8000-000000000021",
-  "name": "Eldridge Norfolk Bar",
+  "name": "Forsyth Library",
   "category": {
-    "id": "bar",
-    "label": "Bar"
+    "id": "library",
+    "label": "Library"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.724763,
-    "lon": -74.001489
+    "lat": 40.93001,
+    "lon": -73.8441
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-04T06:00:00.000Z",
+    "state": "unknown",
+    "closesAt": null,
     "opensAt": null,
-    "summary": "Open now until 2am"
+    "summary": null
   },
   "price": {
-    "kind": "unknown"
-  },
-  "ageLimit": {
-    "minAge": 21,
+    "kind": "free",
     "evidence": "estimate"
   },
+  "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
-      "detail": "Open now until 2am",
+      "value": "Not listed",
+      "detail": "Check before you go",
       "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.602,
+        "sources": [],
+        "evidence": "missing",
+        "confidence": null,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "sourceUpdatedAt": null,
+        "retrievedAt": null,
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+        "freshness": null,
+        "summary": "no source lists hours · not listed"
       }
     },
     {
@@ -66,35 +59,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
-      }
-    },
-    {
-      "attribute": "age_limit",
-      "label": "Age limit",
-      "value": "Usually 21+ (adults only)",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.5,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -112,18 +82,18 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "No",
+      "attribute": "price",
+      "label": "Price",
+      "value": "Usually free",
       "detail": null,
       "provenance": {
         "sources": [
@@ -132,15 +102,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
+        "evidence": "estimate",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · published"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     },
     {
@@ -158,25 +128,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-06-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-01-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2026 · estimate"
+        "freshness": "last edited in OSM Jan 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2025 · estimate"
       }
     }
   ],
-  "parkingNearby": null,
+  "parkingNearby": {
+    "name": "Orchard Street Lot",
+    "kind": "lot",
+    "fee": "paid",
+    "openingHours": "Mo-Su 06:00-24:00",
+    "location": {
+      "lat": 40.9296,
+      "lon": -73.8434
+    },
+    "distanceMetres": 74,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
+    "text": "Orchard Street Lot (paid), ~2 min walk"
+  },
   "contact": {
-    "websiteUrl": "https://eldridgenorfolkbar.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 5589"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.724763%2C-74.001489&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.93001%2C-73.8441&travelmode=driving"
     },
     "links": []
   },

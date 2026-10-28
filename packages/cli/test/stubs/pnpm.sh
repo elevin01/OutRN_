@@ -6,10 +6,12 @@
 #   STUB_FAIL_OSM       areas whose `ingest osm` fails (after --save has written, like the real CLI)
 #   STUB_FAIL_PHOTOS    areas whose `ingest photos` fails (after --save has written)
 #   STUB_FAIL_OVERTURE  areas whose `ingest overture` fails (--save writes before anything else, like the real CLI)
+#   STUB_FAIL_DESTINATIONS areas whose `ingest destinations` fails (--save writes before anything else)
 #   STUB_NO_VENUES      areas `areas launch` refuses for having no eligible venues
 #   STUB_FAIL_LAUNCH    areas `areas launch` fails for any other reason
 #   STUB_MIGRATE_EXIT   exit status of db:migrate
 #   STUB_FAIL_WEATHER   set: `weather refresh` fails (no network)
+#   STUB_FAIL_EVENTS    areas whose `ingest nyc-parks` fails (no network)
 set -u
 printf 'pnpm %s | DATABASE_URL=%s\n' "$*" "${DATABASE_URL:-}" >>"$STUB_LOG"
 listed() { case " $2 " in *" $1 "*) return 0 ;; esac; return 1; }
@@ -114,12 +116,32 @@ case "$group $cmd" in
     echo "  places     10 Overture places · 4 of 5 venues matched"
     echo "  claims     4 operating · 0 closed · 1 websites · 1 phones"
     ;;
+  "ingest destinations")
+    known
+    replay
+    if [ -n "$save" ] && [ -z "$from" ]; then printf '{"outrn_capture":"overture-destinations","area":"new %s"}' "$area" >"$save"; fi
+    if listed "$area" "${STUB_FAIL_DESTINATIONS:-}"; then
+      echo "error: could not write facts" >&2
+      exit 1
+    fi
+    echo "  places       120 Overture places in reach · 30 curated destinations · 40 by their records"
+    echo "  venues       60 added · 2 already known · 0 no longer destinations · 1 left out as possible duplicates"
+    ;;
   "weather refresh")
     if [ -n "${STUB_FAIL_WEATHER:-}" ]; then
       echo "error: les: could not resolve api.weather.gov" >&2
       exit 1
     fi
     echo "les: 156 hours, 2026-10-03T16:00:00.000Z to 2026-10-10T04:00:00.000Z, issued 2026-10-03T15:30:12.000Z"
+    ;;
+  "ingest nyc-parks")
+    known
+    if listed "$area" "${STUB_FAIL_EVENTS:-}"; then
+      echo "error: fetch failed for data.cityofnewyork.us" >&2
+      exit 1
+    fi
+    echo "94 events within 3.1 km of $area"
+    echo "  events     94 of 94 written (of 938 in the city) · 28 new event sites · 0 left out"
     ;;
   "areas launch")
     known
