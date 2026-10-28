@@ -85,7 +85,11 @@ export function requestOrigin(
         Math.abs(lon) > 180
       )
         throw new LocationProblem("unavailable");
-      finish(undefined, { lat, lon });
+      // ~100 m, as the API keeps it: nothing more precise leaves the device.
+      finish(undefined, {
+        lat: Math.round(lat * 1000) / 1000,
+        lon: Math.round(lon * 1000) / 1000,
+      });
     })().catch((error: unknown) =>
       finish(
         error instanceof LocationProblem

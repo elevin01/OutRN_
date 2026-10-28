@@ -50,7 +50,9 @@ Location permission is requested only after “Use my location”. Returning use
 reuse an existing grant without prompting; denial or an unavailable fix returns to setup. A fix has
 a 12-second deadline, paused while the explicit permission prompt is open. Back/manual navigation
 aborts the attempt so late results cannot replace the user's choice. No background location, motion
-permission, service or persisted coordinates are configured. Rebuild the native development app
+permission or service is configured, and no coordinates are saved on the device. A fix is rounded to
+~100 m before it is sent; the API stores that origin with the search's snapshot, and at ~1 km in its
+run records for 30 days. Rebuild the native development app
 after adding the Expo location module and permission configuration.
 
 ## Review and validation

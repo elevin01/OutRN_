@@ -123,4 +123,13 @@ describe("foreground location entry", () => {
       requestOrigin(client, true, new AbortController().signal),
     ).rejects.toMatchObject({ reason: "unavailable" });
   });
+  it("rounds a fix to ~100 m before it leaves the device", async () => {
+    const client = port();
+    client.position = vi.fn().mockResolvedValue({
+      coords: { latitude: 40.7185432, longitude: -73.9881129 },
+    });
+    await expect(
+      requestOrigin(client, false, new AbortController().signal),
+    ).resolves.toEqual({ lat: 40.719, lon: -73.988 });
+  });
 });

@@ -67,7 +67,9 @@ export default function YouScreen() {
           device. Searches send your interests to OutRN, which also stores them
           with your search results. They aren’t linked to an account. Location
           is optional and used for foreground searches. You can choose an area
-          instead. Exact coordinates aren’t saved on this device.
+          instead. If you use it, searches send it rounded to about 100 m, and
+          OutRN stores it with your search results like your interests. Exact
+          coordinates never leave this device.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>

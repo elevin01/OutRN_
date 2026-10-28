@@ -48,8 +48,10 @@ First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](do
 - Saved place identities in device storage; current details are fetched when opened. Saving does not
   cache eligibility, hours, or a recommendation. Storage failures are visible.
 - Session-only outing, directions handoff, manual arrival, and finish. A selected outing survives
-  tab navigation but deliberately does not survive process restart. Foreground location is optional;
-  exact coordinates remain in memory, with no background tracking.
+  tab navigation but deliberately does not survive process restart. Foreground location is optional,
+  with no background tracking. A fix is rounded to ~100 m on the device before it is sent; the API
+  stores that origin with the search's snapshot (as it does the taste), and at ~1 km in its run records
+  for 30 days. Exact coordinates never leave the device and are not saved on it.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 - Your interests (contract 1.8 `taste`): photo choices during setup and detailed controls from You
   (tap once for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
