@@ -55,6 +55,7 @@ export default function SavedScreen() {
     saveCollection,
     deleteCollection,
     query,
+    withTaste,
     areas,
     setSavedPlan,
   } = useApp();
@@ -82,8 +83,14 @@ export default function SavedScreen() {
     data?: SavedMatches;
     error?: string;
   }>();
-  const fitKey = JSON.stringify([query, saved.map((p) => p.id), refresh]);
-  const requestKey = JSON.stringify(query);
+  // A fresh Saved search uses the same current preferences as Now and Happening Soon.
+  const currentQuery = query ? withTaste(query) : undefined;
+  const fitKey = JSON.stringify([
+    currentQuery,
+    saved.map((p) => p.id),
+    refresh,
+  ]);
+  const requestKey = JSON.stringify(currentQuery);
   const savedKey = JSON.stringify(saved.map((p) => p.id));
   const fitData = fitState?.key === fitKey ? fitState.data : undefined;
   const fitError = fitState?.key === fitKey ? fitState.error : undefined;
@@ -372,7 +379,10 @@ export default function SavedScreen() {
       {storageError && (
         <View style={styles.notice}>
           <Copy accessibilityRole="alert">{storageError}</Copy>
-          <TextAction label="Try saving again" onPress={retrySaved} />
+          <TextAction
+            label={hydrated ? "Try saving again" : "Try loading again"}
+            onPress={retrySaved}
+          />
         </View>
       )}
       {fits && fitData && !expired && (

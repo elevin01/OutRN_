@@ -19,8 +19,8 @@ export default function RootLayout() {
   );
 }
 function AppNavigation() {
-  const { initialized, hydrated, needsSetup } = useApp();
-  if (!initialized || !hydrated)
+  const { initialized, savedReady, needsSetup } = useApp();
+  if (!initialized || !savedReady)
     return <Loading label="Getting things ready…" />;
   return (
     <Stack

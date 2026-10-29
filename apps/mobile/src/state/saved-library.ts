@@ -19,6 +19,7 @@ export function useSavedLibrary() {
     collections: [],
   });
   const [hydrated, setHydrated] = useState(false);
+  const [savedReady, setSavedReady] = useState(false);
   const [storageError, setStorageError] = useState<string>();
   const [revision, setRevision] = useState(0);
   const writes = useRef(Promise.resolve());
@@ -44,6 +45,10 @@ export function useSavedLibrary() {
             setStorageError(
               "Saved places couldn’t be loaded on this device. Try again to keep your existing saves safe.",
             );
+        })
+        .finally(() => {
+          // Navigation can show recovery even when unreadable saves must stay unwritable.
+          if (mounted.current) setSavedReady(true);
         }),
     [],
   );
@@ -77,6 +82,7 @@ export function useSavedLibrary() {
     saved: library.places,
     collections: library.collections,
     hydrated,
+    savedReady,
     storageError,
     retrySaved: () => (hydrated ? setRevision((n) => n + 1) : void load()),
     toggleSaved: (place: SavedPlace) =>

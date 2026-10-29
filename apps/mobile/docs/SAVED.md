@@ -34,10 +34,20 @@ Visible cards fetch place details with at most three requests in flight and a sh
 
 The existing 200-place limit remains; collections are limited to 50. Removing or evicting a place cleans its collection references.
 
+## Integration with onboarding (#44)
+
+Onboarding, the interest editor, and recommendation feedback keep #44's shared preference store. Saved uses its own v2 library and legacy migration. Preference errors remain visible on onboarding, Now, and You; the Saved retry only retries the library.
+
+Startup waits for the saved read to finish, including a failed read, so unreadable saves cannot trap the app on the loading screen. A failed read still disables save mutations and keeps stored data intact. Saved offers "Try loading again" for read failures and "Try saving again" for write failures.
+
+Fits now prepares a fresh search with the same current interests and session dismissals as Now. Editing interests and closing the editor without refreshing Now therefore cannot leave Saved using the previous weights. Frozen cursor requests stay cursor-only.
+
+The onboarding hardware-back listener runs only on Android; it no longer raises a web error that covers the navigation controls in the Expo preview.
+
 ## Validation
 
 - Mobile TypeScript, Expo lint, and UI/backend import boundary check.
-- 38 mobile unit tests, including legacy migration, malformed storage, collection membership/Undo, paging, cancellation, ready/check-first/event distinctions, and the shared photo policy.
+- 63 mobile unit tests after onboarding integration, including legacy migration, malformed storage, collection membership/Undo, paging, cancellation, ready/check-first/event distinctions, and the shared photo policy.
 - Browser interaction checks: search, creation, editing, reload persistence, removal/Undo, Fits now, offline recovery, and single-row controls at 320 px.
 - Production-browser checks: linked API photo credit, correct thumbnail scaling, labeled failed-image fallback, and expiry at the server deadline.
 - iOS, Android, and web production exports; the upstream asset check confirms representative photos are included and invented demo content is excluded.
@@ -45,3 +55,5 @@ The existing 200-place limit remains; collections are limited to 50. Removing or
 Native VoiceOver/TalkBack, keyboard behavior, large system text, and physical-device gestures have not been exercised in this environment.
 
 The browser interaction record is in [saved/checks.json](saved/checks.json).
+
+The combined onboarding/Saved browser checks are in [saved/integration-checks.json](saved/integration-checks.json). They cover first-run choices alongside legacy saves, collection persistence and removal/Undo across restart, changed interests reaching Fits now, unreadable-save recovery without overwriting data, and independent preference read/write failures.

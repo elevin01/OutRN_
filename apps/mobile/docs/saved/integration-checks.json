@@ -1,0 +1,13 @@
+{
+  "environment": "Expo SDK 58 web, existing contract mock API, 390 x 844 viewport",
+  "flows": [
+    "onboarding completes with chosen interests and retains legacy saves",
+    "collections migrate saves to v2 without changing onboarding preferences",
+    "Fits now uses current interests after closing the editor without refreshing Now",
+    "removal and Undo restore memberships; restart retains setup, interests and collections",
+    "unreadable saves reach recovery instead of trapping startup; retry recovers without an overwrite",
+    "preference write errors stay visible on You and do not become Saved retry errors",
+    "preference load errors remain visible during onboarding"
+  ],
+  "errors": []
+}

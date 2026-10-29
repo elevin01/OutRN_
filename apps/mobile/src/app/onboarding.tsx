@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BackHandler,
+  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -79,6 +80,7 @@ export default function OnboardingScreen() {
   }
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => {
+    if (Platform.OS !== "android") return;
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {

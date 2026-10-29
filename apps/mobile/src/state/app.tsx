@@ -301,6 +301,7 @@ function useAppState() {
     setSavedPlan,
     // The preferences' own storage problem: Saved's retry only retries the saved library.
     tasteError: preferences.error,
+    withTaste,
     outing,
     setOuting,
     initialized,
