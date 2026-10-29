@@ -104,7 +104,9 @@ export function scoreCandidate(
   const adultForMinor = minorInParty(ctx) && ((ageLimitOf(c)?.minAge ?? 0) >= 18 || c.category === "bar" || c.category === "nightclub");
   // An event made for children (its source says so) is a family's: the family bonus with a minor
   // along, and it sinks in appeal (below) for grown-ups out on their own.
-  const forKids = c.kind === "occurrence" && (c.facts.audience?.value as { kids?: unknown } | undefined)?.kids === true;
+  // Never for one that is probably for adults (a wine tasting tagged for kids): what the source says
+  // of its audience does not lift an age doubt.
+  const forKids = c.kind === "occurrence" && (c.facts.audience?.value as { kids?: unknown } | undefined)?.kids === true && !adultForMinor;
   if (ctx.company) {
     if (adultForMinor) chips -= 0.25;
     else if (suitsCompany(c, ctx.company)) chips += 0.25;
@@ -257,8 +259,11 @@ export function standing(e: Evaluation): ResultClass {
  * that moves the rest (a dark lawn's demotion, a taste, an appeal) lifts it onto a family's first page.
  */
 const AGE_DOUBTS: ReadonlySet<string> = new Set(["AGE_LIMIT_LIKELY", "AGE_LIMIT_UNCERTAIN", "KIDS_UNCERTAIN"]);
+export function ageDoubtIn(unresolved: readonly string[]): boolean {
+  return unresolved.some((c) => AGE_DOUBTS.has(c));
+}
 export function hasAgeDoubt(e: Evaluation): boolean {
-  return e.unresolved.some((c) => AGE_DOUBTS.has(c));
+  return ageDoubtIn(e.unresolved);
 }
 
 /** Ordering within the eligible set: standing, then merit; an age doubt for the party last. */

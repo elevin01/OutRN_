@@ -68,7 +68,8 @@ OUTRN_API_URL=http://localhost:4000 pnpm web:dev          # the web app, on real
 from the OpenStreetMap captures in `fixtures/live` (the Lower East Side and Bronxville today),
 checks their places against Overture Maps, adds the destinations around them, switches those areas
 on, fetches their weather from the National Weather Service and their NYC Parks events from NYC Open
-Data (both optional: without them, plans go without, and it says so), and starts the API.
+Data (both optional: without them, plans go without, and it says so), replays the library and town
+calendars when `fixtures/live/calendars.json` holds a read, and starts the API.
 
 **NYC Parks events** (`pnpm outrn ingest nyc-parks --area <slug>`): the next two weeks of public
 events in the city's parks, refreshed daily by NYC Parks (about a thousand: classes, tours,
@@ -81,6 +82,22 @@ their own). An event the area's next read no longer lists is withdrawn once no a
 walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
 two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
 read for it: migration `0021` has the one statement that switches it on and records the review.
+
+**Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
+libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
+storytimes, LEGO clubs, author talks, concerts, nature walks, a town's parade. The feeds are a reviewed
+list (`packages/ingest/src/calendars.ts`) of the ones a survey of 104 calendars found readable:
+LibCal and other iCalendar feeds, WordPress's The Events Calendar (Westchester County Parks, nature
+centers) and CivicPlus town calendars. Each host's robots.txt is asked first (a calendar that keeps
+crawlers out, like LibraryMarket's, Google Calendar's files and NYPL's site, is not read), its requests
+10 s apart or more. A library's events are at the library, or at the other place an event names if
+we know it nearby; one that names a place of its own we don't know (a name, then its street or town:
+"Bruce Museum, 1 Museum Drive") is left out, not put at the library. A town's are matched to a venue
+by the place's name or address, or left out. Meetings, closings,
+services, classes of service and online events are left out. Kept: title, times, the event's own
+link, kinds from its categories, for children, registration and price only as stated. `pnpm capture`
+saves a read (`fixtures/live/calendars.json`) and `pnpm real` replays it. On 18 October 2026: 21 of 21
+feeds read, about 580 events in the next 30 days placed.
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that
@@ -166,9 +183,11 @@ Around Bronxville the read adds about 100. `--save` keeps only the few hundred r
 reads, so a capture replays the same destinations.
 
 **Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
-places list none). `outrn firstparty discover --area <slug>` registers the website of each venue with no
-published hours, when it is the venue's own: never a social network, review site, map, booking or
-ordering service. `outrn firstparty run --area <slug>` then reads them:
+places list none), and list what is on at theatres, music rooms and arts centers. `outrn firstparty
+discover --area <slug>` registers the website of each venue with no published hours, and of every
+theatre, music room, arts center, museum and community center whatever its hours, when it is the
+venue's own: never a social network, review site, map, booking or ordering service. `outrn firstparty
+run --area <slug>` then reads them:
 - **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a
   site whose robots.txt can't be reached, is not read. Its crawl delay is kept.
 - **Politely:** every request (each redirect hop and retry too, and robots.txt reads) passes one
@@ -186,6 +205,21 @@ ordering service. `outrn firstparty run --area <slug>` then reads them:
   nothing of the weekend (an office's). On a government site, or one many venues share (a town's
   parks, a chain's stores), only structured data counts. When the page states no hours, its own
   "Hours", "Visit", "Location" or "Contact" page is read instead.
+- **Its events:** where the home page shows the site lists them, through the same gate: The Events
+  Calendar's REST API (a WordPress site running it), an iCalendar feed it links, or a page of its own
+  for events (/events, /shows, /calendar …), read for its JSON-LD; and the page's own JSON-LD events.
+  A theatre's events page comes before its hours page (a host's four requests a day go to what it is
+  for). They are written as library calendars' are (`site-events.ts`, source `venue_events`): at the
+  venue unless one names another place nearby; one that names a place of its own elsewhere (a touring
+  date in Vienna, another branch) is left out, and a site found automatically never places one at
+  another venue. Kinds from their schema.org types, an age limit only as stated (`typicalAgeRange`
+  "21+"; "All ages" never lifts the venue's age rules), nothing for children about drink, a price only
+  as stated (free only when the page says so, not for a price of 0), once when another source lists
+  the same event there. A page lists some of a venue's events, so nothing is
+  withdrawn for missing from one. A feed read to its end (every page of The Events Calendar's API, an
+  iCalendar feed) is the site's listing: what it listed before and no longer lists by its last day
+  read (a show taken down or moved) is withdrawn. On a host several venues share, only a feed under
+  the venue's own path is read, and it never withdraws; a replay never withdraws either.
 - **What is kept:** the facts, with the words or JSON they were read from as evidence (published,
   0.85 from structured data, 0.75 from the page's words), never the HTML. Hours a site no longer
   states stop counting. `--save` keeps what each site stated for `pnpm real` to replay; a run that

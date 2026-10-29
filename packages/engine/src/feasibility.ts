@@ -107,11 +107,11 @@ export function ageLimitOf(c: Candidate): { minAge: number; isEstimate: boolean 
   return isDrinkEvent(c) ? { minAge: 21, isEstimate: true } : null;
 }
 
-/** Drink is the event (a wine tasting, a beer garden, a bar crawl), by its kinds or its title. */
+/** Drink is the event (a wine tasting, a beer garden, a bar crawl) by its kinds or its title, or it is a night out (a club night) by its kinds. */
 function isDrinkEvent(c: Candidate): boolean {
   if (c.kind !== "occurrence") return false;
   const kinds = (c.facts.event_kind?.value as { interests?: unknown } | undefined)?.interests;
-  if (Array.isArray(kinds) && kinds.includes("drinks")) return true;
+  if (Array.isArray(kinds) && (kinds.includes("drinks") || kinds.includes("nightlife"))) return true;
   return isDrinkTitle(c.occurrence?.title ?? c.name);
 }
 

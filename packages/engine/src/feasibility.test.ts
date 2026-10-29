@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromLocal, type Category } from "@outrn/core";
+import { fromLocal, isDrinkTitle, type Category } from "@outrn/core";
 import { conditionsFor, waitFloorMinutes } from "./conditions.js";
 import { cuisinesOf } from "./cuisine.js";
 import { weatherCondition } from "./forecast.js";
@@ -10,7 +10,7 @@ import { orderForDisplay } from "./select.js";
 import { APPEAL_WEIGHTS, merit, standing, suitsCompany } from "./score.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
-import type { Candidate, CategoryPolicy, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
+import type { Candidate, CategoryPolicy, Evaluation, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
 
 /**
  * Correctness suite from the build plan: every case here is a bug that would change a
@@ -2158,7 +2158,7 @@ describe("pop-ups: an event site is nothing but its events", () => {
     const cafes = () => [1, 2, 3].map((i) => venue({ id: `cafe${i}`, category: "cafe", hours: "Mo-Su 07:00-23:00" }));
     const family = ctx("2026-10-03 19:00", 180, { company: "family", youngestAge: 10 });
     const adults = ctx("2026-10-03 19:00", 180, { company: "friends" });
-    const cases: [Category, string, string[]?][] = [["restaurant", "Wine Tasting"], ["cafe", "Happy Hour"], ["restaurant", "Thursday Social", ["drinks"]], ["bookshop", "Craft Brewery Night"]];
+    const cases: [Category, string, string[]?][] = [["restaurant", "Wine Tasting"], ["cafe", "Happy Hour"], ["restaurant", "Thursday Social", ["drinks"]], ["bookshop", "Craft Brewery Night"], ["restaurant", "Saturday Late", ["nightlife"]]];
     for (const [category, title, kinds] of cases) {
       const label = `${category}-${title}`;
       const kid = one(held(category, title, kinds), family);
@@ -2176,6 +2176,26 @@ describe("pop-ups: an event site is nothing but its events", () => {
   });
 });
 
+describe("an event made for children, for a party with a minor", () => {
+  it("an event made for children never lifts a probably-21+ drink event for a party with a minor", () => {
+    const at = (forKids: boolean) => {
+      const id = "Harvest Wine Tasting";
+      const c = venue({ kind: "occurrence", id, category: "event_site", hours: null, admission: "walk_in", price: { currency: "USD", free: true }, occurrence: { id, title: id, start: fromLocal("2026-10-24", 14 * 60, TZ), end: fromLocal("2026-10-24", 16 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      c.venueId = `site-${id}`;
+      if (forKids) c.facts.audience = { value: { kids: true }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    expect(isDrinkTitle("Harvest Wine Tasting")).toBe(true);
+    for (const over of [{ company: "family" as const, youngestAge: 6 }, { youngestAge: 6 }]) {
+      const plain = one(at(false), ctx("2026-10-24 13:30", 180, over));
+      const kids = one(at(true), ctx("2026-10-24 13:30", 180, over));
+      expect(kids.unresolved).toContain("AGE_LIMIT_LIKELY");
+      expect(kids.scores.fit).toBeLessThanOrEqual(plain.scores.fit);
+    }
+  });
+
+});
+
 describe("events only: what is on, for a happening-soon nudge", () => {
   it("leaves places out entirely and ranks the events as any search does", () => {
     const show = venue({ kind: "occurrence", id: "o-jazz", category: "event_site", hours: null, admission: "walk_in", occurrence: { id: "o-jazz", title: "Jazz on the Lawn", start: fromLocal("2026-10-03", 19 * 60 + 30, TZ), end: fromLocal("2026-10-03", 21 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
@@ -2186,6 +2206,31 @@ describe("events only: what is on, for a happening-soon nudge", () => {
     expect(only.all.map((e) => e.candidate.id)).toEqual(["o-jazz"]);
     expect(only.items.map((e) => e.candidate.id)).toEqual(["o-jazz"]);
     expect(only.items[0]!.reasons).toContain("EVENT_STARTS_SOON");
+  });
+
+  it("never nudges a party with a minor toward an event that may turn them away, which a search only marks Check first", () => {
+    const on = (category: Category, title: string, kinds?: string[], minAge?: number) => {
+      const c = venue({ kind: "occurrence", id: title, category, hours: null, admission: "walk_in", occurrence: { id: `o-${title}`, title, start: fromLocal("2026-10-03", 19 * 60 + 30, TZ), end: fromLocal("2026-10-03", 21 * 60, TZ), entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      if (kinds) c.facts.event_kind = { value: { interests: kinds }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      if (minAge !== undefined) c.facts.age_limit = { value: { minAge }, confidence: 0.9, evidenceClass: "published", validUntil: null, independentSources: 1 };
+      return c;
+    };
+    // Drink by its title, a night out by its kinds, a bar with no age known, and a 16+ show for children of unknown ages.
+    const adult = () => [on("restaurant", "Wine Tasting"), on("event_site", "Saturday on the Pier", ["nightlife"]), on("bar", "Thursday DJ"), on("live_music", "Late Set", undefined, 16)];
+    const all = () => [...adult(), on("event_site", "Jazz on the Lawn")];
+    const ids = (cs: Evaluation[]) => cs.map((e) => e.candidate.id).sort();
+    for (const over of [{ company: "family" as const }, { youngestAge: 12 }]) {
+      const label = JSON.stringify(over);
+      const nudge = recommend(all(), ctx("2026-10-03 19:00", 180, { ...over, eventsOnly: true }), POLICIES);
+      expect(ids(nudge.items), label).toEqual(["Jazz on the Lawn"]);
+      for (const e of nudge.all.filter((e) => e.candidate.id !== "Jazz on the Lawn")) expect(e.excludedBy, `${label} ${e.candidate.id}`).toBe("AGE_RESTRICTED");
+    }
+    // A search still shows them to a family, marked Check first with the doubt named.
+    const search = recommend(all(), ctx("2026-10-03 19:00", 180, { company: "family" }), POLICIES);
+    for (const c of adult()) expect(search.all.find((e) => e.candidate.id === c.id)!.class, c.id).toBe("check_first");
+    // Grown-ups are nudged toward all of them.
+    const grown = recommend(all(), ctx("2026-10-03 19:00", 180, { company: "friends", eventsOnly: true }), POLICIES);
+    expect(ids(grown.all.filter((e) => e.class !== "ineligible"))).toEqual(all().map((c) => c.id).sort());
   });
 });
 
