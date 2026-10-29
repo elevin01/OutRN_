@@ -61,6 +61,16 @@ export function photosToShow<Source>(
   return [];
 }
 
+/**
+ * The credit line a list card shows under its title. A representative photo says it is not this
+ * place on the line itself, before its credit, so a cut-off line still says so.
+ */
+export function creditLine(photo: ShownPhoto | undefined): string | null {
+  if (!photo) return null;
+  if (photo.kind === "representative") return `Representative photo · not this place · ${photo.credit}`;
+  return `${photo.kind === "aerial" ? "Aerial photo" : "Photo"}: ${photo.credit}`;
+}
+
 /** "a café", "an arts centre". */
 const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
 

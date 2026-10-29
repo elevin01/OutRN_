@@ -69,7 +69,9 @@ export default function YouScreen() {
           is optional and used for foreground searches. You can choose an area
           instead. If you use it, searches send it rounded to about 100 m, and
           OutRN stores it with your search results like your interests. Exact
-          coordinates never leave this device.
+          coordinates never leave this device. Photos load from Wikimedia and
+          New York State’s map server, which see this device’s IP address and
+          the places shown.
         </Copy>
       </Panel>
       <Copy style={[s.muted, { fontSize: 13 }]}>
