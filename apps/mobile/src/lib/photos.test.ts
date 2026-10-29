@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Photo } from "@outrn/contracts";
-import { photosFor, photosToShow } from "./photos";
+import { creditLine, photosFor, photosToShow } from "./photos";
 
 const photo = (over: Partial<Photo> = {}): Photo => ({
   url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Lozupone_katz2.png/960px-Lozupone_katz2.png",
@@ -88,5 +88,17 @@ describe("an aerial photo as a place's stand-in", () => {
       expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: { ...aerial, url }, categoryId: "park" }), url).toEqual([]);
     }
     expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: null, categoryId: "park" })).toEqual([]);
+  });
+});
+
+describe("a list card's credit line", () => {
+  const aerial = { url: "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=1,2,3,4&f=image", width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" };
+
+  it("says a representative photo is not this place, before its credit", () => {
+    const [stand] = photosFor("Rex", "Cafe", [], stock, remote, { aerial, categoryId: "cafe" });
+    expect(creditLine(stand)).toBe("Representative photo · not this place · Unsplash");
+    expect(creditLine(photosFor("Seward Park", "Park", [], [], remote, { aerial, categoryId: "park" })[0])).toBe("Aerial photo: NYS ITS Geospatial Services orthoimagery");
+    expect(creditLine(photosFor("Rex", "Cafe", [photo()], stock, remote)[0])).toBe("Photo: Alex Lozupone, CC BY-SA 4.0");
+    expect(creditLine(undefined)).toBeNull();
   });
 });

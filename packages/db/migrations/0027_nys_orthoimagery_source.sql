@@ -10,11 +10,11 @@
 
 insert into source_policies (id, name, product, license, terms_url, reviewed_at, allowed_ops, retention_days, attribution, geography, rate_limit, enabled, open_conditions, notes) values
   ('nys_orthoimagery', 'New York State orthoimagery', 'NYS ITS Geospatial Services: statewide orthoimagery map service (wms/Latest), 2022-2025',
-   'New York State public data, free to use with credit', 'https://gis.ny.gov/orthoimagery', '2026-10-29',
+   'No terms stated: published openly by NYS ITS Geospatial Services (its copyright text), credit given', 'https://gis.ny.gov/orthoimagery', '2026-10-29',
    '{display}', null,
    'Aerial photos: NYS ITS Geospatial Services orthoimagery', 'New York State',
    '{}', true,
-   '{"Shown only as an image the client loads from orthos.its.ny.gov, labelled as an aerial view with its credit","One 800x500 image a place, its box rounded to the metre so a place always has the same URL"}',
+   '{"Shown only as an image the client loads from orthos.its.ny.gov, labelled as an aerial view with its credit","One 800x500 image a place, its box rounded to the metre so a place always has the same URL","Confirm terms for display in the apps with NYS ITS Geospatial Services (nysgis@its.ny.gov) before launch"}',
    'Built by aerialOf from the venue''s point; outside New York (NY_RINGS, from the Census Bureau''s TIGERweb) there is none.')
 on conflict (id) do update set
   name = excluded.name, product = excluded.product, attribution = excluded.attribution, geography = excluded.geography,

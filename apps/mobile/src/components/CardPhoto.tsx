@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Image, StyleSheet, View, type ImageSourcePropType } from "react-native";
 import type { RecommendationItem } from "@outrn/contracts";
-import { photosFor, photosToShow, type ShownPhoto } from "../lib/photos";
+import { creditLine, photosFor, photosToShow, type ShownPhoto } from "../lib/photos";
 import { representativePhotos } from "../lib/representative";
 import { Copy, colors } from "./ui";
 import { PlaceArt } from "./PlaceArt";
@@ -51,11 +51,8 @@ export function CardPhoto({
   );
 }
 
-/** The credit the photo's license asks for, in a line under the card's title. */
-export function cardPhotoCredit(photo: ShownPhoto | undefined): string | null {
-  if (!photo) return null;
-  return `${photo.kind === "representative" ? "Representative photo" : photo.kind === "aerial" ? "Aerial photo" : "Photo"}: ${photo.credit}`;
-}
+/** The credit the photo's license asks for, in a line under the card's title (a representative one says it is not this place). */
+export const cardPhotoCredit = creditLine;
 
 const styles = StyleSheet.create({
   featured: { height: 184, overflow: "hidden", backgroundColor: colors.sage },

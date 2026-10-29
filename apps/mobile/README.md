@@ -51,7 +51,8 @@ First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](do
   tab navigation but deliberately does not survive process restart. Foreground location is optional,
   with no background tracking. A fix is rounded to ~100 m on the device before it is sent; the API
   stores that origin with the search's snapshot (as it does the taste), and at ~1 km in its run records
-  for 30 days. Exact coordinates never leave the device and are not saved on it.
+  for 30 days. Exact coordinates never leave the device and are not saved on it. Photos load from
+  Wikimedia and New York State's map server, which see the device's IP address and the places shown.
 - Validated HTTP responses, request cancellation, a 15-second timeout, and safe external URL schemes.
 - Your interests (contract 1.8 `taste`): photo choices during setup and detailed controls from You
   (tap once for a like, twice for not for you). Kept on the device and sent with each fresh search. The API
@@ -76,7 +77,8 @@ every kind but the catch-alls (activity, other) has one, and a restaurant or a c
 "Aerial view of this spot", loaded only from `orthos.its.ny.gov`): a park, a garden, a waterfront
 and the like lead with the aerial, other places with the representative photo. When none of its own
 loads, the same stand-ins. Cards on the Now list show the same picture, with a small "Aerial view"
-or "Representative" badge and a one-line credit; the category artwork shows there only when no
+or "Representative" badge and a one-line credit (a representative photo's starts "Representative
+photo · not this place"); the category artwork shows there only when no
 picture loads. Category
 shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
 culture, Movies & shows, Games & play, Books) narrow the search in one tap.
