@@ -4,11 +4,11 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
-import { extractPage, FetchFailed, type CalendarEvent, type FirstPartyExtraction, type RobotsPolicy } from "@outrn/sources";
+import { extractPage, FetchFailed, parseICalendar, type CalendarEvent, type FirstPartyExtraction, type RobotsPolicy } from "@outrn/sources";
 import { ingestEvents } from "../src/events.js";
 import { registerSite, runFirstParty, type SiteFetcher } from "../src/firstparty-job.js";
 import { ingestOsmArea } from "../src/pipeline.js";
-import { writeSiteEvents } from "../src/site-events.js";
+import { calendarEventsOf, writeSiteEvents } from "../src/site-events.js";
 
 /** Venues' own event listings, read with their pages: against a real Postgres + PostGIS (outrn_test, reset per file). */
 
@@ -43,6 +43,31 @@ beforeAll(async () => {
 afterAll(async () => {
   if (db) await db.end();
 });
+
+const VIENNA_ICS = [
+  "BEGIN:VCALENDAR",
+  "VERSION:2.0",
+  "BEGIN:VEVENT",
+  "UID:gala-vienna@example.org",
+  "DTSTART:20261005T170000Z",
+  "SUMMARY:Gala in Vienna",
+  "LOCATION:Bank Austria im Alten Rathaus\\nWipplingerstrasse 6-8\\n1010 Vienna\\nAustria",
+  "END:VEVENT",
+  "BEGIN:VEVENT",
+  "UID:bruce@example.org",
+  "DTSTART:20261005T190000Z",
+  "SUMMARY:Book Talk at the Bruce",
+  "LOCATION:Bruce Museum\\, 1 Museum Drive\\, Greenwich\\, CT 06830",
+  "END:VEVENT",
+  "BEGIN:VEVENT",
+  "UID:room@example.org",
+  "DTSTART:20261005T210000Z",
+  "SUMMARY:Poetry Night",
+  "LOCATION:Rashkoff Room\\nDownstairs",
+  "END:VEVENT",
+  "END:VCALENDAR",
+  "",
+].join("\r\n");
 
 const event = (over: Partial<CalendarEvent> & { title: string; start: string }): CalendarEvent => ({ uid: over.title, end: null, allDay: false, location: [], categories: [], url: null, cancelled: false, recurring: false, cost: null, text: "", ...over });
 
@@ -197,7 +222,7 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await statuses()).toEqual(["Matinee withdrawn", "Uncle Vanya withdrawn"]);
   });
 
-  it("take an age they state as the event's age limit; a found site keeps them all at its own venue (PR #61 review)", async () => {
+  it("take an age they state as the event's age limit; a found site never places one at another venue (PR #61 review)", async () => {
     const playhouse = await venueId("Delancey Playhouse");
     const site = { venueId: playhouse, host: "found.delanceyplayhouse.example", auto: true };
     await writeSiteEvents(
@@ -217,9 +242,50 @@ describe.skipIf(!available)("a venue's own events", () => {
     expect(await factsOf("Craft Beer Social")).not.toHaveProperty("age_limit");
     expect(await factsOf("Puppet Matinee")).toMatchObject({ audience: { kids: true } });
     expect(await factsOf("Puppet Matinee")).not.toHaveProperty("age_limit");
-    // Found, not checked: its events stay at its own venue, whatever place they name.
-    expect((await at("Delancey Playhouse")).map((o) => o.title)).toContain("Jazz After Dark");
+    // Found, not checked: one it says is at another venue is left out, not placed there or here.
+    expect((await at("Delancey Playhouse")).map((o) => o.title)).not.toContain("Jazz After Dark");
     expect((await at("Attorney Arts Center")).map((o) => o.title)).not.toContain("Jazz After Dark");
+  });
+
+  it("leave out an event its site says is at a place of its own elsewhere; keep one in a room of the venue (PR #61 follow-up)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const s = await writeSiteEvents(
+      db,
+      { venueId: playhouse, host: "tours.delanceyplayhouse.example" },
+      [
+        // A touring date: a named place with its own address, nowhere near.
+        event({ uid: "v", title: "Gala in Vienna", start: "2026-10-05T17:00:00.000Z", location: ["Bank Austria im Alten Rathaus", "Wipplingerstrasse 6-8, 1010 Vienna, Austria"] }),
+        // The venue's own name and address, a room in it, and an exhibit by name alone: all here.
+        event({ uid: "h", title: "Home Matinee", start: "2026-10-05T18:00:00.000Z", location: ["Delancey Playhouse", "1 Delancey St, New York"] }),
+        event({ uid: "r", title: "Studio Reading", start: "2026-10-05T19:00:00.000Z", location: ["Rashkoff Room - Downstairs"] }),
+        event({ uid: "x", title: "Puppet Lab", start: "2026-10-05T20:00:00.000Z", location: ["Inside Art"] }),
+        // Another branch by its own name and address, which a loose match of names takes for this venue.
+        event({ uid: "u", title: "Uptown Branch Show", start: "2026-10-05T22:00:00.000Z", location: ["Delancey Playhouse Upper West Side", "236 W 78th Street", "New York, NY 10024"] }),
+      ],
+      NOW,
+    );
+    expect(s.skipped).toMatchObject({ elsewhere: 2 });
+    const titles = (await at("Delancey Playhouse")).map((o) => o.title);
+    expect(titles).toEqual(expect.arrayContaining(["Home Matinee", "Studio Reading", "Puppet Lab"]));
+    expect(titles).not.toContain("Gala in Vienna");
+    expect(titles).not.toContain("Uptown Branch Show");
+  });
+
+  it("leave out a place elsewhere however the page or feed writes it: one JSON-LD string, an iCalendar LOCATION's lines (PR #62 review)", async () => {
+    const playhouse = await venueId("Delancey Playhouse");
+    const ld = (name: string, start: string, location: unknown) => ({ "@context": "https://schema.org", "@type": "MusicEvent", name, startDate: start, location });
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify([
+      ld("Gala in Vienna (page)", "2026-10-06T13:00", "Bank Austria im Alten Rathaus, Wipplingerstrasse 6-8, 1010 Vienna, Austria"),
+      ld("Home Recital (page)", "2026-10-06T19:00", "Delancey Playhouse, 1 Delancey St, New York, NY"),
+      ld("Studio Set (page)", "2026-10-06T21:00", { "@type": "Place", name: "Studio B" }),
+    ])}</script></head><body></body></html>`;
+    const page = calendarEventsOf(extractPage(html, "https://ld.delanceyplayhouse.example/events/", NOW).events);
+    const s1 = await writeSiteEvents(db, { venueId: playhouse, host: "ld.delanceyplayhouse.example" }, page, NOW);
+    const s2 = await writeSiteEvents(db, { venueId: playhouse, host: "ics.delanceyplayhouse.example" }, parseICalendar(VIENNA_ICS, "America/New_York"), NOW);
+    expect([s1.skipped, s2.skipped]).toMatchObject([{ elsewhere: 1 }, { elsewhere: 2 }]);
+    const titles = (await at("Delancey Playhouse")).map((o) => o.title);
+    expect(titles).toEqual(expect.arrayContaining(["Home Recital (page)", "Studio Set (page)", "Poetry Night"]));
+    for (const t of ["Gala in Vienna (page)", "Gala in Vienna", "Book Talk at the Bruce"]) expect(titles).not.toContain(t);
   });
 
   it("back its host off when the events feed asks us to wait (429, 503): the host's next site waits too (PR #61 review)", async () => {

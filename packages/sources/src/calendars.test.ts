@@ -50,6 +50,11 @@ const LIBCAL = [
 ].join("\r\n");
 
 describe("iCalendar", () => {
+  it("keeps a LOCATION's escaped line breaks and commas as lines: a place's name apart from its street and town", () => {
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "UID:1", "DTSTART:20261005T170000Z", "SUMMARY:Gala", "LOCATION:Bank Austria im Alten Rathaus\\nWipplingerstrasse 6-8\\n1010 Vienna\\nAustria", "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
+    expect(parseICalendar(ics, "America/New_York")[0]!.location).toEqual(["Bank Austria im Alten Rathaus", "Wipplingerstrasse 6-8", "1010 Vienna", "Austria"]);
+  });
+
   it("reads events: UTC, a TZID's local time, a date for all day, a duration, folded and escaped text, nothing from an alarm", () => {
     const [baby, closed, howl, floating] = parseICalendar(LIBCAL, TZ);
     expect(baby).toMatchObject({
