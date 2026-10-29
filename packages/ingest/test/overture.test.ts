@@ -232,7 +232,8 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     place({ id: "ovt-new-cart", name: "Halal Cart Supreme", category: "fast_food_restaurant", lat: 40.7152, lon: -73.9865 }),
     // 66 m from Grand Kitchen, sharing its one distinctive word; and Essex Kitchen's name 300 m from it.
     place({ id: "ovt-new-grand", name: "The Grand Noodle House", lat: 40.7275, lon: -73.99268, phones: ["2125550144"] }),
-    { ...ESSEX_FAR, id: "ovt-new-essex", phones: ["2125550133"] },
+    // (300 m south of Essex Kitchen: ESSEX_FAR's spot, north of every LES venue, is outside the area's box.)
+    { ...ESSEX_FAR, id: "ovt-new-essex", lat: 40.728, phones: ["2125550133"] },
     SAME_SPOT,
     // Nothing to check it by.
     place({ id: "ovt-new-mute", name: "Quiet Lantern", lat: 40.7142, lon: -73.9895 }),
@@ -330,6 +331,34 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     // The next live read covers the same box: Overture's own venues are not where it reads.
     expect(await overtureReadBox(db, "les")).toEqual(box);
   });
+
+  it("a place beyond its read's box or the area's own is never made a venue of this area", async () => {
+    const box = await overtureReadBox(db, "les");
+    // Inside the capture's (wide) box but north-east of every LES venue; and one outside the capture's own box.
+    const beyondArea = place({ id: "ovt-new-far1", name: "Far Hollow Cafe", category: "coffee_shop", lat: box.north + 0.01, lon: box.east + 0.002, phones: ["2125550191"] });
+    const beyondCapture = place({ id: "ovt-new-far2", name: "Albany Lantern", category: "bar", lat: 42.6526, lon: -73.7562, phones: ["5185550191"] });
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: capture("far", [beyondArea, beyondCapture]) });
+    expect(s.newPlaces).toMatchObject({ added: 0, skipped: { outside: 2 } });
+    expect(await venuesNamed("Far Hollow Cafe")).toEqual([]);
+    expect(await venuesNamed("Albany Lantern")).toEqual([]);
+  });
+
+  it("the website and phone Overture lists are no evidence that another place is the venue made from it", async () => {
+    // Lumen Tea, from Overture, lists an Instagram profile and the building's phone.
+    const lumen = place({ id: "ovt-new-lumen", name: "Lumen Tea", category: "coffee_shop", lat: 40.712, lon: -73.984, websites: ["https://www.instagram.com/lumentea"], phones: ["2125550123"] });
+    expect((await ingestOverture(db, { areaSlug: "les", fromFile: capture("lumen", [lumen]) })).newPlaces?.added).toBe(1);
+    // OSM maps the bakery next door (10 m): another place, its own Instagram, the same building phone.
+    const osm = JSON.parse(readFileSync(join(DIR, "les-with-gotan.json"), "utf8")) as { elements: unknown[] };
+    const bakery = { type: "node", id: 990002, tags: { name: "Lumen Bakery", amenity: "cafe", website: "https://www.instagram.com/lumenbakery", phone: "+1 212 555 0123" }, timestamp: "2026-09-20T00:00:00.000Z", version: 1, lat: 40.71209, lon: -73.984 };
+    const withBakery = join(DIR, "les-with-bakery.json");
+    writeFileSync(withBakery, JSON.stringify({ ...osm, elements: [...osm.elements, bakery] }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: withBakery });
+    // Two cards: the bakery is not filed under the tea room on the strength of what Overture lists.
+    expect(await venuesNamed("Lumen Bakery")).toHaveLength(1);
+    expect((await links("Lumen Bakery")).map((l) => l.source_id)).toEqual(["osm"]);
+    expect(await venuesNamed("Lumen Tea")).toHaveLength(1);
+    expect((await links("Lumen Tea")).map((l) => l.source_id)).toEqual(["overture"]);
+  });
 });
 
 // Runs after the rest: a newer release's read holds what it spoke for against every older read after it.
@@ -367,7 +396,7 @@ describe.skipIf(!available)("an older Overture release never undoes a newer one"
 
   it("nor revives a venue made from a place a newer read took down", async () => {
     // A place only Overture has, south of Delancey: LES's read of the earlier release makes it a venue.
-    const mochi = place({ id: "ovt-new-mochi", name: "Mochi Corner", category: "coffee_shop", lat: 40.713, lon: -73.991, websites: ["https://mochicorner.example.com/"], phones: ["2125550111"], ...SIGNAL });
+    const mochi = place({ id: "ovt-new-mochi", name: "Mochi Corner", category: "coffee_shop", lat: 40.713, lon: -73.991, websites: ["https://mochicorner.example.com/"], phones: ["2125550112"], ...SIGNAL });
     expect((await ingestOverture(db, { areaSlug: "les", fromFile: capture("les-mochi", [mochi]) })).newPlaces?.added).toBe(1);
     expect(await overtureFacts("Mochi Corner")).not.toEqual([]);
     // LES's read of a newer release sees it closed: the venue made from it is taken down.

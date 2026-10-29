@@ -274,7 +274,8 @@ export const NEW_PLACE_CONFIDENCE = 0.8;
 /** A name that is an address ("142 Sullivan St") is a listing, not a name to put on a card. */
 const ADDRESS_NAME = /^\d+[a-z]?(\s+\S+)*\s+(st|street|ave|avenue|av|rd|road|pl|place|blvd|boulevard|dr|drive|ln|lane|sq|square|broadway|bowery)\.?$/i;
 
-export type NewPlaceSkip = "status" | "confidence" | "register" | "category" | "name" | "chain" | "stale" | "contact";
+/** Why a place is not added; "outside" is a place beyond the read's box or the area's own (see addNewPlaces). */
+export type NewPlaceSkip = "status" | "confidence" | "register" | "category" | "name" | "chain" | "stale" | "contact" | "outside";
 
 /** Not somewhere to go out to, whatever Overture files it under: a grocery, a bodega, a pharmacy. */
 const NOT_A_DESTINATION = /\b(grocery|groceries|grocer|grocers|bodega|convenience|minimart|mini mart|mini market|minimarket|supermarket|pharmacy|laundromat|liquor|liquors|gourmet deli|deli and grocery)\b/;
@@ -755,11 +756,13 @@ async function addNewPlaces(
     log: (line: string) => void;
     /** Inside a newer release's read: that read's to add, refresh or withdraw, not this one's. */
     newerSpoke?: (p: { lat: number; lon: number }) => boolean;
+    /** The area's own live-read box (liveReadBox): a venue is made only inside it. */
+    areaBox: Bbox;
   },
 ): Promise<{ summary: NewPlacesSummary; changed: string[]; facts: { inserted: number; superseded: number; rejected: number } }> {
   const { area, capture, matched, known, runId, now, log } = args;
   const newerSpoke = args.newerSpoke ?? (() => false);
-  const summary: NewPlacesSummary = { added: 0, kept: 0, removed: 0, possibleDuplicates: 0, skipped: { status: 0, confidence: 0, register: 0, category: 0, name: 0, chain: 0, stale: 0, contact: 0 }, examples: [] };
+  const summary: NewPlacesSummary = { added: 0, kept: 0, removed: 0, possibleDuplicates: 0, skipped: { status: 0, confidence: 0, register: 0, category: 0, name: 0, chain: 0, stale: 0, contact: 0, outside: 0 }, examples: [] };
   const facts = { inserted: 0, superseded: 0, rejected: 0 };
   const changed: string[] = [];
   const refreshed = new Set<string>();
@@ -802,6 +805,13 @@ async function addNewPlaces(
     }
     if ("skip" in gate) {
       summary.skipped[gate.skip]++;
+      continue;
+    }
+    // Only inside the read's own box and the area's: a capture is not checked place by place, and a
+    // replay's box is whatever it was saved with, so a mis-scoped one would make venues anywhere, filed
+    // under this area.
+    if (!inside(capture.bbox, p, 0) || !inside(args.areaBox, p, 0)) {
+      summary.skipped.outside++;
       continue;
     }
     if (index.couldBe(p, gate.category)) {
@@ -949,7 +959,7 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
         if (w.inserted || w.superseded || retracted) changed.push(v.id);
       }
       if (opts.newPlaces !== false) {
-        const np = await addNewPlaces(tx, { area, capture, matched: matchedPlaces, known, runId, now, log, newerSpoke: newerPlaces });
+        const np = await addNewPlaces(tx, { area, capture, matched: matchedPlaces, known, runId, now, log, newerSpoke: newerPlaces, areaBox: liveReadBox(venues, madeFromPlaces) });
         summary.newPlaces = np.summary;
         summary.facts.inserted += np.facts.inserted;
         summary.facts.superseded += np.facts.superseded;
