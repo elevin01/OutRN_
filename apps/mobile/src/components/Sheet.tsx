@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ComponentRef, type ReactNode } from "react";
 import {
   AccessibilityInfo,
   findNodeHandle,
@@ -24,7 +24,7 @@ export function Sheet({
   children: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
-  const heading = useRef<View>(null);
+  const heading = useRef<ComponentRef<typeof View>>(null);
   useEffect(() => {
     if (!visible || Platform.OS === "web") return;
     const timer = setTimeout(() => {
