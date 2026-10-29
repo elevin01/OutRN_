@@ -55,6 +55,17 @@ describe("iCalendar", () => {
     expect(parseICalendar(ics, "America/New_York")[0]!.location).toEqual(["Bank Austria im Alten Rathaus", "Wipplingerstrasse 6-8", "1010 Vienna", "Austria"]);
   });
 
+  it("reads at most 6 LOCATION lines of 200 characters, however long the feed's (PR #62 review)", () => {
+    const at = (location: string) => ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", "UID:1", "DTSTART:20261005T170000Z", "SUMMARY:Gala", `LOCATION:${location}`, "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
+    const t0 = performance.now();
+    const long = parseICalendar(at("Hall ".repeat(2_000_000)), "America/New_York")[0]!.location;
+    const many = parseICalendar(at("Room,".repeat(1_000_000)), "America/New_York")[0]!.location;
+    expect(performance.now() - t0).toBeLessThan(2000);
+    expect(long).toHaveLength(1);
+    expect(long[0]!.length).toBeLessThanOrEqual(200);
+    expect(many).toEqual(Array(6).fill("Room"));
+  });
+
   it("reads events: UTC, a TZID's local time, a date for all day, a duration, folded and escaped text, nothing from an alarm", () => {
     const [baby, closed, howl, floating] = parseICalendar(LIBCAL, TZ);
     expect(baby).toMatchObject({
