@@ -61,6 +61,13 @@ describe("which photos a place shows", () => {
   it("names the kind with the right article", () => {
     expect(photosFor("Rex", "Arts centre", [], stock, remote)[0]!.alt).toBe("A representative photo of an arts centre, not Rex");
   });
+
+  it("says what a cuisine's photo shows, still never the place", () => {
+    const pizza = { source: "pizza.jpg", credit: "Jane Doe, CC BY 4.0, via Wikimedia Commons", url: "https://commons.wikimedia.org/wiki/File:Pizza.jpg", of: "pizza" };
+    const shown = photosFor("Joe's", "Restaurant", [], [pizza, ...stock], remote);
+    expect(shown.map((p) => p.alt)).toEqual(["A representative photo of pizza, not Joe's", "A representative photo of a restaurant, not Joe's"]);
+    expect(shown[0]).toMatchObject({ kind: "representative", credit: pizza.credit, creditUrl: pizza.url });
+  });
 });
 
 describe("an aerial photo as a place's stand-in", () => {

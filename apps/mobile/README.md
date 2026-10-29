@@ -71,8 +71,9 @@ First-run setup, storage, API handoff and review screenshots: [ONBOARDING.md](do
 
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
-"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)),
-and an aerial photo of its spot (contract 1.11 `aerial`, New York State's orthoimagery, labelled
+"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)):
+every kind but the catch-alls (activity, other) has one, and a restaurant or a cafe whose cuisine has one shows that food first
+(a pizzeria, pizza). And an aerial photo of its spot (contract 1.11 `aerial`, New York State's orthoimagery, labelled
 "Aerial view of this spot", loaded only from `orthos.its.ny.gov`): a park, a garden, a waterfront
 and the like lead with the aerial, other places with the representative photo. When none of its own
 loads, the same stand-ins. Cards on the Now list show the same picture, with a small "Aerial view"
@@ -89,7 +90,7 @@ under the SIL Open Font License; see `assets/fonts/OFL.txt`.
 ## Remaining product slices
 
 Account sync, submission of venue corrections, persistent outings,
-representative photos for more categories, community feeds, live conditions and a geographic map view need separate PRs.
+community feeds, live conditions and a geographic map view need separate PRs.
 There are no simulated successful sign-ins or report submissions. Filters are session-only.
 Interests, area and travel mode persist. Manual entry starts from the area center; device entry
 passes a foreground fix to the API. A returning device-location user is never prompted on launch:

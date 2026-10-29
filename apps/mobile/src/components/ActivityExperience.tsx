@@ -139,7 +139,7 @@ export function ActivityExperience({
   const expired = !!response && !demoMode && isExpired(response, now);
   // The place's own photos (the card's at once, the details' once loaded); else its stand-ins: an
   // aerial photo of its spot and representative ones, each labelled as what it is.
-  const representative = representativePhotos(category?.id || "");
+  const representative = representativePhotos(category?.id || "", item?.cuisines);
   const aerial = item?.aerial ?? place?.aerial ?? null;
   const photos = useMemo(
     () =>
@@ -644,7 +644,7 @@ export function ActivityExperience({
             {demo
               ? " · Illustrative photos: Unsplash"
               : photos.some((p) => p.kind === "representative")
-                ? " · Representative photos: Unsplash"
+                ? ` · Representative photos: ${[...new Set(photos.filter((p) => p.kind === "representative").map((p) => p.credit))].join("; ")}`
                 : ""}
           </Copy>
         </View>

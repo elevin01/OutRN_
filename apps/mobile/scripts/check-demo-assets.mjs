@@ -16,14 +16,15 @@ const demo =
   process.argv.includes("--demo") ||
   process.env.EXPO_PUBLIC_DEMO_MODE === "true";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+// Every representative photo in assets/photos (src/lib/representative.ts maps each of them).
 const photos = new Map(
   await Promise.all(
-    ["cafe.jpg", "culture.jpg", "coffee.jpg", "pastry.jpg"].map(
-      async (name) => [
+    (await readdir(resolve(root, "assets/photos")))
+      .filter((name) => name.endsWith(".jpg"))
+      .map(async (name) => [
         hash(await readFile(resolve(root, "assets/photos", name))),
         name,
-      ],
-    ),
+      ]),
   ),
 );
 /** Text that exists only in src/lib/demo-content.ts. */
