@@ -78,9 +78,25 @@ export function ticketedEventInput(e: TicketedEvent): Omit<EventInput, "place"> 
   };
 }
 
-const distinctiveWords = (title: string) => new Set(matchKey(title).split(" ").filter((w) => w.length >= 4));
+/** Words that join a title, not name the show ("Celtics at Knicks", "Knicks vs. Celtics"). */
+const JOINING = new Set(["a", "an", "and", "at", "by", "for", "in", "of", "on", "vs", "with", "featuring", "feat", "presents", "live"]);
+const titleWords = (title: string) => new Set(matchKey(title).split(" ").filter((w) => w && !JOINING.has(w)));
 
-/** The other API's listings of this event at this venue: starting within SAME_EVENT_MINUTES, a word of its title in common. */
+/**
+ * Whether two titles name the same show: every word of one is in the other, a one-word title at most
+ * one word shorter ("Hamlet", "Hamlet (Shakespeare)"), and nothing added that tells two apart (a
+ * number: "Night 2", "Part II"). A word in common is not enough: "Late Night Jazz" is not "Late Night
+ * Comedy" in the next room.
+ */
+function sameShow(a: string, b: string): boolean {
+  const [x, y] = [titleWords(a), titleWords(b)];
+  const [small, big] = x.size <= y.size ? [x, y] : [y, x];
+  if (!small.size || ![...small].every((w) => big.has(w))) return false;
+  if (small.size === 1 && big.size > 2) return false;
+  return ![...big].some((w) => !small.has(w) && /^(?:\d+|ii|iii|iv|vi{0,3}|ix|x|part)$/.test(w));
+}
+
+/** The other API's listings of this event at this venue: starting within SAME_EVENT_MINUTES, the same show by its title (sameShow). */
 async function otherListings(q: Queryable, source: TicketingSource, venueId: string, title: string, start: string | Date): Promise<string[]> {
   const other = source === "ticketmaster" ? "seatgeek" : "ticketmaster";
   const r = await q.query<{ id: string; title: string }>(
@@ -88,8 +104,7 @@ async function otherListings(q: Queryable, source: TicketingSource, venueId: str
         and start_at between $3::timestamptz - make_interval(mins => $4) and $3::timestamptz + make_interval(mins => $4)`,
     [venueId, `${other}:%`, start, SAME_EVENT_MINUTES],
   );
-  const mine = distinctiveWords(title);
-  return r.rows.filter((x) => [...distinctiveWords(x.title)].some((w) => mine.has(w))).map((x) => x.id);
+  return r.rows.filter((x) => sameShow(x.title, title)).map((x) => x.id);
 }
 
 export type TicketingSkip = "far" | "another_area" | "listed_by_other";

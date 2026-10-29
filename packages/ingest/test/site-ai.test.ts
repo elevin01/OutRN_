@@ -7,7 +7,7 @@ import { costOf, worstCaseCost } from "../src/claude.js";
 import type { SiteFetcher } from "../src/firstparty-job.js";
 import { registerSite } from "../src/firstparty-job.js";
 import { ingestOsmArea } from "../src/pipeline.js";
-import { checkReadEvent, minAgeStated, norm, quoteHasDay, quoteHasTime, readEventsWithClaude, recheckEventsWithClaude, recheckVerdict, spentLastDay, statedPrice } from "../src/site-ai.js";
+import { checkReadEvent, minAgeStated, norm, quoteHasDay, quoteHasTime, quoteNamesTitle, readEventsWithClaude, recheckEventsWithClaude, recheckVerdict, spentLastDay, statedPrice } from "../src/site-ai.js";
 
 /** Claude reading venues' pages: every event checked against the page; spending capped (outrn_test, reset per file). */
 
@@ -170,6 +170,43 @@ describe("a re-check's verdict", () => {
     expect(recheckVerdict({ status: "listed", quote: "Anora Sat Oct 31 7pm is not sold out" }, page, anora)).toBeNull();
     expect(recheckVerdict({ status: "listed", quote: "Nosferatu Fri Oct 30 7pm is not cancelled, but is sold out" }, page, { title: "Nosferatu", time: "19:00", date: "2026-10-30", today })).toBeNull();
     expect(recheckVerdict({ status: "listed", quote: "Nosferatu Sat Oct 31 7pm is not sold out, but cancelled" }, page, { title: "Nosferatu", time: "19:00", date: "2026-10-31", today })).toBeNull();
+  });
+
+  it("names this one title, whole: not another part of it, not a word of it inside another word", () => {
+    expect(quoteNamesTitle("Toy Story 2 Fri Oct 30 7pm CANCELLED", "Toy Story 2")).toBe(true);
+    expect(quoteNamesTitle("Toy Story Fri Oct 30 7pm CANCELLED", "Toy Story 2")).toBe(false);
+    expect(quoteNamesTitle("Toy Story 2 Fri Oct 30 7pm CANCELLED", "Toy Story")).toBe(false);
+    expect(quoteNamesTitle("Toy Story II Fri Oct 30 7pm CANCELLED", "Toy Story")).toBe(false);
+    expect(quoteNamesTitle("Anoraks for sale", "Anora")).toBe(false);
+    // A time or a date after the title is not a part number; punctuation between its words doesn't matter.
+    expect(quoteNamesTitle("Anora 7 PM Fri SOLD OUT", "Anora")).toBe(true);
+    expect(quoteNamesTitle("Anora 7:00 Fri", "Anora")).toBe(true);
+    expect(quoteNamesTitle("Anora 10/30 7pm", "Anora")).toBe(true);
+    expect(quoteNamesTitle("anora 35mm fri", "Anora (35mm)")).toBe(true);
+    expect(quoteNamesTitle("Mission: Impossible - Fri 7pm", "Mission Impossible")).toBe(true);
+  });
+
+  it("speaks of this showing's day only: a quote over another day can't say which one is off, full or available", () => {
+    const p = (q: string) => norm(q);
+    const fri = { title: "Anora", time: "19:00", date: "2026-10-30", today };
+    for (const status of ["sold_out", "listed"]) {
+      const q = "Anora Friday 7pm tickets available; Saturday sold out.";
+      expect(recheckVerdict({ status, quote: q }, p(q), fri), status).toBeNull();
+    }
+    const tonight = "Anora tonight 7pm sold out; tomorrow 7pm available";
+    expect(recheckVerdict({ status: "sold_out", quote: tonight }, p(tonight), fri)).toBeNull();
+    const ordinal = "Anora Fri 30th 7pm sold out, 31st available";
+    expect(recheckVerdict({ status: "sold_out", quote: ordinal }, p(ordinal), fri)).toBeNull();
+    // The same showing named by its weekday and date, or as tomorrow, is one day.
+    for (const q of ["Anora Friday Oct 30 7pm SOLD OUT", "Anora tomorrow (Fri) 7pm SOLD OUT"]) expect(recheckVerdict({ status: "sold_out", quote: q }, p(q), fri), q).toBe("sold_out");
+    // And the sequel's cancellation is not the original's, nor the reverse.
+    const toy = (title: string) => ({ title, time: "19:00", date: "2026-10-30", today });
+    for (const [q, title, want] of [
+      ["Toy Story Fri Oct 30 7pm CANCELLED", "Toy Story 2", null],
+      ["Toy Story 2 Fri Oct 30 7pm CANCELLED", "Toy Story", null],
+      ["Toy Story 2 Fri Oct 30 7pm CANCELLED", "Toy Story 2", "cancelled"],
+      ["Toy Story Fri Oct 30 7pm CANCELLED", "Toy Story", "cancelled"],
+    ] as const) expect(recheckVerdict({ status: "cancelled", quote: q }, p(q), toy(title)), `${title}: ${q}`).toBe(want);
   });
 });
 

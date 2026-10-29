@@ -134,6 +134,21 @@ describe.skipIf(!available)("ticketed events", () => {
     expect((await occurrence("seatgeek:sg-2"))!.status).toBe("withdrawn");
   });
 
+  it("withdraws or leaves out only the same show: a word in common is not enough", async () => {
+    // Two shows at once in a venue's two rooms, sharing "Late Night".
+    await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [event({ id: "sg-5", title: "Late Night Comedy", start: "2026-10-06T03:00:00.000Z", kinds: ["comedy"] })], { complete: false }) });
+    const s = await ingestTicketedEvents(db, {
+      source: "ticketmaster",
+      areaSlug: "les",
+      now: NOW,
+      fromFile: capture("ticketmaster", [event({ id: "tm-5", title: "Late Night Jazz", start: "2026-10-06T03:00:00.000Z", kinds: ["music"], adultsOnly: true }), event({ id: "tm-6", title: "Late Night Comedy: Part 2", start: "2026-10-06T03:10:00.000Z", kinds: ["comedy"] })], { complete: false }),
+    });
+    expect(s.skipped).toEqual({});
+    expect((await occurrence("seatgeek:sg-5"))!.status).toBe("scheduled");
+    expect((await occurrence("ticketmaster:tm-5"))!.status).toBe("scheduled");
+    expect((await occurrence("ticketmaster:tm-6"))!.status).toBe("scheduled");
+  });
+
   it("a full read that no longer lists an event withdraws it; a partial one withdraws nothing", async () => {
     await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, fromFile: capture("ticketmaster", [event({ id: "tm-2", title: "Fireworks Cruise", kinds: [], venue: { name: "Pier 36", address: "299 South St", lat: 40.7101, lon: -73.9826 } })], { complete: false }) });
     expect((await occurrence("ticketmaster:tm-1"))!.status).toBe("scheduled");

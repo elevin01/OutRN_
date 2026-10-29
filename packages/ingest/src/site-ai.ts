@@ -486,10 +486,33 @@ function timesIn(q: string): number {
   return seen.size;
 }
 
+const SEP = String.raw`[^\p{L}\p{N}]+`;
+/** A part number after a title: "2", "II", "Part" ("Toy Story 2"), not a time or date ("Anora 7 pm", "Anora 7:00"). */
+const SEQUEL = String.raw`${SEP}(?:[2-9]|ii|iii|iv|vi{0,3}|ix|x|part)(?![\p{L}\p{N}]|[:.]\d|\s*[ap]\.?\s?m\b)`;
+
+/** Whether a quote names this title: all of it, word for word and whole words only, and not another part of it ("Toy Story" is not "Toy Story 2", nor the reverse). */
+export function quoteNamesTitle(quote: string, title: string): boolean {
+  const words = norm(title).split(new RegExp(SEP, "u")).filter(Boolean);
+  if (!words.length) return false;
+  const escaped = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  return new RegExp(String.raw`(?<![\p{L}\p{N}])${escaped.join(SEP)}(?![\p{L}\p{N}])(?!${SEQUEL})`, "u").test(norm(quote));
+}
+
+/** Whether every day a quote speaks of is this one: no other date, weekday, ordinal, or tonight/tomorrow that is another day. */
+function onlyThisDay(q: string, date: string, today: string): boolean {
+  const d = new Date(`${date}T12:00:00Z`);
+  if (!datesIn(q).every((x) => x.month === d.getUTCMonth() + 1 && x.day === d.getUTCDate() && (x.year === null || x.year === d.getUTCFullYear()))) return false;
+  if (WEEKDAYS.some((words, i) => i !== d.getUTCDay() && words.some((w) => new RegExp(`\\b${w}\\b`).test(q)))) return false;
+  if ([...q.matchAll(/(?<![\d:.$])(\d{1,2})(?:st|nd|rd|th)\b/g)].some((m) => Number(m[1]) !== d.getUTCDate())) return false;
+  const tomorrow = new Date(new Date(`${today}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10);
+  if (date !== today && /\b(tonight|today)\b/.test(q)) return false;
+  return date === tomorrow || !/\btomorrow\b/.test(q);
+}
+
 /**
  * What a re-check may conclude about one showing, only on its page's own words: the quote is on the
- * page, names the event (its title, or every distinctive word of it), its day and its start time, and no
- * other showing (a quote over several times or dates can't say which is off or full). A negated status
+ * page, names the event (its whole title, see quoteNamesTitle), its day and its start time, and no other
+ * showing (a quote over several times or days can't say which is off or full). A negated status
  * phrase is set aside, not taken as the whole quote's verdict. Cancelled or sold out; listed (going
  * ahead, so an earlier mark of ours is cleared); or nothing, which changes nothing.
  */
@@ -498,11 +521,8 @@ export function recheckVerdict(raw: unknown, page: string, target: { title: stri
   if (!a || typeof a.status !== "string" || typeof a.quote !== "string") return null;
   const quote = norm(a.quote);
   if (quote.length < 4 || !page.includes(quote)) return null;
-  const title = norm(target.title);
-  const words = title.split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 4);
-  const named = quote.includes(title) || (words.length > 0 && words.every((w) => quote.includes(w)));
-  if (!named || !quoteHasTime(quote, target.time) || !quoteHasDay(quote, target.date, target.today)) return null;
-  if (timesIn(quote) > 1 || new Set(datesIn(quote).map((d) => `${d.month}/${d.day}`)).size > 1) return null;
+  if (!quoteNamesTitle(quote, target.title) || !quoteHasTime(quote, target.time) || !quoteHasDay(quote, target.date, target.today)) return null;
+  if (timesIn(quote) > 1 || !onlyThisDay(quote, target.date, target.today)) return null;
   const affirmative = quote.replace(NEGATED, " ");
   if ((a.status === "cancelled" || a.status === "postponed") && OFF.test(affirmative)) return "cancelled";
   if (a.status === "sold_out" && FULL.test(affirmative)) return "sold_out";
