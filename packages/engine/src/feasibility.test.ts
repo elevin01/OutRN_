@@ -537,6 +537,28 @@ describe("selection: diversity and fewer than three", () => {
     expect(ids.filter((id) => id.startsWith("green-")).sort()).toEqual(["green-1", "green-2"]);
   });
 
+  it("a record that warns a family of an age limit is never held back behind one of its name that does not", () => {
+    const north = (m: number) => ({ lat: NEAR.lat + m / 111_000, lon: NEAR.lon });
+    // A brewpub OSM has as a bar and Overture as a restaurant, 40 m apart; a hall with an estimated 21+ on one record.
+    const brew = [
+      venue({ id: "brew-rest", name: "Captain Lawrence Brewing", category: "restaurant", hours: "Mo-Su 11:00-22:00" }),
+      venue({ id: "brew-bar", name: "Captain Lawrence Brewing Co.", category: "bar", hours: "Mo-Su 11:00-22:00", point: north(40) }),
+    ];
+    const hall = [venue({ id: "hall-osm", name: "Empire Hall", category: "activity", hours: "Mo-Su 10:00-22:00" }), venue({ id: "hall-ovt", name: "Empire Hall", category: "activity", hours: "Mo-Su 10:00-22:00", point: north(30) })];
+    hall[1]!.facts.age_limit = { value: { minAge: 21 }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1 };
+    const shown = (cands: Candidate[], over: Partial<RequestContext>) => {
+      const x = ctx("2026-10-03 15:00", 180, over);
+      return orderForDisplay(evaluateAll(cands, x, POLICIES), x).map((e) => [e.candidate.id, e.unresolved.filter((u) => u.startsWith("AGE_") || u === "KIDS_UNCERTAIN")]);
+    };
+    for (const party of [{ company: "family" as const }, { youngestAge: 8 }]) {
+      expect(shown(brew, party)).toEqual([["brew-rest", []], ["brew-bar", ["KIDS_UNCERTAIN"]]]);
+      expect(shown(hall, party)).toEqual([["hall-osm", []], ["hall-ovt", ["AGE_LIMIT_LIKELY"]]]);
+    }
+    // With no minor there is nothing to warn of, and the place shows once.
+    expect(shown(brew, { company: "friends" })).toHaveLength(1);
+    expect(shown(hall, {})).toHaveLength(1);
+  });
+
   it("a narrowed request respects the category and skips activity diversity", () => {
     const cands = [venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "r2", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "r3", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "p1", category: "park" })];
     const s = recommend(cands, ctx("2026-10-03 15:00", 180, { categories: ["restaurant"] }), POLICIES);
