@@ -16,6 +16,7 @@ import { registerVenues } from "./cmd/venues.js";
 import { registerAreas } from "./cmd/areas.js";
 import { registerWeather } from "./cmd/weather.js";
 import { registerRefresh } from "./cmd/refresh.js";
+import { registerAi } from "./cmd/ai.js";
 
 // The repository's .env (keys, a database URL), under whatever the shell already set: `pnpm real`'s
 // own database and anything exported first win.
@@ -44,6 +45,7 @@ registerVenues(program);
 registerAreas(program);
 registerWeather(program);
 registerRefresh(program);
+registerAi(program);
 
 program.hook("postAction", async () => {
   await closeDb();

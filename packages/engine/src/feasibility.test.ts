@@ -431,6 +431,21 @@ describe("feasibility: programme venues", () => {
   });
 });
 
+describe("an event its own page now says is off or full", () => {
+  it("is out, as cancelled or sold out, on a re-check's admission_status", () => {
+    const start = fromLocal("2026-09-26", 22 * 60, TZ);
+    const show = (status?: string) => {
+      const c = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "o1", title: "Late set", start, end: null, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      return status ? { ...c, facts: { ...c.facts, admission_status: { value: { status }, confidence: 0.8, evidenceClass: "observation" as const, validUntil: null, independentSources: 1 } } } : c;
+    };
+    const at = ctx("2026-09-26 21:00", 180);
+    expect(one(show(), at).excludedBy).toBeNull();
+    expect(one(show("cancelled"), at).excludedBy).toBe("EVENT_CANCELLED");
+    expect(one(show("sold_out"), at).excludedBy).toBe("EVENT_SOLD_OUT");
+    expect(one(show("confirmed"), at).excludedBy).toBeNull();
+  });
+});
+
 describe("what people are going to now", () => {
   const start = fromLocal("2026-09-26", 22 * 60, TZ);
   const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);

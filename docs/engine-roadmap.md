@@ -147,10 +147,21 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     its own with no age stated is probably 21+ (an estimate, so Check first for families).
   - On the LES fixture: "Jazz on the Lawn" at 6pm is the first option at 5:45pm for someone who likes
     live music.
-- **Part 4: every free event source** (needs network access and two free keys; see the decisions
-  below): NYC Parks events and NYC Open Data (concerts, outdoor movies, fireworks, street fairs),
-  library calendars (NYPL, Westchester), venues' own sites (the first-party job), Ticketmaster and
-  SeatGeek, and more.
+- **Part 4: every event source, kept current (this PR).** The founder's call (29 Oct): "currently
+  this is just Google Maps made different". No event source ran on its own.
+  - `outrn refresh`: every live job on its cadence, beside the API in `pnpm real` (the founder's own
+    computer for now; `--once` for cron later).
+  - NYC Parks switched on (the terms read 29 Oct); library and town calendars live, not only from a capture.
+  - Venues' own sites hourly, theatres', cinemas' and music rooms' first; cinemas' sites now read for
+    their screenings, and their /now-playing and /showtimes pages found.
+  - Ticketmaster and SeatGeek (free keys; off until their terms are read).
+  - "Popular right now": a `popularity` fact from SeatGeek's score and TMDB's most popular films
+    matched to screenings; the engine lifts an event from 0.7 and says so (TMDB off until its terms are read).
+  - Claude reads the events pages no structured data describes, each event checked against the page's
+    own words, and re-checks events about to start for cancellations and sell-outs; capped at
+    `OUTRN_AI_DAILY_BUDGET_USD` over any 24 hours (default $1).
+  - Seen on the real captures: 546 calendar and 146 NYC Parks events on the first refresh; the first
+    site pass with event venues first brought 73 more (New York Comedy Club's next 8 shows).
 - **Late night: comedy and games.** A Friday 10:30pm search for someone who loves comedy and games
   gave three bars: the comedy clubs had left with a theatre's evening at 10pm, Barcade was a bar like
   any other, and the Comedy Cellar wasn't in the data. No contract change.

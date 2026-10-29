@@ -17,6 +17,7 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@outrn/core": "workspace:*",
     "@outrn/db": "workspace:*",
     "@outrn/facts": "workspace:*",

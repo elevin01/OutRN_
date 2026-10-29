@@ -3,6 +3,7 @@ import { ingestCalendars } from "./calendars.js";
 import { refreshFilmPopularity, TMDB_KEY } from "./films.js";
 import { discoverSites, runFirstParty } from "./firstparty-job.js";
 import { ingestNycParksEvents } from "./nyc-parks.js";
+import { AI_ENV, readEventsWithClaude, recheckEventsWithClaude } from "./site-ai.js";
 import { ingestTicketedEvents, TICKETING_KEYS } from "./ticketing.js";
 import { refreshWeather } from "./weather.js";
 
@@ -106,6 +107,29 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
     run: async (db, log) => {
       const s = await refreshFilmPopularity(db, { log });
       return `${s.popular} of ${s.screenings} upcoming screenings are of a popular film`;
+    },
+  },
+  {
+    id: "ai_events",
+    title: "Claude reads the events pages of venues that list events no other way (each page daily, within the day's cap)",
+    sourceId: "site_ai",
+    // After the venues' own sites, which list most of what can be listed without it.
+    everyMinutes: 2 * 60,
+    needs: [AI_ENV.key],
+    run: async (db, log) => {
+      const s = await readEventsWithClaude(db, { log });
+      return `${s.read} of ${s.pages} pages read · ${s.events} events · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · at the day's cap" : ""}`;
+    },
+  },
+  {
+    id: "ai_recheck",
+    title: "Claude re-checks the pages of events starting within 36 hours: cancelled or sold out now?",
+    sourceId: "site_ai",
+    everyMinutes: 2 * 60,
+    needs: [AI_ENV.key],
+    run: async (db, log) => {
+      const s = await recheckEventsWithClaude(db, { log });
+      return `${s.checked} of ${s.events} checked · ${s.marked.cancelled} cancelled · ${s.marked.sold_out} sold out · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · at the day's cap" : ""}`;
     },
   },
 ];

@@ -14,3 +14,5 @@ export * from "./site-events.js";
 export * from "./refresh.js";
 export * from "./ticketing.js";
 export * from "./films.js";
+export * from "./claude.js";
+export * from "./site-ai.js";

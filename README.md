@@ -107,6 +107,24 @@ lifts the event and says so: "one of the most popular films right now", "popular
 `TMDB_API_KEY` (a v3 key or v4 read token) and is **registered switched off** until TMDB's terms are
 read (commercial use needs an agreement with TMDB): migration `0029`.
 
+**Claude reading what no structured data describes** (`pnpm outrn ai events`, `... ai recheck`): most
+cinemas', comedy clubs' and music rooms' own pages list their shows in words, not in JSON-LD (in the first
+pass over 120 event venues' sites, 28 had none). For the event venues that list events
+no other way, Claude reads their events page (the one the home page links: /events, /shows,
+/now-playing, /showtimes…), fetched through the firstparty gate, and lists each event with a quote of
+the page's own words. Nothing is believed that the page does not say: the quote must be on the page,
+the title too, and the quote must carry the event's start time and its day (a date, a weekday, or
+"tonight"); a price only as the page writes it, sold out only in its words. An event that fails a check
+is left out, the reason counted. A page is read at most once in 20 hours, cinemas first. `ai recheck`
+re-reads the page of each event starting within 36 hours (each at most every 8) and marks it cancelled or
+sold out when the page now says so, quoting it: the engine leaves such an event out. Spending is capped
+over any 24 hours (`OUTRN_AI_DAILY_BUDGET_USD`, default $1.00), counted from each response's token usage
+at its model's rates into the run log; a request that could pass the cap is not sent, nor its page
+fetched. `outrn ai spend` shows the day so far. It needs `ANTHROPIC_API_KEY`; the model is
+`OUTRN_AI_MODEL` (default `claude-opus-5-5`; `claude-haiku-5-5` costs a fraction per page), at low effort,
+with Anthropic's server-side fallback when a request is declined. `outrn refresh` runs both every two
+hours while the key is set.
+
 **Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
 libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
 storytimes, LEGO clubs, author talks, concerts, nature walks, a town's parade. The feeds are a reviewed
@@ -436,8 +454,7 @@ is an error (a rate limit, say) fails the run and changes nothing.
 ## What is deliberately not here yet
 
 Foursquare OS Places connector (needs the export token; registered as disabled), Google Places/Routes
-adapters (off by default, budget cap first), Ticketmaster (conditional), the LLM extraction rung (rung 4 of
-the ladder; rungs 1–3 are JSON-LD, site parsers, and nothing), the post-Go
+adapters (off by default, budget cap first), the post-Go
 prompt endpoints, contributor reliability updates. Each has a table or a stub where it will land.
 
 ## Licensing note

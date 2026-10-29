@@ -299,7 +299,11 @@ interface HostRow {
  * robots.txt for the very path, a reservation of one of its requests for the day, and its pace.
  * Hosts are found as requests go to them: a redirect or a moved site's new host is gated as its own.
  */
-function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
+/**
+ * The gate every request to a venue's site passes (robots.txt, a host's back-off, its spacing and its
+ * day's allowance): this job's, and any other job reading the same sites' pages (site-ai.ts).
+ */
+export function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
   const policies = new Map<string, Promise<RobotsPolicy>>();
   const delays = new Map<string, number>();
   const pace = (host: string) => ({ throttleKey: `firstparty:${host}`, minIntervalMs: Math.max(FIRSTPARTY_LIMITS.minIntervalMs, (delays.get(host) ?? 0) * 1000) });
