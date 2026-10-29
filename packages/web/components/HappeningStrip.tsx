@@ -17,6 +17,7 @@ export function HappeningStrip({ items, timezone, now }: { items: Recommendation
               <Link href={`/places/${i.placeId}?mode=${i.timing.travel.mode}`}>
                 <strong>{i.name}</strong>
                 <span>{starts <= now ? "on now" : time.format(starts)} · {i.placeName}</span>
+                {i.copy.caveat && <span className="caveat">{i.copy.caveat}</span>}
               </Link>
             </li>
           );

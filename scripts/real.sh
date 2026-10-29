@@ -12,7 +12,8 @@
 # fixtures/live/<area>-photos.json next to it brings its photos, <area>-overture.json checks its
 # places against Overture Maps (still operating, closed, websites and phones), and
 # <area>-destinations.json adds the places worth a longer outing around it (preserves, gardens, lookouts), and
-# <area>-sites.json what the venues' own websites stated (their hours, mostly). A capture named after something
+# <area>-sites.json what the venues' own websites stated (their hours, mostly); fixtures/live/calendars.json,
+# when there is one, brings the events in libraries', towns' and nature centers' own calendars. A capture named after something
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
 # before the API starts, so what is served is never a silent subset. Capture more with `pnpm capture`.
 #
@@ -71,7 +72,7 @@ shopt -s nullglob
 served=""
 for file in fixtures/live/*.json; do
   slug="$(basename "$file" .json)"
-  case "$slug" in *-photos | *-overture | *-destinations | *-sites) continue ;; esac
+  case "$slug" in *-photos | *-overture | *-destinations | *-sites | calendars) continue ;; esac
   echo
   echo "== ${slug}"
   known="$(area_count "$slug")" || fail "could not look up ${slug} in ${DB_NAME}"
@@ -171,6 +172,18 @@ if [ -n "$served" ]; then
       echo "   ${slug}: not refreshed: $(printf '%s\n' "$out" | tail -n 1)"
     fi
   done
+fi
+
+# Library and town calendars, replayed from fixtures/live/calendars.json when `pnpm capture` saved one:
+# the events in it still to come, at the places they name. `pnpm outrn ingest calendars` reads them live.
+if [ -n "$served" ] && [ -s fixtures/live/calendars.json ]; then
+  echo
+  echo "== events (library and town calendars)"
+  if out="$(pnpm -s outrn ingest calendars --from-file fixtures/live/calendars.json 2>&1)"; then
+    printf '%s\n' "$out" | grep -E '^calendars|^  [a-z_]+ +[0-9]+ written' | sed 's/^ */   /'
+  else
+    echo "   not replayed: $(printf '%s\n' "$out" | tail -n 1)"
+  fi
 fi
 
 cat <<EOF

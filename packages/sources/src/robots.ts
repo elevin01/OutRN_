@@ -130,14 +130,14 @@ export function robotsAllows(policy: RobotsPolicy, pathAndQuery: string): boolea
 }
 
 /**
- * Read a site's robots.txt (`origin` is scheme://host[:port]). `beforeRequest` sees each request it
- * sends, redirects included (a host's daily allowance counts them); its refusal is passed on, not
- * taken for an unreachable robots.txt.
+ * Read a site's robots.txt (`origin` is scheme://host[:port]), for the source that will read the site
+ * (default: first-party). `beforeRequest` sees each request it sends, redirects included (a host's
+ * daily allowance counts them); its refusal is passed on, not taken for an unreachable robots.txt.
  */
-export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string; beforeRequest?: RequestGate }): Promise<RobotsPolicy> {
+export async function fetchRobots(origin: string, opts: { userAgent: string; throttleKey?: string; sourceId?: string; beforeRequest?: RequestGate }): Promise<RobotsPolicy> {
   try {
     const res = await guardedFetch(`${origin}/robots.txt`, {
-      sourceId: "firstparty",
+      sourceId: opts.sourceId ?? "firstparty",
       ...(opts.throttleKey ? { throttleKey: opts.throttleKey } : {}),
       ...(opts.beforeRequest ? { beforeRequest: opts.beforeRequest } : {}),
       accept: "text/plain, */*;q=0.5",
