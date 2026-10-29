@@ -111,6 +111,9 @@ export function safeExternalUrl(value: string, phone = false): string | null {
       : null;
   try {
     const url = new URL(value);
+    // A user name or password before the host hides where the link goes
+    // (https://google.com@evil.example/), as the API's own check refuses.
+    if (url.username || url.password) return null;
     return url.protocol === "https:" || url.protocol === "http:"
       ? url.toString()
       : null;

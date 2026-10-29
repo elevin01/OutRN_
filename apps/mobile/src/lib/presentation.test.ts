@@ -76,6 +76,8 @@ describe("truthful mobile presentation", () => {
     );
     expect(safeExternalUrl("javascript:alert(1)")).toBeNull();
     expect(safeExternalUrl("file:///private")).toBeNull();
+    expect(safeExternalUrl("https://google.com@evil.example/")).toBeNull();
+    expect(safeExternalUrl("http://user:pw@cafe.example/")).toBeNull();
     expect(safeExternalUrl("+1 (212) 555-1234", true)).toBe("tel:+12125551234");
     expect(safeExternalUrl("123;evil", true)).toBeNull();
   });
