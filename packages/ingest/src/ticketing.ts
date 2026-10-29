@@ -4,7 +4,7 @@ import { assertSourceAllowed, getArea, loadParkingRule, type Db, type Queryable 
 import { matchKey } from "@outrn/identity";
 import { fetchTicketedEvents, parseTicketingCapture, type TicketedEvent, type TicketingCapture, type TicketingSource } from "@outrn/sources";
 import { placeOf } from "./calendars.js";
-import { ingestEvents, type EventInput, type EventsSummary } from "./events.js";
+import { ingestEvents, type EventInput, type EventsSummary, type WrittenEvent } from "./events.js";
 import { ingestExtentFor } from "./pipeline.js";
 
 /**
@@ -80,16 +80,16 @@ export function ticketedEventInput(e: TicketedEvent): Omit<EventInput, "place"> 
 
 const distinctiveWords = (title: string) => new Set(matchKey(title).split(" ").filter((w) => w.length >= 4));
 
-/** Whether the other API already lists this event at this venue: starting within SAME_EVENT_MINUTES, a word of its title in common. */
-async function listedByAnother(q: Queryable, source: TicketingSource, venueId: string, e: TicketedEvent): Promise<boolean> {
+/** The other API's listings of this event at this venue: starting within SAME_EVENT_MINUTES, a word of its title in common. */
+async function otherListings(q: Queryable, source: TicketingSource, venueId: string, title: string, start: string | Date): Promise<string[]> {
   const other = source === "ticketmaster" ? "seatgeek" : "ticketmaster";
-  const r = await q.query<{ title: string }>(
-    `select title from occurrences where venue_id = $1 and recurrence_key like $2 and status not in ('withdrawn', 'ended')
+  const r = await q.query<{ id: string; title: string }>(
+    `select id, title from occurrences where venue_id = $1 and recurrence_key like $2 and status not in ('withdrawn', 'ended')
         and start_at between $3::timestamptz - make_interval(mins => $4) and $3::timestamptz + make_interval(mins => $4)`,
-    [venueId, `${other}:%`, e.start, SAME_EVENT_MINUTES],
+    [venueId, `${other}:%`, start, SAME_EVENT_MINUTES],
   );
-  const mine = distinctiveWords(e.title);
-  return r.rows.some((x) => [...distinctiveWords(x.title)].some((w) => mine.has(w)));
+  const mine = distinctiveWords(title);
+  return r.rows.filter((x) => [...distinctiveWords(x.title)].some((w) => mine.has(w))).map((x) => x.id);
 }
 
 export type TicketingSkip = "far" | "another_area" | "listed_by_other";
@@ -149,7 +149,7 @@ export async function ingestTicketedEvents(db: Db, opts: TicketingIngestOptions)
     }
     // Never one the API says is for adults: the other's listing (SeatGeek says nothing of age) must
     // not stand in for the one that carries the limit.
-    if (placed && !e.adultsOnly && (await listedByAnother(db, source, placed.venueId, e))) {
+    if (placed && !e.adultsOnly && (await otherListings(db, source, placed.venueId, e.title, e.start)).length) {
       skip("listed_by_other");
       continue;
     }
@@ -159,6 +159,19 @@ export async function ingestTicketedEvents(db: Db, opts: TicketingIngestOptions)
   // Every page read is the area's whole listing, even an empty one (the API said there are none, not
   // that it failed: a failure throws above). A replay saved for another area holds that area's only.
   const complete = capture.complete && capture.area === area.slug;
-  const s = await ingestEvents(db, { source, events }, { areaSlug: area.slug, now, actor: source, complete, replay: opts.fromFile !== undefined });
+  // And the other's copy of an adults-only event, listed before this one, gives way to it in the same
+  // transaction: it says nothing of age (SeatGeek never does), so a party with a minor would see it.
+  const adultsOnly = events.filter((e) => e.minAge !== undefined).map((e) => `${source}:${e.id}`);
+  const afterWrite = async (tx: Queryable, written: readonly WrittenEvent[]) => {
+    if (!adultsOnly.length) return;
+    const mine = await tx.query<{ venue_id: string; title: string; start_at: Date }>(
+      `select venue_id, title, start_at from occurrences where id = any($1::uuid[]) and recurrence_key = any($2::text[])`,
+      [written.map((w) => w.occurrenceId), adultsOnly],
+    );
+    const copies: string[] = [];
+    for (const o of mine.rows) copies.push(...(await otherListings(tx, source, o.venue_id, o.title, o.start_at)));
+    if (copies.length) await tx.query(`update occurrences set status = 'withdrawn', updated_at = now() where id = any($1::uuid[]) and status in ('scheduled', 'sold_out')`, [copies]);
+  };
+  const s = await ingestEvents(db, { source, events }, { areaSlug: area.slug, now, actor: source, complete, afterWrite, replay: opts.fromFile !== undefined });
   return { ...s, read: capture.events.length, skipped };
 }

@@ -114,7 +114,7 @@ describe.skipIf(!available)("ticketed events", () => {
     expect(await occurrence("seatgeek:sg-2")).toMatchObject({ venue: "Delancey Playhouse" });
   });
 
-  it("never leaves out Ticketmaster's adults-only listing for SeatGeek's, which says nothing of age", async () => {
+  it("never leaves out Ticketmaster's adults-only listing for SeatGeek's, which says nothing of age; SeatGeek's gives way", async () => {
     const s = await ingestTicketedEvents(db, {
       source: "ticketmaster",
       areaSlug: "les",
@@ -126,6 +126,12 @@ describe.skipIf(!available)("ticketed events", () => {
     expect(o).toMatchObject({ venue: "Delancey Playhouse", status: "scheduled" });
     const age = (await db.query(`select value from current_facts where subject_kind = 'occurrence' and subject_id = $1 and attribute = 'age_limit'`, [o!.id])).rows[0];
     expect(age?.value).toEqual({ minAge: 21 });
+    // SeatGeek listed it first, with no age: a family must not be shown that copy.
+    expect((await occurrence("seatgeek:sg-2"))!.status).toBe("withdrawn");
+    // Read again, SeatGeek's is left out for the one Ticketmaster lists, and stays withdrawn.
+    const again = await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [event({ id: "sg-2", title: "Late Night Improv", start: "2026-10-04T02:30:00.000Z", kinds: ["comedy"] })], { complete: false }) });
+    expect(again.skipped).toEqual({ listed_by_other: 1 });
+    expect((await occurrence("seatgeek:sg-2"))!.status).toBe("withdrawn");
   });
 
   it("a full read that no longer lists an event withdraws it; a partial one withdraws nothing", async () => {
@@ -140,9 +146,10 @@ describe.skipIf(!available)("ticketed events", () => {
     const s = await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, fromFile: capture("ticketmaster", []) });
     expect(s.withdrawn).toBe(1);
     expect((await occurrence("ticketmaster:tm-2"))!.status).toBe("withdrawn");
-    // One saved for another area, or not every page, withdraws nothing here.
+    // One saved for another area withdraws nothing here.
+    await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [event({ id: "sg-4", title: "Jazz Brunch", start: "2026-10-04T15:00:00.000Z", kinds: ["music"] })]) });
     await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [], { area: "bronxville" }) });
-    expect((await occurrence("seatgeek:sg-2"))!.status).toBe("scheduled");
+    expect((await occurrence("seatgeek:sg-4"))!.status).toBe("scheduled");
   });
 
   it("a live read with a record it could not read is not the area's whole listing: it withdraws nothing", async () => {

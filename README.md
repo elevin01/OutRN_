@@ -89,7 +89,8 @@ and SeatGeek's API. Each needs a free key in the environment (`TICKETMASTER_API_
 `SEATGEEK_CLIENT_ID`; in `.env`, which the CLI reads under whatever the shell already set), sent only to its own API and never saved, logged or put in
 an error. An event is held at the venue we know by its name or address within 200 m of where the API
 puts it, else at an event site of its own; one the other API already lists at that venue within 30
-minutes is left out. Kept: title, start, kinds from the API's classification ("Comedy" is comedy, not
+minutes is left out, unless it is adults only: then the other's copy, which may say nothing of age,
+gives way to it. Kept: title, start, kinds from the API's classification ("Comedy" is comedy, not
 theatre), the price range it gives, 21+ only when the API says adults only, the event's own page,
 and SeatGeek's popularity score. No time yet ("TBA"), parking passes and VIP packages are left out. A
 read of every page is the area's whole listing, so what the API stops listing is withdrawn. **Both
