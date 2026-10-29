@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-10-29.1";
+export const OSM_NORMALIZE_VERSION = "2026-10-29.2";
 
 export interface OsmRecord {
   externalId: string;
@@ -238,36 +238,54 @@ export function comedyGenre(t: Record<string, string>): string | null {
 /**
  * What kind of bar it is, which the category alone cannot say and an evening turns on: an arcade
  * bar's games, a comedy bar's shows, a sports bar's big screens, a pub, a brewery's taproom, a wine
- * or cocktail bar. A tag that says it decides (leisure=amusement_arcade, sport=*, drink:wine,
- * drink:cocktail, craft=brewery or microbrewery=yes, amenity=pub), whatever the name, and is the
- * evidence; only a bar no tag classifies is read by its name. The one exception is a name that says
- * comedy over amenity=pub: the name says what is on, the tag only what kind of bar it is on. brewery=*
- * names the beers poured (brewery=Krombacher at a pub), not a brewery on the premises: only the old
- * boolean brewery=yes says that. Null for a bar that says nothing more.
+ * or cocktail bar. A tag that says what kind it is decides (leisure=amusement_arcade, sport=*,
+ * craft=brewery or microbrewery=yes, amenity=pub, bar=wine or cocktail), whatever the name, and is
+ * the evidence: a pub that pours wine or cocktails is still a pub. brewery=* names the beers poured
+ * (brewery=Krombacher at a pub), not a brewery on the premises: only the old boolean brewery=yes says
+ * that. A tag that says only what a bar pours (drink:wine, drink:cocktail, cocktails: most bars serve
+ * wine) suggests its kind, an estimate like its name; only a bar no tag classifies is read by its
+ * name. The one exception is a name that says comedy over amenity=pub or what a bar pours: the name
+ * says what is on, the tag only what kind of bar it is on. Null for a bar that says nothing more.
  */
-export function barStyle(t: Record<string, string>): { style: string; tag: string | null } | null {
-  const tagged = barStyleFromTags(t);
+export function barStyle(t: Record<string, string>): { style: string; evidence: string; published: boolean } | null {
+  const kind = barKindFromTags(t);
   const named = barStyleFromName(t["name"] ?? "");
-  if (named === "comedy_bar" && (!tagged || tagged.style === "pub")) return { style: named, tag: null };
-  if (tagged) return tagged;
-  return named ? { style: named, tag: null } : null;
+  const byName = named ? { style: named, evidence: `name=${(t["name"] ?? "").trim().slice(0, 200)}`, published: false } : null;
+  if (byName?.style === "comedy_bar" && (!kind || kind.style === "pub")) return byName;
+  if (kind) return { ...kind, published: true };
+  const pours = t["amenity"] === "bar" ? barPoursFromTags(t) : null;
+  if (pours) return { ...pours, published: false };
+  return byName;
 }
 
-function barStyleFromTags(t: Record<string, string>): { style: string; tag: string } | null {
-  const has = (key: string, ...values: string[]) => (t[key] !== undefined && values.includes(t[key]!) ? `${key}=${t[key]}` : null);
+/** `key=value` when the tag has one of these values. */
+function tagIs(t: Record<string, string>, key: string, ...values: string[]): string | null {
+  return t[key] !== undefined && values.includes(t[key]!) ? `${key}=${t[key]}` : null;
+}
+
+function barKindFromTags(t: Record<string, string>): { style: string; evidence: string } | null {
   // A bar full of arcade cabinets (Barcade): the games are the evening.
-  const arcade = has("leisure", "amusement_arcade");
-  if (arcade) return { style: "arcade_bar", tag: arcade };
+  const arcade = tagIs(t, "leisure", "amusement_arcade");
+  if (arcade) return { style: "arcade_bar", evidence: arcade };
   const sport = t["sport"] && t["sport"] !== "no" ? `sport=${t["sport"]}` : null;
-  if (sport) return { style: "sports_bar", tag: sport };
-  const wine = has("drink:wine", "yes", "served") ?? has("bar", "wine");
-  if (wine) return { style: "wine_bar", tag: wine };
-  const cocktail = has("drink:cocktail", "yes", "served") ?? has("cocktails", "yes") ?? has("bar", "cocktail");
-  if (cocktail) return { style: "cocktail_bar", tag: cocktail };
-  const brewery = has("craft", "brewery") ?? has("microbrewery", "yes") ?? has("brewery", "yes");
-  if (brewery) return { style: "brewery", tag: brewery };
-  const pub = has("amenity", "pub");
-  if (pub) return { style: "pub", tag: pub };
+  if (sport) return { style: "sports_bar", evidence: sport };
+  const brewery = tagIs(t, "craft", "brewery") ?? tagIs(t, "microbrewery", "yes") ?? tagIs(t, "brewery", "yes");
+  if (brewery) return { style: "brewery", evidence: brewery };
+  const pub = tagIs(t, "amenity", "pub");
+  if (pub) return { style: "pub", evidence: pub };
+  const wine = tagIs(t, "bar", "wine", "wine_bar");
+  if (wine) return { style: "wine_bar", evidence: wine };
+  const cocktail = tagIs(t, "bar", "cocktail", "cocktail_bar");
+  if (cocktail) return { style: "cocktail_bar", evidence: cocktail };
+  return null;
+}
+
+/** What a bar pours, which suggests its kind but does not say it (most bars serve wine). */
+function barPoursFromTags(t: Record<string, string>): { style: string; evidence: string } | null {
+  const wine = tagIs(t, "drink:wine", "yes", "served");
+  if (wine) return { style: "wine_bar", evidence: wine };
+  const cocktail = tagIs(t, "drink:cocktail", "yes", "served") ?? tagIs(t, "cocktails", "yes");
+  if (cocktail) return { style: "cocktail_bar", evidence: cocktail };
   return null;
 }
 
@@ -423,10 +441,10 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
   const comedy = category === "theatre" ? comedyGenre(t) : null;
   if (comedy) pub("subtype", { value: "comedy_club" }, comedy, 0.8);
-  // A bar's style: published from a tag that says it, estimated from its name alone.
+  // A bar's style: published from a tag that says what kind it is, estimated from what it pours or its name.
   const style = category === "bar" ? barStyle(t) : null;
-  if (style?.tag) pub("subtype", { value: style.style }, style.tag, 0.8);
-  else if (style) facts.push({ ...base, attribute: "subtype", value: { value: style.style }, evidence: `name=${name}`, confidence: 0.5, evidenceClass: "estimate" });
+  if (style?.published) pub("subtype", { value: style.style }, style.evidence, 0.8);
+  else if (style) facts.push({ ...base, attribute: "subtype", value: { value: style.style }, evidence: style.evidence, confidence: 0.5, evidenceClass: "estimate" });
   const cuisines = category && CUISINE_CATEGORIES.has(category) ? cuisineSlugs(t["cuisine"]) : [];
   if (cuisines.length) pub("cuisine", { values: cuisines }, `cuisine=${t["cuisine"]!.trim().slice(0, 200)}`, 0.8);
   // No cuisine tag: what the name says it serves ("Joe's Pizza", "Taqueria Diana"), as an estimate.

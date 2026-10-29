@@ -105,9 +105,7 @@ describe("OSM normalization", () => {
     for (const [tags, style] of [
       [{ name: "Francey Brady's", amenity: "pub" }, "pub"],
       [{ name: "The Stadium", amenity: "bar", sport: "american_football" }, "sports_bar"],
-      [{ name: "1730", amenity: "bar", "drink:wine": "yes" }, "wine_bar"],
       [{ name: "Ten Bells", amenity: "bar", bar: "wine" }, "wine_bar"],
-      [{ name: "Attaboy", amenity: "bar", "drink:cocktail": "yes" }, "cocktail_bar"],
       [{ name: "Yonkers Brewing", amenity: "bar", craft: "brewery" }, "brewery"],
     ] as const) {
       expect(fact(rec(tags), "subtype"), tags.name).toMatchObject({ evidenceClass: "published", value: { value: style } });
@@ -119,7 +117,17 @@ describe("OSM normalization", () => {
     // A tag decides over the name, whichever style the name suggests.
     expect(fact(rec({ name: "The Velvet Lounge", amenity: "pub" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "pub" } });
     expect(fact(rec({ name: "The Wine Bar", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" } });
-    expect(fact(rec({ name: "Sully's Sports Bar", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "cocktail_bar" } });
+    // What a bar pours only suggests its kind (most bars serve wine): an estimate, though over the name.
+    expect(fact(rec({ name: "1730", amenity: "bar", "drink:wine": "yes" }), "subtype")).toMatchObject({ evidenceClass: "estimate", confidence: 0.5, value: { value: "wine_bar" }, evidence: "drink:wine=yes" });
+    expect(fact(rec({ name: "Attaboy", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "estimate", value: { value: "cocktail_bar" } });
+    expect(fact(rec({ name: "Sully's Sports Bar", amenity: "bar", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ evidenceClass: "estimate", value: { value: "cocktail_bar" } });
+    // A pub is a pub whatever it pours.
+    for (const tags of [
+      { name: "The Crown", amenity: "pub", "drink:wine": "yes" },
+      { name: "The Anchor", amenity: "pub", "drink:cocktail": "yes" },
+      { name: "The Bell", amenity: "pub", cocktails: "yes" },
+    ]) expect(fact(rec(tags), "subtype"), tags.name).toMatchObject({ evidenceClass: "published", value: { value: "pub" }, evidence: "amenity=pub" });
+    expect(fact(rec({ name: "Ten Bells", amenity: "bar", bar: "wine_bar" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "wine_bar" } });
     // The deciding tag is the evidence, not the category's.
     expect(fact(rec({ name: "Yonkers Brewing", amenity: "bar", craft: "brewery" }), "subtype")).toMatchObject({ evidence: "craft=brewery" });
     expect(fact(rec({ name: "Taps", amenity: "bar", microbrewery: "yes" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "brewery" }, evidence: "microbrewery=yes" });
