@@ -69,19 +69,37 @@ const PASSES: Pass[] = [
 export const FIRST_PAGE = 3;
 
 /**
- * Something this person loves (or this search is in the mood for) is never left off the first page
- * when there is one to show: if none of the first page is a love, the best love takes its last slot.
- * It keeps its class (Check first stays Check first, with its caveat), and a poor idea for the hour
- * is not promoted. The rest keep their order.
+ * Each thing this person loves is never left off the first page when there is one to show: for each
+ * love the first page has nothing of (by what the option matches best), the best option of it takes
+ * one of the page's last slots, the better of them the higher. Someone who loves comedy and games
+ * sees a comedy club and the arcade bar, not three bars. The first slot stays the best option
+ * overall, and a love already there keeps its slot. A promoted love keeps its class (Check first
+ * stays Check first, with its caveat), and a poor idea for the hour is not promoted. The options it
+ * displaces lead the next page; the rest keep their order.
  */
 function keepLovedOnFirstPage(ordered: Evaluation[]): void {
+  if (ordered.length <= FIRST_PAGE) return;
   const loved = (e: Evaluation) => (e.scores.taste ?? 0) >= TASTE.loved;
-  if (ordered.length <= FIRST_PAGE || ordered.slice(0, FIRST_PAGE).some(loved)) return;
-  // Nor one the party may not be let into (a 16+ arcade, children's ages unknown): a love does not lift that.
-  const i = ordered.findIndex((e, j) => j >= FIRST_PAGE && loved(e) && e.dayPart !== "off" && !hasAgeDoubt(e));
-  if (i < 0) return;
-  const [e] = ordered.splice(i, 1);
-  ordered.splice(FIRST_PAGE - 1, 0, e!);
+  const page = ordered.slice(0, FIRST_PAGE);
+  // The page's slots a love may take, top down: never the first, never one a love already holds.
+  const open = page.flatMap((e, i) => (i > 0 && !loved(e) ? [i] : []));
+  const shown = new Set(page.filter(loved).map((e) => e.tasteLead ?? null));
+  const promoted: Evaluation[] = [];
+  for (const e of ordered.slice(FIRST_PAGE)) {
+    if (promoted.length >= open.length) break;
+    // Nor one the party may not be let into (a 16+ arcade, children's ages unknown): a love does not lift that.
+    if (!loved(e) || e.dayPart === "off" || hasAgeDoubt(e) || shown.has(e.tasteLead ?? null)) continue;
+    shown.add(e.tasteLead ?? null);
+    promoted.push(e);
+  }
+  if (!promoted.length) return;
+  // The lowest open slots, so a single love takes the last one as it always has.
+  const slots = open.slice(open.length - promoted.length);
+  const displaced = slots.map((i) => page[i]!);
+  slots.forEach((i, k) => (page[i] = promoted[k]!));
+  const moved = new Set(promoted);
+  const rest = ordered.slice(FIRST_PAGE).filter((e) => !moved.has(e));
+  ordered.splice(0, ordered.length, ...page, ...displaced, ...rest);
 }
 
 /**

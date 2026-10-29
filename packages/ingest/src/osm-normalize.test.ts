@@ -131,6 +131,28 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Wine Palace", amenity: "restaurant" }), "subtype")).toBeUndefined();
   });
 
+  it("a bar full of arcade games is an arcade bar, and a comedy bar's name says what is on over amenity=pub", () => {
+    const barcade = rec({ name: "Barcade", amenity: "bar", leisure: "amusement_arcade", "drink:beer": "yes", cuisine: "pub" });
+    expect(barcade.category).toBe("bar");
+    expect(fact(barcade, "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "arcade_bar" }, evidence: "leisure=amusement_arcade" });
+    // The arcade tag decides over a style the other tags give.
+    expect(fact(rec({ name: "Up", amenity: "bar", leisure: "amusement_arcade", "drink:cocktail": "yes" }), "subtype")).toMatchObject({ value: { value: "arcade_bar" } });
+    expect(fact(rec({ name: "Barcade", amenity: "bar" }), "subtype")).toMatchObject({ evidenceClass: "estimate", confidence: 0.5, value: { value: "arcade_bar" } });
+    expect(fact(rec({ name: "Old Man Hustle Comedy Bar", amenity: "pub" }), "subtype")).toMatchObject({ evidenceClass: "estimate", value: { value: "comedy_bar" }, evidence: "name=Old Man Hustle Comedy Bar" });
+    // Any other tag still decides: the sport on its screens is a sports bar's evening.
+    expect(fact(rec({ name: "Comedy Bar & Grill", amenity: "bar", sport: "soccer" }), "subtype")).toMatchObject({ evidenceClass: "published", value: { value: "sports_bar" } });
+  });
+
+  it("a theatre whose genre is stand-up or improv is a comedy club; any other theatre says no kind", () => {
+    for (const genre of ["stand_up_comedy", "standup_comedy", "comedy", "improv", "drama;comedy"]) {
+      expect(fact(rec({ name: "New York Comedy Club", amenity: "theatre", "theatre:genre": genre }), "subtype"), genre).toMatchObject({ evidenceClass: "published", value: { value: "comedy_club" }, evidence: `theatre:genre=${genre}` });
+    }
+    expect(fact(rec({ name: "Orpheum", amenity: "theatre", "theatre:genre": "drama" }), "subtype")).toBeUndefined();
+    expect(fact(rec({ name: "Orpheum", amenity: "theatre" }), "subtype")).toBeUndefined();
+    // Only a theatre's: a cinema showing comedies is still a cinema.
+    expect(fact(rec({ name: "Film Forum", amenity: "cinema", "theatre:genre": "comedy" }), "subtype")).toBeUndefined();
+  });
+
   describe("survey dates (check_date)", () => {
     it("check_date:opening_hours dates the hours by the mapper's survey, not by the last edit", () => {
       // Edited this month (a name fix), hours surveyed three years ago: the survey is what the hours rest on.

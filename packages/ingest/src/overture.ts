@@ -33,7 +33,7 @@ import { normalizeOsm } from "./osm-normalize.js";
  * New places. A place no venue matched becomes a venue of its own only when all of these hold: it
  * is open; its record is confident (0.8+), updated in the last two years, and not from a company
  * register alone; its Overture category is one of the fast-changing kinds we map (restaurants,
- * cafés, bars, galleries, music venues, clubs, arcades, farmers markets; not fast food, which waits
+ * cafés, bars, galleries, music venues, clubs, comedy clubs, arcades, farmers markets; not fast food, which waits
  * on the founder's call); its name is a name (not generic words, an address, a street, a company, a
  * shop, and mostly in Latin script) and not a chain's; it has a phone or its own website, so "check first" can be done; no venue
  * within 500 m has its name, none within 100 m shares a distinctive word of it ("Hunan 3" beside
@@ -257,12 +257,16 @@ export function genericName(nameKey: string): boolean {
  * out: OSM maps them well, and Overture's extras of those kinds are mostly not places to visit (an
  * office filed as a library). So are categories that say too little (a "specialty_store", a
  * "historic_site" plaque, a bodega filed as "food_and_beverage_store"), and fast food: counter
- * service waits on the founder's call.
+ * service waits on the founder's call. Comedy clubs are the theatres OSM misses (the Comedy Cellar
+ * is not mapped as one): rooms in basements and back rooms that open and close like bars do.
  */
 const NEW_PLACE_CATEGORY: Readonly<Record<string, Category>> = {
   restaurant: "restaurant", casual_eatery: "restaurant", cafe: "cafe", coffee_shop: "cafe", bar: "bar", lounge: "bar",
   art_gallery: "gallery", music_venue: "live_music", dance_club: "nightclub", arcade: "arcade", farmers_market: "market",
+  comedy_club: "theatre",
 };
+/** The kind within its category a new place's Overture category says, when the category alone cannot. */
+const NEW_PLACE_SUBTYPE: Readonly<Record<string, string>> = { comedy_club: "comedy_club" };
 /** A record last updated this long before the read is not news about a place that is open now. */
 const NEW_PLACE_MAX_AGE_DAYS = 730;
 /** A new place's record must be at least this sure it exists as described. */
@@ -376,7 +380,7 @@ export function namesake(a: string, b: string, metres: number): boolean {
 const BARE_TAGS: Readonly<Partial<Record<Category, Record<string, string>>>> = {
   restaurant: { amenity: "restaurant" }, cafe: { amenity: "cafe" }, dessert: { amenity: "ice_cream" }, bar: { amenity: "bar" }, gallery: { tourism: "gallery" },
   live_music: { amenity: "music_venue" }, nightclub: { amenity: "nightclub" }, arcade: { leisure: "amusement_arcade" }, market: { amenity: "marketplace" },
-  activity: { amenity: "karaoke_box" },
+  activity: { amenity: "karaoke_box" }, theatre: { amenity: "theatre" },
   // What a destination becomes (see ingestDestinations): walk-in, and free unless it is a beach.
   park: { leisure: "park" }, garden: { leisure: "garden" }, viewpoint: { tourism: "viewpoint" }, waterfront: { natural: "beach" },
 };
@@ -680,9 +684,11 @@ export function placeFacts(venueId: string, p: OverturePlace, category: Category
   const claims = claimsFor({ nameKey: matchKey(p.name), category }, [{ place: p, metres: 0, name: "same" }], { website: false, phone: false });
   const base = { subjectKind: "venue", subjectId: venueId, sourceId: "overture", fetchedAt: now, lineageGroup: "overture", ingestionRunId: runId } as const;
   const updated = date(p.updatedAt);
+  const subtype = ownValue(NEW_PLACE_CATEGORY, p.category) === category ? ownValue(NEW_PLACE_SUBTYPE, p.category) : undefined;
   const stated: FactInput[] = [
     { ...base, attribute: "name", value: { value: p.name.trim() }, evidenceClass: "published", evidence: `Overture place ${p.id}: name`, sourceUpdatedAt: updated, confidence: 0.8 },
     { ...base, attribute: "category", value: { value: category }, evidenceClass: "published", evidence: `Overture place ${p.id}: ${p.category}`, sourceUpdatedAt: updated, confidence: 0.7 },
+    ...(subtype ? [{ ...base, attribute: "subtype", value: { value: subtype }, evidenceClass: "published", evidence: `Overture place ${p.id}: ${p.category}`, sourceUpdatedAt: updated, confidence: 0.7 } satisfies FactInput] : []),
     ...claims.map((c): FactInput => ({ ...base, attribute: c.attribute, value: c.value, evidenceClass: "published", evidence: c.evidence, sourceUpdatedAt: c.sourceUpdatedAt, confidence: c.confidence })),
   ];
   // One claim per attribute: an estimate only where the place itself says nothing (never its status).

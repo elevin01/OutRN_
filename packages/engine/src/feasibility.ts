@@ -1,4 +1,4 @@
-import { dayPart } from "./daypart.js";
+import { dayPart, subtypeOf } from "./daypart.js";
 import { addMinutes, CUISINE_CATEGORIES, cuisineMatches, isDrinkTitle, servesDiet, DEFAULT_PARKING_BUFFER_MINUTES, estimateTravel, fromLocal, localClock, minutesBetween, ownValue, PROGRAMME_CATEGORIES, websiteUrl, type Attribute, type Category, type OpenInterval, type Restroom } from "@outrn/core";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import SunCalc from "suncalc";
@@ -464,7 +464,7 @@ function finish(c: Candidate, ctx: RequestContext, reasons: ReasonCode[], unreso
   const bail = (excludedBy: ExclusionCode): FeasibilityOutcome => ({ class: "ineligible", excludedBy, reasons, unresolved, timing, cta: null, price: priceOf(c, ctx).price, evidenceConfidence: 0 });
   // A programme venue with nothing listed is worth a look only arriving in its prime time: the same
   // instant the score reads the time of day at.
-  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category) && dayPart(c.category, base.arrival, c.timezone) !== "prime") return bail("NO_PROGRAMME");
+  if (c.kind === "venue" && PROGRAMME_CATEGORIES.has(c.category) && dayPart(c.category, base.arrival, c.timezone, null, subtypeOf(c)) !== "prime") return bail("NO_PROGRAMME");
 
   // Budget
   const pr = priceOf(c, ctx);

@@ -151,6 +151,25 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   below): NYC Parks events and NYC Open Data (concerts, outdoor movies, fireworks, street fairs),
   library calendars (NYPL, Westchester), venues' own sites (the first-party job), Ticketmaster and
   SeatGeek, and more.
+- **Late night: comedy and games.** A Friday 10:30pm search for someone who loves comedy and games
+  gave three bars: the comedy clubs had left with a theatre's evening at 10pm, Barcade was a bar like
+  any other, and the Comedy Cellar wasn't in the data. No contract change.
+  - **Comedy clubs:** an OSM theatre with `theatre:genre` stand-up, comedy or improv, and Overture's
+    `comedy_club` places OSM lacks (a new kind of new place: the Comedy Cellar, Village Underground,
+    the Grisly Pear…), are theatres of the kind `comedy_club`. They are comedy, not theatre, to a
+    taste, and with nothing listed their time is 7pm to 1am, so they stay a Check first "check
+    what's on" through the late shows.
+  - **Bars:** `leisure=amusement_arcade` on a bar (or "arcade" in its name) is an arcade bar, games as
+    much as drinks; "comedy" in a bar's name is a comedy bar, ahead of `amenity=pub`.
+  - **Casinos'** time is 6pm to 4am, not an arcade's.
+  - **Each love gets a slot:** the first page keeps the best option for each thing the person loves,
+    not just one love (a comedy room and the arcade bar), from the last slot up; the first slot stays
+    the best option overall.
+  - Golden: "LES, Friday 10:30pm, loves comedy and games" gives Barcade, Katz's and Old Man Hustle
+    Comedy Bar. The other scenarios keep their rankings.
+  - Not yet: the Comedy Cellar from the LES center is beyond a 25-minute walk. Yonkers (Empire City
+    Casino) needs `pnpm capture yonkers`. Manhattan beyond the LES and New Jersey have no area.
+    What reviewers say (standby seats, a two-drink minimum) waits on batch 5.
 - **Small follow-ups seen while testing:** "open late" is said of any place that closes an hour
   after the window ends, so a gallery closing at 6pm is "open late" at 2pm; it should mean late in the
   evening.

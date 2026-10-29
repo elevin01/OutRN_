@@ -369,6 +369,22 @@ describe("feasibility: programme venues", () => {
     }
   });
 
+  it("a comedy club with nothing listed is worth a look until 1am, when a theatre's evening ended at 10pm", () => {
+    const comedy = (c: Candidate): Candidate => ({ ...c, facts: { ...c.facts, subtype: { value: { value: "comedy_club" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } });
+    const club = comedy(withSite(venue({ category: "theatre", hours: null, admission: "ticket" }), "https://www.comedycellar.com/"));
+    const theatre = withSite(venue({ category: "theatre", hours: null, admission: "ticket" }), "https://theatre.example.com/");
+    // A Thursday, leaving at 10:30pm and at 12:15am.
+    for (const when of ["2026-10-29 22:30", "2026-10-30 00:15"]) {
+      const late = one(club, ctx(when, 180));
+      expect(late.class, when).toBe("check_first");
+      expect(late.unresolved, when).toContain("PROGRAMME_UNLISTED");
+      expect(one(theatre, ctx(when, 180)).excludedBy, when).toBe("NO_PROGRAMME");
+    }
+    // Not at 2am, and not a weekday morning.
+    expect(one(club, ctx("2026-10-30 01:50", 180)).excludedBy).toBe("NO_PROGRAMME");
+    expect(one(club, ctx("2026-10-29 10:00", 180)).excludedBy).toBe("NO_PROGRAMME");
+  });
+
   it("with anyone under 18 going, nothing listed means nothing to judge: the bare venue stays out (many are 21+ with no min_age tag)", () => {
     const at = ctx("2026-10-02 19:00", 300);
     for (const category of ["cinema", "theatre", "live_music"] as const) {
@@ -1897,6 +1913,40 @@ describe("taste: what this person likes leads", () => {
     expect(s.items[2]!.unresolved).toContain("HOURS_UNKNOWN");
     // Pages stay one list: what it displaced follows.
     expect(s.ordered.slice(0, 4).map((e) => e.candidate.id)).toEqual([...s.items.map((e) => e.candidate.id), plain.items[2]!.candidate.id]);
+  });
+
+  it("keeps each love on the first page: someone who loves comedy and games sees a comedy club and the arcade bar, not three bars", () => {
+    const kind = (c: Candidate, subtype: string, site?: string): Candidate => ({
+      ...c,
+      facts: {
+        ...c.facts,
+        subtype: { value: { value: subtype }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 },
+        ...(site ? { website: { value: { value: site }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 } } : {}),
+      },
+    });
+    const cands = [
+      ...["b1", "b2", "b3", "b4"].map((id) => venue({ id, category: "bar", hours: "Mo-Su 16:00-02:00" })),
+      kind(venue({ id: "arcade", category: "bar", hours: "Mo-Su 14:00-02:00" }), "arcade_bar"),
+      kind(venue({ id: "comedy", category: "theatre", hours: null, admission: "ticket" }), "comedy_club", "https://www.comedycellar.com/"),
+    ];
+    const at = "2026-10-02 22:30";
+    const plain = recommend(cands, ctx(at, 180), POLICIES);
+    expect(plain.items.map((e) => e.candidate.id)).not.toContain("comedy");
+    const s = recommend(cands, ctx(at, 180, { taste: like([["comedy", 0.8], ["games", 0.8]]) }), POLICIES);
+    const ids = s.items.map((e) => e.candidate.id);
+    expect(ids).toContain("arcade");
+    expect(ids).toContain("comedy");
+    const club = s.items.find((e) => e.candidate.id === "comedy")!;
+    expect(club.class).toBe("check_first");
+    expect(club.unresolved).toContain("PROGRAMME_UNLISTED");
+    expect(club.tasteLead).toBe("comedy");
+    // One love alone still takes only the last slot.
+    const one = recommend(cands, ctx(at, 180, { taste: like([["comedy", 0.8]]) }), POLICIES);
+    expect(one.items[2]!.candidate.id).toBe("comedy");
+    expect(one.items.slice(0, 2).map((e) => e.candidate.id)).toEqual(plain.items.slice(0, 2).map((e) => e.candidate.id));
+    // Pages stay one list: every option exactly once.
+    expect(new Set(s.ordered.map((e) => e.candidate.id)).size).toBe(s.ordered.length);
+    expect(s.ordered).toHaveLength(plain.ordered.length);
   });
 
   it("finds variety among what this person likes before the rest", () => {

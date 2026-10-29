@@ -232,6 +232,8 @@ describe("places OSM lacks", () => {
     expect(newPlaceGate(np({ name: "Gotan", confidence: null }))).toEqual({ skip: "confidence" });
     expect(newPlaceGate(np({ name: "Gotan", datasets: ["BrightQuery"] }))).toEqual({ skip: "register" });
     expect(newPlaceGate(np({ name: "Gotan", datasets: ["BrightQuery", "meta"] }))).toEqual({ category: "restaurant" });
+    // Comedy clubs are the theatres OSM misses.
+    expect(newPlaceGate(np({ name: "Comedy Cellar", category: "comedy_club" }))).toEqual({ category: "theatre" });
     // Kinds OSM maps well (parks, museums, libraries, theatres), kinds that say too little, and fast food (the founder's call).
     for (const category of ["park", "museum", "library", "theatre_venue", "movie_theater", "fast_food_restaurant", "food_and_beverage_store", "historic_site", "specialty_store", "playground", "constructor"]) {
       expect(newPlaceGate(np({ name: "Gotan", category })), category).toEqual({ skip: "category" });
@@ -339,6 +341,17 @@ describe("places OSM lacks", () => {
     expect(new Set(f.map((x) => x.attribute)).size).toBe(f.length);
     // Without Overture's signal or a confident record, no status at all: still no estimate in its place.
     expect(placeFacts("venue-1", { ...p, confidence: 0.5 }, "cafe", null, now).some((x) => x.attribute === "business_status")).toBe(false);
+  });
+
+  it("a new comedy club is a theatre that says it is a comedy club; nothing else Overture files says a kind", () => {
+    const now = new Date("2026-09-29T00:00:00Z");
+    const p = place({ id: "ovt-cc", name: "Comedy Cellar", category: "comedy_club", websites: ["http://www.ComedyCellar.com/"], phones: ["+12122543480"] });
+    const f = placeFacts("venue-5", p, "theatre", "run-1", now);
+    expect(f.find((x) => x.attribute === "category")).toMatchObject({ value: { value: "theatre" } });
+    expect(f.find((x) => x.attribute === "subtype")).toMatchObject({ value: { value: "comedy_club" }, evidenceClass: "published", evidence: "Overture place ovt-cc: comedy_club" });
+    expect(f.find((x) => x.attribute === "website")).toMatchObject({ value: { value: expect.stringMatching(/comedycellar\.com/i) } });
+    expect(new Set(f.map((x) => x.attribute)).size).toBe(f.length);
+    expect(placeFacts("venue-6", place({ id: "ovt-g", name: "Gotan", category: "coffee_shop" }), "cafe", "run-1", now).some((x) => x.attribute === "subtype")).toBe(false);
   });
 
   it("a new food place's name gives its cuisine, as an estimate; a gallery's never does", () => {
