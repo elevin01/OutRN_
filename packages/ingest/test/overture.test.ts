@@ -215,6 +215,7 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     expect(s.venues.matched).toBe(1);
     expect(await current("Grand Kitchen", "business_status")).toMatchObject({ value: { status: "operating" }, source_ids: ["overture"] });
   });
+
 });
 
 describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
@@ -231,7 +232,8 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     place({ id: "ovt-new-cart", name: "Halal Cart Supreme", category: "fast_food_restaurant", lat: 40.7152, lon: -73.9865 }),
     // 66 m from Grand Kitchen, sharing its one distinctive word; and Essex Kitchen's name 300 m from it.
     place({ id: "ovt-new-grand", name: "The Grand Noodle House", lat: 40.7275, lon: -73.99268, phones: ["2125550144"] }),
-    { ...ESSEX_FAR, id: "ovt-new-essex", phones: ["2125550133"] },
+    // (300 m south of Essex Kitchen: ESSEX_FAR's spot, north of every LES venue, is outside the area's box.)
+    { ...ESSEX_FAR, id: "ovt-new-essex", lat: 40.728, phones: ["2125550133"] },
     SAME_SPOT,
     // Nothing to check it by.
     place({ id: "ovt-new-mute", name: "Quiet Lantern", lat: 40.7142, lon: -73.9895 }),
@@ -328,5 +330,109 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     expect(await venuesNamed("Edge Lantern Bar")).toMatchObject([{ publish_state: "eligible" }]);
     // The next live read covers the same box: Overture's own venues are not where it reads.
     expect(await overtureReadBox(db, "les")).toEqual(box);
+  });
+
+  it("a place beyond its read's box or the area's own is never made a venue of this area", async () => {
+    const box = await overtureReadBox(db, "les");
+    // Inside the capture's (wide) box but north-east of every LES venue; and one outside the capture's own box.
+    const beyondArea = place({ id: "ovt-new-far1", name: "Far Hollow Cafe", category: "coffee_shop", lat: box.north + 0.01, lon: box.east + 0.002, phones: ["2125550191"] });
+    const beyondCapture = place({ id: "ovt-new-far2", name: "Albany Lantern", category: "bar", lat: 42.6526, lon: -73.7562, phones: ["5185550191"] });
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: capture("far", [beyondArea, beyondCapture]) });
+    expect(s.newPlaces).toMatchObject({ added: 0, skipped: { outside: 2 } });
+    expect(await venuesNamed("Far Hollow Cafe")).toEqual([]);
+    expect(await venuesNamed("Albany Lantern")).toEqual([]);
+  });
+
+  it("the website and phone Overture lists are no evidence that another place is the venue made from it", async () => {
+    // Lumen Tea, from Overture, lists an Instagram profile and the building's phone.
+    const lumen = place({ id: "ovt-new-lumen", name: "Lumen Tea", category: "coffee_shop", lat: 40.712, lon: -73.984, websites: ["https://www.instagram.com/lumentea"], phones: ["2125550123"] });
+    expect((await ingestOverture(db, { areaSlug: "les", fromFile: capture("lumen", [lumen]) })).newPlaces?.added).toBe(1);
+    // OSM maps the bakery next door (10 m): another place, its own Instagram, the same building phone.
+    const osm = JSON.parse(readFileSync(join(DIR, "les-with-gotan.json"), "utf8")) as { elements: unknown[] };
+    const bakery = { type: "node", id: 990002, tags: { name: "Lumen Bakery", amenity: "cafe", website: "https://www.instagram.com/lumenbakery", phone: "+1 212 555 0123" }, timestamp: "2026-09-20T00:00:00.000Z", version: 1, lat: 40.71209, lon: -73.984 };
+    const withBakery = join(DIR, "les-with-bakery.json");
+    writeFileSync(withBakery, JSON.stringify({ ...osm, elements: [...osm.elements, bakery] }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: withBakery });
+    // Two cards: the bakery is not filed under the tea room on the strength of what Overture lists.
+    expect(await venuesNamed("Lumen Bakery")).toHaveLength(1);
+    expect((await links("Lumen Bakery")).map((l) => l.source_id)).toEqual(["osm"]);
+    expect(await venuesNamed("Lumen Tea")).toHaveLength(1);
+    expect((await links("Lumen Tea")).map((l) => l.source_id)).toEqual(["overture"]);
+  });
+});
+
+// Runs after the rest: a newer release's read holds what it spoke for against every older read after it.
+describe.skipIf(!available)("an older Overture release never undoes a newer one", () => {
+  /** A capture of the given release (capture() writes the default, 2026-09-23.1). */
+  const ofRelease = (name: string, places: unknown[], release: string, bbox = LES) => {
+    const path = capture(name, places, bbox);
+    writeFileSync(path, readFileSync(path, "utf8").replace('"release":"2026-09-23.1"', `"release":"${release}"`));
+    return path;
+  };
+
+  it("an older read for an overlapping area neither rewrites nor withdraws a newer read's claims", async () => {
+    // LES's read of a later release sees Grand Kitchen closed; White Plains' snapshot holds the venue too.
+    const closed = place({ id: "ovt-grand", name: "Grand Kitchen", lat: 40.72698, lon: -73.99268, status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-09-20T00:00:00.000Z", updatedAt: "2026-09-20T00:00:00.000Z" });
+    const later = ofRelease("les-later", [closed], "2026-10-14.0");
+    await ingestOverture(db, { areaSlug: "les", fromFile: later, newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    // White Plains' capture of the earlier release still has it open, with a website.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-older", [GRAND]), newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    // A read of the same or a later release still speaks for it.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: later, newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+  });
+
+  it("nor brings back the claims of a place a newer read no longer has", async () => {
+    // LES's read of a still later release has no Grand Kitchen at all: its Overture claims go.
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-gone", [BROOME], "2026-10-20.0"), newPlaces: false });
+    expect(await overtureFacts("Grand Kitchen")).toEqual([]);
+    // White Plains' capture of the earlier release still lists it, open with a website: not put back.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-older-2", [GRAND]), newPlaces: false });
+    expect(await overtureFacts("Grand Kitchen")).toEqual([]);
+    expect(await current("Grand Kitchen", "website")).toBeUndefined();
+  });
+
+  it("nor revives a venue made from a place a newer read took down", async () => {
+    // A place only Overture has, south of Delancey: LES's read of the earlier release makes it a venue.
+    const mochi = place({ id: "ovt-new-mochi", name: "Mochi Corner", category: "coffee_shop", lat: 40.713, lon: -73.991, websites: ["https://mochicorner.example.com/"], phones: ["2125550112"], ...SIGNAL });
+    expect((await ingestOverture(db, { areaSlug: "les", fromFile: capture("les-mochi", [mochi]) })).newPlaces?.added).toBe(1);
+    expect(await overtureFacts("Mochi Corner")).not.toEqual([]);
+    // LES's read of a newer release sees it closed: the venue made from it is taken down.
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-mochi-closed", [{ ...mochi, status: "permanently_closed" }, BROOME], "2026-10-25.0") });
+    expect(s.newPlaces?.removed).toBe(1);
+    expect(await overtureFacts("Mochi Corner")).toEqual([]);
+    // White Plains reads the earlier release over the same streets, where it is open: it stays down.
+    const older = await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-mochi", [mochi]) });
+    expect(older.newPlaces).toMatchObject({ added: 0, kept: 0, removed: 0 });
+    expect(await overtureFacts("Mochi Corner")).toEqual([]);
+  });
+
+  it("a newer read keeps what it spoke for after its own area stops holding the venue", async () => {
+    // Bronxville's (synthetic) snapshot holds two LES bars as well: Norfolk Bar and Broome Bar.
+    const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: Array<{ id: number; tags?: Record<string, string>; lat?: number; lon?: number }> };
+    const pair = fixture.elements.filter((e) => e.tags?.["name"] === "Norfolk Bar" || e.tags?.["name"] === "Broome Bar");
+    const both = join(DIR, "bronxville-osm.json");
+    writeFileSync(both, JSON.stringify({ elements: pair, outrn_extent: { lat: 40.72694, lon: -73.99354, radius_m: 80 } }));
+    expect((await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: both })).venues.created).toBe(0);
+    const at = (name: string) => pair.find((e) => e.tags?.["name"] === name)!;
+    const norfolk = place({ id: "ovt-norfolk", name: "Norfolk Bar", category: "bar", lat: at("Norfolk Bar").lat!, lon: at("Norfolk Bar").lon!, ...SIGNAL });
+    const broome = place({ id: "ovt-broome-bar", name: "Broome Bar", category: "bar", lat: at("Broome Bar").lat!, lon: at("Broome Bar").lon!, ...SIGNAL });
+    const closed = { ...norfolk, status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-09-20T00:00:00.000Z", updatedAt: "2026-09-20T00:00:00.000Z" };
+    // LES reads newer releases: Norfolk Bar closed; then Broome Bar gone from Overture, its claims withdrawn.
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-norfolk", [closed, broome], "2026-11-05.0"), newPlaces: false });
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-norfolk-2", [closed], "2026-11-06.0"), newPlaces: false });
+    expect((await current("Norfolk Bar", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    expect(await overtureFacts("Broome Bar")).toEqual([]);
+    // LES's next OSM snapshot no longer holds either bar; Bronxville's still does, so both stay venues.
+    const les = JSON.parse(readFileSync(join(DIR, "les-with-bakery.json"), "utf8")) as { elements: Array<{ id: number }> };
+    const without = join(DIR, "les-without-bars.json");
+    writeFileSync(without, JSON.stringify({ ...les, elements: les.elements.filter((e) => !pair.some((x) => x.id === e.id)) }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: without });
+    // Bronxville replays the earlier release, where both are open: neither the closure nor the withdrawal is undone.
+    await ingestOverture(db, { areaSlug: "bronxville", fromFile: capture("bronxville-bars-older", [norfolk, broome]), newPlaces: false });
+    expect((await current("Norfolk Bar", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    expect(await overtureFacts("Broome Bar")).toEqual([]);
   });
 });

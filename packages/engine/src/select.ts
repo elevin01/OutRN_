@@ -123,16 +123,19 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
   const usedVenues = new Set<string>();
   const usedActivities = new Set<string>();
   // Where each name already shown is (places, not events: an event's title is not a place's name).
-  const shownNames = new Map<string, { point: LatLon; within: number }[]>();
+  const shownNames = new Map<string, { point: LatLon; within: number; ageDoubt: boolean }[]>();
   const nameKeys = new Map<Evaluation, string>();
   const nameKey = (e: Evaluation) => {
     let k = nameKeys.get(e);
     if (k === undefined) nameKeys.set(e, (k = e.candidate.kind === "venue" ? matchKey(e.candidate.name) : ""));
     return k;
   };
+  // A record that warns the party of an age limit is never held back behind one of its name that does
+  // not: the warning is what this party most needs to see (a brewpub OSM files as a bar and Overture as a restaurant).
   const shownAlready = (e: Evaluation) => {
     const key = nameKey(e);
-    return key !== "" && (shownNames.get(key)?.some((p) => haversineMetres(p.point, e.candidate.point) <= Math.max(p.within, sameWithin(e))) ?? false);
+    const doubt = hasAgeDoubt(e);
+    return key !== "" && (shownNames.get(key)?.some((p) => (p.ageDoubt || !doubt) && haversineMetres(p.point, e.candidate.point) <= Math.max(p.within, sameWithin(e))) ?? false);
   };
   // A museum café is not a destination while the museum itself qualifies: hold children back when their parent is eligible.
   const eligibleVenueIds = new Set(eligible.map((e) => e.candidate.venueId));
@@ -171,7 +174,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     if (e.candidate.parentVenueId) usedVenues.add(e.candidate.parentVenueId);
     usedActivities.add(ACTIVITY_OF_CATEGORY[e.candidate.category]);
     const key = nameKey(e);
-    if (key !== "") shownNames.set(key, [...(shownNames.get(key) ?? []), { point: e.candidate.point, within: sameWithin(e) }]);
+    if (key !== "") shownNames.set(key, [...(shownNames.get(key) ?? []), { point: e.candidate.point, within: sameWithin(e), ageDoubt: hasAgeDoubt(e) }]);
   };
 
   for (const pass of PASSES) {

@@ -43,8 +43,11 @@ interface VenueCandidate {
 
 const BLOCK_RADIUS_M = 250;
 
-async function candidatesNear(q: Queryable, p: LatLon): Promise<VenueCandidate[]> {
-  // Contact/address facts come from the source records already linked to each venue.
+async function candidatesNear(q: Queryable, p: LatLon, overtureContacts: boolean): Promise<VenueCandidate[]> {
+  // Contact/address facts come from the source records already linked to each venue. Overture's only
+  // when asked: the websites and phones it lists are unvetted (an Instagram profile, a hotel's or a
+  // food hall's for every room in it), and a host shared by two records is strong evidence they are
+  // one place. Enough to hold back a new card (createIfNew), never to merge one into a venue.
   const r = await q.query<VenueCandidate>(
     `with near as (
        select v.id, v.canonical_name, v.category, ST_Y(v.geom::geometry) as lat, ST_X(v.geom::geometry) as lon
@@ -55,13 +58,13 @@ async function candidatesNear(q: Queryable, p: LatLon): Promise<VenueCandidate[]
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
      )
      select n.*,
-            (select coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) is not null limit 1) as website,
-            (select coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) is not null limit 1) as phone,
+            (select coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and ($4::boolean or se.source_id <> 'overture') and coalesce(se.raw->'tags'->>'website', se.raw->'websites'->>0) is not null limit 1) as website,
+            (select coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and ($4::boolean or se.source_id <> 'overture') and coalesce(se.raw->'tags'->>'phone', se.raw->'phones'->>0) is not null limit 1) as phone,
             (select se.raw->'tags'->>'addr:housenumber' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'addr:housenumber' is not null limit 1) as housenumber,
             (select se.raw->'tags'->>'addr:street' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'addr:street' is not null limit 1) as street,
             (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = n.id and l.superseded_by is null and se.raw->'tags'->>'brand' is not null limit 1) as brand
        from near n`,
-    [p.lon, p.lat, BLOCK_RADIUS_M],
+    [p.lon, p.lat, BLOCK_RADIUS_M, overtureContacts],
   );
   return r.rows;
 }
@@ -86,10 +89,10 @@ async function link(q: Queryable, sourceEntityId: string, venueId: string, score
 type Scored = { c: VenueCandidate; s: ReturnType<typeof scorePair> };
 
 /** The venue nearby most likely to be this record, and the one it most likely sits inside (a museum's café). */
-async function bestNear(q: Queryable, record: IdentityRecord): Promise<{ best: Scored | null; child: Scored | null }> {
+async function bestNear(q: Queryable, record: IdentityRecord, overtureContacts: boolean): Promise<{ best: Scored | null; child: Scored | null }> {
   let best: Scored | null = null;
   let child: Scored | null = null;
-  for (const c of await candidatesNear(q, record.point)) {
+  for (const c of await candidatesNear(q, record.point, overtureContacts)) {
     const s = scorePair(record, { name: c.canonical_name, category: c.category, point: { lat: c.lat, lon: c.lon }, website: c.website, phone: c.phone, housenumber: c.housenumber, street: c.street, brand: c.brand });
     if (s.relation === "child_of") {
       if (!child || s.score > child.s.score) child = { c, s };
@@ -105,7 +108,7 @@ export async function resolveOne(q: Queryable, input: ResolveInput): Promise<Res
   if (existing.rows[0]) {
     return { sourceEntityId: input.sourceEntityId, venueId: existing.rows[0].venue_id, decision: "auto", created: false, parentVenueId: null, score: 1, matchedVenueId: existing.rows[0].venue_id };
   }
-  const { best, child } = await bestNear(q, input.record);
+  const { best, child } = await bestNear(q, input.record, false);
   if (best && best.s.score >= AUTO_MERGE_THRESHOLD) {
     await link(q, input.sourceEntityId, best.c.id, best.s.score, "auto", { matched: best.c.id, ...best.s.evidence });
     return { sourceEntityId: input.sourceEntityId, venueId: best.c.id, decision: "auto", created: false, parentVenueId: null, score: best.s.score, matchedVenueId: best.c.id };
@@ -128,7 +131,7 @@ export async function resolveOne(q: Queryable, input: ResolveInput): Promise<Res
  * place. For sources that only add to what the map already has (Overture's places OSM lacks).
  */
 export async function createIfNew(q: Queryable, input: ResolveInput): Promise<{ venueId: string; parentVenueId: string | null; nearest: { venueId: string; score: number } | null } | { skipped: { venueId: string; score: number } }> {
-  const { best, child } = await bestNear(q, input.record);
+  const { best, child } = await bestNear(q, input.record, true);
   if (best && best.s.score >= REVIEW_THRESHOLD) return { skipped: { venueId: best.c.id, score: best.s.score } };
   const parentId = child ? child.c.id : null;
   const venueId = await createVenue(q, input, parentId);
