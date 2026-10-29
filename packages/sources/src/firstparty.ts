@@ -8,7 +8,8 @@ import { hoursFromText, hoursLinks, microdataHours, visibleText } from "./siteho
  * No LLM. Every extracted fact carries what it was read from as evidence so a reviewer can check
  * it. Raw HTML is never retained.
  *
- * Rung 3 (LLM over bounded text) would plug into the same ExtractedFact shape; it is not implemented.
+ * Rung 3, for events only: Claude over the page's visible text, each event checked against the page's
+ * own words before it is believed (ingest/site-ai.ts). Not for hours.
  */
 
 export type ExtractionStatus = "stated" | "not_stated" | "ambiguous";
@@ -351,7 +352,7 @@ function eventLocation(v: unknown): string[] {
 }
 
 /** A page of a site's own for its events, by its address: /events, /calendar, /shows, /whats-on … */
-const EVENTS_PATH = /^\/(?:[a-z-]+\/)?(?:events?|calendar|shows?|whats-?on|performances?|concerts?|schedule|upcoming|programs?)(?:\/|$)/i;
+const EVENTS_PATH = /^\/(?:[a-z-]+\/)?(?:events?|calendar|shows?|whats-?on|performances?|concerts?|schedule|upcoming|programs?|now-?playing|showtimes?|films?|movies?|screenings?)(?:\/|$)/i;
 
 /**
  * Where a page shows its site lists events, best first: The Events Calendar's REST API (a WordPress

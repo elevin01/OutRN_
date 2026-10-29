@@ -431,6 +431,64 @@ describe("feasibility: programme venues", () => {
   });
 });
 
+describe("an event its own page now says is off or full", () => {
+  it("is out, as cancelled or sold out, on a re-check's admission_status", () => {
+    const start = fromLocal("2026-09-26", 22 * 60, TZ);
+    const show = (status?: string) => {
+      const c = venue({ kind: "occurrence", category: "live_music", hours: null, admission: "ticket", occurrence: { id: "o1", title: "Late set", start, end: null, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      return status ? { ...c, facts: { ...c.facts, admission_status: { value: { status }, confidence: 0.8, evidenceClass: "observation" as const, validUntil: null, independentSources: 1 } } } : c;
+    };
+    const at = ctx("2026-09-26 21:00", 180);
+    expect(one(show(), at).excludedBy).toBeNull();
+    expect(one(show("cancelled"), at).excludedBy).toBe("EVENT_CANCELLED");
+    expect(one(show("sold_out"), at).excludedBy).toBe("EVENT_SOLD_OUT");
+    expect(one(show("confirmed"), at).excludedBy).toBeNull();
+  });
+});
+
+describe("what people are going to now", () => {
+  const start = fromLocal("2026-09-26", 22 * 60, TZ);
+  const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);
+  const screening = (popularity?: { score: number; source: string; rank?: number }) => {
+    const c = venue({ kind: "occurrence", category: "cinema", hours: null, admission: "ticket", occurrence: { id: "s1", title: "Wicked", start, end, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    return popularity ? { ...c, facts: { ...c.facts, popularity: { value: popularity, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 } } } : c;
+  };
+  it("a screening of a popular film, or a show in demand, is lifted and says so; a middling score says nothing", () => {
+    const at = ctx("2026-09-26 21:37", 120);
+    const plain = one(screening(), at);
+    const film = one(screening({ score: 0.9, source: "tmdb", rank: 4 }), at);
+    expect(film.reasons).toContain("POPULAR_NOW");
+    expect(film.scores.appeal).toBeCloseTo(plain.scores.appeal + 0.1, 5);
+    expect(reasonNotes(film, TZ).find((n) => n.code === "POPULAR_NOW")).toEqual({ code: "POPULAR_NOW", text: "one of the most popular films right now", params: { source: "tmdb", rank: 4 } });
+    const show = one(screening({ score: 0.82, source: "seatgeek" }), at);
+    expect(reasonNotes(show, TZ).find((n) => n.code === "POPULAR_NOW")?.text).toBe("popular right now");
+    const middling = one(screening({ score: 0.5, source: "seatgeek" }), at);
+    expect(middling.reasons).not.toContain("POPULAR_NOW");
+    expect(middling.scores.appeal).toBeCloseTo(plain.scores.appeal, 5);
+    // Ranking only: never a different class.
+    expect(film.class).toBe(plain.class);
+  });
+
+  it("is no lift or claim for an adult place or an adult-limited event with a minor along", () => {
+    const hot = { score: 0.9, source: "seatgeek" };
+    const show = (category: "bar" | "live_music", minAge?: number) => {
+      const c = venue({ kind: "occurrence", category, hours: null, admission: "ticket", occurrence: { id: `p-${category}-${minAge ?? 0}`, title: "Late set", start, end, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+      const facts = { ...c.facts, popularity: { value: hot, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 } };
+      return { ...c, facts: minAge ? { ...facts, age_limit: { value: { minAge }, confidence: 0.5, evidenceClass: "estimate" as const, validUntil: null, independentSources: 1 } } : facts };
+    };
+    for (const party of [{ company: "family" as const }, { youngestAge: 10 }]) {
+      const at = ctx("2026-09-26 21:37", 120, party);
+      for (const c of [show("bar"), show("live_music", 21)]) {
+        const e = one(c, at);
+        expect(e.reasons, `${c.category} ${JSON.stringify(party)}`).not.toContain("POPULAR_NOW");
+        expect(reasonNotes(e, TZ).some((n) => n.code === "POPULAR_NOW")).toBe(false);
+      }
+    }
+    // Grown-ups out on their own still hear it.
+    expect(one(show("bar"), ctx("2026-09-26 21:37", 120, { company: "friends" })).reasons).toContain("POPULAR_NOW");
+  });
+});
+
 describe("feasibility: travel, deadlines, budget, access", () => {
   it("beyond max travel → TOO_FAR", () => {
     expect(one(venue({ point: FAR }), ctx("2026-10-03 15:00", 240)).excludedBy).toBe("TOO_FAR");

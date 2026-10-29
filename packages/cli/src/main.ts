@@ -3,6 +3,8 @@
 // and we shift wall clocks ourselves. UTC keeps that shift exact on every machine.
 process.env["TZ"] = "UTC";
 
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { closeDb, getDb, migrate, reset } from "@outrn/db";
 import { registerIngest } from "./cmd/ingest.js";
@@ -13,6 +15,13 @@ import { registerFacts } from "./cmd/facts.js";
 import { registerVenues } from "./cmd/venues.js";
 import { registerAreas } from "./cmd/areas.js";
 import { registerWeather } from "./cmd/weather.js";
+import { registerRefresh } from "./cmd/refresh.js";
+import { registerAi } from "./cmd/ai.js";
+
+// The repository's .env (keys, a database URL), under whatever the shell already set: `pnpm real`'s
+// own database and anything exported first win.
+const ENV_FILE = fileURLToPath(new URL("../../../.env", import.meta.url));
+if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
 
 const program = new Command().name("outrn").description("OutRN supply pipeline and recommendation engine").version("0.1.0");
 
@@ -35,6 +44,8 @@ registerFacts(program);
 registerVenues(program);
 registerAreas(program);
 registerWeather(program);
+registerRefresh(program);
+registerAi(program);
 
 program.hook("postAction", async () => {
   await closeDb();

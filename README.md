@@ -80,8 +80,56 @@ when the title says so, free only when it says so without condition ("free for m
 and made for children when it is "Best for Kids" (it leads for a family and sinks for grown-ups on
 their own). An event the area's next read no longer lists is withdrawn once no area lists it. A
 walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
-two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
-read for it: migration `0021` has the one statement that switches it on and records the review.
+two-hour window. Migration `0027` switches the source on, recording the founder's reading of NYC
+Open Data's terms of use (29 October 2026); `enabled = false` in `source_policies` switches it off.
+
+**Ticketed events** (`pnpm outrn ingest ticketmaster --area <slug>`, `... ingest seatgeek ...`): the
+next two weeks of concerts, comedy, theatre and sports around an area from Ticketmaster's Discovery API
+and SeatGeek's API. Each needs a free key in the environment (`TICKETMASTER_API_KEY`,
+`SEATGEEK_CLIENT_ID`; in `.env`, which the CLI reads under whatever the shell already set), sent only to its own API and never saved, logged or put in
+an error. An event is held at the venue we know by its name or address within 200 m of where the API
+puts it, else at an event site of its own; the same show (by its title: every word of the shorter in
+the longer, no part number added, never just a word in common) that the other API already lists at
+that venue within 30 minutes is left out, unless it is adults only: then the other's copy, which may
+say nothing of age, gives way to it. Kept: title, start, kinds from the API's classification ("Comedy" is comedy, not
+theatre), the price range it gives, 21+ only when the API says adults only, the event's own page,
+and SeatGeek's popularity score. No time yet ("TBA"), parking passes and VIP packages are left out. A
+read of every page is the area's whole listing, so what the API stops listing is withdrawn. **Both
+sources are registered switched off** until their terms are read for OutRN: migration `0028` has the
+statement that switches each on and records the review.
+
+**Films people are going to** (`pnpm outrn ingest films`): TMDB's films now playing in US cinemas and
+trending this week, with its popularity. The twenty most popular are matched by title to the screenings
+we list (at a cinema, or an event that says it is a film: a park's movie night), the screening's own
+extras set aside ("Anora (35mm)", "Movie Night: Wicked", "The Brutalist + Q&A") but a film's subtitle
+kept ("Mission: Impossible – The Final Reckoning" is not the series' last film). A match is a
+`popularity` fact on the screening, lasting 36 hours unless refreshed, and so is SeatGeek's score on a
+ticketed event. From 0.7 (a film among the ten most popular, a show in SeatGeek's top band) the engine
+lifts the event and says so: "one of the most popular films right now", "popular right now". It needs
+`TMDB_API_KEY` (a v3 key or v4 read token) and is **registered switched off** until TMDB's terms are
+read (commercial use needs an agreement with TMDB): migration `0029`.
+
+**Claude reading what no structured data describes** (`pnpm outrn ai events`, `... ai recheck`): most
+cinemas', comedy clubs' and music rooms' own pages list their shows in words, not in JSON-LD (in the first
+pass over 120 event venues' sites, 28 had none). For the event venues that list events
+no other way, Claude reads their events page (the one the home page links: /events, /shows,
+/now-playing, /showtimes…), fetched through the firstparty gate, and lists each event with a quote of
+the page's own words. Nothing is believed that the page does not say: the quote must be on the page,
+the title too, and the quote must carry the event's start time and its day (a date, a weekday, or
+"tonight"), and nothing in it against them (a morning for an evening show, a date a week off); a
+price only as the page writes it, sold out only in its words, and an age limit it states ("21+",
+"18 and over") as the event's own (a limit only keeps a minor out; "all ages" never lifts one). An event that fails a check
+is left out, the reason counted. A page is read at most once in 20 hours, cinemas first. `ai recheck`
+re-reads the page of each event starting within 36 hours (each at most every 8) and marks it cancelled or
+sold out when the page now says so for that one showing (a quote naming its title, day and start time,
+and no other showing; "not cancelled" is not a cancellation): the engine leaves such an event out. A
+later check that finds it listed again clears the mark. Spending is capped
+over any 24 hours (`OUTRN_AI_DAILY_BUDGET_USD`, default $1.00), counted from each response's token usage
+at its model's rates into the run log; a request that could pass the cap is not sent, nor its page
+fetched. `outrn ai spend` shows the day so far. It needs `ANTHROPIC_API_KEY`; the model is
+`OUTRN_AI_MODEL` (default `claude-opus-5-5`; `claude-haiku-5-5` costs a fraction per page), at low effort,
+with Anthropic's server-side fallback when a request is declined. `outrn refresh` runs both every two
+hours while the key is set.
 
 **Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
 libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
@@ -98,6 +146,16 @@ services, classes of service and online events are left out. Kept: title, times,
 link, kinds from its categories, for children, registration and price only as stated. `pnpm capture`
 saves a read (`fixtures/live/calendars.json`) and `pnpm real` replays it. On 18 October 2026: 21 of 21
 feeds read, about 580 events in the next 30 days placed.
+**Keeping it current** (`pnpm refresh`, or `pnpm outrn refresh`): one loop runs every live job on its
+own cadence, the forecast hourly, NYC Parks' events twice a day, the library and town calendars daily,
+and the venues' own websites (their hours, and what theatres, cinemas and music rooms list) hourly,
+theirs first, each site on its own fetch interval. `pnpm real` starts it beside the API (its lines start
+`[refresh]`; `REFRESH=0` leaves it off). A job runs only while its source is switched on in
+`source_policies` and what it needs from the environment is set; one that can't run is said once and
+skipped. A failure is tried again in 30 minutes and stops nothing else. A restart picks up from the
+run log: a job that ran an hour ago is not run again. `--once` runs what is due and exits (for cron),
+`--only nyc_parks,calendars` limits it, and `--list` shows the jobs.
+
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that
@@ -183,9 +241,9 @@ Around Bronxville the read adds about 100. `--save` keeps only the few hundred r
 reads, so a capture replays the same destinations.
 
 **Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
-places list none), and list what is on at theatres, music rooms and arts centers. `outrn firstparty
+places list none), and list what is on at theatres, cinemas, music rooms and arts centers. `outrn firstparty
 discover --area <slug>` registers the website of each venue with no published hours, and of every
-theatre, music room, arts center, museum and community center whatever its hours, when it is the
+theatre, cinema, music room, arts center, museum and community center whatever its hours, when it is the
 venue's own: never a social network, review site, map, booking or ordering service. `outrn firstparty
 run --area <slug>` then reads them:
 - **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a
@@ -402,8 +460,7 @@ is an error (a rate limit, say) fails the run and changes nothing.
 ## What is deliberately not here yet
 
 Foursquare OS Places connector (needs the export token; registered as disabled), Google Places/Routes
-adapters (off by default, budget cap first), Ticketmaster (conditional), the LLM extraction rung (rung 4 of
-the ladder; rungs 1–3 are JSON-LD, site parsers, and nothing), the post-Go
+adapters (off by default, budget cap first), the post-Go
 prompt endpoints, contributor reliability updates. Each has a table or a stub where it will land.
 
 ## Licensing note

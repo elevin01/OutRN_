@@ -60,6 +60,8 @@ const EventInput = z
     admission: z.enum(["walk_in", "ticket", "reservation"]).optional(),
     price: z.union([z.object({ free: z.literal(true) }).strict(), z.object({ min: z.number().min(0).max(10_000), max: z.number().min(0).max(10_000).optional(), currency: z.literal("USD") }).strict()]).optional(),
     place: Place,
+    /** How much demand there is for it, 0 to 1, as the source measures it (SeatGeek's score). */
+    popularity: z.number().min(0).max(1).optional(),
     /** How this is known (the founder's own list needs it: "flyer at the pier, 10/1"). */
     evidence: text(500).optional(),
   })
@@ -153,6 +155,7 @@ function eventFacts(c: Checked, occurrenceId: string, atSite: boolean, sourceId:
   if (c.url) out.push(pub("website", { value: c.url }, 0.8));
   if (e.admission) out.push(pub("admission", { requirement: e.admission }, 0.8));
   if (e.price) out.push(pub("price", "free" in e.price ? { currency: "USD", free: true } : { currency: "USD", min: e.price.min, max: e.price.max ?? e.price.min }, 0.8));
+  if (e.popularity !== undefined) out.push(pub("popularity", { score: e.popularity, source: sourceId }, 0.7));
   const titleAge = TITLE_AGE.exec(e.title);
   if (e.minAge !== undefined) out.push(pub("age_limit", { minAge: e.minAge }, 0.9));
   else if (titleAge) out.push({ ...pub("age_limit", { minAge: Number(titleAge[1]) }, 0.8), evidence: `title: ${JSON.stringify(e.title)}` });
@@ -180,6 +183,8 @@ export interface IngestEventsOptions {
    * happen or neither does.
    */
   afterWrite?: (tx: Queryable, written: readonly WrittenEvent[]) => Promise<void>;
+  /** The events come from a saved read (`--from-file`), not the source now: the run says so, and is not news (see outrn refresh). */
+  replay?: boolean;
 }
 
 /** An event as ingestEvents wrote it. */
@@ -199,7 +204,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
   const area = await getArea(db, opts.areaSlug);
   const { radiusM } = ingestExtentFor(area, await loadParkingRule(db, area.slug));
   const center = { lat: Number(area.lat), lon: Number(area.lon) };
-  const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: "events", params: { events: events.length } });
+  const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: opts.replay ? "replay" : "events", params: { events: events.length } });
   const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, withdrawn: 0, rejected: [] };
   try {
     const checked: Checked[] = [];

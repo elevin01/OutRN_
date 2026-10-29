@@ -3,7 +3,7 @@ import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
 import { OSM_MAX_DATA_AGE_DAYS } from "@outrn/sources";
-import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestCalendars, ingestOsmArea, ingestOverture, ingestPhotos } from "@outrn/ingest";
+import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestCalendars, ingestOsmArea, ingestOverture, ingestPhotos, ingestTicketedEvents, refreshFilmPopularity, TICKETING_KEYS, TMDB_KEY } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -129,6 +129,36 @@ export function registerIngest(program: Command): void {
       console.log(`  events     ${s.written} of ${s.events} written (of ${s.rows} in the city) · ${s.sitesCreated} new event sites · ${s.withdrawn} withdrawn (no longer listed) · ${s.rejected.length} left out`);
       for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
       if (s.rejected.length) process.exitCode = 1;
+    });
+
+  for (const source of ["ticketmaster", "seatgeek"] as const) {
+    ingest
+      .command(source)
+      .description(`Add the area's ticketed events from ${source === "ticketmaster" ? "Ticketmaster's Discovery API" : "SeatGeek's API"} (the next two weeks): concerts, comedy, theatre, sports. Needs ${TICKETING_KEYS[source]}`)
+      .requiredOption("--area <slug>", "service area slug")
+      .option("--from-file <path>", "replay a saved read instead of asking the API")
+      .option("--save <path>", "save the events read (never the key), for replay")
+      .action(async (o: { area: string; fromFile?: string; save?: string }) => {
+        const db = getDb();
+        const t0 = Date.now();
+        const s = await ingestTicketedEvents(db, { source, areaSlug: o.area, ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
+        console.log(`run ${s.runId} · area ${s.area} · source ${s.source} · ${Date.now() - t0} ms`);
+        console.log(`  events     ${s.written} of ${s.events} written (of ${s.read} read) · ${s.sitesCreated} new event sites · ${s.withdrawn} withdrawn (no longer listed) · ${s.rejected.length} left out`);
+        for (const r of s.rejected) console.log(`  left out   #${r.index}${r.id ? ` ${r.id}` : ""}: ${r.reason}`);
+        if (s.rejected.length) process.exitCode = 1;
+      });
+  }
+
+  ingest
+    .command("films")
+    .description(`Mark the screenings of the films people are going to now: TMDB's most popular films now playing or trending, matched by title. Needs ${TMDB_KEY}`)
+    .option("--from-file <path>", "replay a saved read instead of asking TMDB")
+    .option("--save <path>", "save the films read (never the key), for replay")
+    .action(async (o: { fromFile?: string; save?: string }) => {
+      const t0 = Date.now();
+      const s = await refreshFilmPopularity(getDb(), { ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
+      console.log(`run ${s.runId} · ${Date.now() - t0} ms`);
+      console.log(`  screenings ${s.popular} of ${s.screenings} upcoming are of a popular film · ${s.retracted} no longer`);
     });
 
   ingest

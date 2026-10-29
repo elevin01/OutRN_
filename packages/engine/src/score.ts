@@ -23,7 +23,12 @@ const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
  * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
  * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, notForTheCompany: 0.15 } as const;
+export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, popularNow: 0.1, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, notForTheCompany: 0.15 } as const;
+/**
+ * An event is popular right now from this score up, as its source measures demand (0 to 1): a film
+ * among TMDB's ten most popular, a SeatGeek event in its top band. Ranking only, never a gate.
+ */
+export const POPULAR_FROM = 0.7;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -137,6 +142,13 @@ export function scoreCandidate(
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
+  // What people are going to now: a popular film's screening, a show in demand. Like taste, never a
+  // lift or a claim for an adult place or an adult-limited event with a minor along.
+  const popularity = c.kind === "occurrence" ? (c.facts.popularity?.value as { score?: unknown } | undefined)?.score : undefined;
+  if (typeof popularity === "number" && popularity >= POPULAR_FROM && !adultForMinor) {
+    appeal += APPEAL_WEIGHTS.popularNow;
+    extra.push("POPULAR_NOW");
+  }
   // A place worth going out of the way for (a preserve, gardens, a lookout): more so with the time to
   // go out of the way, where it outweighs the longer trip that fit holds against it, and a little more
   // when it is one anyone local would name (the curated list, which says why).

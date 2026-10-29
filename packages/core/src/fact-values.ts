@@ -111,6 +111,7 @@ export const FACT_VALUE_SCHEMAS = {
   // Why, in a line ("carriage roads around a lake"): lower case, to sit in a sentence on the card.
   destination: z.object({ kind: z.enum(DESTINATION_KINDS), note: z.string().min(3).max(120).optional() }).strict(),
   audience: z.object({ kids: z.literal(true) }).strict(),
+  popularity: z.object({ score: z.number().min(0).max(1), source: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/), rank: z.number().int().min(1).max(1000).optional() }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

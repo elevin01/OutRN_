@@ -126,8 +126,12 @@ export function ownSiteUrl(raw: string | null | undefined): string | null {
   return NOT_OWN_SITE.test(new URL(url).hostname) ? null : url;
 }
 
-/** Kinds of place whose own site is read for its events, whatever source publishes their hours. Not cinemas: showtimes are not events. */
-export const EVENT_VENUES: ReadonlySet<string> = new Set(["theatre", "live_music", "arts_centre", "museum", "community"]);
+/**
+ * Kinds of place whose own site is read for its events, whatever source publishes their hours. Cinemas
+ * too: a screening of a film people are going to is what someone opens the app for (the engine already
+ * visits a cinema only through its screenings; its site's ScreeningEvent JSON-LD lists them).
+ */
+export const EVENT_VENUES: ReadonlySet<string> = new Set(["theatre", "cinema", "live_music", "arts_centre", "museum", "community"]);
 
 export interface DiscoverSummary {
   /** Venues with a website and no published hours. */
@@ -295,7 +299,11 @@ interface HostRow {
  * robots.txt for the very path, a reservation of one of its requests for the day, and its pace.
  * Hosts are found as requests go to them: a redirect or a moved site's new host is gated as its own.
  */
-function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
+/**
+ * The gate every request to a venue's site passes (robots.txt, a host's back-off, its spacing and its
+ * day's allowance): this job's, and any other job reading the same sites' pages (site-ai.ts).
+ */
+export function hostGate(db: Db, fetcher: SiteFetcher, clock: () => Date) {
   const policies = new Map<string, Promise<RobotsPolicy>>();
   const delays = new Map<string, number>();
   const pace = (host: string) => ({ throttleKey: `firstparty:${host}`, minIntervalMs: Math.max(FIRSTPARTY_LIMITS.minIntervalMs, (delays.get(host) ?? 0) * 1000) });
@@ -407,7 +415,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
       `select f.id, f.venue_id, f.url, f.fetch_interval_h, f.auto, v.category = any($4::text[]) as lists_events from firstparty_sites f join venues v on v.id = f.venue_id
         where f.enabled and ($3::uuid is null or v.area_id = $3)
           and ($2 or f.last_fetched_at is null or f.last_fetched_at < now() - (f.fetch_interval_h || ' hours')::interval)
-        order by f.last_fetched_at nulls first, f.id limit $1`,
+        order by f.last_fetched_at nulls first, v.category = any($4::text[]) desc, f.id limit $1`,
       [opts.limit ?? 50, opts.force ?? false, areaId, [...EVENT_VENUES]],
     )
   ).rows;

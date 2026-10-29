@@ -189,7 +189,9 @@ export type ReasonCode =
   /** A kids' area, and the youngest going is under 12 (or a family's ages are unknown). */
   | "KIDS_AREA"
   /** It is one of the things this person said they like (their taste, not the search's mood). */
-  | "TASTE_MATCH";
+  | "TASTE_MATCH"
+  /** An event a source measures as in demand now: a popular film's screening (TMDB), a show selling well (SeatGeek). */
+  | "POPULAR_NOW";
 
 export type ExclusionCode =
   | "CLOSED_PERMANENTLY"

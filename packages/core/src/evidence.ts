@@ -43,6 +43,8 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - destination        : { kind: DestinationKind, note?: string }  a place worth going out of the way for (a
  *                         preserve, gardens, a beach, a lookout, an estate) and, in a line, why
  *  - audience           : { kids: true }  an event made for children, as its source says ("Best for Kids")
+ *  - popularity         : { score: 0..1, source: string, rank?: number }  how much demand there is for an event, as a
+ *                         source measures it (SeatGeek's score; a film's place among TMDB's most popular now playing)
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -78,6 +80,7 @@ export const ATTRIBUTES = [
   "event_kind",
   "destination",
   "audience",
+  "popularity",
   "crowd_level",
   "queue",
   "open_state",

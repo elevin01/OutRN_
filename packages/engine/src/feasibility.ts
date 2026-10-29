@@ -305,8 +305,10 @@ function evaluateVisit(c: Candidate, ctx: RequestContext, policy: CategoryPolicy
 
   if (c.kind === "occurrence" && c.occurrence) {
     const o = c.occurrence;
-    if (o.status === "cancelled") return out("EVENT_CANCELLED");
-    if (o.status === "sold_out") return out("EVENT_SOLD_OUT");
+    // Its listing's status, or what its own page says now (a re-check's admission_status).
+    const checked = fact<{ status: string }>(c, "admission_status")?.value.status;
+    if (o.status === "cancelled" || checked === "cancelled") return out("EVENT_CANCELLED");
+    if (o.status === "sold_out" || checked === "sold_out") return out("EVENT_SOLD_OUT");
     if (o.status === "ended" || (o.end && o.end <= ctx.now)) return out("EVENT_STARTED");
     const cutoff = o.entryCutoff ?? o.start;
     latestArrival = cutoff;
