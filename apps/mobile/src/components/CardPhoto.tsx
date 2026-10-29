@@ -12,7 +12,7 @@ import { PlaceArt } from "./PlaceArt";
  * gives way to the next; the category's artwork shows only when none loads.
  */
 export function useCardPhoto(item: RecommendationItem): { current: ShownPhoto<ImageSourcePropType> | undefined; fail: (key: string) => void } {
-  const representative = representativePhotos(item.category.id);
+  const representative = representativePhotos(item.category.id, item.cuisines);
   const standIn = useMemo(() => ({ aerial: item.aerial, categoryId: item.category.id }), [item.aerial, item.category.id]);
   const photos = useMemo(
     () => photosFor(item.name, item.category.label, item.photos, representative, (uri) => ({ uri }), standIn),

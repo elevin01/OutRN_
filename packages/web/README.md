@@ -111,7 +111,8 @@ to `sourceUrl`, since the license requires it. The web app shows them on cards a
 (`components/PlacePhotos.tsx`); without any, or when none of them loads, its stand-ins: an aerial
 photo of its spot (contract 1.11 `aerial`, New York State's orthoimagery, labelled "Aerial view of
 this spot", loaded only from `orthos.its.ny.gov`) and a representative photo of the kind of place
-from `public/representative/`, labelled "Representative photo · not this place", each with its
+from `public/representative/` (every kind but activity and other has one; a restaurant or a cafe whose cuisine
+has one shows that food first), labelled "Representative photo · not this place", each with its
 credit. A park, a garden, a waterfront and the like lead with the aerial, other places with the
 representative photo. Without either, no photo: never the category icon in place of one. The
 fixture photos are synthetic and their URLs don't load.

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { areas } from "@outrn/contracts/fixtures";
 import { categoryIconPath, fallbackFor, groupOf, groupsFor, photosFor, photosToShow, representativeFor } from "./categories";
@@ -33,7 +34,39 @@ describe("category shortcuts on the web", () => {
     const own = photosFor("Pitt Park", { id: "park", label: "Park" }, [{ url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/A.jpg/960px-A.jpg", width: 960, height: 720, alt: "The lawn", credit: "Jane Doe, CC BY-SA 4.0", author: "Jane Doe", license: "CC BY-SA 4.0", licenseUrl: null, sourceUrl: "https://commons.wikimedia.org/wiki/File:A.jpg" }]);
     expect(own).toEqual([{ url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/A.jpg/960px-A.jpg", kind: "place", credit: "Jane Doe, CC BY-SA 4.0", creditUrl: "https://commons.wikimedia.org/wiki/File:A.jpg", alt: "Pitt Park: The lawn" }]);
     expect(photosFor("Rex", { id: "cafe", label: "Cafe" }, [])[0]).toMatchObject({ kind: "representative", url: "/representative/cafe.jpg", credit: "Unsplash", alt: "A representative photo of a cafe, not Rex" });
-    expect(photosFor("Seward Park", { id: "park", label: "Park" }, [])).toEqual([]);
+    expect(photosFor("Seward Park", { id: "park", label: "Park" }, [])[0]).toMatchObject({ kind: "representative", url: "/representative/park.jpg", alt: "A representative photo of a park, not Seward Park" });
+    expect(photosFor("Rex", { id: "activity", label: "Activity" }, [])).toEqual([]);
+  });
+
+  it("show a food place's cuisine first when there is a photo of it, then its kind", () => {
+    const pizza = { id: "pizza", label: "Pizza" };
+    const shown = representativeFor("Joe's", { id: "restaurant", label: "Restaurant" }, [{ id: "not-a-cuisine", label: "?" }, pizza, { id: "italian", label: "Italian" }]);
+    expect(shown.map((p) => p.url)).toEqual(["/representative/pizza.jpg", "/representative/restaurant.jpg"]);
+    expect(shown[0]).toMatchObject({ kind: "representative", alt: "A representative photo of pizza, not Joe's" });
+    expect(shown[0]!.credit).toMatch(/, via Wikimedia Commons$/);
+    expect(shown[0]!.creditUrl).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+    expect(representativeFor("Rex", { id: "cafe", label: "Cafe" }, [{ id: "bagel", label: "Bagels" }])[0]!.alt).toBe("A representative photo of a bagel, not Rex");
+    // Only for food places: a bar serving pizza still shows a bar.
+    expect(representativeFor("Rex", { id: "bar", label: "Bar" }, [pizza]).map((p) => p.url)).toEqual(["/representative/bar.jpg"]);
+    expect(representativeFor("Rex", { id: "restaurant", label: "Restaurant" }, [{ id: "__proto__", label: "?" }]).map((p) => p.url)).toEqual(["/representative/restaurant.jpg"]);
+  });
+
+  it("have a representative photo on disk, with a linked credit, for every kind but the catch-alls and every cuisine", () => {
+    const check = (p: { url: string; creditUrl: string | null }) => {
+      expect(existsSync(new URL(`../public${p.url}`, import.meta.url)), p.url).toBe(true);
+      expect(p.creditUrl, p.url).toMatch(/^https:\/\/(images\.unsplash\.com\/|commons\.wikimedia\.org\/wiki\/File:)/);
+    };
+    for (const c of areas.filters.categories) {
+      const shown = representativeFor("Rex", c);
+      expect(shown.length > 0, c.id).toBe(c.id !== "activity" && c.id !== "other");
+      shown.forEach(check);
+    }
+    expect(areas.filters.cuisines.length).toBeGreaterThan(0);
+    for (const c of areas.filters.cuisines) {
+      const [dish] = representativeFor("Rex", { id: "restaurant", label: "Restaurant" }, [c]);
+      expect(dish!.url, c.id).not.toBe("/representative/restaurant.jpg");
+      check(dish!);
+    }
   });
 
   it("when none of the place's own loads, a labelled representative one; when none of those loads, nothing", () => {
@@ -45,8 +78,8 @@ describe("category shortcuts on the web", () => {
     expect(photosToShow(own, fallback, [own[0]!.url])[0]).toMatchObject({ kind: "representative", alt: "A representative photo of a cafe, not Rex" });
     expect(photosToShow(own, fallback, [own[0]!.url, ...fallback.map((p) => p.url)])).toEqual([]);
     // A kind without representative photos: nothing, never a stand-in.
-    expect(representativeFor("Seward Park", { id: "park", label: "Park" })).toEqual([]);
-    expect(photosToShow(own, representativeFor("Rex", { id: "park", label: "Park" }), [own[0]!.url])).toEqual([]);
+    expect(representativeFor("Rex", { id: "other", label: "Other" })).toEqual([]);
+    expect(photosToShow(own, representativeFor("Rex", { id: "other", label: "Other" }), [own[0]!.url])).toEqual([]);
     // Same lookup as the shortcuts: no inherited keys.
     expect(representativeFor("Rex", { id: "__proto__", label: "Thing" })).toEqual([]);
   });
@@ -79,20 +112,22 @@ describe("an aerial photo as a place's stand-in", () => {
   const own = [{ url: "https://upload.wikimedia.org/wikipedia/commons/a.jpg", width: 960, height: 720, alt: null, credit: "Jane Doe, CC BY 4.0", author: "Jane Doe", license: "CC BY 4.0", licenseUrl: null, sourceUrl: "https://commons.wikimedia.org/wiki/File:A.jpg" }];
 
   it("stands in when a place has no photo of its own: first for a park, after the representative ones for a cafe", () => {
-    expect(photosFor("Seward Park", { id: "park", label: "Park" }, [], aerial)).toEqual([{ url: aerial.url, kind: "aerial", credit: aerial.credit, creditUrl: aerial.sourceUrl, alt: "An aerial view of where Seward Park is" }]);
+    const park = photosFor("Seward Park", { id: "park", label: "Park" }, [], aerial);
+    expect(park[0]).toEqual({ url: aerial.url, kind: "aerial", credit: aerial.credit, creditUrl: aerial.sourceUrl, alt: "An aerial view of where Seward Park is" });
+    expect(park.map((p) => p.kind)).toEqual(["aerial", "representative"]);
     expect(photosFor("Rex", { id: "cafe", label: "Cafe" }, [], aerial).map((p) => p.kind)).toEqual(["representative", "representative", "aerial"]);
     expect(fallbackFor("Seward Park", { id: "garden", label: "Garden" }, aerial)[0]!.kind).toBe("aerial");
     // A place's own photos come first; the aerial waits in the fallback for when none of them loads.
     const mine = photosFor("Rex", { id: "cafe", label: "Cafe" }, own, aerial);
     expect(mine.map((p) => p.kind)).toEqual(["place"]);
-    expect(photosToShow(mine, fallbackFor("Rex", { id: "park", label: "Park" }, aerial), [mine[0]!.url]).map((p) => p.kind)).toEqual(["aerial"]);
+    expect(photosToShow(mine, fallbackFor("Rex", { id: "park", label: "Park" }, aerial), [mine[0]!.url]).map((p) => p.kind)).toEqual(["aerial", "representative"]);
   });
 
   it("loads only over https from the state's server, and none when the API gives none", () => {
     for (const url of ["http://orthos.its.ny.gov/a", "https://orthos.its.ny.gov.evil.example/a", "https://user:pw@orthos.its.ny.gov/a", "https://upload.wikimedia.org/a.jpg", "data:image/png;base64,AAAA"]) {
-      expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, { ...aerial, url }), url).toEqual([]);
+      expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, { ...aerial, url }).map((p) => p.kind), url).toEqual(["representative"]);
     }
-    expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, null)).toEqual([]);
+    expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, null).map((p) => p.kind)).toEqual(["representative"]);
     expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, { ...aerial, sourceUrl: "javascript:alert(1)" })[0]).toMatchObject({ kind: "aerial", creditUrl: null });
   });
 });

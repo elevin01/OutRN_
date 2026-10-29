@@ -24,6 +24,8 @@ export interface RepresentativePhoto<Source = unknown> {
   source: Source;
   credit: string;
   url: string;
+  /** What it shows, when that is not just the kind of place ("pizza", "tacos"). */
+  of?: string;
 }
 
 /** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
@@ -97,7 +99,7 @@ export function photosFor<Source>(
     kind: "representative",
     credit: r.credit,
     creditUrl: r.url,
-    alt: `A representative photo of ${withArticle(kind)}, not ${placeName}`,
+    alt: `A representative photo of ${r.of ?? withArticle(kind)}, not ${placeName}`,
   }));
   const air = aerialPhoto(placeName, standIn.aerial, remote);
   return AERIAL_FIRST.has(standIn.categoryId ?? "") ? [...air, ...stock] : [...stock, ...air];
