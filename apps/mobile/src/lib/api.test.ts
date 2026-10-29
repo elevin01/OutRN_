@@ -43,6 +43,31 @@ describe("release API address", () => {
   });
 });
 describe("mobile HTTP boundary", () => {
+  it("retains backend origin validation so device entry can recover to an area", async () => {
+    const fields = [{ path: "origin", message: "outside the supported area" }];
+    const transport = vi
+      .fn()
+      .mockResolvedValue(
+        response(
+          {
+            error: {
+              code: "VALIDATION_FAILED",
+              message: "Choose an area",
+              retryable: false,
+              fields,
+            },
+          },
+          400,
+        ),
+      );
+    await expect(
+      createApi("https://api.example", transport).recommend({
+        areaId: "les",
+        windowMinutes: 120,
+        origin: { lat: 40, lon: -73 },
+      }),
+    ).rejects.toMatchObject({ fields });
+  });
   it("validates successful responses and preserves additive fields", async () => {
     const transport = vi
       .fn()

@@ -33,14 +33,29 @@ const DEMO_MARKERS = [
 ];
 const foundPhotos = new Set();
 const foundMarkers = new Set();
+// Interest illustrations are separate from photographs of a recommendation.
+const onboarding = new Map(
+  await Promise.all(
+    ["food", "coffee", "walk", "pub", "art", "music", "games", "market"].map(
+      async (name) => [
+        hash(await readFile(resolve(root, "assets/onboarding", `${name}.jpg`))),
+        name,
+      ],
+    ),
+  ),
+);
+const onboardingFound = new Set();
 async function scan(path) {
   for (const entry of await readdir(path, { withFileTypes: true })) {
     const file = resolve(path, entry.name);
     if (entry.isDirectory()) await scan(file);
     else {
       const bytes = await readFile(file);
-      const name = photos.get(hash(bytes));
+      const digest = hash(bytes);
+      const name = photos.get(digest);
       if (name) foundPhotos.add(name);
+      const interest = onboarding.get(digest);
+      if (interest) onboardingFound.add(interest);
       if (/\.(js|mjs|cjs|hbc|bundle|html)$/.test(entry.name)) {
         const text = bytes.toString("latin1");
         for (const m of DEMO_MARKERS) if (text.includes(m)) foundMarkers.add(m);
@@ -50,6 +65,10 @@ async function scan(path) {
 }
 await scan(output);
 const problems = [];
+if (onboardingFound.size !== onboarding.size)
+  problems.push(
+    `onboarding illustrations missing: ${[...onboarding.values()].filter((name) => !onboardingFound.has(name)).join(", ")}`,
+  );
 if (foundPhotos.size !== photos.size)
   problems.push(
     `representative photos missing: ${[...photos.values()].filter((n) => !foundPhotos.has(n)).join(", ")}`,
@@ -65,5 +84,5 @@ if (problems.length)
     `${demo ? "Demo" : "Production"} export: ${problems.join("; ")}`,
   );
 console.log(
-  `${demo ? "Demo" : "Production"} export: ${foundPhotos.size} representative photos, ${foundMarkers.size ? "demo content included" : "no demo content"}. Asset check passed.`,
+  `${demo ? "Demo" : "Production"} export: ${foundPhotos.size} representative photos, ${onboardingFound.size} onboarding illustrations, ${foundMarkers.size ? "demo content included" : "no demo content"}. Asset check passed.`,
 );

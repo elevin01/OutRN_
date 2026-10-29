@@ -68,6 +68,7 @@ export function ActivityExperience({
   onPrevious,
   onRefresh,
   onBack,
+  introduction,
   banner,
 }: {
   placeId: string;
@@ -78,6 +79,7 @@ export function ActivityExperience({
   onPrevious?: () => void;
   onRefresh?: () => void;
   onBack?: () => void;
+  introduction?: string;
   /** Under the category shortcuts: "Happening soon" on the Now deck. */
   banner?: ReactNode;
 }) {
@@ -154,15 +156,22 @@ export function ActivityExperience({
   // When none of the place's own photos loads: its stand-ins, labelled as such.
   const fallback = useMemo(
     () =>
-      photosFor(name, category?.label || "place", undefined, representative, (uri) => ({ uri }), {
-        aerial,
-        categoryId: category?.id,
-      }),
+      photosFor(
+        name,
+        category?.label || "place",
+        undefined,
+        representative,
+        (uri) => ({ uri }),
+        { aerial, categoryId: category?.id },
+      ),
     [name, category?.label, category?.id, representative, aerial],
   );
   // Category shortcuts on the deck (not on a place opened from Saved).
   const groups = useMemo(
-    () => (areas ? groupsFor(areas.filters.categories, areas.limits.maxCategories) : []),
+    () =>
+      areas
+        ? groupsFor(areas.filters.categories, areas.limits.maxCategories)
+        : [],
     [areas],
   );
   const strip =
@@ -173,7 +182,9 @@ export function ActivityExperience({
         disabled={busy}
         onSelect={(g) => {
           const { categories: _previous, ...rest } = query;
-          void search(g.categories.length ? { ...rest, categories: g.categories } : rest);
+          void search(
+            g.categories.length ? { ...rest, categories: g.categories } : rest,
+          );
         }}
       />
     ) : undefined;
@@ -272,6 +283,7 @@ export function ActivityExperience({
           }}
         >
           <ActivityProfile
+            introduction={introduction}
             key={placeId}
             item={expired ? undefined : item}
             place={place}
@@ -629,7 +641,11 @@ export function ActivityExperience({
                 ...(place?.attributions || []),
               ]),
             ].join(" · ")}
-            {demo ? " · Illustrative photos: Unsplash" : photos.some((p) => p.kind === "representative") ? " · Representative photos: Unsplash" : ""}
+            {demo
+              ? " · Illustrative photos: Unsplash"
+              : photos.some((p) => p.kind === "representative")
+                ? " · Representative photos: Unsplash"
+                : ""}
           </Copy>
         </View>
       </ScrollView>

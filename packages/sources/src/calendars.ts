@@ -179,9 +179,9 @@ function icsEvent(props: Map<string, IcsProperty[]>, timeZone: string): Calendar
     start: start.at.toISOString(),
     end: end && end > start.at ? end.toISOString() : null,
     allDay: start.allDay,
-    // A TEXT value: its commas, escaped or not, part the place from its address.
-    // A line each: its commas and its escaped line breaks part a place's name from its street and town.
-    location: icsText(one("LOCATION")?.value ?? "").split(/[,\n]/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean),
+    // A TEXT value, a line each: its commas (escaped or not) and its escaped line breaks part a place's
+    // name from its street and town. Anyone's text: at most 6 lines of 200 characters, as a TEC venue's.
+    location: icsText((one("LOCATION")?.value ?? "").slice(0, 2000)).split(/[,\n]/).map((x) => x.replace(/\s+/g, " ").trim().slice(0, 200)).filter(Boolean).slice(0, 6),
     categories: (props.get("CATEGORIES") ?? []).flatMap((p) => icsList(p.value)),
     url: url || null,
     cancelled: one("STATUS")?.value.trim().toUpperCase() === "CANCELLED",
