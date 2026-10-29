@@ -15,7 +15,8 @@ From Unsplash:
 - License: https://unsplash.com/license (commercial and non-commercial use permitted; credit given anyway).
 
 From Wikimedia Commons (public domain, CC0 or CC BY; never share-alike), each shown with the credit
-below and linked to its file page, where its license is. Cropped to 720x450 and recompressed:
+below and "(cropped)", linked to its file page, where its license is. Cropped to 720x450 and
+recompressed:
 
 - `american.jpg` (cuisine american): Dan Gold danielcgold, CC0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Friends_eating_lunch_in_diner_(Unsplash).jpg
 - `arcade.jpg` (arcade): Arcade Perfect, CC BY 2.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Retrovolt_Arcade_2017_-_Arcade_Machines_1.jpg
@@ -40,7 +41,7 @@ below and linked to its file page, where its license is. Cropped to 720x450 and 
 - `korean.jpg` (cuisine korean): Douglas Paul Perkins, CC BY 3.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Bibimbap_in_Jeonju.jpg
 - `latin_american.jpg` (cuisine latin_american): Luca Nebuloni, CC BY 2.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Arepas_(32187739776).jpg
 - `library.jpg` (library): Samuel Zeller samuelzeller, CC0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Reading_room_(Unsplash).jpg
-- `live_music.jpg` (live_music): Shixart1985, CC BY 2.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Rock_band_performs_live_on_stage_with_vibrant_lights_and_energetic_atmosphere_during_a_music_festival_in_an_outdoor_venue.jpg
+- `live_music.jpg` (live_music): Daniel Ebersole danielebersole, CC0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Silhouettes_against_pale_stage_smoke_(Unsplash).jpg
 - `market.jpg` (market): Myotus, CC BY 4.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Richfield_Farmers_Market-11.jpg
 - `mediterranean.jpg` (cuisine mediterranean): Guilhem Vellut from Paris, France, CC BY 2.0, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Hummus_@_Kaza_plate_@_Kaza_Maza_@_Montparnasse_@_Paris_(34185040806).jpg
 - `mexican.jpg` (cuisine mexican): Evgeny Krivosheev, Public domain, via Wikimedia Commons. https://commons.wikimedia.org/wiki/File:Tacos_on_a_plate.jpg

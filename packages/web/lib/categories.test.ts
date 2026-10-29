@@ -43,7 +43,7 @@ describe("category shortcuts on the web", () => {
     const shown = representativeFor("Joe's", { id: "restaurant", label: "Restaurant" }, [{ id: "not-a-cuisine", label: "?" }, pizza, { id: "italian", label: "Italian" }]);
     expect(shown.map((p) => p.url)).toEqual(["/representative/pizza.jpg", "/representative/restaurant.jpg"]);
     expect(shown[0]).toMatchObject({ kind: "representative", alt: "A representative photo of pizza, not Joe's" });
-    expect(shown[0]!.credit).toMatch(/, via Wikimedia Commons$/);
+    expect(shown[0]!.credit).toMatch(/, via Wikimedia Commons \(cropped\)$/);
     expect(shown[0]!.creditUrl).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
     expect(representativeFor("Rex", { id: "cafe", label: "Cafe" }, [{ id: "bagel", label: "Bagels" }])[0]!.alt).toBe("A representative photo of a bagel, not Rex");
     // Only for food places: a bar serving pizza still shows a bar.
