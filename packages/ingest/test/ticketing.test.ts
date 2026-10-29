@@ -147,6 +147,10 @@ describe.skipIf(!available)("ticketed events", () => {
     expect((await occurrence("seatgeek:sg-5"))!.status).toBe("scheduled");
     expect((await occurrence("ticketmaster:tm-5"))!.status).toBe("scheduled");
     expect((await occurrence("ticketmaster:tm-6"))!.status).toBe("scheduled");
+    // A bill's unnamed extras don't make it another show: SeatGeek's age-less copy still gives way.
+    await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [event({ id: "sg-7", title: "Mitski with Special Guests", start: "2026-10-07T00:00:00.000Z", kinds: ["music"] })], { complete: false }) });
+    await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, fromFile: capture("ticketmaster", [event({ id: "tm-7", title: "Mitski", start: "2026-10-07T00:00:00.000Z", kinds: ["music"], adultsOnly: true })], { complete: false }) });
+    expect((await occurrence("seatgeek:sg-7"))!.status).toBe("withdrawn");
   });
 
   it("a full read that no longer lists an event withdraws it; a partial one withdraws nothing", async () => {

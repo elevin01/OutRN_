@@ -208,6 +208,27 @@ describe("a re-check's verdict", () => {
       ["Toy Story Fri Oct 30 7pm CANCELLED", "Toy Story", "cancelled"],
     ] as const) expect(recheckVerdict({ status: "cancelled", quote: q }, p(q), toy(title)), `${title}: ${q}`).toBe(want);
   });
+
+  it("is this one listing: never the status of the listing beside it, or of a film whose title begins with this one's", () => {
+    const p = (q: string) => norm(q);
+    const at = (title: string) => ({ title, time: "19:00", date: "2026-10-30", today });
+    for (const [status, q, title, want] of [
+      // The neighbouring film's status, the same day and time.
+      ["sold_out", "Anora Fri Oct 30 7pm tickets available; Wicked Fri Oct 30 7pm SOLD OUT", "Anora", null],
+      ["cancelled", "Anora Fri Oct 30 7pm tickets available; Wicked Fri Oct 30 7pm CANCELLED", "Anora", null],
+      ["sold_out", "Anora Fri Oct 30 7pm, Wicked SOLD OUT", "Anora", null],
+      ["sold_out", "Wicked SOLD OUT · Anora Fri Oct 30 7pm", "Anora", null],
+      // A subtitle is another film.
+      ["sold_out", "Alien: Romulus Fri Oct 30 7pm SOLD OUT", "Alien", null],
+      ["listed", "Alien: Romulus Fri Oct 30 7pm tickets available", "Alien", null],
+      ["sold_out", "Alien: Romulus Fri Oct 30 7pm SOLD OUT", "Alien: Romulus", "sold_out"],
+      // One listing, however it is laid out; what follows its status explains it.
+      ["sold_out", "Anora Fri Oct 30 7pm SOLD OUT", "Anora", "sold_out"],
+      ["cancelled", "CANCELLED: Anora (35mm) — Friday, October 30 at 7:00 PM", "Anora", "cancelled"],
+      ["cancelled", "Anora Fri Oct 30 7pm cancelled due to illness; Wicked available", "Anora", "cancelled"],
+      ["listed", "Now playing: Anora · Fri Oct 30 · 7 PM · $15 · Tickets available", "Anora", "listed"],
+    ] as const) expect(recheckVerdict({ status, quote: q }, p(q), at(title)), `${status} ${title}: ${q}`).toBe(want);
+  });
 });
 
 describe("what Claude costs", () => {

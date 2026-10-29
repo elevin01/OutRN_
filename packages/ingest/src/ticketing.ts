@@ -78,8 +78,8 @@ export function ticketedEventInput(e: TicketedEvent): Omit<EventInput, "place"> 
   };
 }
 
-/** Words that join a title, not name the show ("Celtics at Knicks", "Knicks vs. Celtics"). */
-const JOINING = new Set(["a", "an", "and", "at", "by", "for", "in", "of", "on", "vs", "with", "featuring", "feat", "presents", "live"]);
+/** Words that join a title or bill unnamed extras, not name the show ("Celtics at Knicks", "Knicks vs. Celtics", "Mitski with Special Guests"). */
+const JOINING = new Set(["a", "an", "and", "at", "by", "for", "in", "of", "on", "vs", "with", "featuring", "feat", "presents", "live", "special", "guest", "guests"]);
 const titleWords = (title: string) => new Set(matchKey(title).split(" ").filter((w) => w && !JOINING.has(w)));
 
 /**
