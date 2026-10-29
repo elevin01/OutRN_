@@ -74,6 +74,7 @@ export function ticketedEventInput(e: TicketedEvent): Omit<EventInput, "place"> 
     ...(e.adultsOnly ? { minAge: 21 } : {}),
     admission: "ticket",
     ...(e.price ? { price: { min: e.price.min, max: Math.max(e.price.min, e.price.max), currency: "USD" as const } } : {}),
+    ...(e.popularity !== null ? { popularity: e.popularity } : {}),
   };
 }
 

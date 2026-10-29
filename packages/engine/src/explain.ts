@@ -66,6 +66,10 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   // What this person likes comes first: it is why this option is on their list.
   if (has("TASTE_MATCH") && e.tasteLead) add("TASTE_MATCH", `matches your taste for ${INTERESTS[e.tasteLead].toLowerCase()}`, { interest: e.tasteLead });
   if (has("EVENT_STARTS_SOON")) add("EVENT_STARTS_SOON", "starts soon", { startsAt: iso(e.candidate.occurrence?.start) });
+  if (has("POPULAR_NOW")) {
+    const p = e.candidate.facts.popularity?.value as { source?: string; rank?: number } | undefined;
+    add("POPULAR_NOW", p?.source === "tmdb" ? "one of the most popular films right now" : "popular right now", { source: p?.source ?? null, rank: p?.rank ?? null });
+  }
   // What it is worth going for, and when it is farther than an everyday outing, that it is worth it.
   const dest = has("DESTINATION") ? destinationOf(e.candidate) : null;
   if (dest) {

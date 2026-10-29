@@ -3,7 +3,7 @@ import { getDb, withTx } from "@outrn/db";
 import { materializeAll } from "@outrn/facts";
 import { readFileSync } from "node:fs";
 import { OSM_MAX_DATA_AGE_DAYS } from "@outrn/sources";
-import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestCalendars, ingestOsmArea, ingestOverture, ingestPhotos, ingestTicketedEvents, TICKETING_KEYS } from "@outrn/ingest";
+import { ingestDestinations, ingestEvents, ingestNycParksEvents, ingestCalendars, ingestOsmArea, ingestOverture, ingestPhotos, ingestTicketedEvents, refreshFilmPopularity, TICKETING_KEYS, TMDB_KEY } from "@outrn/ingest";
 
 export function registerIngest(program: Command): void {
   const ingest = program.command("ingest").description("Pull supply from a registered source into the raw store and onward to venues and facts");
@@ -148,6 +148,18 @@ export function registerIngest(program: Command): void {
         if (s.rejected.length) process.exitCode = 1;
       });
   }
+
+  ingest
+    .command("films")
+    .description(`Mark the screenings of the films people are going to now: TMDB's most popular films now playing or trending, matched by title. Needs ${TMDB_KEY}`)
+    .option("--from-file <path>", "replay a saved read instead of asking TMDB")
+    .option("--save <path>", "save the films read (never the key), for replay")
+    .action(async (o: { fromFile?: string; save?: string }) => {
+      const t0 = Date.now();
+      const s = await refreshFilmPopularity(getDb(), { ...(o.fromFile ? { fromFile: o.fromFile } : {}), ...(o.save ? { saveTo: o.save } : {}), log: (l) => console.log(l) });
+      console.log(`run ${s.runId} · ${Date.now() - t0} ms`);
+      console.log(`  screenings ${s.popular} of ${s.screenings} upcoming are of a popular film · ${s.retracted} no longer`);
+    });
 
   ingest
     .command("calendars")

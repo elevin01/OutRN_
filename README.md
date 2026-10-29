@@ -96,6 +96,17 @@ read of every page is the area's whole listing, so what the API stops listing is
 sources are registered switched off** until their terms are read for OutRN: migration `0028` has the
 statement that switches each on and records the review.
 
+**Films people are going to** (`pnpm outrn ingest films`): TMDB's films now playing in US cinemas and
+trending this week, with its popularity. The twenty most popular are matched by title to the screenings
+we list (at a cinema, or an event that says it is a film: a park's movie night), the screening's own
+extras set aside ("Anora (35mm)", "Movie Night: Wicked", "The Brutalist + Q&A") but a film's subtitle
+kept ("Mission: Impossible – The Final Reckoning" is not the series' last film). A match is a
+`popularity` fact on the screening, lasting 36 hours unless refreshed, and so is SeatGeek's score on a
+ticketed event. From 0.7 (a film among the ten most popular, a show in SeatGeek's top band) the engine
+lifts the event and says so: "one of the most popular films right now", "popular right now". It needs
+`TMDB_API_KEY` (a v3 key or v4 read token) and is **registered switched off** until TMDB's terms are
+read (commercial use needs an agreement with TMDB): migration `0029`.
+
 **Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
 libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
 storytimes, LEGO clubs, author talks, concerts, nature walks, a town's parade. The feeds are a reviewed
@@ -206,9 +217,9 @@ Around Bronxville the read adds about 100. `--save` keeps only the few hundred r
 reads, so a capture replays the same destinations.
 
 **Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
-places list none), and list what is on at theatres, music rooms and arts centers. `outrn firstparty
+places list none), and list what is on at theatres, cinemas, music rooms and arts centers. `outrn firstparty
 discover --area <slug>` registers the website of each venue with no published hours, and of every
-theatre, music room, arts center, museum and community center whatever its hours, when it is the
+theatre, cinema, music room, arts center, museum and community center whatever its hours, when it is the
 venue's own: never a social network, review site, map, booking or ordering service. `outrn firstparty
 run --area <slug>` then reads them:
 - **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a

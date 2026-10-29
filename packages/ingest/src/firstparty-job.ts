@@ -126,8 +126,12 @@ export function ownSiteUrl(raw: string | null | undefined): string | null {
   return NOT_OWN_SITE.test(new URL(url).hostname) ? null : url;
 }
 
-/** Kinds of place whose own site is read for its events, whatever source publishes their hours. Not cinemas: showtimes are not events. */
-export const EVENT_VENUES: ReadonlySet<string> = new Set(["theatre", "live_music", "arts_centre", "museum", "community"]);
+/**
+ * Kinds of place whose own site is read for its events, whatever source publishes their hours. Cinemas
+ * too: a screening of a film people are going to is what someone opens the app for (the engine already
+ * visits a cinema only through its screenings; its site's ScreeningEvent JSON-LD lists them).
+ */
+export const EVENT_VENUES: ReadonlySet<string> = new Set(["theatre", "cinema", "live_music", "arts_centre", "museum", "community"]);
 
 export interface DiscoverSummary {
   /** Venues with a website and no published hours. */

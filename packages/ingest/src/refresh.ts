@@ -1,5 +1,6 @@
 import { getSourcePolicy, isServedArea, listAreas, type Db } from "@outrn/db";
 import { ingestCalendars } from "./calendars.js";
+import { refreshFilmPopularity, TMDB_KEY } from "./films.js";
 import { discoverSites, runFirstParty } from "./firstparty-job.js";
 import { ingestNycParksEvents } from "./nyc-parks.js";
 import { ingestTicketedEvents, TICKETING_KEYS } from "./ticketing.js";
@@ -95,6 +96,18 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
       },
     }),
   ),
+  {
+    id: "films",
+    title: "which screenings are of the films people are going to now (TMDB's most popular)",
+    sourceId: "tmdb",
+    // After the venues' sites and the ticketing reads, so a new screening is matched within hours.
+    everyMinutes: 3 * 60,
+    needs: [TMDB_KEY],
+    run: async (db, log) => {
+      const s = await refreshFilmPopularity(db, { log });
+      return `${s.popular} of ${s.screenings} upcoming screenings are of a popular film`;
+    },
+  },
 ];
 
 export interface JobState {

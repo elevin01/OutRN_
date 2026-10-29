@@ -13,3 +13,4 @@ export * from "./calendars.js";
 export * from "./site-events.js";
 export * from "./refresh.js";
 export * from "./ticketing.js";
+export * from "./films.js";

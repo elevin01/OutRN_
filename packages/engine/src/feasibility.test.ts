@@ -431,6 +431,30 @@ describe("feasibility: programme venues", () => {
   });
 });
 
+describe("what people are going to now", () => {
+  const start = fromLocal("2026-09-26", 22 * 60, TZ);
+  const end = fromLocal("2026-09-26", 23 * 60 + 30, TZ);
+  const screening = (popularity?: { score: number; source: string; rank?: number }) => {
+    const c = venue({ kind: "occurrence", category: "cinema", hours: null, admission: "ticket", occurrence: { id: "s1", title: "Wicked", start, end, entryCutoff: null, lateEntry: null, status: "scheduled" } });
+    return popularity ? { ...c, facts: { ...c.facts, popularity: { value: popularity, confidence: 0.7, evidenceClass: "published" as const, validUntil: null, independentSources: 1 } } } : c;
+  };
+  it("a screening of a popular film, or a show in demand, is lifted and says so; a middling score says nothing", () => {
+    const at = ctx("2026-09-26 21:37", 120);
+    const plain = one(screening(), at);
+    const film = one(screening({ score: 0.9, source: "tmdb", rank: 4 }), at);
+    expect(film.reasons).toContain("POPULAR_NOW");
+    expect(film.scores.appeal).toBeCloseTo(plain.scores.appeal + 0.1, 5);
+    expect(reasonNotes(film, TZ).find((n) => n.code === "POPULAR_NOW")).toEqual({ code: "POPULAR_NOW", text: "one of the most popular films right now", params: { source: "tmdb", rank: 4 } });
+    const show = one(screening({ score: 0.82, source: "seatgeek" }), at);
+    expect(reasonNotes(show, TZ).find((n) => n.code === "POPULAR_NOW")?.text).toBe("popular right now");
+    const middling = one(screening({ score: 0.5, source: "seatgeek" }), at);
+    expect(middling.reasons).not.toContain("POPULAR_NOW");
+    expect(middling.scores.appeal).toBeCloseTo(plain.scores.appeal, 5);
+    // Ranking only: never a different class.
+    expect(film.class).toBe(plain.class);
+  });
+});
+
 describe("feasibility: travel, deadlines, budget, access", () => {
   it("beyond max travel → TOO_FAR", () => {
     expect(one(venue({ point: FAR }), ctx("2026-10-03 15:00", 240)).excludedBy).toBe("TOO_FAR");
