@@ -730,7 +730,9 @@ export function placeFacts(venueId: string, p: OverturePlace, category: Category
   ];
   // One claim per attribute: an estimate only where the place itself says nothing (never its status).
   const said = new Set(stated.map((f) => f.attribute));
-  const estimates = kindEstimates(category).filter((e) => !said.has(e.attribute) && e.attribute !== "business_status");
+  // A comedy club is usually 18+, as OSM's comedy clubs are estimated (osm-normalize).
+  const kind: ReturnType<typeof kindEstimates> = subtype === "comedy_club" ? [{ attribute: "age_limit", value: { minAge: 18 }, confidence: 0.5 }] : [];
+  const estimates = [...kindEstimates(category).filter((e) => e.attribute !== "age_limit" || !kind.length), ...kind].filter((e) => !said.has(e.attribute) && e.attribute !== "business_status");
   // What its name says it serves ("Taqueria Diana"), as OSM's rules read a name without a cuisine tag.
   const named = CUISINE_CATEGORIES.has(category) ? cuisineFromName(p.name) : [];
   return [

@@ -159,6 +159,10 @@ describe("OSM normalization", () => {
     expect(fact(rec({ name: "Orpheum", amenity: "theatre" }), "subtype")).toBeUndefined();
     // Only a theatre's: a cinema showing comedies is still a cinema.
     expect(fact(rec({ name: "Film Forum", amenity: "cinema", "theatre:genre": "comedy" }), "subtype")).toBeUndefined();
+    // Usually 18+ (21+ with a drink minimum at many): an estimate a published min_age replaces.
+    expect(fact(rec({ name: "New York Comedy Club", amenity: "theatre", "theatre:genre": "stand_up_comedy" }), "age_limit")).toMatchObject({ evidenceClass: "estimate", value: { minAge: 18 }, confidence: 0.5 });
+    expect(fact(rec({ name: "New York Comedy Club", amenity: "theatre", "theatre:genre": "stand_up_comedy", min_age: "21" }), "age_limit")).toMatchObject({ evidenceClass: "published", value: { minAge: 21 } });
+    expect(fact(rec({ name: "Orpheum", amenity: "theatre", "theatre:genre": "drama" }), "age_limit")).toBeUndefined();
   });
 
   describe("survey dates (check_date)", () => {

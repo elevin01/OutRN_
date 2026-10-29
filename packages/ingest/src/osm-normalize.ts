@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-10-29.2";
+export const OSM_NORMALIZE_VERSION = "2026-10-29.3";
 
 export interface OsmRecord {
   externalId: string;
@@ -460,6 +460,9 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   // A bar that serves no food is usually 21+ in practice, and so is a karaoke box, food or not (a bar with
   // private rooms, most of them 21+ at night). Low confidence: a family sees Check first, never an exclusion.
   else if ((category === "bar" && !servesFood(t)) || t["amenity"] === "karaoke_box") est("age_limit", { minAge: 21 }, 0.5);
+  // A comedy club is usually 18+ (21+ with a drink minimum at many): with nothing listed it is out for
+  // a party with a minor anyway, but a show it lists says no age of its own and takes its venue's.
+  else if (comedy) est("age_limit", { minAge: 18 }, 0.5);
 
   // Surveys: when a mapper last checked the hours, and when anyone last checked the place at all.
   const hoursCheckedAt = surveyDate(t["check_date:opening_hours"], rec.sourceUpdatedAt, now);

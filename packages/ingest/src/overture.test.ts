@@ -351,7 +351,10 @@ describe("places OSM lacks", () => {
     expect(f.find((x) => x.attribute === "subtype")).toMatchObject({ value: { value: "comedy_club" }, evidenceClass: "published", evidence: "Overture place ovt-cc: comedy_club" });
     expect(f.find((x) => x.attribute === "website")).toMatchObject({ value: { value: expect.stringMatching(/comedycellar\.com/i) } });
     expect(new Set(f.map((x) => x.attribute)).size).toBe(f.length);
+    // Usually 18+, as OSM's are: a family sees "probably 18+ only" on any show it lists.
+    expect(f.find((x) => x.attribute === "age_limit")).toMatchObject({ value: { minAge: 18 }, evidenceClass: "estimate", confidence: 0.5 });
     expect(placeFacts("venue-6", place({ id: "ovt-g", name: "Gotan", category: "coffee_shop" }), "cafe", "run-1", now).some((x) => x.attribute === "subtype")).toBe(false);
+    expect(placeFacts("venue-7", place({ id: "ovt-mv", name: "Bowery Room", category: "music_venue" }), "live_music", "run-1", now).some((x) => x.attribute === "age_limit")).toBe(false);
   });
 
   it("a new food place's name gives its cuisine, as an estimate; a gallery's never does", () => {
