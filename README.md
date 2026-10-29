@@ -114,10 +114,14 @@ no other way, Claude reads their events page (the one the home page links: /even
 /now-playing, /showtimes…), fetched through the firstparty gate, and lists each event with a quote of
 the page's own words. Nothing is believed that the page does not say: the quote must be on the page,
 the title too, and the quote must carry the event's start time and its day (a date, a weekday, or
-"tonight"); a price only as the page writes it, sold out only in its words. An event that fails a check
+"tonight"), and nothing in it against them (a morning for an evening show, a date a week off); a
+price only as the page writes it, sold out only in its words, and an age limit it states ("21+",
+"18 and over") as the event's own (a limit only keeps a minor out; "all ages" never lifts one). An event that fails a check
 is left out, the reason counted. A page is read at most once in 20 hours, cinemas first. `ai recheck`
 re-reads the page of each event starting within 36 hours (each at most every 8) and marks it cancelled or
-sold out when the page now says so, quoting it: the engine leaves such an event out. Spending is capped
+sold out when the page now says so for that one showing (a quote naming its title, day and start time,
+and no other showing; "not cancelled" is not a cancellation): the engine leaves such an event out. A
+later check that finds it listed again clears the mark. Spending is capped
 over any 24 hours (`OUTRN_AI_DAILY_BUDGET_USD`, default $1.00), counted from each response's token usage
 at its model's rates into the run log; a request that could pass the cap is not sent, nor its page
 fetched. `outrn ai spend` shows the day so far. It needs `ANTHROPIC_API_KEY`; the model is

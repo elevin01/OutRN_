@@ -1,12 +1,16 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
 import type { TicketedEvent, TicketingCapture } from "@outrn/sources";
 import { ingestOsmArea } from "../src/pipeline.js";
 import { ingestTicketedEvents, ticketedEventInput, ticketedKinds } from "../src/ticketing.js";
+
+// A live read's pages, as the test gives them: each request takes the next.
+const pages = vi.hoisted(() => ({ next: [] as unknown[] }));
+vi.mock("../../sources/src/fetch.js", async (orig) => ({ ...(await orig<typeof import("../../sources/src/fetch.js")>()), guardedFetch: async () => ({ text: JSON.stringify(pages.next.shift()) }) }));
 
 /** Ticketed events replayed from saved reads, against a real Postgres + PostGIS (outrn_test, reset per file). */
 
@@ -110,6 +114,20 @@ describe.skipIf(!available)("ticketed events", () => {
     expect(await occurrence("seatgeek:sg-2")).toMatchObject({ venue: "Delancey Playhouse" });
   });
 
+  it("never leaves out Ticketmaster's adults-only listing for SeatGeek's, which says nothing of age", async () => {
+    const s = await ingestTicketedEvents(db, {
+      source: "ticketmaster",
+      areaSlug: "les",
+      now: NOW,
+      fromFile: capture("ticketmaster", [event({ id: "tm-3", title: "Late Night Improv", start: "2026-10-04T02:30:00.000Z", kinds: ["comedy"], adultsOnly: true })], { complete: false }),
+    });
+    expect(s.skipped).toEqual({});
+    const o = await occurrence("ticketmaster:tm-3");
+    expect(o).toMatchObject({ venue: "Delancey Playhouse", status: "scheduled" });
+    const age = (await db.query(`select value from current_facts where subject_kind = 'occurrence' and subject_id = $1 and attribute = 'age_limit'`, [o!.id])).rows[0];
+    expect(age?.value).toEqual({ minAge: 21 });
+  });
+
   it("a full read that no longer lists an event withdraws it; a partial one withdraws nothing", async () => {
     await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, fromFile: capture("ticketmaster", [event({ id: "tm-2", title: "Fireworks Cruise", kinds: [], venue: { name: "Pier 36", address: "299 South St", lat: 40.7101, lon: -73.9826 } })], { complete: false }) });
     expect((await occurrence("ticketmaster:tm-1"))!.status).toBe("scheduled");
@@ -125,6 +143,36 @@ describe.skipIf(!available)("ticketed events", () => {
     // One saved for another area, or not every page, withdraws nothing here.
     await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [], { area: "bronxville" }) });
     expect((await occurrence("seatgeek:sg-2"))!.status).toBe("scheduled");
+  });
+
+  it("a live read with a record it could not read is not the area's whole listing: it withdraws nothing", async () => {
+    const KEYS = { TICKETMASTER_API_KEY: "k", SEATGEEK_CLIENT_ID: "k" };
+    const tmOk = { id: "tm-live", name: "Hamlet", dates: { start: { dateTime: "2026-10-04T23:00:00Z" } }, _embedded: { venues: [{ name: "Delancey Playhouse", location: { latitude: "40.71405", longitude: "-73.97738" } }] } };
+    const sgOk = { id: 991, title: "Late Night Improv", datetime_utc: "2026-10-05T02:30:00", venue: { name: "Delancey Playhouse", location: { lat: 40.71405, lon: -73.97738 } } };
+    // Each API's listing first: one event each, read whole.
+    pages.next = [{ _embedded: { events: [tmOk] }, page: { number: 0, totalPages: 1 } }];
+    await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, env: KEYS });
+    pages.next = [{ events: [sgOk], meta: { total: 1 } }];
+    await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, env: KEYS });
+    expect((await occurrence("ticketmaster:tm-live"))!.status).toBe("scheduled");
+    expect((await occurrence("seatgeek:991"))!.status).toBe("scheduled");
+    // Then every record unreadable, or one beside a readable one: nothing withdrawn.
+    for (const [source, page] of [
+      ["ticketmaster", { _embedded: { events: [{ id: "broken" }] }, page: { number: 0, totalPages: 1 } }],
+      ["ticketmaster", { _embedded: { events: [{ ...tmOk, id: "tm-other", name: "Macbeth" }, { id: "broken" }] }, page: { number: 0, totalPages: 1 } }],
+      ["seatgeek", { events: [{ id: 123 }], meta: { total: 1 } }],
+      ["seatgeek", { events: [{ ...sgOk, id: 992, title: "Open Mic" }, { id: 123 }], meta: { total: 2 } }],
+    ] as const) {
+      pages.next = [page];
+      const s = await ingestTicketedEvents(db, { source, areaSlug: "les", now: NOW, env: KEYS });
+      expect(s.withdrawn, `${source} ${JSON.stringify(page).slice(0, 60)}`).toBe(0);
+    }
+    expect((await occurrence("ticketmaster:tm-live"))!.status).toBe("scheduled");
+    expect((await occurrence("seatgeek:991"))!.status).toBe("scheduled");
+    // A genuinely empty answer still reconciles.
+    pages.next = [{ events: [], meta: { total: 0 } }];
+    expect((await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, env: KEYS })).withdrawn).toBeGreaterThanOrEqual(1);
+    expect((await occurrence("seatgeek:991"))!.status).toBe("withdrawn");
   });
 
   it("refuses to run while the source is switched off, or live without its key", async () => {

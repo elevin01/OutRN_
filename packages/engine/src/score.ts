@@ -142,9 +142,10 @@ export function scoreCandidate(
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
   appeal += 0.1 * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
-  // What people are going to now: a popular film's screening, a show in demand.
+  // What people are going to now: a popular film's screening, a show in demand. Like taste, never a
+  // lift or a claim for an adult place or an adult-limited event with a minor along.
   const popularity = c.kind === "occurrence" ? (c.facts.popularity?.value as { score?: unknown } | undefined)?.score : undefined;
-  if (typeof popularity === "number" && popularity >= POPULAR_FROM) {
+  if (typeof popularity === "number" && popularity >= POPULAR_FROM && !adultForMinor) {
     appeal += APPEAL_WEIGHTS.popularNow;
     extra.push("POPULAR_NOW");
   }

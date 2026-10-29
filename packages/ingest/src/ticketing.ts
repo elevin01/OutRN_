@@ -147,7 +147,9 @@ export async function ingestTicketedEvents(db: Db, opts: TicketingIngestOptions)
       skip("another_area");
       continue;
     }
-    if (placed && (await listedByAnother(db, source, placed.venueId, e))) {
+    // Never one the API says is for adults: the other's listing (SeatGeek says nothing of age) must
+    // not stand in for the one that carries the limit.
+    if (placed && !e.adultsOnly && (await listedByAnother(db, source, placed.venueId, e))) {
       skip("listed_by_other");
       continue;
     }

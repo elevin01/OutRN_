@@ -271,7 +271,9 @@ export async function fetchTicketedEvents(source: TicketingSource, q: TicketingQ
       }
     }
   }
-  return { events: events.slice(0, MAX_EVENTS), skipped, complete: complete && events.length <= MAX_EVENTS, fetchedAt };
+  // A record we could not read may be one listed before: without it the read is not the area's whole
+  // listing, so nothing is withdrawn for missing from it (an empty read is whole only when it is empty).
+  return { events: events.slice(0, MAX_EVENTS), skipped, complete: complete && events.length <= MAX_EVENTS && !skipped["unreadable"], fetchedAt };
 }
 
 const CaptureEvent = z.object({
