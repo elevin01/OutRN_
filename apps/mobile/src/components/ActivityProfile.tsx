@@ -7,6 +7,7 @@ import {
   StyleSheet,
   View,
   type ImageSourcePropType,
+  type ScrollViewInstance,
 } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -70,7 +71,7 @@ export function ActivityProfile({
 }) {
   const [photo, setPhoto] = useState(0);
   const [photoWidth, setPhotoWidth] = useState(0);
-  const pager = useRef<ScrollView>(null);
+  const pager = useRef<ScrollViewInstance>(null);
   const currentPhoto = useRef(0);
   const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
   const fail = (key: string) =>

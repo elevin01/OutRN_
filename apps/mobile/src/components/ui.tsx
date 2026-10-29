@@ -31,16 +31,17 @@ export type IconName = React.ComponentProps<typeof Feather>["name"];
 export const Icon = ({
   name,
   size = 22,
-  color = colors.ink,
+  color,
 }: {
   name: IconName;
   size?: number;
+  // React Navigation gives the tab icon a ColorValue; Feather does not accept null or a processed number.
   color?: ColorValue;
 }) => (
   <Feather
     name={name}
     size={size}
-    color={color}
+    color={color == null || typeof color === "number" ? colors.ink : color}
     accessible={false}
     aria-hidden={true}
   />
