@@ -80,8 +80,21 @@ when the title says so, free only when it says so without condition ("free for m
 and made for children when it is "Best for Kids" (it leads for a family and sinks for grown-ups on
 their own). An event the area's next read no longer lists is withdrawn once no area lists it. A
 walk-in event can be joined late and left when it's time to go, so a festival afternoon fits a
-two-hour window. **The source is registered switched off** until NYC Open Data's terms of use are
-read for it: migration `0021` has the one statement that switches it on and records the review.
+two-hour window. Migration `0027` switches the source on, recording the founder's reading of NYC
+Open Data's terms of use (29 October 2026); `enabled = false` in `source_policies` switches it off.
+
+**Ticketed events** (`pnpm outrn ingest ticketmaster --area <slug>`, `... ingest seatgeek ...`): the
+next two weeks of concerts, comedy, theatre and sports around an area from Ticketmaster's Discovery API
+and SeatGeek's API. Each needs a free key in the environment (`TICKETMASTER_API_KEY`,
+`SEATGEEK_CLIENT_ID`; in `.env`, which the CLI reads under whatever the shell already set), sent only to its own API and never saved, logged or put in
+an error. An event is held at the venue we know by its name or address within 200 m of where the API
+puts it, else at an event site of its own; one the other API already lists at that venue within 30
+minutes is left out. Kept: title, start, kinds from the API's classification ("Comedy" is comedy, not
+theatre), the price range it gives, 21+ only when the API says adults only, the event's own page,
+and SeatGeek's popularity score. No time yet ("TBA"), parking passes and VIP packages are left out. A
+read of every page is the area's whole listing, so what the API stops listing is withdrawn. **Both
+sources are registered switched off** until their terms are read for OutRN: migration `0028` has the
+statement that switches each on and records the review.
 
 **Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
 libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
@@ -98,6 +111,16 @@ services, classes of service and online events are left out. Kept: title, times,
 link, kinds from its categories, for children, registration and price only as stated. `pnpm capture`
 saves a read (`fixtures/live/calendars.json`) and `pnpm real` replays it. On 18 October 2026: 21 of 21
 feeds read, about 580 events in the next 30 days placed.
+**Keeping it current** (`pnpm refresh`, or `pnpm outrn refresh`): one loop runs every live job on its
+own cadence, the forecast hourly, NYC Parks' events twice a day, the library and town calendars daily,
+and the venues' own websites (their hours, and what theatres, cinemas and music rooms list) hourly,
+theirs first, each site on its own fetch interval. `pnpm real` starts it beside the API (its lines start
+`[refresh]`; `REFRESH=0` leaves it off). A job runs only while its source is switched on in
+`source_policies` and what it needs from the environment is set; one that can't run is said once and
+skipped. A failure is tried again in 30 minutes and stops nothing else. A restart picks up from the
+run log: a job that ran an hour ago is not run again. `--once` runs what is due and exits (for cron),
+`--only nyc_parks,calendars` limits it, and `--list` shows the jobs.
+
 Recommendations are for right now, as they would be for someone there. The only database it
 touches is `outrn_real` on the local cluster, dropped and recreated each run; it takes no database
 URL. A capture named after something that isn't an area is skipped. A capture of a real area that

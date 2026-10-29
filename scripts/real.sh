@@ -196,9 +196,14 @@ Serving ${served:-no areas} on http://${HOST}:${PORT}  (ctrl-c stops it)
   Browser preview of the mobile app (pnpm mobile:web) is allowed from http://localhost:8081.
 
 Recommendations are for right now, where the area is. Only areas with a capture in fixtures/live
-are served; \`pnpm capture\` records the rest (needs network access). Forecasts count for 12 hours:
-run \`pnpm outrn weather refresh\` (hourly is plenty) while this runs for longer, and
-\`pnpm outrn ingest nyc-parks --area <slug>\` daily for new events.
+are served; \`pnpm capture\` records the rest (needs network access). While this runs,
+\`outrn refresh\` keeps it current: the forecast hourly, events and the venues' own websites
+(theatres', cinemas' and music rooms' listings) through the day. Its lines start [refresh].
+REFRESH=0 pnpm real serves without it; \`pnpm outrn refresh --list\` shows the jobs.
 EOF
 export OUTRN_WEB_ORIGINS="${OUTRN_WEB_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8081,http://127.0.0.1:8081}"
+# The refresh loop runs beside the API, in its process group: ctrl-c stops both.
+if [ -n "$served" ] && [ "${REFRESH:-1}" != "0" ]; then
+  pnpm -s outrn refresh 2>&1 | sed -u 's/^/[refresh] /' &
+fi
 HOST="$HOST" PORT="$PORT" exec pnpm --silent --filter @outrn/api start

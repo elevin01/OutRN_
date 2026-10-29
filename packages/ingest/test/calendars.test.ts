@@ -92,6 +92,12 @@ describe("calendar events, one at a time", () => {
     expect(baby).toMatchObject({ title: "Baby Lap Time", forKids: true, admission: "reservation", url: "https://suffolk.libcal.example/event/1" });
     expect(calendarEventInput(lib, LIBRARY[1]!, NOW, until)).toMatchObject({ kinds: ["live_music"], price: { free: true } });
     expect(calendarEventInput(lib, LIBRARY[6]!, NOW, until)).toMatchObject({ kinds: ["art"] });
+    // A tag for how to attend is not the title; one that says online still leaves the event out.
+    const titled = (title: string) => calendarEventInput(lib, event({ title, start: "2026-10-04T18:00:00.000Z" }), NOW, until);
+    expect(titled("[IN-PERSON] Needles at Noon (Hooks Welcome Also!)")).toMatchObject({ title: "Needles at Noon (Hooks Welcome Also!)" });
+    expect(titled("[HYBRID] Monet, Home, and Garden")).toMatchObject({ title: "Monet, Home, and Garden" });
+    expect(titled("(In Person) Chess Club")).toMatchObject({ title: "Chess Club" });
+    expect(titled("Knitting (in person)")).toMatchObject({ title: "Knitting (in person)" });
     // A stated cost; a price in passing ("members $5") is not one. An http link is left off, not the event.
     expect(calendarEventInput(FEEDS[1]!, TOWN[0]!, NOW, until)).toMatchObject({ price: { min: 5, currency: "USD" } });
     // "Free" with a condition is free for some: unknown, whatever the description says. Every amount named is the range.

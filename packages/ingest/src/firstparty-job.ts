@@ -407,7 +407,7 @@ export async function runFirstParty(db: Db, opts: RunOptions = {}): Promise<Firs
       `select f.id, f.venue_id, f.url, f.fetch_interval_h, f.auto, v.category = any($4::text[]) as lists_events from firstparty_sites f join venues v on v.id = f.venue_id
         where f.enabled and ($3::uuid is null or v.area_id = $3)
           and ($2 or f.last_fetched_at is null or f.last_fetched_at < now() - (f.fetch_interval_h || ' hours')::interval)
-        order by f.last_fetched_at nulls first, f.id limit $1`,
+        order by f.last_fetched_at nulls first, v.category = any($4::text[]) desc, f.id limit $1`,
       [opts.limit ?? 50, opts.force ?? false, areaId, [...EVENT_VENUES]],
     )
   ).rows;

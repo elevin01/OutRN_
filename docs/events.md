@@ -1,7 +1,14 @@
 # Events: what's happening
 
 OutRN pushes what is only happening now: fireworks, a band in the park, a street fair, a pop-up
-market. Events reach the engine from three places:
+market, a show tonight. `outrn refresh` keeps every live source current (`pnpm real` runs it), each
+converting its feed to the events file's shape below:
+
+- **NYC Parks** (NYC Open Data): the city parks' next two weeks, twice a day.
+- **Library and town calendars**: a reviewed list of iCalendar, The Events Calendar and CivicPlus feeds, daily.
+- **Ticketmaster and SeatGeek**: concerts, comedy, theatre and sports, every six hours, with a key each.
+
+Events also reach the engine from:
 
 - **A venue's own website**, read by the first-party job: The Events Calendar's REST API, an
   iCalendar feed it links, or its events page's `schema.org` JSON-LD (see the README). Their types

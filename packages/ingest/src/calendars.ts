@@ -99,6 +99,9 @@ const KIND_WORDS: readonly [RegExp, Interest][] = [
 const REGISTER_NOT_NEEDED = /\b(no registration|registration is not required|drop[- ]in)\b/i;
 const REGISTER = /\b(registration (?:is )?(?:required|requested|needed|necessary)|please register|register (?:online|in advance|below|here|to attend)|rsvp|sign[- ]?up (?:is )?required|tickets? (?:are )?required|space is limited)\b/i;
 
+/** A calendar's tag for how to attend, ahead of the title ("[IN-PERSON] Book Club", "[HYBRID] Talk"): says nothing on a card that only lists what you can go to. */
+const IN_PERSON_TAG = /^\s*[[(]\s*(?:in[- ]?person|hybrid|on[- ]?site)\s*[\])]\s*[:\-–]?\s*/i;
+
 /** Characters ingestEvents refuses in text: controls, and marks that change reading direction. */
 const UNSAFE = /[\u0000-\u001f\u007f-\u009f؜‎‏‪-‮⁦-⁩]/g;
 
@@ -137,9 +140,9 @@ export function calendarEventInput(feed: Pick<CalendarFeed, "id" | "venue">, e: 
   if (start > until) return { skip: "later" };
   if (e.allDay) return { skip: "all_day" };
   if (end && end.getTime() - start.getTime() > MAX_EVENT_DAYS * 86_400_000) return { skip: "long" };
-  const title = clip(e.title, 200);
+  if (ONLINE.test(e.title) || e.location.some((l) => ONLINE.test(l))) return { skip: "online" };
+  const title = clip(e.title.replace(IN_PERSON_TAG, ""), 200);
   if (!title) return { skip: "not_an_outing" };
-  if (ONLINE.test(title) || e.location.some((l) => ONLINE.test(l))) return { skip: "online" };
   if (NOT_AN_OUTING.test(title) || e.categories.some((c) => NOT_AN_OUTING_CATEGORY.test(c.trim()))) return { skip: "not_an_outing" };
   const about = [...e.categories, ...(feed.venue ? e.location : [])].join(" · ");
   const kinds = [...new Set(KIND_WORDS.filter(([re]) => re.test(e.categories.join(" · "))).map(([, k]) => k))].slice(0, 4);
