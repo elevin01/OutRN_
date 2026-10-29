@@ -1,11 +1,12 @@
 import type { PlaceDetails, PlaceFact, Provenance, TravelMode } from "@outrn/contracts";
-import { AS_OF_SQL, isFreshConfirmation, SURVEYED_AT_SQL, VERIFIED_AT_SQL } from "@outrn/core";
+import { AS_OF_SQL, isFreshConfirmation, SURVEYED_AT_SQL, VERIFIED_AT_SQL, type Category } from "@outrn/core";
 import type { Queryable } from "@outrn/db";
 import { describeFacts, hoursToday, loadNearbyParking, PARKING_SOURCE, sourceName, type FactRecord } from "@outrn/engine";
 import { evaluateHours, isHoursValue } from "@outrn/facts";
 import { labelOf } from "../config.js";
 import { ApiProblem, isUuid } from "../errors.js";
 import { ageLimitFrom, directionsUrl, linksFrom, parkingFrom, priceOf, subtypeFrom, textFrom, websiteUrl } from "../map/values.js";
+import { AERIAL_SOURCE, aerialAllowed, aerialOf } from "./aerial.js";
 import { loadPhotos, photoSources } from "./photos.js";
 import { attributionsFor } from "./recommendations.js";
 
@@ -100,6 +101,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
   // The nearest public parking, with its hours: there is no visit here to check them against.
   const parking = (await loadNearbyParking(q, [row.id])).get(row.id)?.[0];
   const photos = (await loadPhotos(q, [row.id], 10)).get(row.id) ?? [];
+  const aerial = (await aerialAllowed(q)) ? aerialOf(point, row.category as Category) : null;
   // Credit every source shown: the facts', and OSM's for the parking even when no fact came from OSM.
   const allSources = [...new Set([...Object.values(facts).flatMap((f) => f.sources), ...(parking ? [PARKING_SOURCE] : [])])];
   return {
@@ -111,6 +113,7 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
     location: point,
     address: address(tags),
     photos,
+    aerial,
     status: status === "operating" || status === "closed_temporarily" || status === "closed_permanently" ? status : "unknown",
     hoursNow,
     price: priceOf(facts["price"]),
@@ -123,6 +126,6 @@ export async function placeDetails(q: Queryable, id: string, opts: { clock?: () 
     },
     actions: { directionsUrls: Object.fromEntries(MODES.map((m) => [m, directionsUrl(point, m)])) as Record<TravelMode, string>, links: linksFrom(facts["links"]?.value, textFrom(facts["website"]?.value) ?? tags["website"] ?? tags["contact:website"] ?? null) },
     asOf: now.toISOString(),
-    attributions: await attributionsFor(q, [...allSources, ...(await photoSources(q, photos.length ? [row.id] : []))]),
+    attributions: await attributionsFor(q, [...allSources, ...(await photoSources(q, photos.length ? [row.id] : [])), ...(aerial ? [AERIAL_SOURCE] : [])]),
   };
 }

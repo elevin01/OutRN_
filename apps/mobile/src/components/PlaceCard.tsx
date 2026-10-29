@@ -8,7 +8,7 @@ import {
   travelLabel,
 } from "../lib/presentation";
 import { Copy, Eyebrow, Icon, Row, colors, s } from "./ui";
-import { PlaceArt } from "./PlaceArt";
+import { CardPhoto, cardPhotoCredit, useCardPhoto } from "./CardPhoto";
 export function RequiredNotes({
   item,
   light = false,
@@ -44,6 +44,8 @@ export function PlaceCard({
   index: number;
   featured?: boolean;
 }) {
+  const { current, fail } = useCardPhoto(item);
+  const credit = cardPhotoCredit(current);
   return (
     <Pressable
       accessibilityRole="button"
@@ -56,7 +58,7 @@ export function PlaceCard({
       }
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}
     >
-      {featured && <PlaceArt category={item.category.id} />}
+      {featured && <CardPhoto item={item} photo={current} onFail={fail} />}
       <View style={styles.body}>
         <Row style={s.between}>
           <Eyebrow>
@@ -88,8 +90,13 @@ export function PlaceCard({
               {travelLabel(item)} · {priceLabel(item.price)}
             </Copy>
           </View>
-          {!featured && <PlaceArt category={item.category.id} compact />}
+          {!featured && <CardPhoto item={item} photo={current} onFail={fail} compact />}
         </Row>
+        {credit && (
+          <Copy style={styles.credit} numberOfLines={1}>
+            {credit}
+          </Copy>
+        )}
         {featured && item.copy.sentence && <Copy>{item.copy.sentence}</Copy>}
         <RequiredNotes item={item} />
         <Row style={s.between}>
@@ -126,4 +133,5 @@ const styles = StyleSheet.create({
   },
   note: { fontSize: 14, lineHeight: 21, color: colors.accent },
   link: { color: colors.accent, fontWeight: "600", fontSize: 14 },
+  credit: { fontSize: 11, lineHeight: 15, color: colors.muted },
 });

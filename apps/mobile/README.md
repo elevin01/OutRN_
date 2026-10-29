@@ -63,9 +63,13 @@ Approved design, review fixes and current screenshots: [APPROVED.md](docs/APPROV
 
 Photos: a place's own freely licensed photos (contract 1.5 `photos`, from Wikimedia Commons) with
 their credit linked to the source. Without any, representative photos of the kind of place, labelled
-"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)).
-When none of its own loads, the representative ones, labelled the same way. Without those, no photo:
-never the category artwork in place of one. Category
+"Representative photo · not this place" with their credit ([sources](assets/photos/README.md)),
+and an aerial photo of its spot (contract 1.11 `aerial`, New York State's orthoimagery, labelled
+"Aerial view of this spot", loaded only from `orthos.its.ny.gov`): a park, a garden, a waterfront
+and the like lead with the aerial, other places with the representative photo. When none of its own
+loads, the same stand-ins. Cards on the Now list show the same picture, with a small "Aerial view"
+or "Representative" badge and a one-line credit; the category artwork shows there only when no
+picture loads. Category
 shortcuts across the top of the Now screen (All, Food, Coffee & sweets, Drinks, Outdoors, Art &
 culture, Movies & shows, Games & play, Books) narrow the search in one tap.
 DM Sans is bundled

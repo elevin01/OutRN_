@@ -36,6 +36,13 @@
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_fountain.jpg"
     }
   ],
+  "aerial": {
+    "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236371,4971385,-8235971,4971635&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+    "width": 800,
+    "height": 500,
+    "credit": "NYS ITS Geospatial Services orthoimagery",
+    "sourceUrl": "https://gis.ny.gov/orthoimagery"
+  },
   "status": "operating",
   "hoursNow": {
     "state": "open",

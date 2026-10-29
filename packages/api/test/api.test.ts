@@ -65,7 +65,7 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   it("lists areas and the filters a request may use, and labels every response with the contract version", async () => {
     const r = await call("GET", "/v1/areas");
     expect(r.status).toBe(200);
-    expect(r.headers.get("x-outrn-contract")).toBe("1.10.0");
+    expect(r.headers.get("x-outrn-contract")).toBe("1.11.0");
     const areas = AreasResponse.parse(r.json);
     expect(areas.areas.map((a) => a.id)).toEqual(expect.arrayContaining(["les", "bronxville"]));
     expect(areas.areas.find((a) => a.id === "bronxville")?.defaultTravelMode).toBe("drive");
@@ -466,7 +466,9 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const before16 = await search(next);
     expect(before16.items.map((i) => i.id)).toEqual(expected);
     expect([before16.request.cuisines, before16.items.map((i) => i.cuisines)]).toEqual([[], expected.map(() => [])]);
-    // Items a 1.4 API stored have no photos; a 1.3 API's name no parking; a 1.2 API's have no conditions either: that search computed none.
+    // Items a 1.10 API stored have no aerial photo; a 1.4 API's no photos; a 1.3 API's name no parking; a 1.2 API's have no conditions either: that search computed none.
+    await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'aerial') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
+    expect((await search(next)).items.map((i) => i.aerial)).toEqual(expected.map(() => null));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'photos') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
     expect((await search(next)).items.map((i) => i.photos)).toEqual(expected.map(() => []));
     await db.query(`update recommendation_snapshots set items = (select jsonb_agg(i - 'parking') from jsonb_array_elements(items) i) where run_id = $1`, [first.requestId]);
@@ -585,6 +587,29 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     const kitchen = PlaceDetails.parse((await call("GET", `/v1/places/${page.items.find((i) => i.name === "Forsyth Clinton Kitchen")!.placeId}`)).json);
     expect(kitchen.photos).toEqual([]);
     expect(kitchen.attributions).not.toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
+  });
+
+  it("gives every place in New York an aerial photo of its spot, credited; none while its source is switched off", async () => {
+    now = new Date("2026-10-03T18:00:00Z");
+    const page = await search({ areaId: "les", windowMinutes: 180 });
+    expect(page.items.length).toBeGreaterThan(0);
+    for (const i of page.items) {
+      expect(i.aerial, i.name).toMatchObject({ width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" });
+      expect(new URL(i.aerial!.url).host, i.name).toBe("orthos.its.ny.gov");
+    }
+    expect(page.attributions).toContain("Aerial photos: NYS ITS Geospatial Services orthoimagery");
+    const details = PlaceDetails.parse((await call("GET", `/v1/places/${page.items[0]!.placeId}`)).json);
+    expect(details.aerial).toEqual(page.items[0]!.aerial);
+    expect(details.attributions).toContain("Aerial photos: NYS ITS Geospatial Services orthoimagery");
+    await db.query(`update source_policies set kill_switch = true where id = 'nys_orthoimagery'`);
+    try {
+      const off = await search({ areaId: "les", windowMinutes: 180 });
+      expect(off.items.map((i) => i.aerial)).toEqual(off.items.map(() => null));
+      expect(off.attributions).not.toContain("Aerial photos: NYS ITS Geospatial Services orthoimagery");
+      expect(PlaceDetails.parse((await call("GET", `/v1/places/${page.items[0]!.placeId}`)).json).aerial).toBeNull();
+    } finally {
+      await db.query(`update source_policies set kill_switch = false where id = 'nys_orthoimagery'`);
+    }
   });
 
   it("says what each visit takes and lays out the plan; takeout is a quick stop", async () => {

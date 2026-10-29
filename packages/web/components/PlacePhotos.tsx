@@ -4,9 +4,9 @@ import { useState } from "react";
 import { photosToShow, type ShownPhoto } from "../lib/categories";
 
 /**
- * A place's photos with their credits, or representative ones labelled as such. When none of the
- * place's own loads, the representative ones; when none of those loads either (or there are none),
- * nothing: never the category's icon in place of a photo.
+ * A place's photos with their credits, or its stand-ins (an aerial view of its spot, representative
+ * photos of its kind) labelled as such. When none of the place's own loads, the stand-ins; when none
+ * of those loads either (or there are none), nothing: never the category's icon in place of a photo.
  */
 export function PlacePhotos({ photos, fallback, max, className }: { photos: readonly ShownPhoto[]; fallback: readonly ShownPhoto[]; max?: number; className?: string }) {
   const [failed, setFailed] = useState<string[]>([]);
@@ -20,7 +20,7 @@ export function PlacePhotos({ photos, fallback, max, className }: { photos: read
 function PhotoFigure({ photo, onFail }: { photo: ShownPhoto; onFail: (url: string) => void }) {
   return (
     <figure className="card-photo">
-      {/* A plain img: photos come from Wikimedia's servers with their own sizes; no optimizer proxy. */}
+      {/* A plain img: photos come from Wikimedia's or the state's servers with their own sizes; no optimizer proxy. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={(img) => {
@@ -34,7 +34,7 @@ function PhotoFigure({ photo, onFail }: { photo: ShownPhoto; onFail: (url: strin
         onError={() => onFail(photo.url)}
       />
       <figcaption>
-        {photo.kind === "representative" ? "Representative photo · not this place · " : "Photo: "}
+        {photo.kind === "representative" ? "Representative photo · not this place · " : photo.kind === "aerial" ? "Aerial view of this spot · " : "Photo: "}
         {photo.creditUrl ? (
           <a href={photo.creditUrl} target="_blank" rel="noopener noreferrer">
             {photo.credit}

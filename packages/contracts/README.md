@@ -10,7 +10,7 @@ against the base branch (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
 ## Routes
 
-All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.10.0`).
+All JSON. A non-2xx response is always `ApiError`. Every response carries `x-outrn-contract` (now `1.11.0`).
 
 | Route | Request | Response |
 | --- | --- | --- |
@@ -25,6 +25,11 @@ Ops routes need `Authorization: Bearer <OUTRN_OPS_TOKEN>` and are not for consum
 
 ## Changelog
 
+- **1.11.0** (additive). An image for every place:
+  - `RecommendationItem.aerial` and `PlaceDetails.aerial`: an aerial photo of the spot the place is at, from New York State's orthoimagery (`url`, `width`, `height`, `credit`, `sourceUrl`). Every place in New York has one; it is `null` outside the state (Greenwich, across the Hudson) and while its source is switched off.
+  - Show it labelled "Aerial view", with its credit, after the place's own photos (first for parks, gardens, waterfronts and the like), and only from `https://orthos.its.ny.gov`.
+  - A card with no photo of its own shows the aerial photo or a representative photo labelled as not this place, never a blank.
+  - Snapshots stored by a 1.10 API page with `aerial: null` on every item.
 - **1.10.0** (additive). Happening soon:
   - A request may ask for events only (`eventsOnly: true`): what is on, ranked as any search is (taste, age rules for a party with a minor, a walk-in pop-up joined late). It is for a "happening soon" nudge beside the main search; the apps run it with the same choices as the main search.
   - `ResolvedRequest.eventsOnly` says whether it did (`false` by default). Snapshots stored by a 1.9 API page with `eventsOnly: false`.

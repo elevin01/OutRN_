@@ -399,6 +399,14 @@ licensed photos (public domain, CC0, CC BY, CC BY-SA) are kept, each with the cr
 requires, and the app shows them from Wikimedia's image servers. A Wikidata or Commons answer that
 is an error (a rate limit, say) fails the run and changes nothing.
 
+Every place in New York also has an aerial photo of its spot (contract 1.11 `aerial`): New York
+State's orthoimagery (NYS ITS Geospatial Services, flown 2022–2025, 6 or 12 inch pixels), drawn by
+the state's server for a box centred on the place (`packages/api/src/service/aerial.ts`; source
+`nys_orthoimagery`, migration 0027). Nothing is fetched or stored: the API sends the URL. The apps
+show it labelled when a place has no photo of its own, so no card goes without a picture. Outside
+New York (Greenwich, across the Hudson; the state's line is in `ny-outline.ts`, generated from the
+Census Bureau's TIGERweb by `pnpm --filter @outrn/api ny-outline`) there is none.
+
 ## What is deliberately not here yet
 
 Foursquare OS Places connector (needs the export token; registered as disabled), Google Places/Routes

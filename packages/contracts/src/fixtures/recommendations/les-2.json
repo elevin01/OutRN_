@@ -62,6 +62,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236989,4970947,-8236829,4971047&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [
         {
           "id": "chinese",
@@ -181,6 +188,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236939,4972129,-8236779,4972229&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [
@@ -314,6 +328,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8235485,4970912,-8235325,4971012&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [
         {
           "id": "pizza",

@@ -63,6 +63,13 @@
         "distanceMetres": 74
       },
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8220368,5001974,-8220208,5002074&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [],
@@ -197,6 +204,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8219218,5001955,-8219058,5002055&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [],
@@ -318,6 +332,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8220717,5002973,-8220557,5003073&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [

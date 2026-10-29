@@ -1,4 +1,4 @@
-import type { Photo, RecommendationItem } from "@outrn/contracts";
+import type { Aerial, Photo, RecommendationItem } from "@outrn/contracts";
 import { CUISINE_CATEGORIES, DEFAULT_PARKING_BUFFER_MINUTES } from "@outrn/core";
 import { candidateInterests, caveatNotes, cuisinesOf, dietLevelsOf, dietsFromNameOnly, explain, hasFeature, PARKING_SOURCE, planSteps, reasonNotes, type Evaluation, type RequestContext } from "@outrn/engine";
 import { labelOf } from "../config.js";
@@ -13,7 +13,7 @@ const VISIT_LABEL: Record<string, string> = { dine_in: "Sit-down meal", counter:
  * Engine evaluation → public item. The engine's `Evaluation` never crosses the boundary: only what
  * the product needs, with estimates and unknowns kept explicit.
  */
-export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = []): RecommendationItem {
+export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [], aerial: Aerial | null = null): RecommendationItem {
   const c = e.candidate;
   const t = e.timing;
   if (e.class === "ineligible" || !t) throw new Error(`toItem: ${c.id} is ineligible and must not be shown`);
@@ -26,6 +26,7 @@ export function toItem(e: Evaluation, ctx: RequestContext, photos: Photo[] = [])
     name: c.name,
     placeName: c.venueName ?? c.name,
     photos: photos.slice(0, 3),
+    aerial,
     category: { id: c.category, label: labelOf(c.category) },
     subtype: subtypeFrom(c.facts.subtype?.value),
     cuisines: cuisineOptions(cuisinesOf(c, ctx.cuisines)),

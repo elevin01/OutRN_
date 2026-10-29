@@ -45,6 +45,13 @@
       "name": "Pitt Street Nightcap",
       "placeName": "Pitt Street Nightcap",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8237281,4970432,-8237121,4970532&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -162,6 +169,13 @@
       "name": "Broome Bar",
       "placeName": "Broome Bar",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236939,4972129,-8236779,4972229&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -284,6 +298,13 @@
       "name": "Ridge Bar",
       "placeName": "Ridge Bar",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8237747,4970091,-8237587,4970191&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"

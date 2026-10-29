@@ -62,3 +62,24 @@ describe("which photos a place shows", () => {
     expect(photosFor("Rex", "Arts centre", [], stock, remote)[0]!.alt).toBe("A representative photo of an arts centre, not Rex");
   });
 });
+
+describe("an aerial photo as a place's stand-in", () => {
+  const aerial = { url: "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=1,2,3,4&f=image", width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" };
+
+  it("stands in when a place has no photo of its own: first for a park, after the representative ones for a cafe", () => {
+    expect(photosFor("Seward Park", "Park", [], [], remote, { aerial, categoryId: "park" })).toEqual([
+      { key: aerial.url, source: `remote:${aerial.url}`, kind: "aerial", credit: aerial.credit, creditUrl: aerial.sourceUrl, alt: "An aerial view of where Seward Park is" },
+    ]);
+    expect(photosFor("Rex", "Cafe", [], stock, remote, { aerial, categoryId: "cafe" }).map((p) => p.kind)).toEqual(["representative", "aerial"]);
+    expect(photosFor("Seward Park", "Park", [], stock, remote, { aerial, categoryId: "park" }).map((p) => p.kind)).toEqual(["aerial", "representative"]);
+    // A place's own photos come first, alone.
+    expect(photosFor("Rex", "Cafe", [photo()], stock, remote, { aerial, categoryId: "cafe" }).map((p) => p.kind)).toEqual(["place"]);
+  });
+
+  it("loads only over https from the state's server, and none when the API gives none", () => {
+    for (const url of ["http://orthos.its.ny.gov/a", "https://orthos.its.ny.gov.evil.example/a", "https://user:pw@orthos.its.ny.gov/a", "https://upload.wikimedia.org/a.jpg", "file:///etc/hosts"]) {
+      expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: { ...aerial, url }, categoryId: "park" }), url).toEqual([]);
+    }
+    expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: null, categoryId: "park" })).toEqual([]);
+  });
+});

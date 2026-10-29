@@ -89,6 +89,8 @@ describe("fixtures cover every state a screen must handle", () => {
     ["hours not listed", () => facts.some((f) => f.attribute === "opening_hours" && f.provenance.evidence === "missing")],
     ["a card with the place's own photos, credited, and one without", () => items.some((i) => i.photos.length > 1 && i.photos.every((p) => p.credit.includes("via Wikimedia Commons"))) && items.some((i) => i.photos.length === 0)],
     ["place details with photos", () => placeList.some((p) => p.photos.length > 0)],
+    ["every card with a picture of the place: its own photos, or an aerial photo of its spot", () => items.length > 0 && items.every((i) => i.photos.length > 0 || i.aerial !== null)],
+    ["place details with an aerial photo, credited", () => placeList.some((p) => p.aerial?.credit === "NYS ITS Geospatial Services orthoimagery")],
     ["a place with parking nearby, and one without", () => placeList.some((p) => p.parkingNearby !== null) && placeList.some((p) => p.parkingNearby === null)],
     ["a place open now and one closed now", () => placeList.some((p) => p.hoursNow.state === "open") && placeList.some((p) => p.hoursNow.state === "closed")],
     ["an expired search with a restart", () => errors["cursor-expired"]?.body.error.restart !== undefined],

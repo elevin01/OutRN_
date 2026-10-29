@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Photo, Price, TravelMode, VenueLink } from "./common.js";
+import { Aerial, AgeLimit, Budget, IsoDateTime, LatLon, NearbyParking, Note, Option, Photo, Price, TravelMode, VenueLink } from "./common.js";
 
 /** POST /v1/recommendations — a short, ordered list of things that fit the time the user has. */
 
@@ -231,8 +231,13 @@ export const RecommendationItem = z.object({
   name: z.string(),
   /** The place's name (equal to `name` for a venue). */
   placeName: z.string(),
-  /** Up to 3 photos of the place, lead first. Empty when none is known: show the category's artwork. */
+  /**
+   * Up to 3 photos of the place, lead first. Empty when none is known: show the aerial photo, or a
+   * representative photo labelled as not this place; never a blank or the category's artwork.
+   */
   photos: z.array(Photo).max(3),
+  /** An aerial photo of the place's spot; null outside New York or while its source is switched off. */
+  aerial: Aerial.nullable(),
   category: Option,
   subtype: Option.nullable(),
   /**

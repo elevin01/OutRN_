@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { areas } from "@outrn/contracts/fixtures";
-import { categoryIconPath, groupOf, groupsFor, photosFor, photosToShow, representativeFor } from "./categories";
+import { categoryIconPath, fallbackFor, groupOf, groupsFor, photosFor, photosToShow, representativeFor } from "./categories";
 import { formFromResolved, hrefForRequest, requestFromQuery } from "./request";
 
 describe("category shortcuts on the web", () => {
@@ -71,5 +71,28 @@ describe("category shortcuts on the web", () => {
     const form = formFromResolved(resolved as unknown as Parameters<typeof formFromResolved>[0], areas);
     expect(form["categories"]).toBe("cinema,theatre");
     expect(form["category"]).toBe("");
+  });
+});
+
+describe("an aerial photo as a place's stand-in", () => {
+  const aerial = { url: "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=1,2,3,4&f=image", width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" };
+  const own = [{ url: "https://upload.wikimedia.org/wikipedia/commons/a.jpg", width: 960, height: 720, alt: null, credit: "Jane Doe, CC BY 4.0", author: "Jane Doe", license: "CC BY 4.0", licenseUrl: null, sourceUrl: "https://commons.wikimedia.org/wiki/File:A.jpg" }];
+
+  it("stands in when a place has no photo of its own: first for a park, after the representative ones for a cafe", () => {
+    expect(photosFor("Seward Park", { id: "park", label: "Park" }, [], aerial)).toEqual([{ url: aerial.url, kind: "aerial", credit: aerial.credit, creditUrl: aerial.sourceUrl, alt: "An aerial view of where Seward Park is" }]);
+    expect(photosFor("Rex", { id: "cafe", label: "Cafe" }, [], aerial).map((p) => p.kind)).toEqual(["representative", "representative", "aerial"]);
+    expect(fallbackFor("Seward Park", { id: "garden", label: "Garden" }, aerial)[0]!.kind).toBe("aerial");
+    // A place's own photos come first; the aerial waits in the fallback for when none of them loads.
+    const mine = photosFor("Rex", { id: "cafe", label: "Cafe" }, own, aerial);
+    expect(mine.map((p) => p.kind)).toEqual(["place"]);
+    expect(photosToShow(mine, fallbackFor("Rex", { id: "park", label: "Park" }, aerial), [mine[0]!.url]).map((p) => p.kind)).toEqual(["aerial"]);
+  });
+
+  it("loads only over https from the state's server, and none when the API gives none", () => {
+    for (const url of ["http://orthos.its.ny.gov/a", "https://orthos.its.ny.gov.evil.example/a", "https://user:pw@orthos.its.ny.gov/a", "https://upload.wikimedia.org/a.jpg", "data:image/png;base64,AAAA"]) {
+      expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, { ...aerial, url }), url).toEqual([]);
+    }
+    expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, null)).toEqual([]);
+    expect(fallbackFor("Seward Park", { id: "park", label: "Park" }, { ...aerial, sourceUrl: "javascript:alert(1)" })[0]).toMatchObject({ kind: "aerial", creditUrl: null });
   });
 });
