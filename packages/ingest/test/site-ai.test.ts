@@ -227,6 +227,11 @@ describe("a re-check's verdict", () => {
       ["cancelled", "CANCELLED: Anora (35mm) — Friday, October 30 at 7:00 PM", "Anora", "cancelled"],
       ["cancelled", "Anora Fri Oct 30 7pm cancelled due to illness; Wicked available", "Anora", "cancelled"],
       ["listed", "Now playing: Anora · Fri Oct 30 · 7 PM · $15 · Tickets available", "Anora", "listed"],
+      // The day and time in the listing itself, not in what follows its status.
+      ["sold_out", "Anora SOLD OUT; Wicked Fri Oct 30 7pm tickets available", "Anora", null],
+      ["cancelled", "Anora CANCELLED; Wicked Fri Oct 30 7pm tickets available", "Anora", null],
+      ["sold_out", "Anora Fri Oct 30 7pm SOLD OUT; contact the box office", "Anora", "sold_out"],
+      ["cancelled", "Anora Fri Oct 30 7pm CANCELLED; contact the box office", "Anora", "cancelled"],
     ] as const) expect(recheckVerdict({ status, quote: q }, p(q), at(title)), `${status} ${title}: ${q}`).toBe(want);
   });
 });

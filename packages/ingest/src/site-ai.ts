@@ -511,12 +511,16 @@ const LISTING_WORDS = new Set([
 ]);
 const listingWord = (w: string) => LISTING_WORDS.has(w) || /^(?:\d{1,4}|\d{1,2}(?:st|nd|rd|th|am|pm|a|p))$/.test(w);
 
-/** Whether a quote is this one listing: nothing but listing words beside the title, up to the status (what follows that explains it: "cancelled due to illness"). */
-function oneListing(q: string, at: { start: number; end: number }, status?: RegExp): boolean {
-  const after = q.slice(at.end);
-  const m = status?.exec(after);
-  const rest = `${q.slice(0, at.start)} ${m ? after.slice(0, m.index + m[0].length) : after}`;
-  return rest.split(new RegExp(SEP, "u")).filter(Boolean).every(listingWord);
+/**
+ * The one listing a quote is, when it is one: from its start through the title and on to its status,
+ * nothing but listing words beside the title (what follows the status explains it: "cancelled due to
+ * illness"). Null when another word may be another event's.
+ */
+function listingOf(q: string, at: { start: number; end: number }, status?: RegExp): string | null {
+  const m = status?.exec(q.slice(at.end));
+  const listing = m ? q.slice(0, at.end + m.index + m[0].length) : q;
+  const beside = `${q.slice(0, at.start)} ${listing.slice(at.end)}`;
+  return beside.split(new RegExp(SEP, "u")).filter(Boolean).every(listingWord) ? listing : null;
 }
 
 /** Whether every day a quote speaks of is this one: no other date, weekday, ordinal, or tonight/tomorrow that is another day. */
@@ -532,9 +536,9 @@ function onlyThisDay(q: string, date: string, today: string): boolean {
 
 /**
  * What a re-check may conclude about one showing, only on its page's own words: the quote is on the
- * page, names the event (its whole title, see quoteNamesTitle), its day and its start time, and is that
- * one listing (no other time, day or event's words: oneListing), so it can't say another's status. A negated status
- * phrase is set aside, not taken as the whole quote's verdict. Cancelled or sold out; listed (going
+ * page and is this one listing (listingOf): its whole title (see quoteNamesTitle), its day and start
+ * time in the listing itself, and no other time, day or event's words, so it can't say another's
+ * status. A negated status phrase is set aside, not taken as the whole quote's verdict. Cancelled or sold out; listed (going
  * ahead, so an earlier mark of ours is cleared); or nothing, which changes nothing.
  */
 export function recheckVerdict(raw: unknown, page: string, target: { title: string; time: string; date: string; today: string }): "cancelled" | "sold_out" | "listed" | null {
@@ -542,14 +546,17 @@ export function recheckVerdict(raw: unknown, page: string, target: { title: stri
   if (!a || typeof a.status !== "string" || typeof a.quote !== "string") return null;
   const quote = norm(a.quote);
   if (quote.length < 4 || !page.includes(quote)) return null;
+  const off = a.status === "cancelled" || a.status === "postponed";
+  const said = off ? OFF : a.status === "sold_out" ? FULL : undefined;
+  if (!said && a.status !== "listed") return null;
   const affirmative = quote.replace(NEGATED, " ");
+  if (said ? !said.test(affirmative) : OFF.test(affirmative) || FULL.test(affirmative)) return null;
   const at = titleAt(affirmative, target.title);
-  if (!at || !quoteHasTime(quote, target.time) || !quoteHasDay(quote, target.date, target.today)) return null;
+  const listing = at && listingOf(affirmative, at, said);
+  // Its day and time in that listing itself, not in what follows its status; and no other anywhere.
+  if (!listing || !quoteHasTime(listing, target.time) || !quoteHasDay(listing, target.date, target.today)) return null;
   if (timesIn(quote) > 1 || !onlyThisDay(quote, target.date, target.today)) return null;
-  if ((a.status === "cancelled" || a.status === "postponed") && OFF.test(affirmative) && oneListing(affirmative, at, OFF)) return "cancelled";
-  if (a.status === "sold_out" && FULL.test(affirmative) && oneListing(affirmative, at, FULL)) return "sold_out";
-  if (a.status === "listed" && !OFF.test(affirmative) && !FULL.test(affirmative) && oneListing(affirmative, at)) return "listed";
-  return null;
+  return off ? "cancelled" : said ? "sold_out" : "listed";
 }
 
 /** Retires our earlier mark on an event (off or full), leaving every other source's facts as they were. */
