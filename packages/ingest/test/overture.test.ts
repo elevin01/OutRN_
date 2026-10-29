@@ -408,4 +408,31 @@ describe.skipIf(!available)("an older Overture release never undoes a newer one"
     expect(older.newPlaces).toMatchObject({ added: 0, kept: 0, removed: 0 });
     expect(await overtureFacts("Mochi Corner")).toEqual([]);
   });
+
+  it("a newer read keeps what it spoke for after its own area stops holding the venue", async () => {
+    // Bronxville's (synthetic) snapshot holds two LES bars as well: Norfolk Bar and Broome Bar.
+    const fixture = JSON.parse(readFileSync(FIXTURE, "utf8")) as { elements: Array<{ id: number; tags?: Record<string, string>; lat?: number; lon?: number }> };
+    const pair = fixture.elements.filter((e) => e.tags?.["name"] === "Norfolk Bar" || e.tags?.["name"] === "Broome Bar");
+    const both = join(DIR, "bronxville-osm.json");
+    writeFileSync(both, JSON.stringify({ elements: pair, outrn_extent: { lat: 40.72694, lon: -73.99354, radius_m: 80 } }));
+    expect((await ingestOsmArea(db, { areaSlug: "bronxville", fromFile: both })).venues.created).toBe(0);
+    const at = (name: string) => pair.find((e) => e.tags?.["name"] === name)!;
+    const norfolk = place({ id: "ovt-norfolk", name: "Norfolk Bar", category: "bar", lat: at("Norfolk Bar").lat!, lon: at("Norfolk Bar").lon!, ...SIGNAL });
+    const broome = place({ id: "ovt-broome-bar", name: "Broome Bar", category: "bar", lat: at("Broome Bar").lat!, lon: at("Broome Bar").lon!, ...SIGNAL });
+    const closed = { ...norfolk, status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-09-20T00:00:00.000Z", updatedAt: "2026-09-20T00:00:00.000Z" };
+    // LES reads newer releases: Norfolk Bar closed; then Broome Bar gone from Overture, its claims withdrawn.
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-norfolk", [closed, broome], "2026-11-05.0"), newPlaces: false });
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-norfolk-2", [closed], "2026-11-06.0"), newPlaces: false });
+    expect((await current("Norfolk Bar", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    expect(await overtureFacts("Broome Bar")).toEqual([]);
+    // LES's next OSM snapshot no longer holds either bar; Bronxville's still does, so both stay venues.
+    const les = JSON.parse(readFileSync(join(DIR, "les-with-bakery.json"), "utf8")) as { elements: Array<{ id: number }> };
+    const without = join(DIR, "les-without-bars.json");
+    writeFileSync(without, JSON.stringify({ ...les, elements: les.elements.filter((e) => !pair.some((x) => x.id === e.id)) }));
+    await ingestOsmArea(db, { areaSlug: "les", fromFile: without });
+    // Bronxville replays the earlier release, where both are open: neither the closure nor the withdrawal is undone.
+    await ingestOverture(db, { areaSlug: "bronxville", fromFile: capture("bronxville-bars-older", [norfolk, broome]), newPlaces: false });
+    expect((await current("Norfolk Bar", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    expect(await overtureFacts("Broome Bar")).toEqual([]);
+  });
 });

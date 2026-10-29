@@ -554,11 +554,13 @@ export function releaseNewer(a: string, b: string): boolean {
   return da > db || (da === db && (Number(na) || 0) > (Number(nb) || 0));
 }
 
-/** An Overture read of a newer release than the one being read: its box, its area, and whether it took new places. */
+/** An Overture read of a newer release than the one being read: its box, its area, whether it took new places, and the venues it spoke for. */
 interface NewerRead {
   bbox: Bbox;
   areaId: string | null;
   newPlaces: boolean;
+  /** The venues it matched or withdrew, as the run recorded them; null for a run from before they were. */
+  venues: string[] | null;
 }
 
 /**
@@ -568,8 +570,8 @@ interface NewerRead {
  * by September, nor is a place October no longer has brought back.
  */
 async function newerReads(q: Queryable, release: string): Promise<NewerRead[]> {
-  const r = await q.query<{ release: string | null; bbox: Partial<Bbox> | null; area_id: string | null; new_places: boolean | null }>(
-    `select params->>'release' as release, params->'bbox' as bbox, area_id, (params->>'new_places')::boolean as new_places
+  const r = await q.query<{ release: string | null; bbox: Partial<Bbox> | null; area_id: string | null; new_places: boolean | null; venues: unknown }>(
+    `select params->>'release' as release, params->'bbox' as bbox, area_id, (params->>'new_places')::boolean as new_places, params->'venues' as venues
        from ingestion_runs where source_id = 'overture' and status = 'succeeded'`,
   );
   const out: NewerRead[] = [];
@@ -578,7 +580,30 @@ async function newerReads(q: Queryable, release: string): Promise<NewerRead[]> {
     if (x.release === null || !releaseNewer(x.release, release) || !b) continue;
     if (![b.west, b.south, b.east, b.north].every((n) => typeof n === "number" && Number.isFinite(n))) continue;
     // Runs from before the flag was recorded took new places, the default.
-    out.push({ bbox: b as Bbox, areaId: x.area_id, newPlaces: x.new_places !== false });
+    const venues = Array.isArray(x.venues) && x.venues.every((v) => typeof v === "string") ? (x.venues as string[]) : null;
+    out.push({ bbox: b as Bbox, areaId: x.area_id, newPlaces: x.new_places !== false, venues });
+  }
+  return out;
+}
+
+/**
+ * The venues newer reads spoke for. A run records its own; one from before runs did is taken to have
+ * spoken for its area's venues inside its box as the area holds them now. A venue merged since is
+ * held under the venue it was merged into.
+ */
+async function venuesSpokenFor(q: Queryable, newer: readonly NewerRead[]): Promise<Set<string>> {
+  const out = new Set<string>();
+  for (const r of newer) for (const id of r.venues ?? []) out.add(id);
+  const legacy = newer.filter((r) => r.venues === null);
+  for (const areaId of new Set(legacy.map((r) => r.areaId).filter((x): x is string => x !== null))) {
+    const boxes = legacy.filter((r) => r.areaId === areaId).map((r) => r.bbox);
+    for (const v of await areaVenues(q, areaId)) if (boxes.some((b) => inside(b, v, OVERTURE_MATCH_M))) out.add(v.id);
+  }
+  // Follow merges a few hops: facts move to the venue merged into.
+  for (let hop = 0, from = [...out]; hop < 5 && from.length; hop++) {
+    const next = (await q.query<{ merged_into: string }>(`select merged_into from venues where id = any($1::uuid[]) and merged_into is not null`, [from])).rows.map((x) => x.merged_into).filter((id) => !out.has(id));
+    for (const id of next) out.add(id);
+    from = next;
   }
   return out;
 }
@@ -900,14 +925,11 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
     // an Overture place is the new-place step's: matching it to its own place would retract its name.
     const considered = venues.filter((v) => !madeFromPlaces.has(v.id) && inside(capture.bbox, v, OVERTURE_MATCH_M));
     const covered = await coveredElsewhere(db, considered.map((v) => v.id), now);
-    // What a newer release's read spoke for: the venues it matched (its area's, inside its box by the
-    // match margin, as it judged them) and the places in its box when it took new places.
+    // What a newer release's read spoke for: the venues it matched or withdrew, as it recorded them (an
+    // area's snapshot can drop a venue afterwards while another area still holds it), and the places in
+    // its box when it took new places.
     const newer = await newerReads(db, capture.release);
-    const newerVenues = new Set<string>();
-    for (const areaId of new Set(newer.map((r) => r.areaId).filter((x): x is string => x !== null))) {
-      const boxes = newer.filter((r) => r.areaId === areaId).map((r) => r.bbox);
-      for (const v of await areaVenues(db, areaId)) if (boxes.some((b) => inside(b, v, OVERTURE_MATCH_M))) newerVenues.add(v.id);
-    }
+    const newerVenues = await venuesSpokenFor(db, newer);
     const newerPlaces = (p: { lat: number; lon: number }) => newer.some((r) => r.newPlaces && inside(r.bbox, p, 0));
     const summary: OvertureIngestSummary = {
       runId,
@@ -921,6 +943,8 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
       read,
       newPlaces: null,
     };
+    // The venues this read matched or withdrew, recorded on its run for the reads of older releases after it.
+    const spokeFor: string[] = [];
     await withTx(db, async (tx) => {
       const changed: string[] = [];
       const matchedPlaces = new Set<string>();
@@ -931,6 +955,7 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
         // An older read than the one that last spoke for it (another area's, taken later) neither
         // rewrites nor withdraws its claims: a closure seen in October is not undone by September.
         if (newerVenues.has(v.id)) continue;
+        spokeFor.push(v.id);
         const has = covered.get(v.id);
         const claims = claimsFor({ nameKey: v.name_key, category: v.category }, matches, { website: has?.has("website") ?? false, phone: has?.has("phone") ?? false });
         for (const c of claims) {
@@ -960,6 +985,7 @@ export async function ingestOverture(db: Db, opts: OvertureIngestOptions): Promi
         for (const r of w.rejected) log(`  ${v.id}: ${r.attribute} rejected: ${r.reason}`);
         if (w.inserted || w.superseded || retracted) changed.push(v.id);
       }
+      await tx.query(`update ingestion_runs set params = params || jsonb_build_object('venues', $2::jsonb) where id = $1`, [runId, JSON.stringify(spokeFor)]);
       if (opts.newPlaces !== false) {
         const np = await addNewPlaces(tx, { area, capture, matched: matchedPlaces, known, runId, now, log, newerSpoke: newerPlaces, areaBox: liveReadBox(venues, madeFromPlaces) });
         summary.newPlaces = np.summary;
