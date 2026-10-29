@@ -23,8 +23,13 @@ describe("what a quote must say", () => {
     expect(quoteHasTime("Sat 12 noon matinee", "12:00")).toBe(true);
     expect(quoteHasTime("Fri 8pm", "19:00")).toBe(false);
     expect(quoteHasTime("Fri 7am", "19:00")).toBe(false);
-    // 17:30 is not 7:30.
+    // 17:30 is not 7:30, and a morning is not an evening.
     expect(quoteHasTime("Fri 17:30", "19:30")).toBe(false);
+    expect(quoteHasTime("Friday Oct 30 at 7:30 AM", "19:30")).toBe(false);
+    expect(quoteHasTime("Friday Oct 30 at 7:30 PM", "19:30")).toBe(true);
+    expect(quoteHasTime("Friday Oct 30 at 7:30", "19:30")).toBe(true);
+    expect(quoteHasTime("Sunday 10:30 a.m. brunch screening", "10:30")).toBe(true);
+    expect(quoteHasTime("Sunday 10:30 p.m.", "10:30")).toBe(false);
   });
 
   it("the day: its date's number, its weekday, or tonight/tomorrow when it is", () => {
@@ -37,6 +42,15 @@ describe("what a quote must say", () => {
     expect(quoteHasDay("Oct 31 8pm", "2026-10-30", "2026-10-29")).toBe(false);
     // A time's minutes are not a day.
     expect(quoteHasDay("Doors 7:30pm", "2026-10-30", "2026-10-29")).toBe(false);
+    // A date written out decides, whatever weekday the quote also names.
+    expect(quoteHasDay("Friday Oct 30 at 7pm", "2026-11-06", "2026-10-29")).toBe(false);
+    expect(quoteHasDay("Friday Oct 30 at 7pm", "2026-10-30", "2026-10-29")).toBe(true);
+    expect(quoteHasDay("Friday 30 October, 7pm", "2026-10-30", "2026-10-29")).toBe(true);
+    expect(quoteHasDay("11/6 7pm", "2026-10-30", "2026-10-29")).toBe(false);
+    // A weekday that is not this day's is against it.
+    expect(quoteHasDay("Saturday 8pm", "2026-10-30", "2026-10-29")).toBe(false);
+    expect(quoteHasDay("Fri & Sat 8pm", "2026-10-31", "2026-10-29")).toBe(true);
+    expect(quoteHasDay("on the 30th at 8pm", "2026-10-30", "2026-10-29")).toBe(true);
   });
 
   it("a price only as the page writes it", () => {
@@ -79,20 +93,40 @@ describe("an event Claude read, checked against the page", () => {
     expect(checkReadEvent(read({ quote: "Thu Oct 29 · 7:00 PM" }), ctx)).toEqual({ skip: "quote_not_on_page" });
     expect(checkReadEvent(read({ time: "20:30" }), ctx)).toEqual({ skip: "no_time" });
     expect(checkReadEvent(read({ date: "2026-10-28" }), ctx)).toEqual({ skip: "no_day" });
-    expect(checkReadEvent(read({ title: "The Brutalist (70mm)", date: "2026-11-21", time: "14:00", quote: "Saturday Oct 31 at 2pm" }), ctx)).toEqual({ skip: "out_of_range" });
+    // What the quote says against it: the morning for an evening show, a date a week off.
+    const page2 = { ...ctx, page: norm("Anora · Friday Oct 30 at 7:30 AM · Friday Oct 30 at 7pm") };
+    expect(checkReadEvent(read({ date: "2026-10-30", quote: "Friday Oct 30 at 7:30 AM" }), page2)).toEqual({ skip: "no_time" });
+    expect(checkReadEvent(read({ date: "2026-11-06", time: "19:00", quote: "Friday Oct 30 at 7pm" }), page2)).toEqual({ skip: "no_day" });
+    expect(checkReadEvent(read({ date: "2026-10-30", time: "19:00", quote: "Friday Oct 30 at 7pm" }), page2)).toMatchObject({ start: "2026-10-30T23:00:00.000Z" });
+    expect(checkReadEvent(read({ title: "The Brutalist (70mm)", date: "2026-11-21", time: "14:00", quote: "Saturday Oct 31 at 2pm" }), ctx)).toEqual({ skip: "no_day" });
+    // More than two weeks ahead of when it is read.
+    expect(checkReadEvent(read({ title: "The Brutalist (70mm)", date: "2026-10-31", time: "14:00", quote: "Saturday Oct 31 at 2pm" }), { ...ctx, now: new Date("2026-10-01T16:00:00Z") })).toEqual({ skip: "out_of_range" });
     expect(checkReadEvent(read({ date: "Thursday" }), ctx)).toEqual({ skip: "unreadable" });
     expect(checkReadEvent(null, ctx)).toEqual({ skip: "unreadable" });
   });
 });
 
 describe("a re-check's verdict", () => {
-  const page = norm("Anora — Fri Oct 30 9:45 PM — SOLD OUT. Saturday's 2pm show is cancelled due to a projector fault.");
-  it("cancelled or sold out only in the page's own words", () => {
-    expect(recheckVerdict({ status: "sold_out", quote: "Fri Oct 30 9:45 PM — SOLD OUT" }, page)).toBe("sold_out");
-    expect(recheckVerdict({ status: "cancelled", quote: "Saturday's 2pm show is cancelled" }, page)).toBe("cancelled");
-    expect(recheckVerdict({ status: "cancelled", quote: "Fri Oct 30 9:45 PM" }, page)).toBeNull();
-    expect(recheckVerdict({ status: "sold_out", quote: "SOLD OUT tonight" }, page)).toBeNull();
-    expect(recheckVerdict({ status: "listed", quote: "Anora" }, page)).toBeNull();
+  const page = norm("Anora — Fri Oct 30 9:45 PM — SOLD OUT. Wicked — Sat Oct 31 2pm — cancelled due to a projector fault. Conclave Sat 4pm is not cancelled. Anora Sat 7pm is not sold out: tickets available.");
+  const anora = { title: "Anora", time: "21:45" };
+  it("cancelled or sold out only in the page's own words, for this event at its time", () => {
+    expect(recheckVerdict({ status: "sold_out", quote: "Anora — Fri Oct 30 9:45 PM — SOLD OUT" }, page, anora)).toBe("sold_out");
+    expect(recheckVerdict({ status: "cancelled", quote: "Wicked — Sat Oct 31 2pm — cancelled due to a projector fault" }, page, { title: "Wicked", time: "14:00" })).toBe("cancelled");
+    // Not this event: another show's cancellation on the same page, or this one at another time.
+    expect(recheckVerdict({ status: "cancelled", quote: "Wicked — Sat Oct 31 2pm — cancelled due to a projector fault" }, page, anora)).toBeNull();
+    expect(recheckVerdict({ status: "sold_out", quote: "Anora — Fri Oct 30 9:45 PM — SOLD OUT" }, page, { title: "Anora", time: "19:00" })).toBeNull();
+    // Words that say it is not.
+    expect(recheckVerdict({ status: "cancelled", quote: "Conclave Sat 4pm is not cancelled" }, page, { title: "Conclave", time: "16:00" })).toBeNull();
+    expect(recheckVerdict({ status: "sold_out", quote: "Anora Sat 7pm is not sold out" }, page, { title: "Anora", time: "19:00" })).toBeNull();
+    // Not on the page, or a status the words don't carry.
+    expect(recheckVerdict({ status: "sold_out", quote: "Anora 9:45 PM SOLD OUT tonight" }, page, anora)).toBeNull();
+    expect(recheckVerdict({ status: "cancelled", quote: "Anora — Fri Oct 30 9:45 PM" }, page, anora)).toBeNull();
+  });
+
+  it("listed again, only for this event at its time, and never where the words say off or full", () => {
+    expect(recheckVerdict({ status: "listed", quote: "Anora Sat 7pm is not sold out: tickets available" }, page, { title: "Anora", time: "19:00" })).toBe("listed");
+    expect(recheckVerdict({ status: "listed", quote: "Anora — Fri Oct 30 9:45 PM — SOLD OUT" }, page, anora)).toBeNull();
+    expect(recheckVerdict({ status: "listed", quote: "Anora Sat 7pm is not sold out" }, page, anora)).toBeNull();
   });
 });
 
@@ -218,14 +252,27 @@ describe.skipIf(!available)("reading pages with Claude", () => {
       now: new Date(NOW.getTime() + 2 * 3_600_000),
       env: ENV,
       fetcher: fetcher({ "https://www.broomecinema.com/now-playing": html(PAGE) }),
-      ask: asker({ status: "sold_out", quote: "Fri Oct 30 · 9:45 PM · $15 · SOLD OUT" }, 0.002),
+      ask: asker({ status: "sold_out", quote: "Anora Thu Oct 29 · 7:30 PM · $15 Fri Oct 30 · 9:45 PM · $15 · SOLD OUT" }, 0.002),
     });
     expect([s.events, s.checked, s.marked.sold_out]).toEqual([1, 1, 1]);
-    const f = (await db.query<{ value: unknown; source_ids: string[] }>(`select f.value, f.source_ids from current_facts f join occurrences o on o.id = f.subject_id where f.subject_kind = 'occurrence' and f.attribute = 'admission_status' and o.recurrence_key like 'site_ai:%'`)).rows[0];
-    expect(f).toEqual({ value: { status: "sold_out" }, source_ids: ["site_ai"] });
+    const status = async () => (await db.query<{ value: unknown; source_ids: string[] }>(`select f.value, f.source_ids from current_facts f join occurrences o on o.id = f.subject_id where f.subject_kind = 'occurrence' and f.attribute = 'admission_status' and o.recurrence_key like 'site_ai:%'`)).rows;
+    expect(await status()).toEqual([{ value: { status: "sold_out" }, source_ids: ["site_ai"] }]);
     // Checked once: not again within 8 hours.
     const again = await recheckEventsWithClaude(db, { now: new Date(NOW.getTime() + 3 * 3_600_000), env: ENV, fetcher: fetcher({}), ask: asker({ status: "listed", quote: "" }) });
     expect(again.events).toBe(0);
+    // Nine hours on, tickets are back: the page lists it with no word of being full, and our mark goes.
+    const reopened = `Now Playing\nAnora\nFri Oct 30 · 9:45 PM · $15 · Tickets available`;
+    await db.query(`delete from firstparty_hosts`);
+    const back = await recheckEventsWithClaude(db, { now: new Date(NOW.getTime() + 11 * 3_600_000), env: ENV, fetcher: fetcher({ "https://www.broomecinema.com/now-playing": html(reopened) }), ask: asker({ status: "listed", quote: "Anora Fri Oct 30 · 9:45 PM · $15 · Tickets available" }, 0.002) });
+    expect(back.cleared).toBe(1);
+    expect(await status()).toEqual([]);
+    // And called off after that: cancelled, the one mark of ours.
+    const off = `Now Playing\nAnora\nFri Oct 30 · 9:45 PM · CANCELLED`;
+    await db.query(`delete from firstparty_hosts`);
+    await db.query(`delete from ai_rechecks`);
+    const cancelled = await recheckEventsWithClaude(db, { now: new Date(NOW.getTime() + 12 * 3_600_000), env: ENV, fetcher: fetcher({ "https://www.broomecinema.com/now-playing": html(off) }), ask: asker({ status: "cancelled", quote: "Anora Fri Oct 30 · 9:45 PM · CANCELLED" }, 0.002) });
+    expect(cancelled.marked.cancelled).toBe(1);
+    expect(await status()).toEqual([{ value: { status: "cancelled" }, source_ids: ["site_ai"] }]);
   });
 
   it("refuses without a key, and while the source is switched off", async () => {

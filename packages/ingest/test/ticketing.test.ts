@@ -117,6 +117,16 @@ describe.skipIf(!available)("ticketed events", () => {
     expect((await occurrence("ticketmaster:tm-1"))!.status).toBe("withdrawn");
   });
 
+  it("a full read that lists nothing at all is the area's listing too: what it had is withdrawn", async () => {
+    expect((await occurrence("ticketmaster:tm-2"))!.status).toBe("scheduled");
+    const s = await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW, fromFile: capture("ticketmaster", []) });
+    expect(s.withdrawn).toBe(1);
+    expect((await occurrence("ticketmaster:tm-2"))!.status).toBe("withdrawn");
+    // One saved for another area, or not every page, withdraws nothing here.
+    await ingestTicketedEvents(db, { source: "seatgeek", areaSlug: "les", now: NOW, fromFile: capture("seatgeek", [], { area: "bronxville" }) });
+    expect((await occurrence("seatgeek:sg-2"))!.status).toBe("scheduled");
+  });
+
   it("refuses to run while the source is switched off, or live without its key", async () => {
     await db.query(`update source_policies set enabled = false where id = 'seatgeek'`);
     try {

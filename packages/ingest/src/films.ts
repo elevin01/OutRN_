@@ -24,8 +24,10 @@ export const TMDB_KEY = "TMDB_API_KEY";
 const PREFIX = /^\s*(?:(?:free\s+)?(?:outdoor\s+)?(?:movie|film|cinema|screening)s?(?:\s+(?:night|nite|club|series|under the stars|on the (?:lawn|green|pier|beach)))?|family movie night|summer movies?|sneak preview|special screening|opening night|members'? screening)\s*[:\-–|]\s*/i;
 /** Wherever they are: what is in brackets, and how it is shown ("(35mm)", "in 70mm", "[Open Caption]"). */
 const PRINT = /\s*(?:\([^)]*\)|\[[^\]]*\]|\b(?:in\s+)?(?:35|70|16)\s?mm\b|\bimax\b|\b3d\b|\b4k\b|\bopen caption(?:ed)?\b|\bsing-?along\b|\bdouble feature\b)/gi;
-/** At the end: what follows a dash or a plus, or a colon's Q&A ("The Brutalist - with director Q&A", "+ Q&A"). */
-const TRAILER = /\s*(?:\s[-–|+]\s.*|:\s*(?:q\s*&\s*a|in person|with\b).*)$/i;
+/** What a screening adds after its film: a talk, a guest, an introduction, a format. Never a film's own subtitle. */
+const TALK = String.raw`(?:q\s*&\s*a|in person|with\s+(?:the\s+|its\s+)?(?:director|filmmakers?|cast|writer|star|actors?|special guests?|guests?)|intro(?:duction|duced by)?|discussion|conversation|talkback|panel|live score|sneak preview|preview|premiere|anniversary|restoration|director'?s cut|members'? screening|double feature|sing-?along)`;
+/** At the end: such an addition after a dash, a plus or a colon ("The Brutalist - with director Q&A", "+ Q&A", ": Q&A with the cast"). */
+const TRAILER = new RegExp(String.raw`\s*(?:\s[-–|+]\s|:\s*)${TALK}.*$`, "i");
 
 const key = (t: string) =>
   t
@@ -36,8 +38,8 @@ const key = (t: string) =>
 
 /**
  * The keys a title is matched by, closest first: the title with its series' prefix and print set
- * aside, then that without what trails a dash or a plus. A film's own subtitle stays in the first
- * ("Mission: Impossible – The Final Reckoning"), a talk after leaves in the second.
+ * aside, then that without a talk or a guest after it. A film's own subtitle is never set aside
+ * ("Mission: Impossible – Dead Reckoning" is not "Mission: Impossible"); a Q&A after it is.
  */
 export function filmTitleKeys(title: string): string[] {
   const t = title.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(PREFIX, "");
@@ -103,7 +105,8 @@ export async function refreshFilmPopularity(db: Db, opts: FilmsRefreshOptions = 
   const popular = popularFilms(capture.films);
   log(`${capture.films.length} films now · the ${Math.min(POPULAR_FILMS, capture.films.length)} most popular: ${capture.films.slice(0, 5).map((f) => f.title).join(", ")}…`);
 
-  const runId = await startRun(db, { sourceId: "tmdb", kind: "films_now", params: { films: capture.films.length } });
+  // A replay is not news: outrn refresh counts only live reads (kind <> 'replay').
+  const runId = await startRun(db, { sourceId: "tmdb", kind: opts.fromFile ? "replay" : "films_now", params: { films: capture.films.length } });
   try {
     const s = await withTx(db, async (tx) => {
       const screenings = (

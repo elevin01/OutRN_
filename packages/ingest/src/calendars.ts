@@ -433,7 +433,7 @@ export async function ingestCalendars(db: Db, opts: CalendarsIngestOptions = {})
       complete = false;
     }
     if (!events.length && !complete) continue;
-    summary.areas.push(await ingestEvents(db, { source: "calendars", events }, { areaSlug: s.area.slug, now, actor: "calendars", complete }));
+    summary.areas.push(await ingestEvents(db, { source: "calendars", events }, { areaSlug: s.area.slug, now, actor: "calendars", complete, replay: opts.fromFile !== undefined }));
   }
   return summary;
 }

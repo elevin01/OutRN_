@@ -183,6 +183,8 @@ export interface IngestEventsOptions {
    * happen or neither does.
    */
   afterWrite?: (tx: Queryable, written: readonly WrittenEvent[]) => Promise<void>;
+  /** The events come from a saved read (`--from-file`), not the source now: the run says so, and is not news (see outrn refresh). */
+  replay?: boolean;
 }
 
 /** An event as ingestEvents wrote it. */
@@ -202,7 +204,7 @@ export async function ingestEvents(db: Db, file: unknown, opts: IngestEventsOpti
   const area = await getArea(db, opts.areaSlug);
   const { radiusM } = ingestExtentFor(area, await loadParkingRule(db, area.slug));
   const center = { lat: Number(area.lat), lon: Number(area.lon) };
-  const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: "events", params: { events: events.length } });
+  const runId = await startRun(db, { sourceId: source, areaId: area.id, kind: opts.replay ? "replay" : "events", params: { events: events.length } });
   const summary: EventsSummary = { runId, source, area: area.slug, events: events.length, written: 0, sitesCreated: 0, withdrawn: 0, rejected: [] };
   try {
     const checked: Checked[] = [];

@@ -1,7 +1,17 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import pg from "pg";
 import { testDatabaseAvailable, reset } from "@outrn/db";
+import { FetchFailed } from "../../sources/src/fetch.js";
+import { refreshFilmPopularity } from "../src/films.js";
 import { nextDue, REFRESH_JOBS, RETRY_MINUTES, runRefresh, type RefreshJob } from "../src/refresh.js";
+import { ingestTicketedEvents } from "../src/ticketing.js";
+
+// Every request a live job would send: here, whatever the test says it answers.
+const fetchMock = vi.hoisted(() => ({ next: (_url: string): Promise<{ text: string }> => Promise.reject(new Error("no request expected")) }));
+vi.mock("../../sources/src/fetch.js", async (orig) => ({ ...(await orig<typeof import("../../sources/src/fetch.js")>()), guardedFetch: (url: string) => fetchMock.next(url) }));
 
 /** The refresh loop: which jobs are due, which can't run, and that one failure stops nothing else (outrn_test, reset per file). */
 
@@ -125,5 +135,46 @@ describe.skipIf(!available)("the refresh loop", () => {
     });
     expect(attempts).toBe(2);
     expect(ran).toEqual(["steady", "flaky"]);
+  });
+});
+
+describe.skipIf(!available)("the refresh loop and the sources' own runs", () => {
+  const dir = mkdtempSync(join(tmpdir(), "outrn-refresh-"));
+  const NOW2 = new Date("2026-10-29T16:00:00Z");
+
+  it("a replayed ticketing or films capture does not count as the source's live read", async () => {
+    await db.query(`update source_policies set enabled = true where id in ('ticketmaster', 'tmdb')`);
+    const tickets = join(dir, "tm.json");
+    writeFileSync(tickets, JSON.stringify({ outrn_capture: "ticketed-events", source: "ticketmaster", fetchedAt: NOW2.toISOString(), area: "les", complete: true, events: [{ id: "tm-r1", title: "Replay Night", url: null, start: "2026-10-30T00:00:00.000Z", status: "scheduled", venue: { name: "Pier 36", address: null, lat: 40.7101, lon: -73.9826 }, kinds: [], price: null, adultsOnly: false, popularity: null }] }));
+    const films = join(dir, "films.json");
+    writeFileSync(films, JSON.stringify({ outrn_capture: "tmdb-films", fetchedAt: NOW2.toISOString(), films: [{ id: 1, title: "Anora", originalTitle: null, popularity: 1, releaseDate: null }] }));
+    await ingestTicketedEvents(db, { source: "ticketmaster", areaSlug: "les", now: NOW2, fromFile: tickets });
+    await refreshFilmPopularity(db, { now: NOW2, fromFile: films });
+    const kinds = (await db.query<{ source_id: string; kind: string }>(`select source_id, kind from ingestion_runs where source_id in ('ticketmaster', 'tmdb')`)).rows;
+    expect(kinds.map((k) => k.kind)).toEqual(["replay", "replay"]);
+    const ran: string[] = [];
+    await runRefresh(db, {
+      once: true,
+      clock: () => new Date(NOW2.getTime() + 60_000),
+      env: { K: "x" },
+      jobs: [
+        { id: "tm", title: "tm", sourceId: "ticketmaster", everyMinutes: 360, needs: ["K"], run: async () => (ran.push("tm"), "x") },
+        { id: "films", title: "films", sourceId: "tmdb", everyMinutes: 180, needs: ["K"], run: async () => (ran.push("films"), "x") },
+      ],
+    });
+    expect(ran).toEqual(["tm", "films"]);
+  });
+
+  it("a keyed API's failure reaches neither the job's error nor the refresh log with its key", async () => {
+    const KEY = "synthetic-review-secret-69";
+    const lines: string[] = [];
+    for (const [id, env] of [["ticketmaster", { TICKETMASTER_API_KEY: KEY }], ["seatgeek", { SEATGEEK_CLIENT_ID: KEY }], ["films", { TMDB_API_KEY: KEY }]] as const) {
+      await db.query(`update source_policies set enabled = true where id = $1`, [id === "films" ? "tmdb" : id]);
+      fetchMock.next = (url) => Promise.reject(new FetchFailed(`400 from api.example: Invalid API credential: ${KEY} (${url})`, 400));
+      const runs = await runRefresh(db, { once: true, clock: () => NOW2, env, log: (l) => lines.push(l), jobs: REFRESH_JOBS.filter((j) => j.id === id) });
+      expect(runs).toEqual([{ job: id, outcome: "failed", detail: expect.stringMatching(/: the API answered 400$/) }]);
+    }
+    expect(lines.length).toBeGreaterThanOrEqual(3);
+    expect(lines.filter((l) => l.includes(KEY) || l.includes(encodeURIComponent(KEY)))).toEqual([]);
   });
 });

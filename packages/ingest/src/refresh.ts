@@ -25,8 +25,8 @@ export interface RefreshJob {
   everyMinutes: number;
   /** Environment variables it can't run without (an API key). */
   needs?: readonly string[];
-  /** Runs the job; returns a one-line summary. */
-  run: (db: Db, log: (line: string) => void) => Promise<string>;
+  /** Runs the job with the environment the loop checked its needs in; returns a one-line summary. */
+  run: (db: Db, log: (line: string) => void, env: Readonly<Record<string, string | undefined>>) => Promise<string>;
 }
 
 export const RETRY_MINUTES = 30;
@@ -87,10 +87,10 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
       sourceId: source,
       everyMinutes: 6 * 60,
       needs: [TICKETING_KEYS[source]],
-      run: async (db, log) => {
+      run: async (db, log, env) => {
         const parts: string[] = [];
         for (const slug of await servedSlugs(db)) {
-          const s = await ingestTicketedEvents(db, { source, areaSlug: slug, log });
+          const s = await ingestTicketedEvents(db, { source, areaSlug: slug, log, env });
           parts.push(`${slug} ${s.written} events, ${s.withdrawn} withdrawn`);
         }
         return parts.join(" · ") || "no served areas";
@@ -104,8 +104,8 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
     // After the venues' sites and the ticketing reads, so a new screening is matched within hours.
     everyMinutes: 3 * 60,
     needs: [TMDB_KEY],
-    run: async (db, log) => {
-      const s = await refreshFilmPopularity(db, { log });
+    run: async (db, log, env) => {
+      const s = await refreshFilmPopularity(db, { log, env });
       return `${s.popular} of ${s.screenings} upcoming screenings are of a popular film`;
     },
   },
@@ -116,8 +116,8 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
     // After the venues' own sites, which list most of what can be listed without it.
     everyMinutes: 2 * 60,
     needs: [AI_ENV.key],
-    run: async (db, log) => {
-      const s = await readEventsWithClaude(db, { log });
+    run: async (db, log, env) => {
+      const s = await readEventsWithClaude(db, { log, env });
       return `${s.read} of ${s.pages} pages read · ${s.events} events · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · at the day's cap" : ""}`;
     },
   },
@@ -127,9 +127,9 @@ export const REFRESH_JOBS: readonly RefreshJob[] = [
     sourceId: "site_ai",
     everyMinutes: 2 * 60,
     needs: [AI_ENV.key],
-    run: async (db, log) => {
-      const s = await recheckEventsWithClaude(db, { log });
-      return `${s.checked} of ${s.events} checked · ${s.marked.cancelled} cancelled · ${s.marked.sold_out} sold out · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · at the day's cap" : ""}`;
+    run: async (db, log, env) => {
+      const s = await recheckEventsWithClaude(db, { log, env });
+      return `${s.checked} of ${s.events} checked · ${s.marked.cancelled} cancelled · ${s.marked.sold_out} sold out · ${s.cleared} listed again · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · at the day's cap" : ""}`;
     },
   },
 ];
@@ -234,7 +234,7 @@ export async function runRefresh(db: Db, opts: RefreshOptions = {}): Promise<Ref
       said.delete(job.id);
       const t0 = Date.now();
       try {
-        const detail = await job.run(db, (line) => log(`${job.id}: ${line}`));
+        const detail = await job.run(db, (line) => log(`${job.id}: ${line}`), env);
         s.lastSuccess = clock();
         log(`${job.id}: ${detail} (${Math.round((Date.now() - t0) / 1000)} s)`);
         record({ job: job.id, outcome: "succeeded", detail });

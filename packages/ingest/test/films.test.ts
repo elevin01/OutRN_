@@ -32,6 +32,18 @@ describe("a screening's film title", () => {
     expect(filmTitleKey("Mission: Impossible – The Final Reckoning")).toBe("mission impossible the final reckoning");
   });
 
+  it("a talk or a guest after the title is set aside; any other subtitle is the film's own", () => {
+    const p = popularFilms([{ id: 1, title: "Mission: Impossible", originalTitle: null, popularity: 100, releaseDate: null }, { id: 2, title: "Anora", originalTitle: null, popularity: 90, releaseDate: null }]);
+    const match = (title: string) => filmTitleKeys(title).map((k) => p.get(k)).find((x) => x !== undefined);
+    // The original is popular; its sequel is another film, whatever follows the dash.
+    expect(match("Mission: Impossible – Dead Reckoning (35mm)")).toBeUndefined();
+    expect(match("Mission: Impossible - Fallout")).toBeUndefined();
+    expect(match("Mission: Impossible + Q&A with the director")?.rank).toBe(1);
+    expect(match("Anora (35mm) + Q&A")?.rank).toBe(2);
+    expect(match("Anora - Introduced by Sean Baker")?.rank).toBe(2);
+    expect(match("Anora: In Person")?.rank).toBe(2);
+  });
+
   it("the most popular twenty, by every title they go by; one short word is too little to match", () => {
     const film = (id: number, title: string, originalTitle: string | null = null): FilmNow => ({ id, title, originalTitle, popularity: 100 - id, releaseDate: null });
     const p = popularFilms([film(1, "Wicked"), film(2, "Up"), film(3, "Amélie", "Le Fabuleux Destin d'Amélie Poulain"), ...Array.from({ length: 30 }, (_, i) => film(10 + i, `Film ${i}`))]);

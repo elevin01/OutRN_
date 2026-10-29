@@ -12,3 +12,4 @@ export * from "./sitehours.js";
 export * from "./calendars.js";
 export * from "./ticketing.js";
 export * from "./tmdb.js";
+export * from "./api-errors.js";

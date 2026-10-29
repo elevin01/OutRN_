@@ -251,6 +251,6 @@ export async function ingestNycParksEvents(db: Db, opts: NycParksIngestOptions):
   const tableRows = capture.area === undefined ? capture.rows.length : (capture.tableRows ?? 0);
   const complete = tableRows > 0 && (capture.area === undefined || capture.area === area.slug);
   if (!complete) log(tableRows === 0 ? "the table came back empty: nothing withdrawn" : `the read was saved for ${capture.area}: nothing withdrawn in ${area.slug}`);
-  const s = await ingestEvents(db, { source: "nyc_parks", events }, { areaSlug: area.slug, now, actor: "nyc_parks", complete });
+  const s = await ingestEvents(db, { source: "nyc_parks", events }, { areaSlug: area.slug, now, actor: "nyc_parks", complete, replay: opts.fromFile !== undefined });
   return { ...s, rows: capture.rows.length, skipped };
 }

@@ -19,7 +19,7 @@ export function registerAi(program: Command): void {
     .option("--limit <n>", "events this run", (v) => parseInt(v, 10), 15)
     .action(async (o: { limit: number }) => {
       const s = await recheckEventsWithClaude(getDb(), { limit: o.limit, log: (l) => console.log(l) });
-      console.log(`events ${s.events} · checked ${s.checked} · cancelled ${s.marked.cancelled} · sold out ${s.marked.sold_out} · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · stopped at the day's cap" : ""}`);
+      console.log(`events ${s.events} · checked ${s.checked} · cancelled ${s.marked.cancelled} · sold out ${s.marked.sold_out} · listed again ${s.cleared} · $${s.costUsd.toFixed(4)}${s.stoppedForBudget ? " · stopped at the day's cap" : ""}`);
     });
 
   ai.command("spend")

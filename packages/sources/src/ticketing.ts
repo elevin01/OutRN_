@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withKey } from "./api-errors.js";
 import { guardedFetch, type GuardedFetchOptions } from "./fetch.js";
 
 /**
@@ -6,7 +7,7 @@ import { guardedFetch, type GuardedFetchOptions } from "./fetch.js";
  * API (concerts, comedy, theatre and sports, at the venues that sell through it) and SeatGeek's
  * (the same kinds, with a popularity score). Each needs its own free key from the environment
  * (TICKETMASTER_API_KEY, SEATGEEK_CLIENT_ID), which is sent only to its own API and never saved,
- * logged or put in an error. What a reply says is kept as it says it; nothing is guessed: an event
+ * logged or put in an error: a failure comes out as its status alone (withKey), never the answer's body. What a reply says is kept as it says it; nothing is guessed: an event
  * with no time yet ("TBA") is left out, a price is the range the API gives, an age limit only when
  * the API says the event is for adults.
  */
@@ -250,8 +251,8 @@ export async function fetchTicketedEvents(source: TicketingSource, q: TicketingQ
     for (let page = 0; page < TM_MAX_PAGES; page++) {
       const u = new URL(TICKETMASTER_EVENTS_URL);
       u.search = new URLSearchParams({ apikey: q.key, latlong: `${q.center.lat.toFixed(4)},${q.center.lon.toFixed(4)}`, radius: String(miles(q.radiusM)), unit: "miles", startDateTime: isoSeconds(q.from), endDateTime: isoSeconds(q.until), size: String(TM_PAGE_SIZE), page: String(page), sort: "date,asc" }).toString();
-      // Five requests a second at most.
-      const r = parseTicketmasterPage(JSON.parse((await guardedFetch(u.toString(), { ...opts, minIntervalMs: 250 })).text));
+      // Five requests a second at most. Its failures carry no key (see withKey).
+      const r = await withKey(source, async () => parseTicketmasterPage(JSON.parse((await guardedFetch(u.toString(), { ...opts, minIntervalMs: 250 })).text)));
       add(r);
       if (page + 1 >= r.totalPages) {
         complete = true;
@@ -262,7 +263,7 @@ export async function fetchTicketedEvents(source: TicketingSource, q: TicketingQ
     for (let page = 1; page <= SG_MAX_PAGES; page++) {
       const u = new URL(SEATGEEK_EVENTS_URL);
       u.search = new URLSearchParams({ client_id: q.key, lat: q.center.lat.toFixed(4), lon: q.center.lon.toFixed(4), range: `${miles(q.radiusM)}mi`, "datetime_utc.gte": isoSeconds(q.from).slice(0, 19), "datetime_utc.lte": isoSeconds(q.until).slice(0, 19), per_page: String(SG_PAGE_SIZE), page: String(page), sort: "datetime_utc.asc" }).toString();
-      const r = parseSeatGeekPage(JSON.parse((await guardedFetch(u.toString(), { ...opts, minIntervalMs: 500 })).text));
+      const r = await withKey(source, async () => parseSeatGeekPage(JSON.parse((await guardedFetch(u.toString(), { ...opts, minIntervalMs: 500 })).text)));
       add(r);
       if (page * SG_PAGE_SIZE >= r.total) {
         complete = true;

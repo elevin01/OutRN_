@@ -67,8 +67,9 @@ export type Asker = (q: JsonQuestion) => Promise<JsonAnswer>;
 /** Models that take server-side refusal fallbacks (fallbacks: "default"). */
 const FALLBACK_MODELS = new Set(["claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "claude-fable-5-1"]);
 
-export function claudeAsker(model: string): Asker {
-  const client = new Anthropic();
+/** `apiKey`: from the environment the caller checked (else the SDK finds its own credentials). */
+export function claudeAsker(model: string, apiKey?: string): Asker {
+  const client = new Anthropic(apiKey ? { apiKey } : {});
   return async (q) => {
     const params = {
       model,
@@ -79,7 +80,14 @@ export function claudeAsker(model: string): Asker {
       messages: [{ role: "user" as const, content: q.user }],
     };
     // A declined request is re-run on Anthropic's recommended fallback, where the model takes one.
-    const r = FALLBACK_MODELS.has(model) ? await client.beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" }) : await client.beta.messages.create(params);
+    let r: Awaited<ReturnType<typeof client.beta.messages.create>>;
+    try {
+      r = FALLBACK_MODELS.has(model) ? await client.beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" }) : await client.beta.messages.create(params);
+    } catch (e) {
+      // Its status, never the body or the request: what any keyed API's failure says here (see withKey).
+      if (e instanceof Anthropic.APIError) throw new Error(`claude: the API answered ${e.status ?? "with an error"}`);
+      throw new Error("claude: the API could not be reached");
+    }
     const costUsd = costOf(r.model, r.usage);
     if (r.stop_reason !== "end_turn") return { data: null, stopReason: r.stop_reason ?? "unknown", model: r.model, costUsd };
     const text = r.content.map((b) => (b.type === "text" ? b.text : "")).join("");

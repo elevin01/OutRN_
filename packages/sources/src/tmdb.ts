@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withKey } from "./api-errors.js";
 import { guardedFetch, type GuardedFetchOptions } from "./fetch.js";
 
 /**
@@ -72,7 +73,8 @@ export async function fetchFilmsNow(key: string): Promise<FilmsCapture> {
   const read = async (path: string, params: Record<string, string>) => {
     const u = new URL(`${TMDB_API}${path}`);
     u.search = new URLSearchParams({ ...params, ...(bearer ? {} : { api_key: token }) }).toString();
-    return parseTmdbPage(JSON.parse((await guardedFetch(u.toString(), opts)).text));
+    // Its failures carry no key, in the query or in the header (see withKey).
+    return withKey("tmdb", async () => parseTmdbPage(JSON.parse((await guardedFetch(u.toString(), opts)).text)));
   };
   const lists: FilmNow[][] = [];
   for (let page = 1; page <= NOW_PLAYING_PAGES; page++) {

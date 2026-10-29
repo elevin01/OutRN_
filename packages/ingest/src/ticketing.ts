@@ -154,8 +154,9 @@ export async function ingestTicketedEvents(db: Db, opts: TicketingIngestOptions)
     events.push({ ...ticketedEventInput(e), place: placed ? { venue: placed.venueId } : { name: clip(e.venue.name, 120), lat: e.venue.lat, lon: e.venue.lon } });
   }
   if (Object.keys(skipped).length) log(`left out: ${Object.entries(skipped).map(([k, n]) => `${k} ${n}`).join(", ")}`);
-  // A replay saved for another area holds that area's events only: it withdraws nothing here.
-  const complete = capture.complete && capture.area === area.slug && capture.events.length > 0;
-  const s = await ingestEvents(db, { source, events }, { areaSlug: area.slug, now, actor: source, complete });
+  // Every page read is the area's whole listing, even an empty one (the API said there are none, not
+  // that it failed: a failure throws above). A replay saved for another area holds that area's only.
+  const complete = capture.complete && capture.area === area.slug;
+  const s = await ingestEvents(db, { source, events }, { areaSlug: area.slug, now, actor: source, complete, replay: opts.fromFile !== undefined });
   return { ...s, read: capture.events.length, skipped };
 }
