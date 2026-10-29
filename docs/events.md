@@ -3,9 +3,11 @@
 OutRN pushes what is only happening now: fireworks, a band in the park, a street fair, a pop-up
 market. Events reach the engine from three places:
 
-- **A venue's own website**, read by the first-party job (`schema.org` events in its JSON-LD). Their
-  types say what they are: a `MusicEvent` is live music, a `ComedyEvent` comedy, a `Festival` a
-  festival.
+- **A venue's own website**, read by the first-party job: The Events Calendar's REST API, an
+  iCalendar feed it links, or its events page's `schema.org` JSON-LD (see the README). Their types
+  say what they are: a `MusicEvent` is live music, a `ComedyEvent` comedy, a `Festival` a festival.
+  A date and time with no offset is the venue's own clock, and a `typicalAgeRange` of 18 or more
+  ("21+") is its age limit: "All ages" or a child's range never lifts the venue's age rules.
 - **An events file** (`outrn ingest events`): the founder's own list today, and the shape every
   feed (NYC Parks, libraries, ticketing) is converted to as it is added.
 - **Fixtures** for tests.

@@ -181,9 +181,11 @@ Around Bronxville the read adds about 100. `--save` keeps only the few hundred r
 reads, so a capture replays the same destinations.
 
 **Venues' own websites** fill in the hours no other source publishes (outside the city, four in five
-places list none). `outrn firstparty discover --area <slug>` registers the website of each venue with no
-published hours, when it is the venue's own: never a social network, review site, map, booking or
-ordering service. `outrn firstparty run --area <slug>` then reads them:
+places list none), and list what is on at theatres, music rooms and arts centers. `outrn firstparty
+discover --area <slug>` registers the website of each venue with no published hours, and of every
+theatre, music room, arts center, museum and community center whatever its hours, when it is the
+venue's own: never a social network, review site, map, booking or ordering service. `outrn firstparty
+run --area <slug>` then reads them:
 - **robots.txt first** (RFC 9309), read once a day per site: a page it disallows for our agent, or a
   site whose robots.txt can't be reached, is not read. Its crawl delay is kept.
 - **Politely:** every request (each redirect hop and retry too, and robots.txt reads) passes one
@@ -201,6 +203,19 @@ ordering service. `outrn firstparty run --area <slug>` then reads them:
   nothing of the weekend (an office's). On a government site, or one many venues share (a town's
   parks, a chain's stores), only structured data counts. When the page states no hours, its own
   "Hours", "Visit", "Location" or "Contact" page is read instead.
+- **Its events:** where the home page shows the site lists them, through the same gate: The Events
+  Calendar's REST API (a WordPress site running it), an iCalendar feed it links, or a page of its own
+  for events (/events, /shows, /calendar …), read for its JSON-LD; and the page's own JSON-LD events.
+  A theatre's events page comes before its hours page (a host's four requests a day go to what it is
+  for). They are written as library calendars' are (`site-events.ts`, source `venue_events`): at the
+  venue unless one names another place nearby (a site found automatically keeps them all at its
+  venue), kinds from their schema.org types, an age limit only as stated (`typicalAgeRange` "21+";
+  "All ages" never lifts the venue's age rules), nothing for children about drink, a price only as stated (free only when the page says so, not for a price of 0), once
+  when another source lists the same event there. A page lists some of a venue's events, so nothing is
+  withdrawn for missing from one. A feed read to its end (every page of The Events Calendar's API, an
+  iCalendar feed) is the site's listing: what it listed before and no longer lists by its last day
+  read (a show taken down or moved) is withdrawn. On a host several venues share, only a feed under
+  the venue's own path is read, and it never withdraws; a replay never withdraws either.
 - **What is kept:** the facts, with the words or JSON they were read from as evidence (published,
   0.85 from structured data, 0.75 from the page's words), never the HTML. Hours a site no longer
   states stop counting. `--save` keeps what each site stated for `pnpm real` to replay; a run that

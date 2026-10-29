@@ -1,4 +1,4 @@
-import { ownValue, type Interest, type WeeklyIntervals } from "@outrn/core";
+import { fromLocal, ownValue, type Interest, type WeeklyIntervals } from "@outrn/core";
 import { guardedFetch, type RequestGate } from "./fetch.js";
 import { hoursFromText, hoursLinks, microdataHours, visibleText } from "./sitehours.js";
 
@@ -49,6 +49,25 @@ export interface ExtractedEvent {
   price: { min?: number; max?: number; currency: string; free?: boolean } | null;
   url: string | null;
   evidence: string;
+  /** Its schema.org types ("MusicEvent", "TheaterEvent"), at most four. */
+  types: string[];
+  /** A date with no time: the whole day. */
+  allDay: boolean;
+  /** It says it is free to attend (isAccessibleForFree), which a price of 0 does not. */
+  free: boolean;
+  /** Where it says it is held, a line each (the place's name, its street, its town); empty when it says nothing. */
+  location: string[];
+  /** The youngest it admits, from its typicalAgeRange ("21+"; "All ages" is 0), or null when it says no age. */
+  minAge: number | null;
+}
+
+/**
+ * Where a site lists its events for machines, as found on the page: The Events Calendar's REST API
+ * (WordPress), an iCalendar feed it links, or a page of its own for events (read for its JSON-LD).
+ */
+export interface EventsFeed {
+  format: "tec" | "ical" | "page";
+  url: string;
 }
 
 export interface FirstPartyExtraction {
@@ -61,6 +80,8 @@ export interface FirstPartyExtraction {
   types: string[];
   /** Links to where the site states its hours, best first (only when this page states none). */
   hoursLinks?: string[];
+  /** Where the site lists its events, when the page shows one (see eventsFeedOf). */
+  eventsFeed?: EventsFeed;
 }
 
 const DAY_INDEX: Record<string, number> = {
@@ -202,7 +223,30 @@ export function osmHoursFromSchema(s: string): string {
 const MAX_EVENTS_PER_PAGE = 100;
 const MAX_TITLE = 200;
 
-export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Date): FirstPartyExtraction {
+/**
+ * A schema.org date as an instant: one with an offset as it says; a date and time without one in
+ * the venue's zone (sites write "2026-10-24T19:30", meaning their own clock); a date alone is the
+ * whole day, from local midnight.
+ */
+export function schemaDate(v: unknown, timeZone: string): { at: Date; allDay: boolean } | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  // A calendar date and a clock time, or nothing (a date library would roll "2026-13-40" into 2027).
+  const parts = /^\d{4}-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/.exec(s);
+  if (!parts || +parts[1]! < 1 || +parts[1]! > 12 || +parts[2]! < 1 || +parts[2]! > 31 || (parts[3] !== undefined && (+parts[3] > 23 || +parts[4]! > 59))) return null;
+  // A day the month does not have ("2026-02-30", "2026-04-31") is no date, not the 2nd of the next.
+  if (new Date(Date.UTC(Number(s.slice(0, 4)), +parts[1]! - 1, +parts[2]!)).getUTCDate() !== +parts[2]!) return null;
+  const day = /^(\d{4}-\d{2}-\d{2})$/.exec(s);
+  if (day) {
+    const at = fromLocal(day[1]!, 0, timeZone);
+    return Number.isNaN(at.getTime()) ? null : { at, allDay: true };
+  }
+  const local = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(s);
+  const at = local ? fromLocal(local[1]!, Number(local[2]) * 60 + Number(local[3]), timeZone) : /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/.test(s) ? new Date(s) : null;
+  return at && !Number.isNaN(at.getTime()) ? { at, allDay: false } : null;
+}
+
+export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Date, timeZone = "America/New_York"): FirstPartyExtraction {
   const nodes = flattenGraph(blocks);
   const facts: ExtractedFact[] = [];
   const events: ExtractedEvent[] = [];
@@ -239,9 +283,10 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
       }
     }
     if (ts.some((t) => t === "Event" || t.endsWith("Event")) && events.length < MAX_EVENTS_PER_PAGE) {
-      const start = typeof n["startDate"] === "string" ? new Date(n["startDate"]) : null;
-      if (!start || Number.isNaN(start.getTime())) continue;
-      const end = typeof n["endDate"] === "string" ? new Date(n["endDate"]) : null;
+      const begins = schemaDate(n["startDate"], timeZone);
+      if (!begins) continue;
+      const start = begins.at;
+      const end = schemaDate(n["endDate"], timeZone)?.at ?? null;
       const st = typeof n["eventStatus"] === "string" ? n["eventStatus"].split("/").pop()! : "EventScheduled";
       const status: ExtractedEvent["status"] = st === "EventCancelled" ? "cancelled" : "scheduled";
       const offers = n["offers"];
@@ -254,7 +299,12 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
         status: soldOut ? "sold_out" : status,
         price: priceFromOffers(offers),
         url: typeof n["url"] === "string" ? n["url"] : null,
-        evidence: JSON.stringify({ name: n["name"], startDate: n["startDate"], endDate: n["endDate"], eventStatus: n["eventStatus"] }).slice(0, 1000),
+        evidence: JSON.stringify({ name: n["name"], startDate: n["startDate"], endDate: n["endDate"], eventStatus: n["eventStatus"], typicalAgeRange: n["typicalAgeRange"] }).slice(0, 1000),
+        types: ts.filter((t) => t === "Event" || t.endsWith("Event") || t === "Festival").slice(0, 4),
+        allDay: begins.allDay,
+        free: n["isAccessibleForFree"] === true || n["isAccessibleForFree"] === "true" || n["isAccessibleForFree"] === "True",
+        location: eventLocation(n["location"]),
+        minAge: typicalMinAge(n["typicalAgeRange"]),
       });
     }
   }
@@ -267,7 +317,8 @@ export function extractFromJsonLd(blocks: unknown[], url: string, fetchedAt: Dat
  * might (hoursLinks).
  */
 export function extractPage(html: string, url: string, fetchedAt: Date, opts: { text?: boolean } = {}): FirstPartyExtraction {
-  const x = extractFromJsonLd(extractJsonLdBlocks(html), url, fetchedAt);
+  const feed = eventsFeedOf(html, url);
+  const x: FirstPartyExtraction = { ...extractFromJsonLd(extractJsonLdBlocks(html), url, fetchedAt), ...(feed ? { eventsFeed: feed } : {}) };
   if (x.facts.some((f) => f.attribute === "opening_hours")) return x;
   const micro = microdataHours(html);
   if (micro.length) {
@@ -283,6 +334,75 @@ export function extractPage(html: string, url: string, fetchedAt: Date, opts: { 
     return x;
   }
   return { ...x, hoursLinks: hoursLinks(html, url).slice(0, 3) };
+}
+
+/** One line of what a page says, as plain text: no control characters, at most `max` characters. */
+const line = (v: unknown, max = 200): string => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "");
+
+/** Where an event says it is held: a Place's name, street and town; a plain string as it is. */
+function eventLocation(v: unknown): string[] {
+  const place = Array.isArray(v) ? v[0] : v;
+  if (typeof place === "string") return [line(place)].filter(Boolean);
+  if (!place || typeof place !== "object") return [];
+  const p = place as Record<string, unknown>;
+  const address = p["address"];
+  const a = address && typeof address === "object" && !Array.isArray(address) ? (address as Record<string, unknown>) : null;
+  return [line(p["name"]), a ? line(a["streetAddress"]) : line(address), a ? line(a["addressLocality"]) : ""].filter(Boolean).slice(0, 3);
+}
+
+/** A page of a site's own for its events, by its address: /events, /calendar, /shows, /whats-on … */
+const EVENTS_PATH = /^\/(?:[a-z-]+\/)?(?:events?|calendar|shows?|whats-?on|performances?|concerts?|schedule|upcoming|programs?)(?:\/|$)/i;
+
+/**
+ * Where a page shows its site lists events, best first: The Events Calendar's REST API (a WordPress
+ * site running it names "tribe-events" or its API), an iCalendar feed it links, or a link to a page
+ * of its own for events (same site). Linear in the page: each tag is read at most 500 characters.
+ */
+export function eventsFeedOf(html: string, url: string): EventsFeed | undefined {
+  const here = new URL(url);
+  if (/\/wp-json\/tribe\/events\/v1\b|\btribe-events\b/.test(html)) return { format: "tec", url: `${here.origin}/wp-json/tribe/events/v1/events` };
+  for (const m of html.matchAll(/<link\b[^<>]{0,500}>/gi)) {
+    if (!/\btype\s*=\s*["']text\/calendar["']/i.test(m[0])) continue;
+    const href = /\bhref\s*=\s*["']([^"'<>]{1,500})["']/i.exec(m[0])?.[1];
+    const to = href ? sameSiteUrl(href, here) : null;
+    if (to) return { format: "ical", url: to };
+  }
+  let seen = 0;
+  for (const m of html.matchAll(/<a\b[^<>]{0,500}>/gi)) {
+    if (seen++ > 500) break;
+    const href = /\bhref\s*=\s*["']([^"'<>]{1,300})["']/i.exec(m[0])?.[1];
+    const to = href ? sameSiteUrl(href, here) : null;
+    if (to && EVENTS_PATH.test(new URL(to).pathname) && to !== here.toString()) return { format: "page", url: to };
+  }
+  return undefined;
+}
+
+/** A link on the page as an https URL on the page's own site (its www. or bare name), or null. */
+function sameSiteUrl(href: string, here: URL): string | null {
+  let to: URL;
+  try {
+    to = new URL(href.replace(/&amp;/g, "&"), here);
+  } catch {
+    return null;
+  }
+  if (to.protocol !== "https:" && to.protocol !== "http:") return null;
+  if (to.host.replace(/^www\./, "") !== here.host.replace(/^www\./, "")) return null;
+  to.hash = "";
+  if (to.protocol === "http:" && here.protocol === "https:") to.protocol = "https:";
+  return to.toString();
+}
+
+/**
+ * The youngest an event admits, from its schema.org typicalAgeRange: "21+", "18 and over", "Ages 18-30"
+ * (its lower bound), "All ages" (0). Null for anything else, and for an age over 25 (a range of years,
+ * not an age limit).
+ */
+export function typicalMinAge(v: unknown): number | null {
+  if (typeof v !== "string" || v.length > 40) return null;
+  const s = v.trim().toLowerCase();
+  if (/^all[\s-]*ages?$/.test(s)) return 0;
+  const m = /^(?:ages?\s+)?(\d{1,2})\s*(?:\+|plus|-|–|(?:and|&)\s+(?:up|over|older)|(?:-|–|to)\s*\d{1,3})?$/.exec(s);
+  return m && Number(m[1]) <= 25 ? Number(m[1]) : null;
 }
 
 /** A venue page: same-host pacing (throttleKey) is the caller's, at least `minIntervalMs` apart. */

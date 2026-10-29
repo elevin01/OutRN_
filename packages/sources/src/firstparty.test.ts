@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractFromJsonLd, extractJsonLdBlocks, extractPage, openingHoursFromSpec } from "./firstparty.js";
+import { eventsFeedOf, extractFromJsonLd, extractJsonLdBlocks, extractPage, openingHoursFromSpec, schemaDate, typicalMinAge } from "./firstparty.js";
 
 const html = `<html><head>
 <script type="application/ld+json">
@@ -115,5 +115,63 @@ describe("schema.org openingHours text", () => {
     const { osmHoursFromSchema } = await import("./firstparty.js");
     expect(osmHoursFromSchema("Su 09:00 - 23:00 Mo 09:00 - 23:00 Fr 09:00 - 00:00")).toBe("Su 09:00-23:00; Mo 09:00-23:00; Fr 09:00-00:00");
     expect(osmHoursFromSchema("Mo-Fr 11:00-22:00, Sa 12:00-23:00")).toBe("Mo-Fr 11:00-22:00, Sa 12:00-23:00");
+  });
+});
+
+describe("a venue's own events: where its site lists them, and what each says", () => {
+  const home = "https://www.theatre.example.org/";
+  it("finds The Events Calendar's API, an iCalendar feed it links, or a page of its own for events, best first", () => {
+    expect(eventsFeedOf(`<body class="tribe-events-page"><a href="/events/">Events</a></body>`, home)).toEqual({ format: "tec", url: "https://www.theatre.example.org/wp-json/tribe/events/v1/events" });
+    expect(eventsFeedOf(`<link rel="alternate" type="text/calendar" title="iCal" href="https://theatre.example.org/?ical=1"><a href="/events">x</a>`, home)).toEqual({ format: "ical", url: "https://theatre.example.org/?ical=1" });
+    expect(eventsFeedOf(`<a href="/about">About</a><a href="https://www.theatre.example.org/shows/#upcoming">Shows</a>`, home)).toEqual({ format: "page", url: "https://www.theatre.example.org/shows/" });
+    expect(eventsFeedOf(`<a href="/en/calendar">Calendar</a>`, home)).toEqual({ format: "page", url: "https://www.theatre.example.org/en/calendar" });
+    // Another site's listing, a private-events page, a link back home, or nothing: none.
+    for (const html of [`<a href="https://www.ticketmaster.com/events">Tickets</a>`, `<link type="text/calendar" href="https://calendar.google.com/x.ics">`, `<a href="/private-events">Private events</a>`, `<a href="/">Home</a>`, `<p>Welcome</p>`]) expect(eventsFeedOf(html, home), html).toBeUndefined();
+  });
+
+  it("reads a page of crafted links in linear time", () => {
+    const t0 = performance.now();
+    expect(eventsFeedOf("<a ".repeat(200_000), home)).toBeUndefined();
+    expect(eventsFeedOf(`<a href="${"x".repeat(400)}">`.repeat(5_000), home)).toBeUndefined();
+    expect(eventsFeedOf("<link ".repeat(200_000), home)).toBeUndefined();
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
+  it("reads a date and time with no offset on the venue's clock, a date alone as the whole day", () => {
+    const TZ = "America/New_York";
+    expect(schemaDate("2026-10-24T19:30", TZ)).toEqual({ at: new Date("2026-10-24T23:30:00.000Z"), allDay: false });
+    expect(schemaDate("2026-10-24T19:30:00", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
+    expect(schemaDate("2026-10-24T19:30:00-04:00", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
+    expect(schemaDate("2026-10-24T23:30:00Z", TZ)!.at.toISOString()).toBe("2026-10-24T23:30:00.000Z");
+    // A day the month does not have is no date, not the 2nd of the next month.
+    expect(schemaDate("2026-02-30T19:30", TZ)).toBeNull();
+    expect(schemaDate("2026-04-31", TZ)).toBeNull();
+    expect(schemaDate("2028-02-29T19:30", TZ)!.at.toISOString()).toBe("2028-03-01T00:30:00.000Z");
+    expect(schemaDate("2026-10-24", TZ)).toEqual({ at: new Date("2026-10-24T04:00:00.000Z"), allDay: true });
+    for (const v of ["soon", "2026-13-40T99:99", "", 42, null]) expect(schemaDate(v, TZ), String(v)).toBeNull();
+  });
+
+  it("keeps where an event says it is held, its types, and free only when it says so", () => {
+    const x = extractFromJsonLd(
+      [
+        { "@context": "https://schema.org", "@type": "MusicEvent", name: "Jazz Trio", startDate: "2026-10-24T20:00", location: { "@type": "Place", name: "Garcia's", address: { "@type": "PostalAddress", streetAddress: "149 Westchester Ave", addressLocality: "Port Chester" } }, offers: { price: "0", priceCurrency: "USD" } },
+        { "@type": ["TheaterEvent", "ChildrensEvent"], name: "Puppet Show", startDate: "2026-10-25", location: "Main Stage", isAccessibleForFree: true, typicalAgeRange: "All ages" },
+        { "@type": "ComedyEvent", name: "Late Show", startDate: "2026-10-25T23:00", typicalAgeRange: "21+" },
+      ],
+      "https://www.theatre.example.org/",
+      new Date("2026-10-18T12:00:00Z"),
+    );
+    expect(x.events[0]).toMatchObject({ title: "Jazz Trio", start: new Date("2026-10-25T00:00:00.000Z"), allDay: false, types: ["MusicEvent"], location: ["Garcia's", "149 Westchester Ave", "Port Chester"], free: false, minAge: null });
+    expect(x.events[1]).toMatchObject({ allDay: true, types: ["TheaterEvent", "ChildrensEvent"], location: ["Main Stage"], free: true, minAge: 0 });
+    expect(x.events[2]).toMatchObject({ title: "Late Show", minAge: 21 });
+    expect(x.events[2]!.evidence).toContain('"typicalAgeRange":"21+"');
+  });
+
+  it("reads the youngest age an event admits from its typicalAgeRange, and nothing else (PR #61 review)", () => {
+    const cases: [unknown, number | null][] = [
+      ["21+", 21], ["18 +", 18], ["18 and over", 18], ["16 & up", 16], ["Ages 18-30", 18], ["18-", 18], ["7–9", 7], ["All ages", 0], ["all-ages", 0], ["21", 21],
+      ["Adults", null], ["30-60", null], ["100+", null], ["", null], [21, null], [null, null], ["21+".repeat(20), null],
+    ];
+    for (const [v, want] of cases) expect(typicalMinAge(v), String(v)).toBe(want);
   });
 });

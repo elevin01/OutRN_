@@ -44,7 +44,8 @@ afterAll(async () => {
   if (db) await db.end();
 });
 
-const jazz = (kinds: ExtractedEvent["kinds"]): ExtractedEvent => ({ title: "Thursday Jazz", kinds, start: new Date("2026-10-08T23:00:00Z"), end: null, status: "scheduled", price: null, url: null, evidence: "Thursday Jazz" });
+const NOW = new Date("2026-10-03T16:00:00Z");
+const jazz = (types: string[], kinds: ExtractedEvent["kinds"]): ExtractedEvent => ({ title: "Thursday Jazz", kinds, start: new Date("2026-10-08T23:00:00Z"), end: null, status: "scheduled", price: null, url: null, evidence: "Thursday Jazz", types, allDay: false, free: false, location: [], minAge: null });
 const kindsOf = async (occurrenceId: string) =>
   (await db.query<{ value: unknown }>(`select value from current_facts where subject_kind = 'occurrence' and subject_id = $1 and attribute = 'event_kind'`, [occurrenceId])).rows[0]?.value;
 
@@ -52,13 +53,13 @@ describe.skipIf(!available)("events on a venue's own page", () => {
   it("withdraws an event's kinds when the page no longer says what it is", async () => {
     const venue = await resolveVenueRef(db, "Hester Lane Kitchen", { areaSlug: "les" });
     await registerSite(db, venue.id, URL_, "test");
-    page.current = { url: URL_, fetchedAt: new Date(), facts: [], events: [jazz(["live_music"])], blocks: 1, types: ["MusicEvent"] };
-    expect((await runFirstParty(db, { force: true })).ok).toBe(1);
+    page.current = { url: URL_, fetchedAt: NOW, facts: [], events: [jazz(["MusicEvent"], ["live_music"])], blocks: 1, types: ["MusicEvent"] };
+    expect((await runFirstParty(db, { force: true, now: () => NOW })).ok).toBe(1);
     const occ = (await db.query<{ id: string }>(`select id from occurrences where venue_id = $1 and title = 'Thursday Jazz'`, [venue.id])).rows[0]!;
     expect(await kindsOf(occ.id)).toEqual({ interests: ["live_music"] });
     // A MusicEvent now a plain Event: the kinds it gave go.
-    page.current = { ...page.current, fetchedAt: new Date(), events: [jazz([])], types: ["Event"] };
-    expect((await runFirstParty(db, { force: true })).ok).toBe(1);
+    page.current = { ...page.current, fetchedAt: NOW, events: [jazz(["Event"], [])], types: ["Event"] };
+    expect((await runFirstParty(db, { force: true, now: () => NOW })).ok).toBe(1);
     expect(await kindsOf(occ.id)).toBeUndefined();
   });
 });
