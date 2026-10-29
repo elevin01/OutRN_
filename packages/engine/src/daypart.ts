@@ -1,4 +1,5 @@
 import { addMinutes, localClock, ownValue, type Category } from "@outrn/core";
+import type { Candidate } from "./types.js";
 
 /**
  * Time-of-day fit: open isn't the same as a good idea. A café at 8am, a bar at 11pm or a museum at
@@ -62,6 +63,16 @@ const HOURS: Partial<Record<Category, Hours>> = {
 };
 
 /**
+ * Kinds within a category whose time is not the category's: a comedy club's shows run from the
+ * evening past midnight (a theatre's end by ten), and a casino's tables are busiest long after the
+ * bowling alley has closed. Read in place of the category's hours when the place says it is one.
+ */
+const SUBTYPE_HOURS: Readonly<Record<string, Hours>> = {
+  comedy_club: { prime: [span("19:00", "01:00")], fair: [span("17:00", "19:00")] },
+  casino: { prime: [span("18:00", "04:00")], fair: [span("12:00", "18:00")] },
+};
+
+/**
  * Places whose appeal ends with the light: fair in the last 45 minutes before sunset, off after it,
  * whatever the clock table says. A shore too: a beach at 10pm is dark sand. Not a lookout: city lights.
  */
@@ -84,8 +95,8 @@ function clockAt(at: Date, timeZone: string): { minutes: number; weekday: number
 const inSpan = (minutes: number, s: Span) => (minutes >= s.from && minutes < s.to) || (minutes + 1440 >= s.from && minutes + 1440 < s.to);
 
 /** How good an idea this kind of place is at `at`, or null when there is no rule for it. */
-export function dayPart(category: Category, at: Date, timeZone: string, sunset?: Date | null): DayPart | null {
-  const hours = ownValue(HOURS, category);
+export function dayPart(category: Category, at: Date, timeZone: string, sunset?: Date | null, subtype?: string | null): DayPart | null {
+  const hours = (subtype ? ownValue(SUBTYPE_HOURS, subtype) : undefined) ?? ownValue(HOURS, category);
   if (!hours) return null;
   const { minutes, weekday } = clockAt(at, timeZone);
   // After dark until the morning: the sunset given is today's, so a pre-dawn arrival still reads from the table.
@@ -97,4 +108,10 @@ export function dayPart(category: Category, at: Date, timeZone: string, sunset?:
   if (hours.prime.some((s) => inSpan(minutes, s)) || (weekend && hours.weekendPrime?.some((s) => inSpan(minutes, s)))) return "prime";
   if (hours.fair.some((s) => inSpan(minutes, s))) return "fair";
   return "off";
+}
+
+/** The kind a place says it is within its category ("comedy_club", "casino", "pub"), or null. */
+export function subtypeOf(c: Pick<Candidate, "facts">): string | null {
+  const v = (c.facts.subtype?.value as { value?: unknown } | undefined)?.value;
+  return typeof v === "string" ? v : null;
 }

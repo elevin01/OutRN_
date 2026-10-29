@@ -22,7 +22,7 @@ import { categoryEvidence, categoryFromOsmTags, subtypeFromOsmTags } from "@outr
  * facts, or store them differently (per-record claims): the next ingest then re-normalizes every
  * record in its capture, not only the edited ones.
  */
-export const OSM_NORMALIZE_VERSION = "2026-10-18.17";
+export const OSM_NORMALIZE_VERSION = "2026-10-29.1";
 
 export interface OsmRecord {
   externalId: string;
@@ -227,22 +227,37 @@ function membersOnlyLibrary(t: Record<string, string>): boolean {
 const MULTI_KIND: ReadonlySet<Category> = new Set(["activity", "attraction"]);
 
 /**
- * What kind of bar it is, which the category alone cannot say and an evening turns on: a sports
- * bar's big screens, a pub, a brewery's taproom, a wine or cocktail bar. A tag that says it decides
- * (sport=*, drink:wine, drink:cocktail, craft=brewery or microbrewery=yes, amenity=pub), whatever the
- * name, and is the evidence; only a bar no tag classifies is read by its name. brewery=* names the
- * beers poured (brewery=Krombacher at a pub), not a brewery on the premises: only the old boolean
- * brewery=yes says that. Null for a bar that says nothing more.
+ * A theatre whose genre is stand-up or improv (theatre:genre=stand_up_comedy, standup_comedy,
+ * comedy, improv): a comedy club, whose shows run late into the night, every night.
+ */
+export function comedyGenre(t: Record<string, string>): string | null {
+  const genre = t["theatre:genre"]?.trim();
+  return genre && /comedy|stand_?up|improv/i.test(genre) ? `theatre:genre=${genre.slice(0, 100)}` : null;
+}
+
+/**
+ * What kind of bar it is, which the category alone cannot say and an evening turns on: an arcade
+ * bar's games, a comedy bar's shows, a sports bar's big screens, a pub, a brewery's taproom, a wine
+ * or cocktail bar. A tag that says it decides (leisure=amusement_arcade, sport=*, drink:wine,
+ * drink:cocktail, craft=brewery or microbrewery=yes, amenity=pub), whatever the name, and is the
+ * evidence; only a bar no tag classifies is read by its name. The one exception is a name that says
+ * comedy over amenity=pub: the name says what is on, the tag only what kind of bar it is on. brewery=*
+ * names the beers poured (brewery=Krombacher at a pub), not a brewery on the premises: only the old
+ * boolean brewery=yes says that. Null for a bar that says nothing more.
  */
 export function barStyle(t: Record<string, string>): { style: string; tag: string | null } | null {
   const tagged = barStyleFromTags(t);
-  if (tagged) return tagged;
   const named = barStyleFromName(t["name"] ?? "");
+  if (named === "comedy_bar" && (!tagged || tagged.style === "pub")) return { style: named, tag: null };
+  if (tagged) return tagged;
   return named ? { style: named, tag: null } : null;
 }
 
 function barStyleFromTags(t: Record<string, string>): { style: string; tag: string } | null {
   const has = (key: string, ...values: string[]) => (t[key] !== undefined && values.includes(t[key]!) ? `${key}=${t[key]}` : null);
+  // A bar full of arcade cabinets (Barcade): the games are the evening.
+  const arcade = has("leisure", "amusement_arcade");
+  if (arcade) return { style: "arcade_bar", tag: arcade };
   const sport = t["sport"] && t["sport"] !== "no" ? `sport=${t["sport"]}` : null;
   if (sport) return { style: "sports_bar", tag: sport };
   const wine = has("drink:wine", "yes", "served") ?? has("bar", "wine");
@@ -258,6 +273,8 @@ function barStyleFromTags(t: Record<string, string>): { style: string; tag: stri
 
 function barStyleFromName(raw: string): string | null {
   const name = raw.toLowerCase();
+  if (/\bcomedy\b/.test(name)) return "comedy_bar";
+  if (/\b(barcade|arcade)\b/.test(name)) return "arcade_bar";
   if (/\bsports? (bar|grill|pub|lounge)\b/.test(name)) return "sports_bar";
   if (/\b(wine|vino|enoteca)\b/.test(name)) return "wine_bar";
   if (/\b(cocktails?|lounge|speakeasy|mixology)\b/.test(name)) return "cocktail_bar";
@@ -404,6 +421,8 @@ export function normalizeOsm(rec: OsmRecord, now = new Date()): OsmNormalized {
   if (category) pub("category", { value: category }, categoryEvidence(t) ?? "category tag", 0.8);
   const subtype = subtypeFromOsmTags(t);
   if (category && subtype && MULTI_KIND.has(category)) pub("subtype", { value: subtype }, categoryEvidence(t) ?? subtype, 0.8);
+  const comedy = category === "theatre" ? comedyGenre(t) : null;
+  if (comedy) pub("subtype", { value: "comedy_club" }, comedy, 0.8);
   // A bar's style: published from a tag that says it, estimated from its name alone.
   const style = category === "bar" ? barStyle(t) : null;
   if (style?.tag) pub("subtype", { value: style.style }, style.tag, 0.8);

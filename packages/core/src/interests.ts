@@ -76,6 +76,10 @@ export const INTERESTS_OF_SUBTYPE: Readonly<Record<string, InterestStrengths>> =
   zoo: { outdoors: 1, museums: 0.5 },
   aquarium: { museums: 1 },
   theme_park: { games: 1, outdoors: 0.5 },
+  // A theatre whose shows are stand-up or improv, and bars whose evening is games or comedy.
+  comedy_club: { comedy: 1, nightlife: 0.5 },
+  comedy_bar: { comedy: 1, drinks: 0.5, nightlife: 0.5 },
+  arcade_bar: { games: 1, drinks: 1, nightlife: 0.5 },
 };
 
 /**

@@ -40,6 +40,18 @@ describe("time of day: when each kind of place is a good idea", () => {
     expect(dayPart("waterfront", at("2026-10-03", "17:00"), TZ, sunset)).toBe("prime");
   });
 
+  it("a comedy club's shows and a casino's tables run late: their kind's hours, not their category's", () => {
+    expect(dayPart("theatre", at("2026-10-29", "22:30"), TZ)).toBe("off");
+    expect(dayPart("theatre", at("2026-10-29", "22:30"), TZ, null, "comedy_club")).toBe("prime");
+    expect(dayPart("theatre", at("2026-10-30", "00:30"), TZ, null, "comedy_club")).toBe("prime");
+    expect(dayPart("theatre", at("2026-10-30", "01:30"), TZ, null, "comedy_club")).toBe("off");
+    expect(dayPart("theatre", at("2026-10-29", "18:00"), TZ, null, "comedy_club")).toBe("fair");
+    expect(dayPart("activity", at("2026-10-30", "02:00"), TZ)).toBe("off");
+    expect(dayPart("activity", at("2026-10-30", "02:00"), TZ, null, "casino")).toBe("prime");
+    // A kind with no hours of its own keeps its category's.
+    expect(dayPart("bar", at("2026-10-29", "23:00"), TZ, null, "pub")).toBe("prime");
+  });
+
   it("no rule where the kind is too varied", () => {
     expect(dayPart("other", at("2026-10-03", "22:00"), TZ)).toBeNull();
   });

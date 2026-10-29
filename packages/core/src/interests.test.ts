@@ -25,6 +25,10 @@ describe("interests", () => {
     expect(interestsOf({ category: "attraction", subtype: "zoo" })).toEqual({ outdoors: 1, museums: 0.5 });
     // A casino is a night out first: an "active" mood (games) only half matches it.
     expect(interestsOf({ category: "activity", subtype: "casino" })).toEqual({ nightlife: 1, games: 0.5 });
+    // A comedy club is comedy, not theatre; an arcade bar is games as much as drinks.
+    expect(interestsOf({ category: "theatre", subtype: "comedy_club" })).toEqual({ comedy: 1, nightlife: 0.5 });
+    expect(interestsOf({ category: "bar", subtype: "comedy_bar" })).toEqual({ comedy: 1, drinks: 0.5, nightlife: 0.5 });
+    expect(interestsOf({ category: "bar", subtype: "arcade_bar" })).toEqual({ games: 1, drinks: 1, nightlife: 0.5 });
     for (const subtype of ["constructor", "__proto__", "toString", "valueOf"]) expect(interestsOf({ category: "activity", subtype })).toEqual({ games: 1 });
   });
 

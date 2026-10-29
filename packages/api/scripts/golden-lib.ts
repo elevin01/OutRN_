@@ -52,6 +52,8 @@ export const GOLDEN_SCENARIOS: GoldenScenario[] = [
   // A taste never pushes a bar for a party with a child: the like of drinks is not applied.
   { id: "les-sat-evening-family-loves-drinks", title: "LES, Saturday 7pm, 3 hours, family with a 10-year-old, loves bars & drinks", at: "2026-10-03T23:00:00Z", request: { areaId: "les", windowMinutes: 180, company: "family", youngestAge: 10, taste: [{ interest: "drinks", weight: 1 }] } },
   { id: "les-fri-culture-mood", title: "LES, Friday 7pm, 3 hours, in the mood for culture", at: "2026-10-02T23:00:00Z", request: { areaId: "les", windowMinutes: 180, mood: "culture" } },
+  // Late, for someone who'd rather laugh or play than drink: comedy clubs run past 10pm, and an arcade bar is games.
+  { id: "les-fri-late-comedy-games", title: "LES, Friday 10:30pm, 3 hours, loves comedy and games", at: "2026-10-03T02:30:00Z", request: { areaId: "les", windowMinutes: 180, taste: [{ interest: "comedy", weight: 1 }, { interest: "games", weight: 1 }] } },
   { id: "bronxville-sat-evening", title: "Bronxville, Saturday 7:30pm, 2 hours, driving", at: "2026-10-03T23:30:00Z", request: { areaId: "bronxville", windowMinutes: 120 } },
   { id: "bronxville-sun-family", title: "Bronxville, Sunday noon, 3 hours, family", at: "2026-10-04T16:00:00Z", request: { areaId: "bronxville", windowMinutes: 180, company: "family" } },
   { id: "bronxville-mon-after-work", title: "Bronxville, Monday 5:30pm, 90 minutes", at: "2026-09-28T21:30:00Z", request: { areaId: "bronxville", windowMinutes: 90 } },

@@ -254,7 +254,7 @@
   {
    "id": "les-sat-evening",
    "title": "LES, Saturday 6:30pm, 3 hours",
-   "eligible": 2049,
+   "eligible": 2050,
    "top": [
     {
      "rank": 1,
@@ -1058,7 +1058,7 @@
   {
    "id": "les-fri-movies",
    "title": "LES, Friday 7pm, 3 hours, a movie or a show",
-   "eligible": 48,
+   "eligible": 52,
    "top": [
     {
      "rank": 1,
@@ -1626,7 +1626,7 @@
   {
    "id": "les-sat-evening-music-lover",
    "title": "LES, Saturday 6:30pm, 3 hours, loves live music",
-   "eligible": 2049,
+   "eligible": 2050,
    "top": [
     {
      "rank": 1,
@@ -1873,7 +1873,7 @@
   {
    "id": "les-fri-culture-mood",
    "title": "LES, Friday 7pm, 3 hours, in the mood for culture",
-   "eligible": 2014,
+   "eligible": 2018,
    "top": [
     {
      "rank": 1,
@@ -1939,6 +1939,85 @@
      "rank": 6,
      "name": "Sweet Pickle Books",
      "category": "bookshop",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    }
+   ],
+   "relaxations": []
+  },
+  {
+   "id": "les-fri-late-comedy-games",
+   "title": "LES, Friday 10:30pm, 3 hours, loves comedy and games",
+   "eligible": 1534,
+   "top": [
+    {
+     "rank": 1,
+     "name": "Barcade",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "LANDMARK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Old Man Hustle Comedy Bar",
+     "category": "bar",
+     "status": "check_first",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "The Grand Delancey",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Ms. Yoo",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Ten Bells",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",

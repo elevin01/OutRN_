@@ -3,7 +3,7 @@ import { destinationOf, type DestinationView } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, ResultClass, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
-import { dayPart, type DayPart } from "./daypart.js";
+import { dayPart, subtypeOf, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
 import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
@@ -55,9 +55,9 @@ const NOT_A_DATE_ACTIVITY: ReadonlySet<string> = new Set(["casino"]);
 export function suitsCompany(c: Candidate, company: NonNullable<RequestContext["company"]>): boolean {
   if (!COMPANY_CATEGORY_BONUS[company].includes(c.category)) return false;
   if (company !== "date") return true;
-  const subtype = (c.facts.subtype?.value as { value?: unknown } | undefined)?.value;
-  if (c.category === "bar") return !(typeof subtype === "string" && NOT_A_DATE_BAR.has(subtype));
-  if (c.category === "activity") return !(typeof subtype === "string" && NOT_A_DATE_ACTIVITY.has(subtype));
+  const subtype = subtypeOf(c);
+  if (c.category === "bar") return !(subtype !== null && NOT_A_DATE_BAR.has(subtype));
+  if (c.category === "activity") return !(subtype !== null && NOT_A_DATE_ACTIVITY.has(subtype));
   const cuisines = cuisinesOf(c);
   return !(cuisines.length > 0 && cuisines.every((x) => CASUAL_CUISINES.has(x)));
 }
@@ -155,7 +155,7 @@ export function scoreCandidate(
   if ((arrivalHour >= 21 || arrivalHour < 4) && LATE_NIGHT.has(c.category)) appeal += APPEAL_WEIGHTS.lateNight;
   // Open isn't the same as a good idea: a park after dark or a bar at 10am sinks, a café at 8am rises.
   // An event is its own time, so the kind of place it is held in doesn't judge it.
-  const part = c.kind === "occurrence" ? null : dayPart(c.category, t.arrival, ctx.timezone, ctx.sunset);
+  const part = c.kind === "occurrence" ? null : dayPart(c.category, t.arrival, ctx.timezone, ctx.sunset, subtypeOf(c));
   if (part === "prime") appeal += APPEAL_WEIGHTS.primeTime;
   else if (part === "off") appeal -= APPEAL_WEIGHTS.offHours;
   // "Confirmed" needs a recent verification (a founder check or an observation) and no dispute;
