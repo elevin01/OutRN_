@@ -215,6 +215,7 @@ describe.skipIf(!available)("Overture places on the synthetic LES venues", () =>
     expect(s.venues.matched).toBe(1);
     expect(await current("Grand Kitchen", "business_status")).toMatchObject({ value: { status: "operating" }, source_ids: ["overture"] });
   });
+
 });
 
 describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
@@ -328,5 +329,54 @@ describe.skipIf(!available)("places OSM lacks, as venues of their own", () => {
     expect(await venuesNamed("Edge Lantern Bar")).toMatchObject([{ publish_state: "eligible" }]);
     // The next live read covers the same box: Overture's own venues are not where it reads.
     expect(await overtureReadBox(db, "les")).toEqual(box);
+  });
+});
+
+// Runs after the rest: a newer release's read holds what it spoke for against every older read after it.
+describe.skipIf(!available)("an older Overture release never undoes a newer one", () => {
+  /** A capture of the given release (capture() writes the default, 2026-09-23.1). */
+  const ofRelease = (name: string, places: unknown[], release: string, bbox = LES) => {
+    const path = capture(name, places, bbox);
+    writeFileSync(path, readFileSync(path, "utf8").replace('"release":"2026-09-23.1"', `"release":"${release}"`));
+    return path;
+  };
+
+  it("an older read for an overlapping area neither rewrites nor withdraws a newer read's claims", async () => {
+    // LES's read of a later release sees Grand Kitchen closed; White Plains' snapshot holds the venue too.
+    const closed = place({ id: "ovt-grand", name: "Grand Kitchen", lat: 40.72698, lon: -73.99268, status: "permanently_closed", statusSignal: 1, statusUpdatedAt: "2026-09-20T00:00:00.000Z", updatedAt: "2026-09-20T00:00:00.000Z" });
+    const later = ofRelease("les-later", [closed], "2026-10-14.0");
+    await ingestOverture(db, { areaSlug: "les", fromFile: later, newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    // White Plains' capture of the earlier release still has it open, with a website.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-older", [GRAND]), newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+    // A read of the same or a later release still speaks for it.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: later, newPlaces: false });
+    expect((await current("Grand Kitchen", "business_status"))?.value).toEqual({ status: "closed_permanently" });
+  });
+
+  it("nor brings back the claims of a place a newer read no longer has", async () => {
+    // LES's read of a still later release has no Grand Kitchen at all: its Overture claims go.
+    await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-gone", [BROOME], "2026-10-20.0"), newPlaces: false });
+    expect(await overtureFacts("Grand Kitchen")).toEqual([]);
+    // White Plains' capture of the earlier release still lists it, open with a website: not put back.
+    await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-older-2", [GRAND]), newPlaces: false });
+    expect(await overtureFacts("Grand Kitchen")).toEqual([]);
+    expect(await current("Grand Kitchen", "website")).toBeUndefined();
+  });
+
+  it("nor revives a venue made from a place a newer read took down", async () => {
+    // A place only Overture has, south of Delancey: LES's read of the earlier release makes it a venue.
+    const mochi = place({ id: "ovt-new-mochi", name: "Mochi Corner", category: "coffee_shop", lat: 40.713, lon: -73.991, websites: ["https://mochicorner.example.com/"], phones: ["2125550111"], ...SIGNAL });
+    expect((await ingestOverture(db, { areaSlug: "les", fromFile: capture("les-mochi", [mochi]) })).newPlaces?.added).toBe(1);
+    expect(await overtureFacts("Mochi Corner")).not.toEqual([]);
+    // LES's read of a newer release sees it closed: the venue made from it is taken down.
+    const s = await ingestOverture(db, { areaSlug: "les", fromFile: ofRelease("les-mochi-closed", [{ ...mochi, status: "permanently_closed" }, BROOME], "2026-10-25.0") });
+    expect(s.newPlaces?.removed).toBe(1);
+    expect(await overtureFacts("Mochi Corner")).toEqual([]);
+    // White Plains reads the earlier release over the same streets, where it is open: it stays down.
+    const older = await ingestOverture(db, { areaSlug: "white_plains", fromFile: capture("white-plains-mochi", [mochi]) });
+    expect(older.newPlaces).toMatchObject({ added: 0, kept: 0, removed: 0 });
+    expect(await overtureFacts("Mochi Corner")).toEqual([]);
   });
 });
