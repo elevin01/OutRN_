@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Photo } from "@outrn/contracts";
-import { photosFor, photosToShow } from "./photos";
+import { creditLine, photosFor, photosToShow } from "./photos";
 
 const photo = (over: Partial<Photo> = {}): Photo => ({
   url: "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Lozupone_katz2.png/960px-Lozupone_katz2.png",
@@ -60,5 +60,38 @@ describe("which photos a place shows", () => {
 
   it("names the kind with the right article", () => {
     expect(photosFor("Rex", "Arts centre", [], stock, remote)[0]!.alt).toBe("A representative photo of an arts centre, not Rex");
+  });
+});
+
+describe("an aerial photo as a place's stand-in", () => {
+  const aerial = { url: "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=1,2,3,4&f=image", width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" };
+
+  it("stands in when a place has no photo of its own: first for a park, after the representative ones for a cafe", () => {
+    expect(photosFor("Seward Park", "Park", [], [], remote, { aerial, categoryId: "park" })).toEqual([
+      { key: aerial.url, source: `remote:${aerial.url}`, kind: "aerial", credit: aerial.credit, creditUrl: aerial.sourceUrl, alt: "An aerial view of where Seward Park is" },
+    ]);
+    expect(photosFor("Rex", "Cafe", [], stock, remote, { aerial, categoryId: "cafe" }).map((p) => p.kind)).toEqual(["representative", "aerial"]);
+    expect(photosFor("Seward Park", "Park", [], stock, remote, { aerial, categoryId: "park" }).map((p) => p.kind)).toEqual(["aerial", "representative"]);
+    // A place's own photos come first, alone.
+    expect(photosFor("Rex", "Cafe", [photo()], stock, remote, { aerial, categoryId: "cafe" }).map((p) => p.kind)).toEqual(["place"]);
+  });
+
+  it("loads only over https from the state's server, and none when the API gives none", () => {
+    for (const url of ["http://orthos.its.ny.gov/a", "https://orthos.its.ny.gov.evil.example/a", "https://user:pw@orthos.its.ny.gov/a", "https://upload.wikimedia.org/a.jpg", "file:///etc/hosts"]) {
+      expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: { ...aerial, url }, categoryId: "park" }), url).toEqual([]);
+    }
+    expect(photosFor("Seward Park", "Park", [], [], remote, { aerial: null, categoryId: "park" })).toEqual([]);
+  });
+});
+
+describe("a list card's credit line", () => {
+  const aerial = { url: "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=1,2,3,4&f=image", width: 800, height: 500, credit: "NYS ITS Geospatial Services orthoimagery", sourceUrl: "https://gis.ny.gov/orthoimagery" };
+
+  it("says a representative photo is not this place, before its credit", () => {
+    const [stand] = photosFor("Rex", "Cafe", [], stock, remote, { aerial, categoryId: "cafe" });
+    expect(creditLine(stand)).toBe("Representative photo · not this place · Unsplash");
+    expect(creditLine(photosFor("Seward Park", "Park", [], [], remote, { aerial, categoryId: "park" })[0])).toBe("Aerial photo: NYS ITS Geospatial Services orthoimagery");
+    expect(creditLine(photosFor("Rex", "Cafe", [photo()], stock, remote)[0])).toBe("Photo: Alex Lozupone, CC BY-SA 4.0");
+    expect(creditLine(undefined)).toBeNull();
   });
 });

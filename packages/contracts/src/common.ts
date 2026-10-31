@@ -151,3 +151,19 @@ export const Photo = z.object({
 });
 export type Photo = z.infer<typeof Photo>;
 
+/**
+ * An aerial photo of the spot a place is at (New York State's orthoimagery): real, but from above,
+ * so it is labelled as such ("Aerial view") with its credit. Hosted by its source; show it only from
+ * https://orthos.its.ny.gov.
+ */
+export const Aerial = z.object({
+  url: z.url(),
+  width: z.int().min(1),
+  height: z.int().min(1),
+  /** "NYS ITS Geospatial Services orthoimagery". Required wherever the photo appears. */
+  credit: z.string(),
+  /** The imagery's own page. */
+  sourceUrl: z.url(),
+});
+export type Aerial = z.infer<typeof Aerial>;
+

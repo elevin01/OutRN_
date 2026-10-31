@@ -43,6 +43,13 @@
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8235525,4971579,-8235365,4971679&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "bar",
         "label": "Bar"
@@ -172,6 +179,13 @@
       "name": "Forsyth Clinton Kitchen",
       "placeName": "Forsyth Clinton Kitchen",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236413,4971184,-8236253,4971284&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "restaurant",
         "label": "Restaurant"
@@ -319,6 +333,13 @@
       "name": "Delancey Books",
       "placeName": "Delancey Books",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236567,4970443,-8236407,4970543&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "bookshop",
         "label": "Bookshop"

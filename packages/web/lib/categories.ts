@@ -3,7 +3,7 @@ import {
   mdiFlowerOutline, mdiGamepadVariantOutline, mdiGlassCocktail, mdiIceCream, mdiLibrary, mdiMapMarkerOutline, mdiMovieOpenOutline, mdiMusic,
   mdiMusicNote, mdiPaletteOutline, mdiPineTree, mdiRun, mdiSilverwareForkKnife, mdiStarOutline, mdiStorefrontOutline, mdiTicketOutline, mdiWaves,
 } from "@mdi/js";
-import type { AreasResponse, Photo } from "@outrn/contracts";
+import type { Aerial, AreasResponse, Photo } from "@outrn/contracts";
 
 /**
  * Category shortcuts, icons and representative photos: the same as the mobile app's
@@ -63,7 +63,7 @@ export function groupOf(groups: readonly CategoryGroup[], categories: readonly s
 
 export interface ShownPhoto {
   url: string;
-  kind: "place" | "representative";
+  kind: "place" | "aerial" | "representative";
   credit: string;
   creditUrl: string | null;
   alt: string;
@@ -80,6 +80,11 @@ const REPRESENTATIVE: Readonly<Record<string, readonly { url: string; credit: st
 
 /** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
 const PHOTO_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
+/** Where aerial photos live: New York State's orthoimagery server, nowhere else. */
+const AERIAL_HOSTS = /^orthos\.its\.ny\.gov$/;
+
+/** Kinds of place an aerial photo shows better than a representative one: outdoors, a block or more (as the API sizes it). */
+const AERIAL_FIRST: ReadonlySet<string> = new Set(["park", "garden", "waterfront", "viewpoint", "attraction", "event_site", "market"]);
 
 /** An https address without credentials (optionally on one of `hosts`), else null. */
 export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): string | null {
@@ -101,24 +106,35 @@ export function representativeFor(name: string, category: { id: string; label: s
 }
 
 /**
- * The place's own photos, each with its credit; without any, representative photos of the kind of
- * place, labelled as such; without those, none.
+ * A place's stand-ins when it has no photo of its own (or none loads): an aerial photo of its spot
+ * and representative photos of its kind, each labelled as what it is; the aerial first for a park,
+ * a garden, a waterfront and the like.
  */
+export function fallbackFor(name: string, category: { id: string; label: string }, aerial?: Aerial | null): ShownPhoto[] {
+  const url = safeHttpsUrl(aerial?.url, AERIAL_HOSTS);
+  const air: ShownPhoto[] = url && aerial ? [{ url, kind: "aerial", credit: aerial.credit, creditUrl: safeHttpsUrl(aerial.sourceUrl), alt: `An aerial view of where ${name} is` }] : [];
+  const stock = representativeFor(name, category);
+  return AERIAL_FIRST.has(category.id) ? [...air, ...stock] : [...stock, ...air];
+}
 
-export function photosFor(name: string, category: { id: string; label: string }, photos: readonly Photo[] | undefined): ShownPhoto[] {
+/**
+ * The place's own photos, each with its credit; without any, its stand-ins (an aerial photo of its
+ * spot, representative photos of its kind), labelled as such; without those, none.
+ */
+export function photosFor(name: string, category: { id: string; label: string }, photos: readonly Photo[] | undefined, aerial?: Aerial | null): ShownPhoto[] {
   // The payload is not trusted: only https images on Wikimedia's hosts load, and a credit links only
   // over https. A photo that fails the check is dropped; a credit that does is shown as plain text.
   const mine = (photos ?? []).flatMap((p, i): ShownPhoto[] => {
     const url = safeHttpsUrl(p.url, PHOTO_HOSTS);
     return url ? [{ url, kind: "place", credit: p.credit, creditUrl: safeHttpsUrl(p.sourceUrl), alt: p.alt ? `${name}: ${p.alt}` : `Photo ${i + 1} of ${name}` }] : [];
   });
-  return mine.length ? mine : representativeFor(name, category);
+  return mine.length ? mine : fallbackFor(name, category, aerial);
 }
 
 /**
- * The photos to show now: the place's own that have not failed to load; when none is left, the
- * representative ones that have not (labelled as such); when none of those is left either, none:
- * never the category's icon in place of a photo.
+ * The photos to show now: the place's own that have not failed to load; when none is left, its
+ * stand-ins that have not (labelled as such); when none of those is left either, none: never the
+ * category's icon in place of a photo.
  */
 export function photosToShow(photos: readonly ShownPhoto[], fallback: readonly ShownPhoto[], failed: readonly string[]): ShownPhoto[] {
   for (const list of [photos, fallback]) {

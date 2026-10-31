@@ -50,6 +50,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8235783,4970957,-8235383,4971207&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [],
@@ -192,6 +199,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8237455,4971819,-8237295,4971919&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [
         {
           "id": "vietnamese",
@@ -319,6 +333,13 @@
       ],
       "parking": null,
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8237793,4970189,-8237633,4970289&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "height": 500,
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "cuisines": [],
       "diets": [],
       "features": [],

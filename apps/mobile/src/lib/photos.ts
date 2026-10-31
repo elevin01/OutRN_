@@ -1,16 +1,17 @@
-import type { Photo } from "@outrn/contracts";
+import type { Aerial, Photo } from "@outrn/contracts";
 
 /**
  * What the photo area shows, in order: the place's own photos (from the API, each with the credit its
- * license requires); when it has none, or none of them loads, representative photos of the kind of
- * place, labelled as such so they are never taken for the place itself; when there are none of those
+ * license requires); when it has none, or none of them loads, its stand-ins: an aerial photo of its
+ * spot (labelled "Aerial view") and representative photos of the kind of place (labelled as not this
+ * place), the aerial first for a park, a garden, a waterfront and the like; when none of those loads
  * either, no photo at all (never the category's icon in place of one).
  */
 export interface ShownPhoto<Source = unknown> {
   /** Tells photos apart across renders: the image's address, or the representative photo's page. */
   key: string;
   source: Source;
-  kind: "place" | "representative";
+  kind: "place" | "aerial" | "representative";
   /** Credit to show with the photo ("Jane Doe, CC BY-SA 4.0", "Unsplash"). */
   credit: string;
   /** Where the credit links: the file's page on Commons, or the photo's page. */
@@ -27,6 +28,11 @@ export interface RepresentativePhoto<Source = unknown> {
 
 /** Where the API's photos live: Wikimedia's image hosts, nowhere else. */
 const PHOTO_HOSTS = /^(upload|thumb)\.wikimedia\.org$/;
+/** Where aerial photos live: New York State's orthoimagery server, nowhere else. */
+const AERIAL_HOSTS = /^orthos\.its\.ny\.gov$/;
+
+/** Kinds of place an aerial photo shows better than a representative one: outdoors, a block or more (as the API sizes it). */
+export const AERIAL_FIRST: ReadonlySet<string> = new Set(["park", "garden", "waterfront", "viewpoint", "attraction", "event_site", "market"]);
 
 /** An https address without credentials (optionally on one of `hosts`), else null. */
 export function safeHttpsUrl(value: string | null | undefined, hosts?: RegExp): string | null {
@@ -55,6 +61,16 @@ export function photosToShow<Source>(
   return [];
 }
 
+/**
+ * The credit line a list card shows under its title. A representative photo says it is not this
+ * place on the line itself, before its credit, so a cut-off line still says so.
+ */
+export function creditLine(photo: ShownPhoto | undefined): string | null {
+  if (!photo) return null;
+  if (photo.kind === "representative") return `Representative photo · not this place · ${photo.credit}`;
+  return `${photo.kind === "aerial" ? "Aerial photo" : "Photo"}: ${photo.credit}`;
+}
+
 /** "a café", "an arts centre". */
 const withArticle = (kind: string) => `${/^[aeiou]/.test(kind) ? "an" : "a"} ${kind}`;
 
@@ -64,6 +80,7 @@ export function photosFor<Source>(
   photos: readonly Photo[] | undefined,
   representative: readonly RepresentativePhoto<Source>[],
   remote: (url: string) => Source,
+  standIn: { aerial?: Aerial | null; categoryId?: string } = {},
 ): ShownPhoto<Source>[] {
   // The payload is not trusted: only https images on Wikimedia's hosts load, and a credit links only
   // over https. A photo that fails the check is dropped; a credit that does is shown as plain text.
@@ -84,7 +101,7 @@ export function photosFor<Source>(
   });
   if (own.length) return own;
   const kind = categoryLabel.toLowerCase();
-  return representative.map((r) => ({
+  const stock = representative.map((r): ShownPhoto<Source> => ({
     key: r.url,
     source: r.source,
     kind: "representative",
@@ -92,4 +109,14 @@ export function photosFor<Source>(
     creditUrl: r.url,
     alt: `A representative photo of ${withArticle(kind)}, not ${placeName}`,
   }));
+  const air = aerialPhoto(placeName, standIn.aerial, remote);
+  return AERIAL_FIRST.has(standIn.categoryId ?? "") ? [...air, ...stock] : [...stock, ...air];
+}
+
+/** The aerial photo of a place's spot, when the API gives one on the state's server. */
+function aerialPhoto<Source>(placeName: string, aerial: Aerial | null | undefined, remote: (url: string) => Source): ShownPhoto<Source>[] {
+  const url = safeHttpsUrl(aerial?.url, AERIAL_HOSTS);
+  return url && aerial
+    ? [{ key: url, source: remote(url), kind: "aerial", credit: aerial.credit, creditUrl: safeHttpsUrl(aerial.sourceUrl), alt: `An aerial view of where ${placeName} is` }]
+    : [];
 }

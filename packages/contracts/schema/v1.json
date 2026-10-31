@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "contract": "1.10.0",
+  "contract": "1.11.0",
   "routes": {
     "areas": {
       "method": "GET",
@@ -1047,6 +1047,47 @@
                     "additionalProperties": false
                   }
                 },
+                "aerial": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "width": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "height": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "credit": {
+                          "type": "string"
+                        },
+                        "sourceUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "width",
+                        "height",
+                        "credit",
+                        "sourceUrl"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "category": {
                   "type": "object",
                   "properties": {
@@ -1916,6 +1957,7 @@
                 "name",
                 "placeName",
                 "photos",
+                "aerial",
                 "category",
                 "subtype",
                 "cuisines",
@@ -2220,6 +2262,47 @@
               ],
               "additionalProperties": false
             }
+          },
+          "aerial": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "credit": {
+                    "type": "string"
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "url",
+                  "width",
+                  "height",
+                  "credit",
+                  "sourceUrl"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "status": {
             "type": "string",
@@ -2781,6 +2864,7 @@
           "location",
           "address",
           "photos",
+          "aerial",
           "status",
           "hoursNow",
           "price",

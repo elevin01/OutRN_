@@ -25,6 +25,13 @@
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg"
     }
   ],
+  "aerial": {
+    "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236254,4971425,-8235854,4971675&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+    "width": 800,
+    "height": 500,
+    "credit": "NYS ITS Geospatial Services orthoimagery",
+    "sourceUrl": "https://gis.ny.gov/orthoimagery"
+  },
   "status": "operating",
   "hoursNow": {
     "state": "open",

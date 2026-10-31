@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { AgeLimit, IsoDateTime, LatLon, NearbyParking, Option, Photo, Price, VenueLink } from "./common.js";
+import { Aerial, AgeLimit, IsoDateTime, LatLon, NearbyParking, Option, Photo, Price, VenueLink } from "./common.js";
 
 /** GET /v1/places/:id — what we know about one place, and how we know it. */
 
@@ -59,6 +59,8 @@ export const PlaceDetails = z.object({
   address: z.string().nullable(),
   /** Photos of the place, lead first. Empty when none is known. */
   photos: z.array(Photo).max(10),
+  /** An aerial photo of the place's spot; null outside New York or while its source is switched off. */
+  aerial: Aerial.nullable(),
   status: z.enum(["operating", "closed_temporarily", "closed_permanently", "unknown"]),
   hoursNow: HoursNow,
   price: Price,

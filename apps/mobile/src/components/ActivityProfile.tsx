@@ -213,7 +213,9 @@ export function ActivityProfile({
           ? "Demo places · illustrative photos and posts"
           : current?.kind === "representative"
             ? "Representative photo · not this place"
-            : ""}
+            : current?.kind === "aerial"
+              ? "Aerial view of this spot"
+              : ""}
       </Copy>
       {shown.length > 1 && (
         <Copy pointerEvents="none" style={styles.counter}>
@@ -290,7 +292,9 @@ export function ActivityProfile({
               <Copy style={styles.credit} numberOfLines={2}>
                 {current.kind === "representative"
                   ? "Representative photo"
-                  : "Photo"}
+                  : current.kind === "aerial"
+                    ? "Aerial photo"
+                    : "Photo"}
                 : {current.credit}
               </Copy>
             </Pressable>

@@ -45,6 +45,13 @@
       "name": "Ridge Ludlow Kitchen",
       "placeName": "Ridge Ludlow Kitchen",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8235485,4970912,-8235325,4971012&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "restaurant",
         "label": "Restaurant"
@@ -175,6 +182,13 @@
       "name": "Ridge Suffolk Kitchen",
       "placeName": "Ridge Suffolk Kitchen",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8236643,4969917,-8236483,4970017&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "restaurant",
         "label": "Restaurant"
@@ -305,6 +319,13 @@
       "name": "Attorney Pitt Kitchen",
       "placeName": "Attorney Pitt Kitchen",
       "photos": [],
+      "aerial": {
+        "url": "https://orthos.its.ny.gov/arcgis/rest/services/wms/Latest/MapServer/export?bbox=-8234568,4970827,-8234408,4970927&bboxSR=3857&imageSR=3857&size=800,500&format=jpg&f=image",
+        "width": 800,
+        "height": 500,
+        "credit": "NYS ITS Geospatial Services orthoimagery",
+        "sourceUrl": "https://gis.ny.gov/orthoimagery"
+      },
       "category": {
         "id": "restaurant",
         "label": "Restaurant"

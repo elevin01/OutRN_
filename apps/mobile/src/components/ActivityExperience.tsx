@@ -137,8 +137,10 @@ export function ActivityExperience({
       : undefined;
   /* eslint-enable @typescript-eslint/no-require-imports */
   const expired = !!response && !demoMode && isExpired(response, now);
-  // The place's own photos (the card's at once, the details' once loaded); else representative ones.
+  // The place's own photos (the card's at once, the details' once loaded); else its stand-ins: an
+  // aerial photo of its spot and representative ones, each labelled as what it is.
   const representative = representativePhotos(category?.id || "");
+  const aerial = item?.aerial ?? place?.aerial ?? null;
   const photos = useMemo(
     () =>
       photosFor(
@@ -147,10 +149,11 @@ export function ActivityExperience({
         item?.photos.length ? item.photos : place?.photos,
         representative,
         (uri) => ({ uri }),
+        { aerial, categoryId: category?.id },
       ),
-    [name, category?.label, item?.photos, place?.photos, representative],
+    [name, category?.label, category?.id, item?.photos, place?.photos, representative, aerial],
   );
-  // When none of the place's own photos loads: the representative ones, labelled as such.
+  // When none of the place's own photos loads: its stand-ins, labelled as such.
   const fallback = useMemo(
     () =>
       photosFor(
@@ -159,8 +162,9 @@ export function ActivityExperience({
         undefined,
         representative,
         (uri) => ({ uri }),
+        { aerial, categoryId: category?.id },
       ),
-    [name, category?.label, representative],
+    [name, category?.label, category?.id, representative, aerial],
   );
   // Category shortcuts on the deck (not on a place opened from Saved).
   const groups = useMemo(
