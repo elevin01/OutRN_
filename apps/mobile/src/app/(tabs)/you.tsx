@@ -12,14 +12,16 @@ import {
   s,
 } from "../../components/ui";
 export default function YouScreen() {
-  const { areas, query, outing, taste, storageError } = useApp();
+  const { areas, query, outing, taste, storageError, tasteError } = useApp();
   const likes = (areas?.filters.interests ?? []).filter(
     (i) => pickOf(taste, i.id) === "like",
   );
   return (
     <Screen>
       <Heading>You</Heading>
-      {storageError && <Copy accessibilityRole="alert">{storageError}</Copy>}
+      {(tasteError || storageError) && (
+        <Copy accessibilityRole="alert">{tasteError || storageError}</Copy>
+      )}
       {outing && (
         <Button
           label="Your current outing"

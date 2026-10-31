@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BackHandler,
+  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -46,6 +47,7 @@ export default function OnboardingScreen() {
     setup,
     setupNotice,
     storageError,
+    tasteError,
     updatePreferences,
     completeSetup,
   } = useApp();
@@ -78,6 +80,7 @@ export default function OnboardingScreen() {
   }
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => {
+    if (Platform.OS !== "android") return;
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -134,9 +137,9 @@ export default function OnboardingScreen() {
           {locationNotice || setupNotice}
         </Copy>
       )}
-      {storageError && (
+      {(tasteError || storageError) && (
         <Copy accessibilityRole="alert" style={shared.error}>
-          {storageError}
+          {tasteError || storageError}
         </Copy>
       )}
     </>

@@ -1,0 +1,51 @@
+{
+  "selected": [
+    {
+      "id": "00000000-0000-4000-8000-00000000002e",
+      "name": "Ridge Coffee",
+      "category": "cafe"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "name": "Forsyth Clinton Kitchen",
+      "category": "restaurant"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "name": "Pitt Park",
+      "category": "park"
+    }
+  ],
+  "errors": [],
+  "narrow": {
+    "allSaved": {
+      "x": 20,
+      "y": 80,
+      "width": 59,
+      "height": 44
+    },
+    "collections": {
+      "x": 95,
+      "y": 80,
+      "width": 73,
+      "height": 44
+    },
+    "fits": {
+      "x": 205,
+      "y": 80,
+      "width": 95,
+      "height": 44
+    }
+  },
+  "flows": [
+    "legacy migration",
+    "search",
+    "create collection",
+    "edit collection",
+    "persistence",
+    "remove and undo",
+    "Fits now",
+    "320px single-row controls",
+    "offline retains saves"
+  ]
+}

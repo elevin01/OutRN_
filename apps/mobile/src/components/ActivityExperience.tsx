@@ -88,6 +88,7 @@ export function ActivityExperience({
     toggleSaved,
     hydrated,
     storageError,
+    tasteError,
     setOuting,
     query,
     search,
@@ -340,8 +341,8 @@ export function ActivityExperience({
               <Copy style={styles.label}>Sources</Copy>
             </Pressable>
           </View>
-          {storageError && (
-            <Copy accessibilityRole="alert">{storageError}</Copy>
+          {(storageError || tasteError) && (
+            <Copy accessibilityRole="alert">{storageError ?? tasteError}</Copy>
           )}
           {linkError && (
             <Copy accessibilityRole="alert">

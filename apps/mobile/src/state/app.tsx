@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   useContext,
@@ -26,14 +25,15 @@ import {
 import { deviceOrigin } from "../lib/device-location";
 import { LocationProblem } from "../lib/location-request";
 import { learn as learnFrom, type Signal } from "../lib/taste";
-export type SavedPlace = { id: string; name: string; category: string };
+import { useSavedLibrary } from "./saved-library";
+import type { SavedMatch } from "../lib/saved-now";
+export type { SavedPlace } from "../lib/saved-library";
 export type Outing = {
   item: RecommendationItem;
   timezone: string;
   expiresAt: string;
   arrived: boolean;
 };
-const KEY = "outrn.saved.v1";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_DISMISSED = 200;
 function useAppState() {
@@ -48,15 +48,11 @@ function useAppState() {
   const [result, setResult] = useState<RecommendationResponse>();
   const [error, setError] = useState<RequestError>();
   const [busy, setBusy] = useState(true);
-  const [saved, setSaved] = useState<SavedPlace[]>([]);
-  const [storageError, setStorageError] = useState<string>();
-  const [hydrated, setHydrated] = useState(false);
+  const library = useSavedLibrary();
+  const [savedPlan, setSavedPlan] = useState<SavedMatch>();
   const [outing, setOuting] = useState<Outing>();
   const searchController = useRef<AbortController | null>(null);
   const loadController = useRef<AbortController | null>(null);
-  const writes = useRef(Promise.resolve());
-  const savedLoaded = useRef(false);
-  const [saveRevision, setSaveRevision] = useState(0);
   // Keep the existing feedback behavior, with one shared preference writer.
   const learned = useRef(new Set<string>());
   const dismissed = useRef<string[]>([]);
@@ -250,30 +246,6 @@ function useAppState() {
       });
   }
   useEffect(() => {
-    AsyncStorage.getItem(KEY)
-      .then((raw) => {
-        if (!raw) return;
-        const data: unknown = JSON.parse(raw);
-        if (Array.isArray(data))
-          setSaved(
-            data
-              .filter(
-                (x): x is SavedPlace =>
-                  !!x &&
-                  typeof x.id === "string" &&
-                  typeof x.name === "string" &&
-                  typeof x.category === "string",
-              )
-              .slice(0, 200),
-          );
-      })
-      .catch(() =>
-        setStorageError("Saved places couldn’t be loaded on this device."),
-      )
-      .finally(() => {
-        savedLoaded.current = true;
-        setHydrated(true);
-      });
     return () => {
       searchController.current?.abort();
       loadController.current?.abort();
@@ -285,23 +257,6 @@ function useAppState() {
     // Wait for the stored taste before the first request. Later changes are explicit searches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preferences.ready]);
-  useEffect(() => {
-    if (!savedLoaded.current || saveRevision === 0) return;
-    writes.current = writes.current
-      .then(() => AsyncStorage.setItem(KEY, JSON.stringify(saved)))
-      .catch(() =>
-        setStorageError("Your changes could not be saved on this device."),
-      );
-  }, [saved, saveRevision]);
-  function toggleSaved(place: SavedPlace) {
-    if (!hydrated) return;
-    setSaveRevision((revision) => revision + 1);
-    setSaved((old) =>
-      old.some((x) => x.id === place.id)
-        ? old.filter((x) => x.id !== place.id)
-        : [place, ...old].slice(0, 200),
-    );
-  }
   async function completeSetup(
     areaId: string,
     travelMode: Setup["travelMode"],
@@ -341,10 +296,12 @@ function useAppState() {
       setError(undefined);
       return initialize();
     },
-    saved,
-    toggleSaved,
-    hydrated,
-    storageError: preferences.error || storageError,
+    ...library,
+    savedPlan,
+    setSavedPlan,
+    // The preferences' own storage problem: Saved's retry only retries the saved library.
+    tasteError: preferences.error,
+    withTaste,
     outing,
     setOuting,
     initialized,
