@@ -8,12 +8,12 @@ import type { Candidate, CategoryPolicy, Evaluation } from "./types.js";
  * when one would get there: a downtown restaurant at 7:30 on a Saturday. Most places list none (in
  * White Plains, nine in ten), so without this the few that do lead every list however far they are.
  *
- * It ranks with the Ready options and stays Check first: the card still says its hours are unknown,
- * and why it is offered anyway ("most places like it nearby are open then, 77 of 85 that list
- * hours"). Its merit pays for having to check (`checkCost`) and for the chance it is shut
- * (`missCost` for a sure miss, the cost of finding another place nearby): a likely-open place a short
- * drive away comes before a Ready one across the county, never before a Ready one about as good and
- * as near. Only when its hours are the one thing to check, a source says it still operates (a place
+ * It stays Check first: the card still says its hours are unknown, and why it is offered anyway
+ * ("most places like it nearby are open then, 77 of 85 that list hours"). Where any other place with
+ * no hours listed pays for a trip that may be wasted (score.ts uncertaintyCost), its merit pays only
+ * for having to check (`checkCost`) and for the chance it is shut (`missCost` for a sure miss, the
+ * cost of finding another place nearby): a likely-open place a short drive away comes before a Ready
+ * one across the county, never before a Ready one about as good and as near. Only when its hours are the one thing to check, a source says it still operates (a place
  * that lists no hours is often one no one has looked at in years), and on a sample big enough to
  * mean something.
  */

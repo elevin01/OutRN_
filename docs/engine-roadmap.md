@@ -78,6 +78,111 @@ changelog.
 
 ## Next, in order
 
+### Batch 11: worth going out for (this PR)
+The founder's call (10 Nov): "the recommendation system is terrible at this point. I open it up and
+it gives me things, activities, places (new, interesting, or genuinely worth going) that I can go out
+for. Currently it does not do that." No contract change: reason codes are open-ended.
+- **What an open showed.** The default search (three hours, no filters) at nine moments of a week on
+  each capture, first pages only (`pnpm --filter @outrn/api opens`):
+  - Lower East Side: 10 different places in 27 slots. Katz's on 8 of 9 pages, Seward Park on 5, a
+    branch library and a bookshop as the "culture" and "browse" cards. The Tenement Museum, three
+    minutes away with its hours listed, on none: nothing says whether one walks in, so it was Check
+    first, and Ready came before everything.
+  - Bronxville: the Yonkers library on 6 of 9 pages. White Plains: its library on 5, a Barnes & Noble
+    29 minutes away on 4, a hotel lobby lounge on 4.
+  - Three causes. Appeal started level (a library, a café and a museum all 0.5, a Wikidata id worth
+    0.1 whatever it was on). Ready was a tier above Check first, so no museum of unknown admission
+    and no ticketed event ever led. Variety took the best of each activity type however poor, and
+    near-ties were broken by the alphabet, the same every day.
+- **Draw** (`draw.ts`): how much an option is something to go out for, 0 to 1. Appeal is now
+  0.3 + 0.5 × draw, then what suits the moment as before. Ranking only: it never excludes.
+  - **Its kind:** a museum 0.75; a theatre, music room, bowling or an activity 0.7; a cinema, arcade
+    or market 0.65; a lookout or shore 0.6; a gallery 0.55; a restaurant or bar 0.5; a park, bookshop
+    or dessert place 0.45; a café 0.4; a library 0.25; a community centre 0.2. A zoo, aquarium or
+    amusement park 0.85, an ice rink or escape room 0.75, by subtype or by what kind of destination it is.
+  - **Known by name** (`LANDMARK`, now worded "well known"): an encyclopedia entry counts by what it
+    is on. A restaurant, bar, café or bookshop with a Wikidata id is an institution (+0.2, +0.1 more
+    with a Wikipedia article: Katz's, Lombardi's, Veselka, McSorley's, Russ & Daughters; two dozen
+    of the Lower East Side's 1,500). Most museums and theatres have one (+0.1). Every city park,
+    playground and branch library has one, so there it says nothing; an article of its own says a
+    little of a park. Never a chain's.
+  - **New.** `NEWLY_OPENED`: the place's own opening date (OSM `start_date`) within the last year
+    ("opened in May 2026", +0.2). `NEW_ON_MAP`: every OSM record of it is still its first version
+    and was made in the last 240 days, for a kind that opens and closes faster than mappers keep up
+    (food, drink, galleries, bookshops, activities; not a park someone finally drew): "new on the
+    map", an estimate, +0.15. On the Lower East Side capture that is about forty places: Kyuubi
+    Omakase, Izakaya Juraku, Little Big, The Rabbit Books and Bar, Old Flings.
+  - **Decades in business** (`LONG_STANDING`, "here since 1938", +0.1) for food, drink, bookshops
+    and stages that say so.
+  - **Small parks:** one named for what it is (a playground, a triangle, a square, a plaza) is 0.25,
+    unless it is a destination; a playground is 0.6 for a party with a child under twelve.
+  - **Events are what they are.** The flat 0.25 for any event is gone: a festival 0.9, a concert or
+    comedy 0.85, theatre 0.8, a film or a market 0.75, a tour or history 0.65, a talk 0.55, plus 0.1
+    for being on today. A public calendar is mostly the week's routine, and its title says so
+    whatever kinds the listing gives ("Zumba" is filed under dance): a fitness class or a seniors'
+    programme 0.3, a volunteer workday 0.25, a club or a class 0.4, a meeting or help desk 0.15.
+    They stay options, and a taste still lifts them. Of the 101 events within reach of Bronxville
+    in the next two weeks (NYC Parks and the town calendars, read 10 Nov), 61 are such by their titles.
+  - An event made for children now lifts appeal 0.25 with a child along (it only moved fit before).
+- **What there is to check is a cost, not a tier** (`uncertaintyCost`, score.ts). Merit is appeal
+  0.55, fit 0.3, novelty 0.15 (with a taste: taste 0.35, appeal 0.35, fit 0.2, novelty 0.1), less
+  what each caveat risks: no hours listed 0.08 plus 0.004 per minute of the trip (a door shut three
+  minutes away is a shrug, half an hour away it is the evening); nothing listed on a stage 0.08; a
+  ticket to book 0.04; admission unknown 0.02; at most 0.2 together. Likely open keeps its own cost.
+  The card is unchanged: Check first, with what to check. An age doubt for the party still ranks
+  after everything, and feasibility is still the gate.
+  - **A sure thing:** when none of the first three is Ready, the best Ready option within 0.15 of
+    merit takes the last slot (never the first, never a love's).
+  - Decides two questions left open here: whether an evening's event should take a first-page place
+    (batch 8: it does, when it is worth going to), and decision 9.
+- **Variety without filler** (select.ts). One list by merit. The head of the list is taken as it
+  comes; another kind of outing jumps the queue only when it is about as good as the best (within
+  0.1; the second kind on the page within 0.15, so a page is not three preserves) and variety may
+  promote it: not a poor idea for the hour, not a trip that could be for nothing (no hours listed,
+  nothing on its stage), not a chain, not what is no outing in itself (draw under 0.35: a library),
+  not a stretch (fit under 0.6) unless it is worth one (draw 0.7: a festival, a museum). A repeat's
+  cost in the fill likewise never promotes such an option. Something happening is its own kind of
+  outing: tonight's concert does not stand in for dinner.
+- **Today's turn** (`ROTATION`). Among options about as good as each other, which came first was
+  the alphabet's choice. Each option's merit now shifts by up to ±0.06, by a number fixed for the
+  option (its name and place, not its id) and the local day, 35% of it shared by its kind of place:
+  near-equals take turns from day to day, and so do the kinds that lead. The same search the same
+  day gives the same order; an option better by more than 0.12 always comes first. What must not
+  be left to a turn outweighs it: a wheelchair user's accessible restroom lifts appeal 0.25 (was
+  0.05), a child's facilities and no restroom with small children 0.1. `steady: true` on a request
+  context turns it off (the engine's own tests; a backtest).
+  - Nothing is kept about what a device was shown: the mobile app's rule ("which options were seen
+    or chosen is never stored") stands. `seenIds` still sinks what a client does send.
+- **Smaller things seen on the way.**
+  - A trip of up to 6 minutes on foot (8 by car) costs nothing in fit: the nearest of several good
+    places is not the best for it.
+  - A lookout in a preserve, taken to be open dawn to dusk, is off after sunset (State Line Lookout
+    was the second card at 10:30pm). A zoo or an estate is off after 5pm, whatever an "attraction" is.
+  - A "happening soon" nudge leaves out the week's routine (`ROUTINE_EVENT`), unless it is the
+    person's own taste.
+- **What an open shows now** (the same nine moments):
+  - Lower East Side: 15 different places in 27 slots; museums 4, markets 4, no library or bookshop
+    as filler. Saturday 10am: the Tenement Museum (Check first: walk-in status unknown), Katz's,
+    Essex Market. Thursday 8pm: Chinatown Ice Cream Factory, Little Big (new on the map), Souvlaki GR
+    (new on the map). Katz's still leads the food on 6 of 9: it is the best-known place within ten minutes.
+  - Bronxville: 14 different places. By day the destinations take turns (Twin Lakes, Glen Island,
+    State Line Lookout) with a restaurant between them; by night its bars, restaurants and the
+    gelateria that opened this year. No library.
+  - White Plains by day: the preserves and estates in turn, the Neuberger Museum, a restaurant.
+    With this week's calendars loaded, what reaches first pages is a stage band and a gallery tour
+    at Wave Hill and a talk at Croton Point Park; no fitness class or volunteer day does.
+  - Engine time: unchanged (2,412 candidates: about 330 ms here before and after; loading the same).
+- **Seen, not fixed.**
+  - **White Plains in the evening is still its few places with hours** (a hotel lobby lounge on 6
+    of 9 pages). 310 of its 390 restaurants list no hours, and of 291 no source says they still
+    operate, so they pay for a possibly wasted trip and cannot be "likely open". That is data, not
+    ranking: `outrn firstparty run` (their own sites' hours) and Overture's status are what move it.
+  - **Nothing says which ordinary restaurant is good.** Draw knows the famous and the new; between
+    two neighbourhood trattorias it takes turns. Ratings are batch 5 (a paid source: decision 6).
+  - **Evenings lean on food and drink** wherever no events are loaded: a stage with nothing listed
+    is a weak card ("check what's on"), rightly. The event sources of batch 10 are what fill it.
+  - Golden: every scenario re-pinned (the diff is the change; read it as "would I go there, then?").
+
 ### Batch 10: taste first, and what's happening (the product's center)
 The engine started as "what's open near me". It becomes "what should I do tonight": first what is
 only happening now (a band in the park, fireworks, a street fair, a pop-up market), then ranked by
@@ -425,9 +530,10 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
     1.3–8.6 km apart in a café list, which are different places. The records stay as they are:
     merging them is identity's work, with review.
 - **Still to do:**
-  - **Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
+  - ~~**Bigger places need evidence to lead.** In a long LES afternoon, the museums (Tenement Museum,
     Museum of Chinese in America) are all Check first (tours, unlisted hours), so they never
-    outrank a Ready place. Founder checks or the museums' own sites would let them lead.
+    outrank a Ready place.~~ Done in batch 11: they lead as Check first, by what there is to check.
+    Founder checks or the museums' own sites would still make them Ready.
   - In the apps: done. Cuisine, diet and must-have choices in both search forms, and what a place
     offers (cuisines, diets, must-haves) on its card.
   - Golden scenarios for the new areas: White Plains done (six searches on its 18 Oct captures,
@@ -484,11 +590,11 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
   at 19 venues in the next 30 days (the Capitol Theatre 20, Jazz On Main 12, New York Comedy Club 38,
   the Museum of the Moving Image 48). A date and time a site writes without an offset is now its own
   clock (it was read as UTC: four hours early).
-  Seen, not changed: a ticketed show with no end time is Check first (tickets, an estimated end), so
-  it ranks after every Ready place and seldom reaches the first page (Trombone Shorty at the Capitol
-  Theatre, 8pm Saturday, is eligible with appeal 0.97). Whether an evening's event should take a first-
-  page place is a ranking decision of its own. Next: cinema showtimes (the programme gap from the
-  26 Sep audit).
+  Seen then: a ticketed show with no end time is Check first (tickets, an estimated end), so
+  it ranked after every Ready place and seldom reached the first page (Trombone Shorty at the Capitol
+  Theatre, 8pm Saturday, was eligible with appeal 0.97). Decided in batch 11: what there is to check
+  is a cost, and an event worth going to takes a first-page place. Next: cinema showtimes (the
+  programme gap from the 26 Sep audit).
 - **Overture Maps places: done for existing venues** (`outrn ingest overture`). It gives whether a place still
   operates, signal-backed closures, and websites and phones OSM lacks. Only CDLA-Permissive-2.0 and CC0-1.0
   records are kept: Foursquare's (Apache-2.0) are left out until its NOTICE ships with the data and the
@@ -602,9 +708,13 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
    (05:30–18:30 for dawn and dusk), flagged approximate. `evaluateHours` now puts each day's real times
    at the place into the rule before the library reads it, so a December park closes at 4:32pm, and
    such hours are no longer approximate.
-9. **Likely open** (batch 6, part 8): should a place with no listed hours rank with the Ready ones
+9. ~~**Likely open** (batch 6, part 8): should a place with no listed hours rank with the Ready ones
    when most places like it nearby are open then (still labelled Check first, with the reason on its
-   card)? It's in place now; veto it in review to keep Ready strictly first.
+   card)?~~ Decided by batch 11: Ready is no longer a tier at all. Every caveat costs merit by what it
+   risks, and a likely-open place pays its own, smaller cost. Veto batch 11 in review to go back.
+11. **Remembering what was shown** (batch 11): the day's turn varies the first page without keeping
+   anything. Sinking what this device saw last week would vary it more (`seenIds` already works),
+   and means storing what was shown on the device, which the mobile app has so far refused to do.
 10. ~~**Venues' own websites:** register each site by hand with a reviewed reason, or automatically?~~
    Decided: automatically, respecting robots.txt and the rate limits above (batch 8). Sites that
    aren't the venue's own are never registered.

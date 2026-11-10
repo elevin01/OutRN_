@@ -22,7 +22,10 @@ interface VenueRow {
   boost: string | null;
   excluded: boolean;
   has_landmark: boolean;
+  has_wikipedia: boolean;
   brand: string | null;
+  since: string | null;
+  first_mapped_at: string | null;
 }
 
 interface OccRow {
@@ -46,6 +49,12 @@ function toFacts(raw: VenueRow["facts"], now: Date): Partial<Record<Attribute, F
   return out;
 }
 
+function dateOrNull(s: string | null): Date | null {
+  if (!s) return null;
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelMode, now: Date, windowEnd: Date, maxTravelMinutes?: number, parkingBufferMinutes?: number, destinationMaxTravelMinutes?: number): Promise<Candidate[]> {
   // Search exactly as far as the travel estimate could ever call reachable, plus 5%; for destinations
   // (a venue with a destination fact) as far as the window lets one be (see maxTravelFor).
@@ -59,9 +68,20 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
               v.facts_doc as facts,
               (select sum(weight) from venue_overrides o where o.venue_id = v.id and o.kind = 'boost' and (o.expires_at is null or o.expires_at > $4)) as boost,
               exists(select 1 from venue_overrides o where o.venue_id = v.id and o.kind = 'exclude' and (o.expires_at is null or o.expires_at > $4)) as excluded,
-              exists(select 1 from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'wikidata') as has_landmark,
-              (select se.raw->'tags'->>'brand' from entity_links l join source_entities se on se.id = l.source_entity_id where l.venue_id = v.id and l.superseded_by is null and se.raw->'tags' ? 'brand' limit 1) as brand
+              coalesce(src.has_landmark, false) as has_landmark, coalesce(src.has_wikipedia, false) as has_wikipedia, src.brand, src.since,
+              case when src.first_version then src.mapped_at end as first_mapped_at
          from venues v
+         -- What its source records say of it beyond the facts: one read of them per venue.
+         left join lateral (
+           select bool_or(se.raw->'tags' ? 'wikidata') as has_landmark,
+                  bool_or(se.raw->'tags' ? 'wikipedia') as has_wikipedia,
+                  min(se.raw->'tags'->>'brand') as brand,
+                  min(se.raw->'tags'->>'start_date') filter (where se.source_id = 'osm') as since,
+                  bool_and(se.raw->>'version' = '1') filter (where se.source_id = 'osm') as first_version,
+                  min(se.raw->>'timestamp') filter (where se.source_id = 'osm') as mapped_at
+             from entity_links l join source_entities se on se.id = l.source_entity_id
+            where l.venue_id = v.id and l.superseded_by is null
+         ) src on true
         where v.publish_state = 'eligible'
           and ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $5)
           and (ST_DWithin(v.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3) or v.facts_doc ? 'destination')`,
@@ -82,6 +102,9 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
     boost: Number(v.boost ?? 0),
     excluded: v.excluded,
     hasLandmarkId: v.has_landmark,
+    hasWikipedia: v.has_wikipedia,
+    since: v.since,
+    firstMappedAt: dateOrNull(v.first_mapped_at),
     brand: v.brand,
   }));
   if (!venues.length) return candidates;
@@ -136,6 +159,9 @@ export async function loadCandidates(q: Queryable, origin: LatLon, mode: TravelM
       boost: Number(v.boost ?? 0),
       excluded: v.excluded,
       hasLandmarkId: v.has_landmark,
+      hasWikipedia: v.has_wikipedia,
+      since: v.since,
+      firstMappedAt: dateOrNull(v.first_mapped_at),
       brand: v.brand,
       parkingOptions: parking.get(o.venue_id) ?? [],
     });

@@ -28,8 +28,8 @@ export const TASTE = {
   loved: 0.85,
   /** The like from the person's own taste that earns the TASTE_MATCH reason. */
   reasonFrom: 0.5,
-  /** Merit with a taste: the match leads, then appeal, fit and novelty (score.ts merit). */
-  merit: { taste: 0.4, appeal: 0.3, fit: 0.2, novelty: 0.1 },
+  /** Merit with a taste: the match and what is worth going for lead, then fit and novelty (score.ts merit). */
+  merit: { taste: 0.35, appeal: 0.35, fit: 0.2, novelty: 0.1 },
 } as const;
 
 /**

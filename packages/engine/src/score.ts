@@ -1,34 +1,42 @@
-import { isFreshConfirmation, localClock, minutesBetween, type Interest } from "@outrn/core";
-import { destinationOf, type DestinationView } from "./destination.js";
+import { isFreshConfirmation, localClock, matchKey, minutesBetween, type Interest } from "@outrn/core";
+import { destinationOf, openDawnToDusk, type DestinationView } from "./destination.js";
 import type { Candidate, CategoryPolicy, Evaluation, ReasonCode, RequestContext, ResultClass, Scores } from "./types.js";
 import { waitFloorMinutes } from "./conditions.js";
 import { isOutdoor, readWeather, WEATHER_LIMITS } from "./forecast.js";
-import { dayPart, subtypeOf, type DayPart } from "./daypart.js";
+import { dayPartOf, subtypeOf, type DayPart } from "./daypart.js";
 import { ageLimitOf, deadlineOf, minorInParty, type FeasibilityOutcome } from "./feasibility.js";
 import { AMENITIES, KID_FACILITY_REASON, kidFacilitiesFor, restroomOf, youngestUnder } from "./amenities.js";
 import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
 import { cuisinesOf } from "./cuisine.js";
 import { LIKELY_OPEN } from "./likely.js";
+import { drawOf } from "./draw.js";
 
 /**
- * Four separately inspectable scores. Feasibility is a gate, not a score; nothing here can
- * rescue a candidate that failed it, and Evidence is never traded against Appeal.
+ * Four separately inspectable scores. Feasibility is a gate, not a score: nothing here can rescue a
+ * candidate that failed it. Among what passed, merit orders: what is worth going out for (appeal,
+ * from draw.ts), how it fits the time (fit), and what is still to check, which costs by what it
+ * risks (uncertaintyCost) and is never hidden from the card.
  */
 
 /** What a 9pm+ window is for: bars and late food. */
 const LATE_NIGHT = new Set(["bar", "nightclub", "restaurant"]);
 
 /**
- * An event is pushed: it happens now and not tomorrow, and it is what someone out tonight is looking
- * for. It competes with places on one list (a strong boost, not a lane); one starting soon a little more.
+ * Appeal starts from draw (draw.ts): how much an option is something to go out for. `base` is a
+ * place nobody would go out of their way for, and `base + draw` one an outing is built around, so
+ * a famous deli and the branch library no longer start level. An event's draw is what it is (a
+ * concert, not a fitness class); being on today and not tomorrow adds `event`, starting soon a
+ * little more. Events and places compete on one list, not in lanes.
  */
-export const APPEAL_WEIGHTS = { chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.25, eventStartsSoon: 0.05, popularNow: 0.1, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, notForTheCompany: 0.15 } as const;
+export const APPEAL_WEIGHTS = { base: 0.3, draw: 0.5, completeness: 0.06, chainPenalty: 0.15, lateNight: 0.1, hoursConfirmed: 0.1, primeTime: 0.05, offHours: 0.25, event: 0.1, eventStartsSoon: 0.05, popularNow: 0.1, destination: 0.1, destinationLongWindow: 0.1, destinationNamed: 0.05, kidsEventForAdults: 0.35, kidsEventForFamily: 0.25, notForTheCompany: 0.15 } as const;
 /**
  * An event is popular right now from this score up, as its source measures demand (0 to 1): a film
  * among TMDB's ten most popular, a SeatGeek event in its top band. Ranking only, never a gate.
  */
 export const POPULAR_FROM = 0.7;
+/** A trip up to this long costs nothing in fit: three minutes' walk or six, one is as near as the other. */
+export const NEAR_ENOUGH_MINUTES: Readonly<Record<RequestContext["mode"], number>> = { walk: 6, transit: 8, drive: 8 };
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -85,7 +93,7 @@ export function scoreCandidate(
   policy: CategoryPolicy,
   maxTravel: number,
   weights: ReturnType<typeof tasteWeights> = tasteWeights(ctx),
-): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null; tasteLead: Interest | null } {
+): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null; tasteLead: Interest | null; draw: number; rotation: number } {
   const extra: ReasonCode[] = [];
   const t = f.timing!;
 
@@ -98,7 +106,10 @@ export function scoreCandidate(
   // long meal), not a 25-minute ice cream. It counts from 90 minutes and fully from four hours.
   const worth = 1 - (2 * t.travel.minutes) / (2 * t.travel.minutes + t.visit.typicalMinutes);
   const longWindow = longWindowOf(ctx);
-  const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * Math.max(0, 1 - t.travel.minutes / reach) + longWindow * WORTH_THE_TRIP.share * worth;
+  // A few minutes more or less is no difference: the nearest of several good places is not the best for it.
+  const free = NEAR_ENOUGH_MINUTES[ctx.mode];
+  const nearness = Math.max(0, 1 - Math.max(0, t.travel.minutes - free) / Math.max(1, reach - free));
+  const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * nearness + longWindow * WORTH_THE_TRIP.share * worth;
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
   let chips = 0.5;
@@ -133,14 +144,13 @@ export function scoreCandidate(
   if (f.reasons.includes("CLOSES_SOON")) fit -= 0.1;
   fit = Math.max(0, Math.min(1, fit));
 
-  // Appeal: modest prior + permitted signals + distinct occurrences + overrides + context rules
-  let appeal = 0.5;
-  if (c.hasLandmarkId) {
-    appeal += 0.1;
-    extra.push("LANDMARK");
-  }
+  // Appeal: how much it is something to go out for (its kind, what its records say of it: draw.ts),
+  // then what suits the moment and the party, overrides and context rules.
+  const draw = drawOf(c, ctx);
+  let appeal = APPEAL_WEIGHTS.base + APPEAL_WEIGHTS.draw * draw.score;
+  extra.push(...draw.reasons);
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
-  appeal += 0.1 * completeness;
+  appeal += APPEAL_WEIGHTS.completeness * completeness;
   if (c.kind === "occurrence") appeal += APPEAL_WEIGHTS.event + (f.reasons.includes("EVENT_STARTS_SOON") ? APPEAL_WEIGHTS.eventStartsSoon : 0);
   // What people are going to now: a popular film's screening, a show in demand. Like taste, never a
   // lift or a claim for an adult place or an adult-limited event with a minor along.
@@ -157,7 +167,8 @@ export function scoreCandidate(
     appeal += destinationAppeal(dest, ctx);
     extra.push("DESTINATION");
   }
-  if (forKids && !minorInParty(ctx)) appeal -= APPEAL_WEIGHTS.kidsEventForAdults;
+  // Made for children: with a child along it is the outing, whatever kind of event it is; without one it sinks.
+  if (forKids) appeal += minorInParty(ctx) ? APPEAL_WEIGHTS.kidsEventForFamily : -APPEAL_WEIGHTS.kidsEventForAdults;
   // A place of the company's kind that is no place for it (a pub, a casino floor, a pizza counter on a
   // date) sinks, so the wine bar and the dinner come first.
   if (ctx.company && COMPANY_CATEGORY_BONUS[ctx.company].includes(c.category) && !suitsCompany(c, ctx.company)) appeal -= APPEAL_WEIGHTS.notForTheCompany;
@@ -167,7 +178,10 @@ export function scoreCandidate(
   if ((arrivalHour >= 21 || arrivalHour < 4) && LATE_NIGHT.has(c.category)) appeal += APPEAL_WEIGHTS.lateNight;
   // Open isn't the same as a good idea: a park after dark or a bar at 10am sinks, a café at 8am rises.
   // An event is its own time, so the kind of place it is held in doesn't judge it.
-  const part = c.kind === "occurrence" ? null : dayPart(c.category, t.arrival, ctx.timezone, ctx.sunset, subtypeOf(c));
+  let part = c.kind === "occurrence" ? null : dayPartOf(c, t.arrival, ctx.timezone, ctx.sunset);
+  // A lookout keeps the city lights; one in a preserve, taken to be open dawn to dusk for want of
+  // hours of its own (openDawnToDusk), is a dark trailhead after sunset.
+  if (part !== null && c.kind === "venue" && !c.facts.opening_hours && ctx.sunset && t.arrival > ctx.sunset && openDawnToDusk(c)) part = "off";
   if (part === "prime") appeal += APPEAL_WEIGHTS.primeTime;
   else if (part === "off") appeal -= APPEAL_WEIGHTS.offHours;
   // "Confirmed" needs a recent verification (a founder check or an observation) and no dispute;
@@ -201,7 +215,7 @@ export function scoreCandidate(
   // toddler (one lift, however many); no restroom counts against it with young children.
   const restroom = restroomOf(c);
   if (ctx.requireWheelchair && restroom.wheelchair === "yes") {
-    appeal += AMENITIES.appeal;
+    appeal += AMENITIES.accessibleRestroom;
     extra.push("ACCESSIBLE_RESTROOM");
   }
   const kids = kidFacilitiesFor(c, ctx);
@@ -235,29 +249,146 @@ export function scoreCandidate(
   void policy;
   const scores: Scores = { evidence: +f.evidenceConfidence.toFixed(3), fit: +fit.toFixed(3), appeal: +appeal.toFixed(3), novelty: +novelty.toFixed(3) };
   if (taste) scores.taste = taste.score;
-  return { scores, extraReasons: extra, dayPart: part, tasteLead: taste?.lead ?? null };
+  return { scores, extraReasons: extra, dayPart: part, tasteLead: taste?.lead ?? null, draw: draw.score, rotation: rotationOf(c, ctx) };
 }
 
 /**
- * One number for how good an option is within its class: appeal, then fit, novelty least. With a
- * taste or a mood, how well it matches leads: what someone loves comes before what is merely near.
+ * Today's turn. Among options about as good as each other (three hundred restaurants a few minutes
+ * away, none known to be better), which comes first was the alphabet's choice, the same every day:
+ * the same three cards on every open. Each option's merit now shifts by up to half of `span` either
+ * way, by a number fixed for the day: most of it the option's own, the rest (`kindShare`) shared by
+ * its kind of place, so that near-equals take turns from day to day, and so do the kinds of outing
+ * that lead (a market day, a museum day). A search repeated the same day gives the same order, and
+ * an option better than another by more than `span` always comes first.
+ */
+export const ROTATION = { span: 0.12, kindShare: 0.35 } as const;
+
+/**
+ * FNV-1a, then a finishing mix: a stable spread of a short string, not a secret. Without the mix a
+ * change in the last characters (the day of the month) barely moves the high bits, and tomorrow's
+ * order would be today's.
+ */
+function hash32(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+/** The local date of a search, read once: every candidate of a search asks for the same one. */
+let lastDate: { at: number; timeZone: string; date: string } | null = null;
+function localDate(at: Date, timeZone: string): string {
+  if (!lastDate || lastDate.at !== at.getTime() || lastDate.timeZone !== timeZone) lastDate = { at: at.getTime(), timeZone, date: localClock(at, timeZone).date };
+  return lastDate.date;
+}
+
+/** By what the option is and where (ids differ between databases; a place does not), and the local date. */
+export function rotationOf(c: Candidate, ctx: Pick<RequestContext, "now" | "timezone" | "steady">): number {
+  if (ctx.steady) return 0;
+  const date = localDate(ctx.now, ctx.timezone);
+  const unit = (key: string) => hash32(key) / 0x1_0000_0000 - 0.5;
+  const own = unit(`${date}|${matchKey(c.name)}|${c.point.lat.toFixed(4)}|${c.point.lon.toFixed(4)}|${c.occurrence ? c.occurrence.start.toISOString() : ""}`);
+  const kind = unit(`${date}|${c.kind === "occurrence" ? "happening" : c.category}`);
+  return +(ROTATION.span * ((1 - ROTATION.kindShare) * own + ROTATION.kindShare * kind)).toFixed(4);
+}
+
+/**
+ * What each thing to check first costs an option in merit. Being Ready used to come before
+ * everything: a museum three minutes away with its hours listed ranked below every café, because
+ * nothing says whether one walks in or buys a ticket at the desk, and no event ever led, because an
+ * event needs a ticket. Now what is unknown is weighed by what it risks: a wasted trip (no hours
+ * listed) costs a lot, a question the door answers costs little. The card still says Check first, and
+ * what to check. Rain is already in appeal; a doubt the party may go in at all is not a cost but a
+ * rank of its own (hasAgeDoubt).
+ */
+export const UNCERTAINTY: Readonly<Record<string, number>> = {
+  HOURS_UNKNOWN: 0.08,
+  HOURS_DOUBTFUL: 0.08,
+  PROGRAMME_UNLISTED: 0.08,
+  LATE_ENTRY_UNCERTAIN: 0.08,
+  TOUR_ONLY: 0.08,
+  WAIT_MAY_NOT_FIT: 0.06,
+  DIET_FROM_NAME: 0.05,
+  HOURS_UNVERIFIED: 0.04,
+  ADMISSION_UNCONFIRMED: 0.04,
+  PRICE_UNKNOWN: 0.03,
+  ACCESS_LIMITED: 0.03,
+  RESTROOM_NOT_ACCESSIBLE: 0.03,
+  RESTROOM_ACCESS_LIMITED: 0.02,
+  ADMISSION_UNKNOWN: 0.02,
+  HOURS_APPROXIMATE: 0.02,
+  RAIN_LIKELY: 0,
+  AGE_LIMIT_LIKELY: 0,
+  AGE_LIMIT_UNCERTAIN: 0,
+  KIDS_UNCERTAIN: 0,
+};
+/**
+ * A wasted trip costs by its length: finding a door shut three minutes away is a shrug, half an hour
+ * away it is the evening. Added to HOURS_UNKNOWN per minute of travel, one way.
+ */
+export const WASTED_TRIP_PER_MINUTE = 0.004;
+/** A caveat with no cost of its own yet, and the most a card's caveats cost together. */
+export const UNCERTAINTY_DEFAULT = 0.05;
+export const UNCERTAINTY_MAX = 0.2;
+
+/** What an option's caveats cost it (0 for a Ready one). */
+export function uncertaintyCost(e: Evaluation): number {
+  let cost = 0;
+  // A stage with nothing listed has no hours but its shows': what's on is the one thing to check.
+  const programme = e.unresolved.includes("PROGRAMME_UNLISTED");
+  for (const code of e.unresolved) {
+    if (code === "HOURS_UNKNOWN") {
+      if (programme) continue;
+      // Likely open, not known to be: the cost of checking, and of the times places like it are shut then.
+      if (e.likelyOpen) cost += LIKELY_OPEN.checkCost + (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost;
+      else cost += UNCERTAINTY.HOURS_UNKNOWN! + WASTED_TRIP_PER_MINUTE * (e.timing?.travel.minutes ?? 0);
+    } else cost += UNCERTAINTY[code] ?? UNCERTAINTY_DEFAULT;
+  }
+  return Math.min(UNCERTAINTY_MAX, cost);
+}
+
+/** Caveats that risk the trip itself: it may be shut, full, or not on. */
+const TRIP_AT_RISK: ReadonlySet<string> = new Set(["HOURS_UNKNOWN", "HOURS_DOUBTFUL", "PROGRAMME_UNLISTED", "LATE_ENTRY_UNCERTAIN", "TOUR_ONLY", "WAIT_MAY_NOT_FIT"]);
+
+/**
+ * Whether going could be for nothing: its hours are unknown (and places like it are not known to be
+ * open then), nothing is listed on its stage, the last entry may have passed. Variety never promotes
+ * such an option (select.ts): it is offered where its merit puts it, with what to check.
+ */
+export function tripAtRisk(e: Evaluation): boolean {
+  return e.unresolved.some((code) => TRIP_AT_RISK.has(code) && !(code === "HOURS_UNKNOWN" && e.likelyOpen));
+}
+
+/** Merit without a taste or a mood: what is worth going for first, then how well it fits the time, then novelty. */
+export const MERIT = { appeal: 0.55, fit: 0.3, novelty: 0.15 } as const;
+
+/**
+ * One number for how good an option is: appeal, then fit, novelty least; with a taste or a mood, how
+ * well it matches leads with appeal. Less what its caveats cost (uncertaintyCost), plus today's turn
+ * (ROTATION).
  */
 export function merit(e: Evaluation): number {
   const s = e.scores;
   // A destination past the everyday reach with one like it nearer pays back its bonus (detour.ts).
   const appeal = s.appeal - (e.detour?.appeal ?? 0);
-  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : appeal * 0.5 + s.fit * 0.35 + s.novelty * 0.15;
-  // Likely open, not known to be: less the cost of checking, and of the times places like it are shut then.
-  return e.likelyOpen ? m - LIKELY_OPEN.checkCost - (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost : m;
+  const m = s.taste !== undefined ? s.taste * TASTE.merit.taste + appeal * TASTE.merit.appeal + s.fit * TASTE.merit.fit + s.novelty * TASTE.merit.novelty : appeal * MERIT.appeal + s.fit * MERIT.fit + s.novelty * MERIT.novelty;
+  return m - uncertaintyCost(e) + (e.rotation ?? 0);
 }
 
 /**
- * Where an option ranks: Ready, and Check first on its hours alone where places like it are likely
- * open then (LIKELY_OPEN), lead; the rest of Check first follows. A place outdoors in the dark that
- * would lead (a park open all night at 10:30pm, or likely open: dayPart "off") ranks with Check
- * first, by merit, which its hour already costs: being open is not enough to come before every bar
- * worth checking. A café at 9pm keeps its standing: it is a poor idea for the hour, not a dark lawn.
- * Its class (the card's label) is its own.
+ * Whether an option can be counted on to be open: Ready, or Check first on its hours alone where
+ * places like it are likely open then (LIKELY_OPEN). Not a place outdoors in the dark (a park open
+ * all night at 10:30pm: dayPart "off"): being open is not what it lacks. Its class (the card's label)
+ * is its own. Ranking is by merit, which already weighs what there is to check (uncertaintyCost);
+ * this is for the rules that ask for a sure thing (a nearer stand-in for a far destination, one
+ * sure option on the first page).
  */
 export function standing(e: Evaluation): ResultClass {
   const s = e.class === "check_first" && e.likelyOpen ? "ready" : e.class;
@@ -278,13 +409,9 @@ export function hasAgeDoubt(e: Evaluation): boolean {
   return ageDoubtIn(e.unresolved);
 }
 
-/** Ordering within the eligible set: standing, then merit; an age doubt for the party last. */
+/** Ordering within the eligible set: by merit; an age doubt for the party last. */
 export function compareEvaluations(a: Evaluation, b: Evaluation): number {
-  const rank = (e: Evaluation) => {
-    const s = standing(e);
-    const r = s === "ready" ? 0 : s === "check_first" ? 1 : 2;
-    return r <= 1 && hasAgeDoubt(e) ? 1.5 : r;
-  };
+  const rank = (e: Evaluation) => (hasAgeDoubt(e) ? 1 : 0);
   if (rank(a) !== rank(b)) return rank(a) - rank(b);
   const wa = merit(a);
   const wb = merit(b);

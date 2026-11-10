@@ -15,3 +15,4 @@ export * from "./amenities.js";
 export * from "./cuisine.js";
 export * from "./taste.js";
 export * from "./destination.js";
+export * from "./draw.js";

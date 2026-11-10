@@ -1,7 +1,7 @@
 # OutRN
 
-Feasibility-first local discovery. Someone opens it with a few hours free, sees three options that are
-actually doable in that window, picks one, and leaves.
+Feasibility-first local discovery. Someone opens it with a few hours free, sees three options worth
+going out for that are actually doable in that window, picks one, and leaves.
 
 This repository holds the **supply pipeline and recommendation engine** (stages 0–3 of the build plan),
 the **API** that serves them, and the **consumer web app** (stage 4). The UI and the backend meet only
@@ -26,6 +26,10 @@ sources ──▶ raw store ──▶ identity ──▶ facts (append-only) ─
 - **Agreement counts once per lineage.** Three directories repeating one upstream are one source.
 - **Feasibility is a gate, not a score.** Arrival, admission cutoff, useful time and return deadline
   are computed; "open now" is never an input. Last entry limits *arrival*, not the end of the visit.
+- **Open and near is not a reason to go.** Among what is feasible, order is by what is worth going
+  out for (something on today, a place known by name, one that just opened, a kind of place an outing
+  is built around), then how it fits the time. What is still to check costs by what it risks and
+  stays on the card; it is not a tier. Near-equals take turns from day to day.
 - **Nothing in the request path calls an external API.** The engine reads materialized tables only.
 - **Every connector is gated by `source_policies`.** Unknown permission means disabled. A source with
   open conditions (Foursquare, Google, Ticketmaster) is registered but off.
@@ -410,7 +414,7 @@ packages/sources    guarded fetch (rate limit, size cap, no private hosts, no cr
 packages/ingest     OSM tags → category + facts; the area pipeline; first-party job
 packages/identity   pairwise scoring (strong/supporting/negative evidence), resolver, merge/split
 packages/facts      append-only fact writer, opening-hours evaluation, current_facts materialization
-packages/engine     feasibility, four scores, diversity, reason codes → card copy, DB loader, run persistence
+packages/engine     feasibility, draw and the four scores, variety, reason codes → card copy, DB loader, run persistence
 packages/contracts  the v1 API contract: zod schemas, types, error codes, fixtures, schema/v1.json
 packages/api        HTTP boundary: validation, request resolution, result mapping, paging snapshots, ops, mock
 packages/web        the Next.js UI; depends on @outrn/contracts only
@@ -427,6 +431,9 @@ pnpm test           # engine correctness suite, identity traps, normalization, h
 pnpm typecheck
 pnpm check:boundaries   # the UI imports only @outrn/contracts
 bash scripts/smoke.sh mock   # built web app against the mock API (`real` for the real API)
+pnpm golden             # re-pin the golden scenarios after an intended ranking change; review the diff
+pnpm --filter @outrn/api opens --why   # what an open shows: the default search at nine moments of a
+                        # week on each capture, and how the first pages are made up (`seed` first)
 ```
 
 The engine suite (`packages/engine/src/feasibility.test.ts`) is the correctness list from the plan:

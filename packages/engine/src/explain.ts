@@ -1,5 +1,6 @@
 import { addMinutes, DEFAULT_MAX_TRAVEL_MINUTES, DESTINATION_LABEL, INTERESTS } from "@outrn/core";
 import { destinationOf } from "./destination.js";
+import { parseSince } from "./draw.js";
 import { waitCeilingMinutes } from "./conditions.js";
 import { kidFacilityLevels } from "./amenities.js";
 import { leadCuisine } from "./cuisine.js";
@@ -55,6 +56,7 @@ export interface CardCopy {
 }
 
 const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() : null);
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /** Why this option is good, in the order the card sentence reads them. Only reasons the sentence would use. */
 export function reasonNotes(e: Evaluation, tz: string): Note[] {
@@ -70,6 +72,12 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
     const p = e.candidate.facts.popularity?.value as { source?: string; rank?: number } | undefined;
     add("POPULAR_NOW", p?.source === "tmdb" ? "one of the most popular films right now" : "popular right now", { source: p?.source ?? null, rank: p?.rank ?? null });
   }
+  // What its own record says for it: an encyclopedia entry, an opening date, a first mapping. Never a verdict of ours.
+  if (has("LANDMARK")) add("LANDMARK", "well known");
+  const since = parseSince(e.candidate.since);
+  if (has("NEWLY_OPENED") && since) add("NEWLY_OPENED", `opened in ${since.month ? `${MONTHS[since.month - 1]} ` : ""}${since.year}`, { year: since.year, month: since.month });
+  if (has("NEW_ON_MAP")) add("NEW_ON_MAP", "new on the map", { mappedAt: iso(e.candidate.firstMappedAt), isEstimate: true });
+  if (has("LONG_STANDING") && since) add("LONG_STANDING", `here since ${since.year}`, { year: since.year });
   // What it is worth going for, and when it is farther than an everyday outing, that it is worth it.
   const dest = has("DESTINATION") ? destinationOf(e.candidate) : null;
   if (dest) {
@@ -109,7 +117,6 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
   if (has("CHANGING_TABLE")) add("CHANGING_TABLE", kids.changing_table === "limited" ? "somewhere to change a diaper" : "a changing table", { level: kids.changing_table ?? null });
   if (has("KIDS_AREA")) add("KIDS_AREA", kids.kids_area === "limited" ? "a limited kids' area" : "a kids' area", { level: kids.kids_area ?? null });
   if (has("FRESH_REPORT")) add("FRESH_REPORT", "recent report");
-  if (has("LANDMARK")) add("LANDMARK", "a landmark");
   return out;
 }
 

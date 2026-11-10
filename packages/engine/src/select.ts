@@ -1,18 +1,20 @@
 import { ACTIVITY_OF_CATEGORY, cuisineGroups, haversineMetres, matchKey, ownValue, type LatLon } from "@outrn/core";
-import type { Evaluation, Relaxation, RequestContext, ResultClass, Shortlist } from "./types.js";
-import { compareEvaluations, hasAgeDoubt, merit, standing } from "./score.js";
+import type { Evaluation, Relaxation, RequestContext, Shortlist } from "./types.js";
+import { compareEvaluations, hasAgeDoubt, merit, tripAtRisk } from "./score.js";
 import { TASTE } from "./taste.js";
 import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
 
 /**
  * Diversity and the fewer-than-three rule.
  *
- * Standing beats diversity: a Ready option (or a likely-open one, see standing) is never displaced
- * by a Check-first one just because it would add a new activity type. Within a standing, a broad
- * request prefers distinct activity types first, then fills from the same standing, where a repeat
- * of what was just shown (the same kind of place, the same cuisine) costs a little: a slightly
- * lower-scored Thai place comes before a third Italian one, but a much better Italian place still wins. Narrowed request (a category chip, or
- * a cuisine): respect it — three bars is a valid answer to "bars" — though cuisines still vary within it.
+ * Options are ordered by merit (score.ts), which weighs what an option is worth going out for, how it
+ * fits the time, and what there is to check first. A broad request then prefers distinct kinds of
+ * outing first, among options about as good as the best (VARIETY.span): variety never promotes filler,
+ * so a bookshop half an hour away is not the second card because it is the only bookshop. The rest
+ * fill by merit, where a repeat of what was just shown (the same kind of place, the same cuisine)
+ * costs a little: a slightly lower-scored Thai place comes before a third Italian one, but a much
+ * better Italian place still wins. Narrowed request (a category chip, or a cuisine): respect it —
+ * three bars is a valid answer to "bars" — though cuisines still vary within it.
  * A child venue is not shown beside its parent. Never fill a third slot by silently relaxing a
  * constraint; name the relaxation instead.
  */
@@ -21,9 +23,23 @@ import { ENGINE_VERSION, WEIGHTS_VERSION } from "./types.js";
  * What a repeat costs, in merit (see score.ts), against each of the last `window` places shown:
  * the same category, and the same kind within it (a cuisine group, or the subtype of an activity).
  * Merit gaps between neighbours are usually a few hundredths; a place that is better by more than
- * the penalty keeps its place.
+ * the penalty keeps its place. `span`: how far below the best option one of another kind of outing
+ * may be and still be shown ahead of the best's own kind; the second kind on the list may be farther
+ * below (`secondKindSpan`), so that a page is not three of one thing (three preserves on a Saturday
+ * afternoon, for someone who wanted lunch) while something else decent is there. `minDraw`: variety
+ * is among outings, so it never promotes what is not one (a branch library, a pocket park: draw.ts).
+ * `minFit`: nor a stretch (a tavern half an hour away because it is the only tavern), unless it is an
+ * outing worth one (`worthAStretch`: a festival, a concert, a museum).
  */
-export const VARIETY = { window: 3, sameCategory: 0.03, sameKind: 0.05 } as const;
+export const VARIETY = { window: 3, sameCategory: 0.03, sameKind: 0.05, span: 0.1, secondKindSpan: 0.15, minDraw: 0.35, minFit: 0.6, worthAStretch: 0.7 } as const;
+
+/**
+ * What kind of outing an option is, for variety. Something happening is its own kind: tonight's
+ * concert does not stand in for a place to eat, nor a museum for the talk held in it.
+ */
+function outingOf(e: Evaluation): string {
+  return e.candidate.kind === "occurrence" ? "happening" : ACTIVITY_OF_CATEGORY[e.candidate.category];
+}
 
 /** What makes two places of one category the same kind: their cuisine groups, or their subtype. */
 function kindsOf(e: Evaluation): Set<string> {
@@ -51,19 +67,14 @@ function repeatPenalty(e: Evaluation, kinds: Set<string>, recent: Evaluation[], 
 }
 
 interface Pass {
-  cls: Exclude<ResultClass, "ineligible"> | "any";
+  /** One of each kind of outing, among the options about as good as the best. */
   diverse: boolean;
-  /** Release children held back while their parent was eligible (the parent still must not be shown). */
-  releaseChildren: boolean;
+  /** The leftovers: children held back while their parent was eligible (the parent still must not be shown), and options the party may not be let into. */
+  leftovers: boolean;
 }
 
-const PASSES: Pass[] = [
-  { cls: "ready", diverse: true, releaseChildren: false },
-  { cls: "ready", diverse: false, releaseChildren: false },
-  { cls: "check_first", diverse: true, releaseChildren: false },
-  { cls: "check_first", diverse: false, releaseChildren: false },
-  { cls: "any", diverse: false, releaseChildren: true },
-];
+const FILL: Pass = { diverse: false, leftovers: false };
+const PASSES: Pass[] = [{ diverse: true, leftovers: false }, FILL, { diverse: false, leftovers: true }];
 
 /** Options on the first page, where a love is guaranteed a place (see keepLovedOnFirstPage). */
 export const FIRST_PAGE = 3;
@@ -103,6 +114,30 @@ function keepLovedOnFirstPage(ordered: Evaluation[]): void {
 }
 
 /**
+ * One option on the first page can be counted on: when none of its three is Ready, the best Ready
+ * option takes its last slot, if it is nearly as good (`span`) as what it replaces. Everything else on
+ * the page may be worth a check first (an event to book, a museum whose desk we know nothing of);
+ * one card should need none. Never the first slot, never a love's (the slot above it instead), never
+ * a poor idea for the hour or something this person skips. The option it replaces leads the next page.
+ */
+export const SURE_THING = { span: 0.15 } as const;
+function keepASureThing(ordered: Evaluation[], meritOf: (e: Evaluation) => number): void {
+  if (ordered.length <= FIRST_PAGE) return;
+  const page = ordered.slice(0, FIRST_PAGE);
+  if (page.some((e) => e.class === "ready")) return;
+  const loved = (e: Evaluation) => (e.scores.taste ?? 0) >= TASTE.loved;
+  const slot = [FIRST_PAGE - 1, FIRST_PAGE - 2].find((i) => i > 0 && !loved(page[i]!));
+  if (slot === undefined) return;
+  const floor = meritOf(page[slot]!) - SURE_THING.span;
+  const at = ordered.findIndex((e, i) => i >= FIRST_PAGE && e.class === "ready" && e.dayPart !== "off" && !hasAgeDoubt(e) && (e.scores.taste ?? 0.5) >= 0.5 && meritOf(e) >= floor);
+  if (at < 0) return;
+  const [sure] = ordered.splice(at, 1);
+  const displaced = ordered[slot]!;
+  ordered[slot] = sure!;
+  ordered.splice(FIRST_PAGE, 0, displaced);
+}
+
+/**
  * Two places of one name this near are one place to whoever reads the list: OSM's point for a park
  * and its outline, two points for one shop, Overture's copy of a place OSM has under another
  * category, two branches of a chain across the street. The list shows it once. Grounds spread
@@ -117,11 +152,18 @@ const sameWithin = (e: Evaluation) => (GROUNDS.has(e.candidate.category) ? SAME_
 /** Every eligible candidate in display order. Pages ("More options") are slices of this. */
 export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluation[] {
   const eligible = all.filter((e) => e.class !== "ineligible").sort(compareEvaluations);
+  // Merit is read many times below; it does not change while the list is ordered.
+  const merits = new Map<Evaluation, number>();
+  const meritOf = (e: Evaluation): number => {
+    let m = merits.get(e);
+    if (m === undefined) merits.set(e, (m = merit(e)));
+    return m;
+  };
   const narrowed = Boolean(ctx.categories?.length || ctx.cuisines?.length || ctx.diets?.length);
   const ordered: Evaluation[] = [];
   const taken = new Set<Evaluation>();
   const usedVenues = new Set<string>();
-  const usedActivities = new Set<string>();
+  const usedOutings = new Set<string>();
   // Where each name already shown is (places, not events: an event's title is not a place's name).
   const shownNames = new Map<string, { point: LatLon; within: number; ageDoubt: boolean }[]>();
   const nameKeys = new Map<Evaluation, string>();
@@ -147,57 +189,96 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     return k;
   };
   // With a taste, variety is among what this person likes: one of each kind of outing they like
-  // first, then the rest by merit (which weighs the match). Without a like in that class, variety
-  // is across everything they don't skip, as without a taste.
+  // first, then the rest by merit (which weighs the match). Without a like, variety is across
+  // everything they don't skip, as without a taste.
   const likes = (e: Evaluation) => (e.scores.taste ?? 0.5) > 0.5;
-  const likedIn = new Set(eligible.filter(likes).map(standing));
+  const anyLiked = eligible.some((e) => likes(e) && !hasAgeDoubt(e));
   const admissible = (e: Evaluation, pass: Pass): boolean => {
-    if ((pass.cls !== "any" && standing(e) !== pass.cls) || taken.has(e)) return false;
+    if (taken.has(e)) return false;
     // A doubt the party may go in at all (a bar with a child along) waits for the last pass: no
-    // variety, no class pass, no demotion of the rest puts it before what they can surely do.
-    if (pass.cls !== "any" && hasAgeDoubt(e)) return false;
+    // variety and no merit puts it before what they can surely do.
+    if (!pass.leftovers && hasAgeDoubt(e)) return false;
     const parent = e.candidate.parentVenueId;
     if (usedVenues.has(e.candidate.venueId) || shownAlready(e)) return false;
-    if (parent && (usedVenues.has(parent) || (!pass.releaseChildren && eligibleVenueIds.has(parent)))) return false;
-    if (pass.diverse && usedActivities.has(ACTIVITY_OF_CATEGORY[e.candidate.category])) return false;
-    // Variety never promotes a poor idea for the hour (a park after dark, a bar at 10am), or what this
-    // person skips: it waits for its score.
-    if (pass.diverse && e.dayPart === "off") return false;
-    if (pass.diverse && (e.scores.taste ?? 0.5) < 0.5) return false;
-    if (pass.diverse && likedIn.has(standing(e)) && !likes(e)) return false;
-    return true;
+    if (parent && (usedVenues.has(parent) || (!pass.leftovers && eligibleVenueIds.has(parent)))) return false;
+    return !(pass.diverse && usedOutings.has(outingOf(e)));
+  };
+  /**
+   * Whether variety may move an option ahead of better ones of a kind already shown. Never a poor
+   * idea for the hour (a park after dark, a bar at 10am), a trip that could be for nothing (no hours
+   * listed, nothing on its stage), what is no outing in itself, a chain's branch, a stretch to get to
+   * or to fit in (unless it is worth one), or what this person skips; and among what they like when
+   * they like anything. Such an option waits for its score.
+   */
+  const promotable = (e: Evaluation): boolean => {
+    const draw = e.draw ?? 1;
+    if (e.dayPart === "off" || tripAtRisk(e) || draw < VARIETY.minDraw || (e.scores.fit < VARIETY.minFit && draw < VARIETY.worthAStretch)) return false;
+    // A chain's branch is the same everywhere: an option when it is asked for or the best left, never the page's variety.
+    if (e.candidate.brand && !ctx.categories?.includes(e.candidate.category)) return false;
+    if ((e.scores.taste ?? 0.5) < 0.5) return false;
+    return !(anyLiked && !likes(e));
   };
   const take = (e: Evaluation) => {
     ordered.push(e);
     taken.add(e);
     usedVenues.add(e.candidate.venueId);
     if (e.candidate.parentVenueId) usedVenues.add(e.candidate.parentVenueId);
-    usedActivities.add(ACTIVITY_OF_CATEGORY[e.candidate.category]);
+    usedOutings.add(outingOf(e));
     const key = nameKey(e);
     if (key !== "") shownNames.set(key, [...(shownNames.get(key) ?? []), { point: e.candidate.point, within: sameWithin(e), ageDoubt: hasAgeDoubt(e) }]);
   };
 
   for (const pass of PASSES) {
-    if (narrowed && pass.diverse) continue;
-    // One of each activity, best first; and the leftovers, in merit order.
-    if (pass.diverse || pass.cls === "any") {
+    if (pass.diverse) {
+      if (narrowed) continue;
+      // One of each kind of outing, down the merit order (`eligible`; an age doubt is last and not
+      // admissible here). The head of the list is taken as it comes. Once a better option has been
+      // passed over for being of a kind already shown, the next kind jumps the queue only if variety
+      // may promote it, and only while it is about as good as the best.
+      let best: number | null = null;
+      let passedOver = false;
+      let kinds = 0;
+      for (const e of eligible) {
+        // Not an option in any pass yet (a second record of a place shown, a museum's café): nothing is passed over.
+        if (hasAgeDoubt(e) || !admissible(e, FILL)) continue;
+        if (!admissible(e, pass)) {
+          passedOver = true;
+          continue;
+        }
+        const m = meritOf(e);
+        if (best === null) best = m;
+        if (passedOver) {
+          if (m < best - (kinds === 1 ? VARIETY.secondKindSpan : VARIETY.span)) break;
+          if (!promotable(e)) continue;
+        }
+        take(e);
+        kinds++;
+      }
+      continue;
+    }
+    if (pass.leftovers) {
       for (const e of eligible) if (admissible(e, pass)) take(e);
       continue;
     }
-    // Filling within a class: the best place once a repeat of the last few shown is paid for.
-    // Within a class `eligible` is in merit order and the penalty is never negative, so the scan
-    // stops at the first place whose merit alone can't beat the best found.
-    // Every place a page can show (MAX_OFFSET + a page) is ordered this way; the rest follow in merit order.
+    // Filling: the best place once a repeat of the last few shown is paid for. `eligible` is in merit
+    // order and the penalty is never negative, so the scan stops at the first place whose merit alone
+    // can't beat the best found. Every place a page can show (MAX_OFFSET + a page) is ordered this
+    // way; the rest follow in merit order.
     while (ordered.length < MAX_OFFSET + 3) {
       const recent = ordered.slice(-VARIETY.window);
       for (const r of recent) kinds(r);
       let best: Evaluation | null = null;
       let bestScore = Number.NEGATIVE_INFINITY;
+      let head = true;
       for (const e of eligible) {
-        if (standing(e) !== pass.cls) continue;
-        const m = merit(e);
+        if (hasAgeDoubt(e)) break;
+        const m = meritOf(e);
         if (m <= bestScore) break;
         if (!admissible(e, pass)) continue;
+        // A repeat's cost breaks near-ties among options variety may promote. One it may not (a trip
+        // that could be for nothing, a poor idea for the hour) is taken when it is the best left.
+        if (!head && !promotable(e)) continue;
+        head = false;
         const score = m - repeatPenalty(e, kinds(e), recent, kindCache);
         if (score > bestScore) {
           best = e;
@@ -210,6 +291,7 @@ export function orderForDisplay(all: Evaluation[], ctx: RequestContext): Evaluat
     for (const e of eligible) if (admissible(e, pass)) take(e);
   }
   keepLovedOnFirstPage(ordered);
+  keepASureThing(ordered, meritOf);
   return ordered;
 }
 

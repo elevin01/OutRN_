@@ -1,7 +1,7 @@
 import type { Attribute, Category, EvidenceClass, Interest, LatLon, TravelEstimate, TravelMode } from "@outrn/core";
 
-export const ENGINE_VERSION = "0.7.0";
-export const WEIGHTS_VERSION = "2026-10-18.3";
+export const ENGINE_VERSION = "0.8.0";
+export const WEIGHTS_VERSION = "2026-11-10.1";
 
 export type Mood = "relaxed" | "active" | "food" | "culture";
 export type Company = "alone" | "date" | "friends" | "family";
@@ -51,6 +51,11 @@ export interface RequestContext {
   dismissedIds?: string[];
   /** Only events: what is on, for a "happening soon" nudge. */
   eventsOnly?: boolean;
+  /**
+   * No daily rotation (score.ts ROTATION): the order rests on merit alone, the same on every day. For
+   * comparing rankings across days (a backtest, a test of the ranking itself); searches leave it unset.
+   */
+  steady?: boolean;
   timezone: string;
   /**
    * The forecast over the start of the plan (see weatherFor), if one is loaded: the lowest and
@@ -112,6 +117,15 @@ export interface Candidate {
   boost: number;
   excluded: boolean;
   hasLandmarkId: boolean;
+  /** Its record names a Wikipedia article of its own (OSM `wikipedia`): rarer than a Wikidata id. */
+  hasWikipedia?: boolean;
+  /** When the place says it opened (OSM `start_date`), as written: "1938", "2026-05". */
+  since?: string | null;
+  /**
+   * When OpenStreetMap first mapped it, known only while every OSM record of it is still its first
+   * version (a later edit's date replaces it). What "new on the map" reads (draw.ts).
+   */
+  firstMappedAt?: Date | null;
   /** Chain brand from the source record (OSM `brand`), if any. */
   brand?: string | null;
   /** The venue's own name. For an occurrence `name` is the event title; this is where it happens. */
@@ -147,6 +161,12 @@ export type ReasonCode =
   | "WEATHER_SUITABLE"
   | "SUNSET_WINDOW"
   | "LANDMARK"
+  /** It says it opened within the last year (a published opening date). */
+  | "NEWLY_OPENED"
+  /** First mapped within the last months, for a kind of place that opens and closes often (an estimate of new). */
+  | "NEW_ON_MAP"
+  /** It has been there for decades (a published opening date): the deli from 1938. */
+  | "LONG_STANDING"
   | "FRESH_REPORT"
   | "HOURS_UNVERIFIED"
   | "HOURS_UNKNOWN"
@@ -220,7 +240,9 @@ export type ExclusionCode =
   | "CHILD_OF_SHOWN_PARENT"
   | "NO_PROGRAMME"
   | "AGE_RESTRICTED"
-  | "MEMBERS_ONLY";
+  | "MEMBERS_ONLY"
+  /** Events only: a weekly class, a volunteer day, a meeting. An option in a search; not worth a nudge. */
+  | "ROUTINE_EVENT";
 
 /** How a visit is done, what it needs at least, and how long it typically takes. */
 export interface Visit {
@@ -317,6 +339,10 @@ export interface Evaluation {
   likelyOpen?: { open: number; listed: number };
   /** A destination past the everyday reach with one like it within it: the minutes past, and the appeal it pays back (detour.ts). */
   detour?: { minutes: number; appeal: number };
+  /** How much it is something to go out for, 0 to 1 (draw.ts). Ranking only. */
+  draw?: number;
+  /** Today's turn among options about as good: a small, fixed-for-the-day shift in merit (score.ts ROTATION). */
+  rotation?: number;
 }
 
 /** A specific change that would admit more options: "allow a longer walk" (+4). */

@@ -565,10 +565,17 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
   });
 
   it("shows a place's own free photos with their credits, and credits the source", async () => {
-    // 2pm: at 6:30pm Pitt Park is near sunset, when parks fall out of the three.
+    // 2pm: at 6:30pm Pitt Park is near sunset, when parks sink. Which park leads is the day's turn,
+    // so read the search's pages until both places have been shown.
     now = new Date("2026-10-03T18:00:00Z");
-    const page = await search({ areaId: "les", windowMinutes: 180 });
-    const park = page.items.find((i) => i.name === "Pitt Park")!;
+    const items: RecommendationResponse["items"] = [];
+    let page = await search({ areaId: "les", windowMinutes: 180, categories: ["park", "restaurant"] });
+    for (;;) {
+      items.push(...page.items);
+      if (!page.page.nextCursor || (items.some((i) => i.name === "Pitt Park") && items.some((i) => i.name === "Forsyth Clinton Kitchen"))) break;
+      page = await search({ cursor: page.page.nextCursor } as unknown as RecommendationRequest);
+    }
+    const park = items.find((i) => i.name === "Pitt Park")!;
     expect(park.photos.map((p) => [p.license, p.credit])).toEqual([
       ["CC BY-SA 4.0", "Synthetic Photographer, CC BY-SA 4.0, via Wikimedia Commons"],
       ["CC0", "CC0, via Wikimedia Commons"],
@@ -576,13 +583,14 @@ describe.skipIf(!available)("v1 API on the synthetic LES fixture", () => {
     expect(park.photos[0]).toMatchObject({ width: 960, height: 720, sourceUrl: "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Pitt_Park_lawn.jpg", licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0" });
     expect(park.photos[0]!.url).toBe("https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/OutRN_synthetic_Pitt_Park_lawn.jpg/960px-OutRN_synthetic_Pitt_Park_lawn.jpg");
     // No photo is ever borrowed: places without their own have none.
-    expect(page.items.filter((i) => i.name !== "Pitt Park").every((i) => i.photos.length === 0)).toBe(true);
+    // (Norfolk Park names a Commons file too; the fixture's other places name none.)
+    expect(items.filter((i) => i.name !== "Pitt Park" && i.name !== "Norfolk Park").every((i) => i.photos.length === 0)).toBe(true);
     expect(page.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
 
     const details = PlaceDetails.parse((await call("GET", `/v1/places/${park.placeId}`)).json);
     expect(details.photos.map((p) => p.credit)).toEqual(park.photos.map((p) => p.credit));
     expect(details.attributions).toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
-    const kitchen = PlaceDetails.parse((await call("GET", `/v1/places/${page.items.find((i) => i.name === "Forsyth Clinton Kitchen")!.placeId}`)).json);
+    const kitchen = PlaceDetails.parse((await call("GET", `/v1/places/${items.find((i) => i.name === "Forsyth Clinton Kitchen")!.placeId}`)).json);
     expect(kitchen.photos).toEqual([]);
     expect(kitchen.attributions).not.toContain("Photos: Wikimedia Commons contributors (credited with each photo)");
   });

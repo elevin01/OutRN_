@@ -12,6 +12,9 @@ import { selectShortlist } from "./select.js";
  * fixtures and the backtest can replay thousands of contexts in-process.
  */
 
+/** The least an event's draw (draw.ts) may be to be worth a "happening soon" nudge. */
+export const NUDGE_MIN_DRAW = 0.45;
+
 export function evaluateAll(candidates: Candidate[], ctx: RequestContext, policies: Map<string, CategoryPolicy>): Evaluation[] {
   const fallback: CategoryPolicy = { category: "other", minUsefulMinutes: 45, admissionBufferMinutes: 5, kitchenCloseOffsetMinutes: null, lastEntryDefaultMinutes: null, activityType: "browse" };
   const weights = tasteWeights(ctx);
@@ -26,8 +29,13 @@ export function evaluateAll(candidates: Candidate[], ctx: RequestContext, polici
     if (f.class === "ineligible" || !f.timing || ageDoubt) {
       return { candidate: c, class: "ineligible", excludedBy: f.excludedBy ?? "AGE_RESTRICTED", reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
     }
-    const { scores, extraReasons, dayPart, tasteLead } = scoreCandidate(c, ctx, f, policy, maxTravelFor(c, ctx), weights);
-    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead };
+    const { scores, extraReasons, dayPart, tasteLead, draw, rotation } = scoreCandidate(c, ctx, f, policy, maxTravelFor(c, ctx), weights);
+    // Nor does a nudge interrupt anyone for the week's routine (a fitness class, a volunteer day),
+    // unless it is what this person said they like. A search still offers it.
+    if (ctx.eventsOnly && draw < NUDGE_MIN_DRAW && !tasteLead) {
+      return { candidate: c, class: "ineligible", excludedBy: "ROUTINE_EVENT", reasons: f.reasons, unresolved: f.unresolved, timing: f.timing, scores: { evidence: 0, fit: 0, appeal: 0, novelty: 0 }, cta: null, price: f.price };
+    }
+    return { candidate: c, class: f.class, excludedBy: null, reasons: [...f.reasons, ...extraReasons], unresolved: f.unresolved, timing: f.timing, scores, cta: f.cta, price: f.price, dayPart, tasteLead, draw, rotation };
   });
   markLikelyOpen(evals, openShares(candidates, policies, fallback.minUsefulMinutes));
   markDetours(evals, ctx);

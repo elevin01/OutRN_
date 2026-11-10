@@ -70,6 +70,12 @@ const HOURS: Partial<Record<Category, Hours>> = {
 const SUBTYPE_HOURS: Readonly<Record<string, Hours>> = {
   comedy_club: { prime: [span("19:00", "01:00")], fair: [span("17:00", "19:00")] },
   casino: { prime: [span("18:00", "04:00")], fair: [span("12:00", "18:00")] },
+  // Behind a gate that shuts in the afternoon: a zoo or an estate's grounds at 8pm is a locked gate,
+  // whatever an "attraction" may be. Also read for a destination of that kind (dayPartOf).
+  zoo: { prime: [span("10:00", "16:00")], fair: [span("09:00", "10:00"), span("16:00", "17:00")] },
+  aquarium: { prime: [span("10:00", "16:00")], fair: [span("09:00", "10:00"), span("16:00", "17:00")] },
+  estate: { prime: [span("10:00", "16:00")], fair: [span("09:00", "10:00"), span("16:00", "17:00")] },
+  miniature_golf: { prime: [span("11:00", "20:00")], fair: [span("10:00", "11:00"), span("20:00", "22:00")] },
 };
 
 /**
@@ -108,6 +114,17 @@ export function dayPart(category: Category, at: Date, timeZone: string, sunset?:
   if (hours.prime.some((s) => inSpan(minutes, s)) || (weekend && hours.weekendPrime?.some((s) => inSpan(minutes, s)))) return "prime";
   if (hours.fair.some((s) => inSpan(minutes, s))) return "fair";
   return "off";
+}
+
+/**
+ * A place's time of day by what it says it is: its subtype when that has hours of its own, else what
+ * kind of destination it is (a zoo filed as an attraction), else its category.
+ */
+export function dayPartOf(c: Pick<Candidate, "category" | "facts">, at: Date, timeZone: string, sunset?: Date | null): DayPart | null {
+  const subtype = subtypeOf(c);
+  if (subtype && ownValue(SUBTYPE_HOURS, subtype)) return dayPart(c.category, at, timeZone, sunset, subtype);
+  const kind = (c.facts.destination?.value as { kind?: unknown } | undefined)?.kind;
+  return dayPart(c.category, at, timeZone, sunset, typeof kind === "string" && ownValue(SUBTYPE_HOURS, kind) ? kind : subtype);
 }
 
 /** The kind a place says it is within its category ("comedy_club", "casino", "pub"), or null. */

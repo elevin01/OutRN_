@@ -8,45 +8,33 @@
    "top": [
     {
      "rank": 1,
+     "name": "Lower East Side Tenement Museum",
+     "category": "museum",
+     "status": "check_first",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 2,
      "name": "Katz's Delicatessen",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Seward Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Essex Market",
      "category": "market",
      "status": "ready",
@@ -57,25 +45,43 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "rank": 4,
+     "name": "Seward Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "LANDMARK"
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     },
     {
+     "rank": 5,
+     "name": "New Museum",
+     "category": "museum",
+     "status": "check_first",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "WAIT_FOR_OPENING",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
+    },
+    {
      "rank": 6,
-     "name": "Shopsin's",
+     "name": "Post",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "NEW_ON_MAP",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -89,44 +95,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Seward Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Sperone Westwater",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Essex Market",
      "category": "market",
      "status": "ready",
@@ -137,22 +105,22 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Peretz Square",
+     "rank": 2,
+     "name": "Seward Park",
      "category": "park",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "OPEN_LATE",
+      "FREE"
      ],
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Perrotin New York",
+     "rank": 3,
+     "name": "bitforms gallery",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -161,6 +129,43 @@
       "FREE"
      ],
      "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Ludlow Flea Market",
+     "category": "market",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Lower East Side Tenement Museum",
+     "category": "museum",
+     "status": "check_first",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL"
+     ],
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     }
    ],
    "relaxations": []
@@ -176,55 +181,17 @@
      "category": "park",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Sperone Westwater",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Hamilton Fish Park Library",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Peretz Square",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Perrotin New York",
+     "name": "bitforms gallery",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -235,16 +202,53 @@
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Sara D. Roosevelt Park",
+     "rank": 3,
+     "name": "Ki Smith Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Miracle Garden",
+     "category": "garden",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 5,
+     "name": "First Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Perrotin New York",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE"
      ],
      "caveats": []
     }
@@ -258,25 +262,23 @@
    "top": [
     {
      "rank": 1,
-     "name": "Katz's Delicatessen",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Ten Bells",
+     "name": "Las Lap",
      "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "HAPPY_HOUR",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -284,8 +286,8 @@
     },
     {
      "rank": 3,
-     "name": "Sweet Pickle Books",
-     "category": "bookshop",
+     "name": "Essex Market",
+     "category": "market",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -295,34 +297,38 @@
     },
     {
      "rank": 4,
-     "name": "Eden Gallery",
-     "category": "gallery",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Lombardi's Pizza",
+     "name": "Souvlaki GR",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "The Grand Delancey",
+     "name": "Ten Bells",
      "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
+      "HAPPY_HOUR",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -338,31 +344,7 @@
    "top": [
     {
      "rank": 1,
-     "name": "The Grand Delancey",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Katz's Delicatessen",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Ten Bells",
+     "name": "Las Lap",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -373,8 +355,35 @@
      "caveats": []
     },
     {
+     "rank": 2,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Old Man Hustle Comedy Bar",
+     "category": "bar",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
+    },
+    {
      "rank": 4,
-     "name": "Mehanata Bulgarian Bar",
+     "name": "Armada",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -386,24 +395,24 @@
     },
     {
      "rank": 5,
-     "name": "Pretty Ricky's",
+     "name": "Old Flings",
      "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Ye’s Apothecary",
+     "name": "The Flower Shop",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -417,22 +426,24 @@
    "top": [
     {
      "rank": 1,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Russ & Daughters Cafe",
+     "name": "Yonah Shimmel Knish Bakery",
      "category": "cafe",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -440,10 +451,11 @@
     },
     {
      "rank": 3,
-     "name": "Kalye",
+     "name": "Souvlaki GR",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -452,8 +464,20 @@
     },
     {
      "rank": 4,
-     "name": "Caffè Vita",
+     "name": "Georgie's Cafe & Bar",
      "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Kuma Inn",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -463,23 +487,12 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Ferrara",
+     "rank": 6,
+     "name": "Taikii Cafe",
      "category": "cafe",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Shopsin's",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -495,34 +508,34 @@
    "top": [
     {
      "rank": 1,
-     "name": "Seward Park",
-     "category": "park",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Katz's Delicatessen",
-     "category": "restaurant",
-     "status": "ready",
+     "name": "Lower East Side Tenement Museum",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     },
     {
      "rank": 3,
-     "name": "Essex Market",
+     "name": "Ludlow Flea Market",
      "category": "market",
      "status": "ready",
      "reasons": [
@@ -533,41 +546,42 @@
     },
     {
      "rank": 4,
-     "name": "bitforms gallery",
-     "category": "gallery",
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Peretz Square",
-     "category": "park",
-     "status": "ready",
+     "name": "Museum of Chinese in America",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "LANDMARK",
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     },
     {
      "rank": 6,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
-     "status": "ready",
+     "name": "New Museum",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "LANDMARK"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     }
    ],
    "relaxations": []
@@ -579,12 +593,13 @@
    "top": [
     {
      "rank": 1,
-     "name": "Davelle NYC",
+     "name": "Black Cat LES",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     },
@@ -600,20 +615,7 @@
     },
     {
      "rank": 3,
-     "name": "Seward Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Rex",
+     "name": "Davelle NYC",
      "category": "cafe",
      "status": "ready",
      "reasons": [
@@ -623,29 +625,41 @@
      "caveats": []
     },
     {
+     "rank": 4,
+     "name": "The Doughnut Plant",
+     "category": "cafe",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
+    },
+    {
      "rank": 5,
-     "name": "Caffè Vita",
+     "name": "The Grand Daddy",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Sara D. Roosevelt Park",
-     "category": "park",
-     "status": "ready",
+     "name": "Hawa Smoothies",
+     "category": "cafe",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
     }
    ],
    "relaxations": []
@@ -657,49 +671,48 @@
    "top": [
     {
      "rank": 1,
-     "name": "Seward Park",
-     "category": "park",
+     "name": "Sperone Westwater",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Sperone Westwater",
-     "category": "gallery",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "name": "Old Flings",
+     "category": "bar",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "LANDMARK"
+      "WAIT_FOR_OPENING",
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 4,
-     "name": "Sweet Pickle Books",
+     "name": "Book Club",
      "category": "bookshop",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -707,28 +720,27 @@
     },
     {
      "rank": 5,
-     "name": "Superbueno",
-     "category": "bar",
+     "name": "Sara D. Roosevelt Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "HAPPY_HOUR",
-      "WAIT_FOR_OPENING",
-      "OPEN_LATE"
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Peretz Square",
-     "category": "park",
+     "name": "Karma Gallery",
+     "category": "gallery",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     }
@@ -742,18 +754,32 @@
    "top": [
     {
      "rank": 1,
-     "name": "Shopsin's",
+     "name": "Souvlaki GR",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "Georgie's Cafe & Bar",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Fan Szechuan",
+     "rank": 3,
+     "name": "Sticky Rice",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -764,22 +790,12 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Davelle NYC",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 4,
-     "name": "Rex",
+     "name": "Taikii Cafe",
      "category": "cafe",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -799,7 +815,7 @@
     },
     {
      "rank": 6,
-     "name": "El Castillo de Jagua",
+     "name": "Blaze BBQ & Hibachi",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -819,7 +835,7 @@
    "top": [
     {
      "rank": 1,
-     "name": "The Grand Delancey",
+     "name": "Excuse My French",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -831,11 +847,11 @@
     },
     {
      "rank": 2,
-     "name": "Soft Swerve",
+     "name": "Chinatown Ice Cream Factory",
      "category": "dessert",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -854,18 +870,19 @@
     },
     {
      "rank": 4,
-     "name": "Eden Gallery",
-     "category": "gallery",
+     "name": "Double Chicken Please",
+     "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Ten Bells",
+     "name": "Skin Contact",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -877,17 +894,15 @@
     },
     {
      "rank": 6,
-     "name": "Best Damn Cookies",
+     "name": "Soft Swerve",
      "category": "dessert",
-     "status": "check_first",
+     "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "LIKELY_OPEN"
+      "OPEN_LATE"
      ],
-     "caveats": [
-      "HOURS_UNKNOWN"
-     ]
+     "caveats": []
     }
    ],
    "relaxations": []
@@ -903,19 +918,20 @@
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Fan Szechuan",
+     "name": "Bite & Sip",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -924,10 +940,11 @@
     },
     {
      "rank": 3,
-     "name": "La Contenta",
+     "name": "Souvlaki GR",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -936,7 +953,7 @@
     },
     {
      "rank": 4,
-     "name": "Kalye",
+     "name": "Ginger & Lemongrass",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -948,7 +965,7 @@
     },
     {
      "rank": 5,
-     "name": "El Castillo de Jagua",
+     "name": "Contra",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -980,45 +997,32 @@
    "top": [
     {
      "rank": 1,
-     "name": "Katz's Delicatessen",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Seward Park",
-     "category": "park",
-     "status": "ready",
+     "name": "New Museum",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     },
     {
      "rank": 3,
-     "name": "Sperone Westwater",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Essex Market",
      "category": "market",
      "status": "ready",
@@ -1029,28 +1033,45 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Botantica Bar",
-     "category": "bar",
+     "rank": 4,
+     "name": "Seward Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
-      "HAPPY_HOUR",
-      "WAIT_FOR_OPENING",
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "LANDMARK",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
       "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
-     "status": "ready",
+     "name": "Lower East Side Tenement Museum",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "LANDMARK"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
     }
    ],
    "relaxations": []
@@ -1062,27 +1083,25 @@
    "top": [
     {
      "rank": 1,
-     "name": "Close Up",
-     "category": "live_music",
+     "name": "Caveat",
+     "category": "theatre",
      "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "OPEN_LATE"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
-      "HOURS_UNKNOWN",
       "ADMISSION_UNCONFIRMED"
      ]
     },
     {
      "rank": 2,
-     "name": "Rockwood Music Hall",
+     "name": "The Slipper Room",
      "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "LANDMARK"
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -1092,12 +1111,12 @@
     },
     {
      "rank": 3,
-     "name": "Lichtundfire",
-     "category": "live_music",
+     "name": "Rockwood Music Hall",
+     "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "LANDMARK",
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -1107,12 +1126,11 @@
     },
     {
      "rank": 4,
-     "name": "Dixon Place",
+     "name": "Teatro LATEA",
      "category": "theatre",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "LANDMARK"
+      "SHORT_TRAVEL"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -1122,13 +1140,10 @@
     },
     {
      "rank": 5,
-     "name": "Pianos",
-     "category": "live_music",
+     "name": "Top Secret Comedy Club",
+     "category": "theatre",
      "status": "check_first",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
+     "reasons": [],
      "caveats": [
       "PROGRAMME_UNLISTED",
       "HOURS_UNKNOWN",
@@ -1137,11 +1152,11 @@
     },
     {
      "rank": 6,
-     "name": "The Metrograph",
-     "category": "cinema",
+     "name": "Connelly Theater",
+     "category": "live_music",
      "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL"
+      "ENOUGH_TIME"
      ],
      "caveats": [
       "PROGRAMME_UNLISTED",
@@ -1163,6 +1178,7 @@
      "category": "dessert",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -1171,18 +1187,7 @@
     },
     {
      "rank": 2,
-     "name": "Sake Bar Asoko",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Ramen Ishida",
+     "name": "Sushi Lin",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1193,8 +1198,22 @@
      "caveats": []
     },
     {
+     "rank": 3,
+     "name": "Izakaya Juraku",
+     "category": "bar",
+     "status": "check_first",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
      "rank": 4,
-     "name": "Douska",
+     "name": "Nakamura",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1206,7 +1225,7 @@
     },
     {
      "rank": 5,
-     "name": "Hard to Explain",
+     "name": "Sake Bar Asoko",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -1217,7 +1236,7 @@
     },
     {
      "rank": 6,
-     "name": "Nakamura",
+     "name": "Sushi Oku",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1241,14 +1260,52 @@
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
+     "name": "Lil' Frankies",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_APPROXIMATE"
+     ]
+    },
+    {
+     "rank": 3,
+     "name": "Rivington Pizza",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "Prince Street Pizza",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Ainslie Bowery",
      "category": "restaurant",
      "status": "ready",
@@ -1260,44 +1317,8 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "Ray's Pizza & Bagel Cafe",
-     "category": "cafe",
-     "status": "check_first",
-     "reasons": [
-      "ENOUGH_TIME",
-      "LIKELY_OPEN"
-     ],
-     "caveats": [
-      "HOURS_UNKNOWN"
-     ]
-    },
-    {
-     "rank": 4,
-     "name": "Kelly's",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Prince Street Pizza",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Emmy Squared",
+     "name": "Baby John's Pizzeria",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1316,6 +1337,17 @@
    "top": [
     {
      "rank": 1,
+     "name": "Remedy Diner",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
      "name": "The Grand Daddy",
      "category": "cafe",
      "status": "ready",
@@ -1326,54 +1358,7 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Sticky Rice",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 3,
-     "name": "The Butcher's Daughter",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Van Leeuwen Ice Cream",
-     "category": "dessert",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Pause Cafe",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
      "name": "Mr. Taka Ramen",
      "category": "restaurant",
      "status": "ready",
@@ -1381,6 +1366,42 @@
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Cafe Himalaya",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Hotel Chantelle",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_APPROXIMATE"
+     ]
+    },
+    {
+     "rank": 6,
+     "name": "Pause Cafe",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": []
     }
@@ -1398,6 +1419,7 @@
      "category": "cafe",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -1405,35 +1427,34 @@
     },
     {
      "rank": 2,
-     "name": "Chatham Square Library",
-     "category": "library",
+     "name": "Veselka",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 3,
-     "name": "Veselka",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "Ost Cafe",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Yin Ji Chang Fen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     },
@@ -1450,13 +1471,12 @@
     },
     {
      "rank": 6,
-     "name": "Mulberry Street Library",
-     "category": "library",
+     "name": "The Grey Dog",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "WAIT_FOR_OPENING",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -1483,18 +1503,6 @@
     },
     {
      "rank": 2,
-     "name": "Ramen Ishida",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
      "name": "Contra",
      "category": "restaurant",
      "status": "ready",
@@ -1506,8 +1514,20 @@
      "caveats": []
     },
     {
+     "rank": 3,
+     "name": "Divya’s Kitchen",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 4,
-     "name": "Bar Bianchi",
+     "name": "MayRee",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -1519,23 +1539,24 @@
     },
     {
      "rank": 5,
-     "name": "Les Enfants de Bohème",
+     "name": "Kiki's",
      "category": "restaurant",
-     "status": "ready",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_APPROXIMATE"
+     ]
     },
     {
      "rank": 6,
-     "name": "MayRee",
+     "name": "Post",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "NEW_ON_MAP",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -1551,22 +1572,24 @@
    "top": [
     {
      "rank": 1,
-     "name": "Yonah Shimmel Knish Bakery",
-     "category": "cafe",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Russ & Daughters Cafe",
+     "name": "Yonah Shimmel Knish Bakery",
      "category": "cafe",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -1574,11 +1597,11 @@
     },
     {
      "rank": 3,
-     "name": "Soft Swerve",
-     "category": "dessert",
+     "name": "Lombardi's Pizza",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -1586,22 +1609,23 @@
     },
     {
      "rank": 4,
-     "name": "Fan Szechuan",
-     "category": "restaurant",
+     "name": "Georgie's Cafe & Bar",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Caffè Vita",
-     "category": "cafe",
+     "name": "Souvlaki GR",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -1610,13 +1634,13 @@
     },
     {
      "rank": 6,
-     "name": "Ferrara",
-     "category": "cafe",
+     "name": "Mimi's Frozen Yogurt",
+     "category": "dessert",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -1630,25 +1654,24 @@
    "top": [
     {
      "rank": 1,
-     "name": "Katz's Delicatessen",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Ten Bells",
-     "category": "bar",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
-      "HAPPY_HOUR",
       "ENOUGH_TIME",
       "OPEN_LATE"
      ],
@@ -1656,7 +1679,7 @@
     },
     {
      "rank": 3,
-     "name": "Ace Of Clubs",
+     "name": "Serenade",
      "category": "live_music",
      "status": "check_first",
      "reasons": [
@@ -1671,35 +1694,37 @@
     },
     {
      "rank": 4,
-     "name": "Sweet Pickle Books",
-     "category": "bookshop",
+     "name": "Post",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "NEW_ON_MAP",
       "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Eden Gallery",
-     "category": "gallery",
+     "name": "Souvlaki GR",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "FREE"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Lombardi's Pizza",
-     "category": "restaurant",
+     "name": "Las Lap",
+     "category": "bar",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -1713,45 +1738,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Sperone Westwater",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Perrotin New York",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Empirical Nonsense",
-     "category": "gallery",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "bitforms gallery",
      "category": "gallery",
      "status": "ready",
@@ -1764,8 +1750,49 @@
      "caveats": []
     },
     {
+     "rank": 2,
+     "name": "Reena Spauldings Fine Art",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Storefront for Art and Architecture",
+     "category": "arts_centre",
+     "status": "check_first",
+     "reasons": [
+      "TASTE_MATCH",
+      "LANDMARK",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": [
+      "ADMISSION_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 4,
+     "name": "Ki Smith Gallery",
+     "category": "gallery",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 5,
-     "name": "Krause Gallery",
+     "name": "ABRI MARS",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -1778,7 +1805,7 @@
     },
     {
      "rank": 6,
-     "name": "Ki Smith Gallery",
+     "name": "Perrotin New York",
      "category": "gallery",
      "status": "ready",
      "reasons": [
@@ -1799,14 +1826,13 @@
    "top": [
     {
      "rank": 1,
-     "name": "Katz's Delicatessen",
+     "name": "Lombardi's Pizza",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
+      "LANDMARK",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
@@ -1823,21 +1849,11 @@
     },
     {
      "rank": 3,
-     "name": "Eden Gallery",
-     "category": "gallery",
+     "name": "Katz's Delicatessen",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
-      "ENOUGH_TIME",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Soft Swerve",
-     "category": "dessert",
-     "status": "ready",
-     "reasons": [
+      "LANDMARK",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -1845,25 +1861,39 @@
      "caveats": []
     },
     {
+     "rank": 4,
+     "name": "Aoko Matcha",
+     "category": "dessert",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 5,
-     "name": "Lombardi's Pizza",
+     "name": "Souvlaki GR",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Fan Szechuan",
+     "name": "The Flower Shop",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -1877,31 +1907,34 @@
    "top": [
     {
      "rank": 1,
-     "name": "Eden Gallery",
+     "name": "Old Man Hustle Comedy Bar",
+     "category": "bar",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
+    },
+    {
+     "rank": 2,
+     "name": "The 4th Street Photo Gallery",
      "category": "gallery",
-     "status": "ready",
+     "status": "check_first",
      "reasons": [
       "ENOUGH_TIME",
       "FREE"
      ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Katz's Delicatessen",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNVERIFIED"
+     ]
     },
     {
      "rank": 3,
-     "name": "The Grand Delancey",
+     "name": "Excuse My French",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -1913,8 +1946,21 @@
     },
     {
      "rank": 4,
-     "name": "Soft Swerve",
-     "category": "dessert",
+     "name": "Mary O's",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Double Chicken Please",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -1924,25 +1970,14 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Lombardi's Pizza",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Sweet Pickle Books",
-     "category": "bookshop",
+     "name": "Skin Contact",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -1967,19 +2002,6 @@
     },
     {
      "rank": 2,
-     "name": "Katz's Delicatessen",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
      "name": "Old Man Hustle Comedy Bar",
      "category": "bar",
      "status": "check_first",
@@ -1993,8 +2015,8 @@
      ]
     },
     {
-     "rank": 4,
-     "name": "The Grand Delancey",
+     "rank": 3,
+     "name": "Excuse My French",
      "category": "bar",
      "status": "ready",
      "reasons": [
@@ -2004,26 +2026,45 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "Ms. Yoo",
-     "category": "restaurant",
-     "status": "ready",
+     "rank": 4,
+     "name": "Boho Karaoke Orchard",
+     "category": "activity",
+     "status": "check_first",
      "reasons": [
+      "TASTE_MATCH",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 5,
+     "name": "Mary O's",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Ten Bells",
-     "category": "bar",
-     "status": "ready",
+     "name": "Top Secret Comedy Club",
+     "category": "theatre",
+     "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
+      "TASTE_MATCH"
      ],
-     "caveats": []
+     "caveats": [
+      "PROGRAMME_UNLISTED",
+      "HOURS_UNKNOWN",
+      "ADMISSION_UNCONFIRMED"
+     ]
     }
    ],
    "relaxations": []
@@ -2051,6 +2092,7 @@
      "category": "dessert",
      "status": "ready",
      "reasons": [
+      "NEWLY_OPENED",
       "SHORT_TRAVEL",
       "ENOUGH_TIME"
      ],
@@ -2058,18 +2100,6 @@
     },
     {
      "rank": 3,
-     "name": "Whistling Rail",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "J.C. Fogarty's",
      "category": "restaurant",
      "status": "ready",
@@ -2081,9 +2111,20 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "tredici SOCIAL",
+     "rank": 4,
+     "name": "Hunan III",
      "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Whistling Rail",
+     "category": "bar",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -2094,8 +2135,8 @@
     },
     {
      "rank": 6,
-     "name": "Häagen-Dazs",
-     "category": "dessert",
+     "name": "tredici SOCIAL",
+     "category": "restaurant",
      "status": "ready",
      "reasons": [
       "SHORT_TRAVEL",
@@ -2114,34 +2155,19 @@
    "top": [
     {
      "rank": 1,
-     "name": "Twin Lakes County Park",
-     "category": "park",
+     "name": "Glen Island Park",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
       "DESTINATION",
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Yonkers Public Library Grinton I. Will Branch",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Hunan III",
+     "name": "The Taco Project",
      "category": "restaurant",
      "status": "ready",
      "reasons": [
@@ -2152,20 +2178,7 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Greenburgh Nature Center",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
+     "rank": 3,
      "name": "Van Cortlandt Park",
      "category": "park",
      "status": "ready",
@@ -2178,7 +2191,20 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 4,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Orchard Beach",
      "category": "waterfront",
      "status": "ready",
@@ -2186,6 +2212,20 @@
       "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "Twin Lakes County Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     }
@@ -2199,56 +2239,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Hunt's Woods Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE",
-      "SUNSET_WINDOW"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Yonkers Public Library Grinton I. Will Branch",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "Slave To the Grind",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Growlers",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "State Line Lookout",
      "category": "viewpoint",
      "status": "ready",
@@ -2262,7 +2252,45 @@
      "caveats": []
     },
     {
-     "rank": 6,
+     "rank": 2,
+     "name": "Slave To the Grind",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Bicentennial Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "CLOSES_SOON",
+      "DAWN_TO_DUSK",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Hunt's Woods Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "FREE",
+      "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
@@ -2272,6 +2300,17 @@
       "DAWN_TO_DUSK",
       "FREE",
       "SUNSET_WINDOW"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "J.C. Fogarty's",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -2299,19 +2338,6 @@
     },
     {
      "rank": 2,
-     "name": "Yonkers Public Library Grinton I. Will Branch",
-     "category": "library",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
      "name": "Hunan III",
      "category": "restaurant",
      "status": "ready",
@@ -2323,8 +2349,8 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Orchard Beach",
+     "rank": 3,
+     "name": "Glen Island Park",
      "category": "waterfront",
      "status": "ready",
      "reasons": [
@@ -2335,8 +2361,21 @@
      "caveats": []
     },
     {
+     "rank": 4,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 5,
-     "name": "Greenburgh Nature Center",
+     "name": "Van Cortlandt Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2349,7 +2388,7 @@
     },
     {
      "rank": 6,
-     "name": "Van Cortlandt Park",
+     "name": "Tibbetts Brook Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2370,6 +2409,61 @@
    "top": [
     {
      "rank": 1,
+     "name": "Tibbetts Brook Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 2,
+     "name": "State Line Lookout",
+     "category": "viewpoint",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "Glen Island Park",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Van Cortlandt Park",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
      "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
@@ -2384,63 +2478,8 @@
      "caveats": []
     },
     {
-     "rank": 2,
-     "name": "Orchard Beach",
-     "category": "waterfront",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
-     "name": "State Line Lookout",
-     "category": "viewpoint",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Greenburgh Nature Center",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Van Cortlandt Park",
-     "category": "park",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
-      "FREE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "Glen Island Park",
+     "name": "Orchard Beach",
      "category": "waterfront",
      "status": "ready",
      "reasons": [
@@ -2461,8 +2500,8 @@
    "top": [
     {
      "rank": 1,
-     "name": "Twin Lakes County Park",
-     "category": "park",
+     "name": "State Line Lookout",
+     "category": "viewpoint",
      "status": "ready",
      "reasons": [
       "DESTINATION",
@@ -2486,10 +2525,11 @@
     },
     {
      "rank": 3,
-     "name": "Hunan III",
-     "category": "restaurant",
+     "name": "Gelateria Sorella",
+     "category": "dessert",
      "status": "ready",
      "reasons": [
+      "NEWLY_OPENED",
       "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "OPEN_LATE"
@@ -2498,8 +2538,8 @@
     },
     {
      "rank": 4,
-     "name": "State Line Lookout",
-     "category": "viewpoint",
+     "name": "Twin Lakes County Park",
+     "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
@@ -2511,7 +2551,7 @@
     },
     {
      "rank": 5,
-     "name": "Sprain Ridge Park",
+     "name": "Tibbetts Brook Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2524,14 +2564,13 @@
     },
     {
      "rank": 6,
-     "name": "Whistling Rail",
-     "category": "bar",
+     "name": "Glen Island Park",
+     "category": "waterfront",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "WAIT_FOR_OPENING",
+      "DESTINATION",
       "ENOUGH_TIME",
-      "OPEN_LATE"
+      "DAWN_TO_DUSK"
      ],
      "caveats": []
     }
@@ -2545,70 +2584,71 @@
    "top": [
     {
      "rank": 1,
-     "name": "Rockefeller State Park Preserve",
+     "name": "Jay Heritage Center",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "White Plains Public Library",
-     "category": "library",
-     "status": "ready",
+     "name": "Bruce Museum",
+     "category": "museum",
+     "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "FREE",
-      "LANDMARK"
+      "LANDMARK",
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "ADMISSION_UNCONFIRMED"
+     ]
     },
     {
      "rank": 3,
-     "name": "Pokémoto",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Transom Bookshop",
-     "category": "bookshop",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Saxon Woods Park",
+     "name": "Lyndhurst Estate",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "Glen Island Park",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 5,
+     "name": "Kensico Dam Plaza",
+     "category": "park",
+     "status": "ready",
+     "reasons": [
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 6,
-     "name": "Sprain Ridge Park",
+     "name": "Marshlands Conservancy",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -2628,28 +2668,6 @@
    "top": [
     {
      "rank": 1,
-     "name": "Mario's Pizza & Restaurant",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 2,
-     "name": "Barnes & Noble",
-     "category": "bookshop",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 3,
      "name": "The Opus Lobby Lounge",
      "category": "restaurant",
      "status": "ready",
@@ -2661,7 +2679,46 @@
      "caveats": []
     },
     {
+     "rank": 2,
+     "name": "Mario's Pizza & Restaurant",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "OPEN_LATE"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Brazen Fox",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
      "rank": 4,
+     "name": "Pokémoto",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL"
+     ],
+     "caveats": [
+      "WAIT_MAY_NOT_FIT"
+     ]
+    },
+    {
+     "rank": 5,
      "name": "Baskin-Robbins",
      "category": "dessert",
      "status": "ready",
@@ -2671,25 +2728,14 @@
      "caveats": []
     },
     {
-     "rank": 5,
-     "name": "The Cabin Restaurant",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
-     ],
-     "caveats": []
-    },
-    {
      "rank": 6,
-     "name": "The Brazen Fox",
-     "category": "restaurant",
+     "name": "Lilly's",
+     "category": "bar",
      "status": "check_first",
      "reasons": [
+      "NEW_ON_MAP",
       "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "LIKELY_OPEN"
+      "ENOUGH_TIME"
      ],
      "caveats": [
       "HOURS_UNKNOWN"
@@ -2717,18 +2763,41 @@
     },
     {
      "rank": 2,
-     "name": "Mario's Pizza & Restaurant",
-     "category": "restaurant",
+     "name": "Gong Cha",
+     "category": "cafe",
      "status": "ready",
      "reasons": [
-      "SHORT_TRAVEL",
-      "ENOUGH_TIME",
-      "OPEN_LATE"
+      "ENOUGH_TIME"
      ],
      "caveats": []
     },
     {
      "rank": 3,
+     "name": "Central Seafood",
+     "category": "restaurant",
+     "status": "ready",
+     "reasons": [
+      "ENOUGH_TIME"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
+     "name": "The Brazen Fox",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME",
+      "LIKELY_OPEN"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 5,
      "name": "The Opus Lobby Lounge",
      "category": "restaurant",
      "status": "ready",
@@ -2740,33 +2809,13 @@
      "caveats": []
     },
     {
-     "rank": 4,
-     "name": "Gong Cha",
+     "rank": 6,
+     "name": "City Limits",
      "category": "cafe",
      "status": "ready",
      "reasons": [
+      "SHORT_TRAVEL",
       "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
-     "name": "Central Seafood",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "Redefine Meals",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "ENOUGH_TIME",
-      "OPEN_LATE"
      ],
      "caveats": []
     }
@@ -2790,6 +2839,26 @@
     },
     {
      "rank": 2,
+     "name": "Dante's Lattes",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "NEWLY_OPENED"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 3,
+     "name": "The Formosa Coffee",
+     "category": "cafe",
+     "status": "ready",
+     "reasons": [
+      "NEW_ON_MAP"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 4,
      "name": "Gong Cha",
      "category": "cafe",
      "status": "ready",
@@ -2799,40 +2868,26 @@
      "caveats": []
     },
     {
-     "rank": 3,
-     "name": "City Limits",
+     "rank": 5,
+     "name": "Araras Coffee & More",
      "category": "cafe",
-     "status": "ready",
+     "status": "check_first",
      "reasons": [
       "SHORT_TRAVEL",
-      "OPEN_LATE"
+      "LIKELY_OPEN"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
     },
     {
-     "rank": 4,
-     "name": "Starbucks",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [],
-     "caveats": []
-    },
-    {
-     "rank": 5,
+     "rank": 6,
      "name": "Mandy Bean Specialty Coffee",
      "category": "cafe",
      "status": "ready",
      "reasons": [
       "OPEN_LATE"
      ],
-     "caveats": []
-    },
-    {
-     "rank": 6,
-     "name": "The Formosa Coffee",
-     "category": "cafe",
-     "status": "ready",
-     "reasons": [],
      "caveats": []
     }
    ],
@@ -2845,29 +2900,27 @@
    "top": [
     {
      "rank": 1,
-     "name": "Saxon Woods Park",
+     "name": "Lyndhurst Estate",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 2,
-     "name": "Rockefeller State Park Preserve",
+     "name": "Jay Heritage Center",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
-      "FREE",
-      "LANDMARK"
+      "FREE"
      ],
      "caveats": []
     },
@@ -2886,25 +2939,25 @@
     },
     {
      "rank": 4,
-     "name": "Cranberry Lake Preserve",
+     "name": "Marshlands Conservancy",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
-      "DAWN_TO_DUSK",
       "FREE"
      ],
      "caveats": []
     },
     {
      "rank": 5,
-     "name": "Sprain Ridge Park",
+     "name": "Rye Nature Center",
      "category": "park",
      "status": "ready",
      "reasons": [
       "DESTINATION",
       "ENOUGH_TIME",
+      "DAWN_TO_DUSK",
       "FREE"
      ],
      "caveats": []
@@ -2943,36 +2996,20 @@
     },
     {
      "rank": 2,
-     "name": "Buffalo Wild Wings",
-     "category": "restaurant",
-     "status": "ready",
+     "name": "Lilly's",
+     "category": "bar",
+     "status": "check_first",
      "reasons": [
-      "SHORT_TRAVEL"
+      "NEW_ON_MAP",
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
-     "caveats": []
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
     },
     {
      "rank": 3,
-     "name": "Ernie's Wine Bar & Eats",
-     "category": "bar",
-     "status": "ready",
-     "reasons": [
-      "CLOSES_SOON"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
-     "name": "Bridge View Tavern",
-     "category": "restaurant",
-     "status": "ready",
-     "reasons": [
-      "CLOSES_SOON"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 5,
      "name": "Growlers",
      "category": "bar",
      "status": "ready",
@@ -2982,13 +3019,36 @@
      "caveats": []
     },
     {
-     "rank": 6,
-     "name": "Lake View",
-     "category": "viewpoint",
+     "rank": 4,
+     "name": "Lazy Boy Saloon",
+     "category": "bar",
      "status": "check_first",
      "reasons": [
-      "ENOUGH_TIME",
-      "FREE"
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
+     ],
+     "caveats": [
+      "HOURS_UNKNOWN"
+     ]
+    },
+    {
+     "rank": 5,
+     "name": "Ernie's Wine Bar & Eats",
+     "category": "bar",
+     "status": "ready",
+     "reasons": [
+      "CLOSES_SOON"
+     ],
+     "caveats": []
+    },
+    {
+     "rank": 6,
+     "name": "I-Thai",
+     "category": "restaurant",
+     "status": "check_first",
+     "reasons": [
+      "SHORT_TRAVEL",
+      "ENOUGH_TIME"
      ],
      "caveats": [
       "HOURS_UNKNOWN"
@@ -3004,13 +3064,12 @@
    "top": [
     {
      "rank": 1,
-     "name": "Twin Lakes County Park",
+     "name": "Tibbetts Brook Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
       "DESTINATION",
-      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
       "FREE"
@@ -3032,19 +3091,6 @@
     },
     {
      "rank": 3,
-     "name": "Orchard Beach",
-     "category": "waterfront",
-     "status": "ready",
-     "reasons": [
-      "TASTE_MATCH",
-      "DESTINATION",
-      "ENOUGH_TIME",
-      "DAWN_TO_DUSK"
-     ],
-     "caveats": []
-    },
-    {
-     "rank": 4,
      "name": "State Line Lookout",
      "category": "viewpoint",
      "status": "ready",
@@ -3058,8 +3104,21 @@
      "caveats": []
     },
     {
+     "rank": 4,
+     "name": "Glen Island Park",
+     "category": "waterfront",
+     "status": "ready",
+     "reasons": [
+      "TASTE_MATCH",
+      "DESTINATION",
+      "ENOUGH_TIME",
+      "DAWN_TO_DUSK"
+     ],
+     "caveats": []
+    },
+    {
      "rank": 5,
-     "name": "Greenburgh Nature Center",
+     "name": "Van Cortlandt Park",
      "category": "park",
      "status": "ready",
      "reasons": [
@@ -3073,12 +3132,13 @@
     },
     {
      "rank": 6,
-     "name": "Van Cortlandt Park",
+     "name": "Twin Lakes County Park",
      "category": "park",
      "status": "ready",
      "reasons": [
       "TASTE_MATCH",
       "DESTINATION",
+      "SHORT_TRAVEL",
       "ENOUGH_TIME",
       "DAWN_TO_DUSK",
       "FREE"

@@ -47,7 +47,8 @@ Each `RecommendationItem` carries both **structured fields** and the backend's *
 (`item.copy.summary / sentence / caveat / action`). Rendering `copy` verbatim reproduces today's
 cards; the structured fields let you design your own:
 
-- `status`: `ready` or `check_first`. Never recompute or upgrade it.
+- `status`: `ready` or `check_first`. Never recompute or upgrade it, and never sort by it: a
+  `check_first` item may lead the page.
 - `caveats[]`: every one has `required: true` and explains a `check_first`. Keep them visible.
 - `reasons[]`: why it's a good option, strongest first. Optional to show.
 - `ageLimit`: always show when present. `evidence: "estimate"` reads "usually 21+", never "21+".

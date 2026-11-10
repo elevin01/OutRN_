@@ -5,7 +5,7 @@ import type { Candidate, ReasonCode, RequestContext } from "./types.js";
 /**
  * Restrooms and what a place has for children, weighed by who is going: an accessible restroom
  * matters to a wheelchair user, high chairs to a toddler, neither to anyone else. What matters lifts
- * appeal a little and gives the card a reason; no restroom sinks a place for young children a little.
+ * appeal and gives the card a reason; no restroom sinks a place for young children.
  * None of it excludes. Policy, not fact. (An inaccessible restroom is a caveat: see feasibility.)
  */
 export const AMENITIES = {
@@ -13,7 +13,13 @@ export const AMENITIES = {
   kidFacilityUnder: { highchair: 5, changing_table: 3, kids_area: 12 } satisfies Record<KidFacility, number>,
   /** No restroom counts against a place when the youngest is under this age, or a family's ages are unknown. */
   restroomNeededUnder: 10,
-  appeal: 0.05,
+  /** What a child's facility adds, and no restroom takes away with young children along. */
+  appeal: 0.1,
+  /**
+   * A wheelchair user's accessible restroom is a need, not a tie-break: it outweighs the day's turn
+   * among near-equals (score.ts ROTATION), so the place that has one leads those that don't say.
+   */
+  accessibleRestroom: 0.25,
 } as const;
 
 /** The card's reason for each facility. */
