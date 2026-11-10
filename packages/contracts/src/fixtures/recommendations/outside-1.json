@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000033",
+  "requestId": "00000000-0000-4000-8000-000000000035",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -39,11 +39,11 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000002",
+      "id": "00000000-0000-4000-8000-000000000006",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000002",
-      "name": "Clinton Bar",
-      "placeName": "Clinton Bar",
+      "placeId": "00000000-0000-4000-8000-000000000006",
+      "name": "Broome Bar",
+      "placeName": "Broome Bar",
       "photos": [],
       "category": {
         "id": "bar",
@@ -64,22 +64,22 @@
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.723404,
-        "lon": -73.980264
+        "lat": 40.727149,
+        "lon": -73.992962
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 14,
+          "minutes": 18,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:49:00.000Z",
-        "usefulMinutes": 101,
+        "arriveAt": "2026-10-03T22:53:00.000Z",
+        "usefulMinutes": 97,
         "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
         "visit": {
           "style": "visit",
           "label": "Visit",
@@ -97,9 +97,9 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:49:00.000Z",
+          "at": "2026-10-03T22:53:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:49pm"
+          "text": "Arrive around 6:53pm"
         },
         {
           "kind": "wrap_up",
@@ -132,7 +132,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 101
+            "usefulMinutes": 97
           },
           "required": false
         },
@@ -140,37 +140,29 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "HOURS_CONFIRMED",
-          "text": "hours confirmed",
-          "params": {
-            "verifiedAt": "2026-09-29T16:00:00.000Z"
+            "closesAt": "2026-10-04T07:00:00.000Z"
           },
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late, hours confirmed.",
+        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
-        "websiteUrl": null,
-        "phone": "+1 212 555 8297",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
+        "websiteUrl": "https://broomebar.example/",
+        "phone": "+1 212 555 3125",
         "links": []
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000003",
+      "id": "00000000-0000-4000-8000-000000000015",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000003",
+      "placeId": "00000000-0000-4000-8000-000000000015",
       "name": "Forsyth Clinton Kitchen",
       "placeName": "Forsyth Clinton Kitchen",
       "photos": [],
@@ -315,11 +307,11 @@
       }
     },
     {
-      "id": "00000000-0000-4000-8000-000000000006",
+      "id": "00000000-0000-4000-8000-00000000000a",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000006",
-      "name": "Broome Bar",
-      "placeName": "Broome Bar",
+      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "name": "Clinton Bar",
+      "placeName": "Clinton Bar",
       "photos": [],
       "category": {
         "id": "bar",
@@ -340,22 +332,22 @@
       "status": "ready",
       "callToAction": "go",
       "location": {
-        "lat": 40.727149,
-        "lon": -73.992962
+        "lat": 40.723404,
+        "lon": -73.980264
       },
       "event": null,
       "timing": {
         "travel": {
           "mode": "walk",
-          "minutes": 18,
+          "minutes": 14,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "usefulMinutes": 97,
+        "arriveAt": "2026-10-03T22:49:00.000Z",
+        "usefulMinutes": 101,
         "finishBy": "2026-10-04T00:30:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
         "visit": {
           "style": "visit",
           "label": "Visit",
@@ -373,9 +365,9 @@
         },
         {
           "kind": "arrive",
-          "at": "2026-10-03T22:53:00.000Z",
+          "at": "2026-10-03T22:49:00.000Z",
           "isEstimate": true,
-          "text": "Arrive around 6:53pm"
+          "text": "Arrive around 6:49pm"
         },
         {
           "kind": "wrap_up",
@@ -408,7 +400,7 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 97
+            "usefulMinutes": 101
           },
           "required": false
         },
@@ -416,22 +408,30 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T07:00:00.000Z"
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "HOURS_CONFIRMED",
+          "text": "hours confirmed",
+          "params": {
+            "verifiedAt": "2026-09-29T16:00:00.000Z"
           },
           "required": false
         }
       ],
       "caveats": [],
       "copy": {
-        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late.",
+        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late, hours confirmed.",
         "caveat": null,
         "action": "Go now"
       },
       "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
-        "websiteUrl": "https://broomebar.example/",
-        "phone": "+1 212 555 3125",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+        "websiteUrl": null,
+        "phone": "+1 212 555 8297",
         "links": []
       }
     }
@@ -439,7 +439,7 @@
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM1IiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

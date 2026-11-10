@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-00000000001c",
-  "name": "Attorney Kitchen",
+  "name": "Broome Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.92844,
-    "lon": -73.849641
+    "lat": 40.932019,
+    "lon": -73.846175
   },
   "address": null,
   "photos": [],
@@ -28,7 +28,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Tu-Su 12:00-23:00; Mo off",
+      "value": "Mo-Su 11:00-23:00",
       "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.603,
+        "confidence": 0.607,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -63,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Vietnamese",
+      "value": "Mexican",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,18 +86,18 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in; reservations taken",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -109,12 +109,12 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     },
     {
@@ -132,35 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Limited access",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · published"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · published"
       }
     },
     {
@@ -178,38 +155,38 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-07-06T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-08-21T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jul 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jul 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2026",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2026 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Hester Lot",
-    "kind": "lot",
-    "fee": "unknown",
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
     "openingHours": null,
     "location": {
-      "lat": 40.9287,
-      "lon": -73.8491
+      "lat": 40.9325,
+      "lon": -73.8458
     },
-    "distanceMetres": 54,
-    "walkMinutes": 1,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9287%2C-73.8491&travelmode=driving",
-    "text": "Hester Lot, ~1 min walk"
+    "distanceMetres": 62,
+    "walkMinutes": 2,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9325%2C-73.8458&travelmode=driving",
+    "text": "Rivington Garage (paid), ~2 min walk"
   },
   "contact": {
-    "websiteUrl": "https://attorneykitchen.example/",
-    "phone": null
+    "websiteUrl": "https://broomekitchen.example/",
+    "phone": "+1 212 555 7228"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.92844%2C-73.849641&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.932019%2C-73.846175&travelmode=driving"
     },
     "links": []
   },

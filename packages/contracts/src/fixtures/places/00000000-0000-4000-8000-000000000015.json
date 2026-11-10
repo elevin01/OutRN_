@@ -1,6 +1,6 @@
 {
   "id": "00000000-0000-4000-8000-000000000015",
-  "name": "Ridge Kitchen",
+  "name": "Forsyth Clinton Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,8 +8,8 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.72504,
-    "lon": -73.997603
+    "lat": 40.720713,
+    "lon": -73.98824
   },
   "address": null,
   "photos": [],
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.541,
+        "confidence": 0.587,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -63,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Vietnamese",
+      "value": "Mexican",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,12 +86,12 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -109,12 +109,12 @@
         "evidence": "estimate",
         "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
       }
     },
     {
@@ -132,35 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
-      }
-    },
-    {
-      "attribute": "wheelchair",
-      "label": "Wheelchair",
-      "value": "Accessible",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
       }
     },
     {
@@ -178,25 +155,84 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-06-25T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-04-22T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jun 2025",
-        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
+        "freshness": "last edited in OSM Apr 2026",
+        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "queue",
+      "label": "Line",
+      "value": "Short",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "user_observation",
+            "label": "visitor report"
+          }
+        ],
+        "evidence": "reported",
+        "confidence": 0.7,
+        "verifiedAt": "2026-10-03T22:28:00.000Z",
+        "sourceUpdatedAt": "2026-10-03T22:28:00.000Z",
+        "retrievedAt": "2026-10-03T22:28:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "reported 2 min ago",
+        "summary": "visitor report · reported 2 min ago · reported"
+      }
+    },
+    {
+      "attribute": "crowd_level",
+      "label": "Crowd",
+      "value": "Busy",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "user_observation",
+            "label": "visitor report"
+          }
+        ],
+        "evidence": "reported",
+        "confidence": 0.7,
+        "verifiedAt": "2026-10-03T22:28:00.000Z",
+        "sourceUpdatedAt": "2026-10-03T22:28:00.000Z",
+        "retrievedAt": "2026-10-03T22:28:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "reported 2 min ago",
+        "summary": "visitor report · reported 2 min ago · reported"
       }
     }
   ],
-  "parkingNearby": null,
+  "parkingNearby": {
+    "name": "Rivington Garage",
+    "kind": "garage",
+    "fee": "paid",
+    "openingHours": null,
+    "location": {
+      "lat": 40.72101,
+      "lon": -73.98795
+    },
+    "distanceMetres": 41,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72101%2C-73.98795&travelmode=driving",
+    "text": "Rivington Garage (paid), ~1 min walk"
+  },
   "contact": {
-    "websiteUrl": "https://ridgekitchen.example/",
-    "phone": "+1 212 555 9547"
+    "websiteUrl": null,
+    "phone": "+1 212 555 9967"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=driving"
     },
     "links": []
   },

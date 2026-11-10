@@ -1,18 +1,15 @@
 {
   "id": "00000000-0000-4000-8000-00000000000a",
-  "name": "Delancey Tavern",
+  "name": "Clinton Bar",
   "category": {
     "id": "bar",
     "label": "Bar"
   },
-  "subtype": {
-    "id": "pub",
-    "label": "Pub"
-  },
+  "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.716973,
-    "lon": -73.998882
+    "lat": 40.723404,
+    "lon": -73.980264
   },
   "address": null,
   "photos": [],
@@ -34,24 +31,24 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 12:00-02:00",
+      "value": "Mo-Su 16:00-02:00",
       "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
-            "id": "osm",
-            "label": "OpenStreetMap"
+            "id": "founder",
+            "label": "OutRN"
           }
         ],
         "evidence": "published",
-        "confidence": 0.509,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "confidence": 0.9,
+        "verifiedAt": "2026-09-29T16:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-29T16:00:00.000Z",
+        "retrievedAt": "2026-09-29T16:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+        "freshness": "confirmed Sep 29",
+        "summary": "OutRN · confirmed Sep 29 · published"
       }
     },
     {
@@ -69,35 +66,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
-      }
-    },
-    {
-      "attribute": "subtype",
-      "label": "Kind",
-      "value": "Pub",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.8,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · published"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
@@ -115,12 +89,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     },
     {
@@ -138,18 +112,41 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+      }
+    },
+    {
+      "attribute": "outdoor_seating",
+      "label": "Outdoor seating",
+      "value": "Yes",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.7,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Indoor",
+      "value": "Mixed",
       "detail": null,
       "provenance": {
         "sources": [
@@ -161,25 +158,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-12-13T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Dec 2024",
-        "summary": "OpenStreetMap · last edited in OSM Dec 2024 · estimate"
+        "freshness": "last edited in OSM Jan 2026",
+        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://delanceytavern.example/",
-    "phone": null
+    "websiteUrl": null,
+    "phone": "+1 212 555 8297"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=driving"
     },
     "links": []
   },

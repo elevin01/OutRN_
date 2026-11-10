@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000024",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -54,30 +54,35 @@
       "photos": [],
       "cuisines": [],
       "diets": [],
-      "features": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000025",
+      "id": "00000000-0000-4000-8000-000000000028",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~13 min walk · takes about 1h · until 4am · price unknown · usually 21+",
-        "sentence": "Opens at 8pm, plenty of time, open late."
+        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Pitt Street Nightcap",
+      "name": "Ridge Bar",
       "plan": [
         {
-          "at": "2026-10-03T23:42:00.000Z",
+          "at": "2026-10-03T22:30:00.000Z",
           "kind": "leave",
-          "text": "Leave at 7:42pm",
+          "text": "Leave at 6:30pm",
           "isEstimate": false
         },
         {
-          "at": "2026-10-04T00:00:00.000Z",
+          "at": "2026-10-03T22:55:00.000Z",
           "kind": "arrive",
-          "text": "Arrive as it opens at 8pm",
+          "text": "Arrive around 6:55pm",
           "isEstimate": true
         },
         {
@@ -102,38 +107,30 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 13,
+          "minutes": 20,
           "isEstimate": true,
           "parkingMinutes": null
         },
-        "leaveAt": "2026-10-03T23:42:00.000Z",
-        "arriveAt": "2026-10-04T00:00:00.000Z",
-        "closesAt": "2026-10-04T08:00:00.000Z",
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:55:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 90
+        "usefulMinutes": 155
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking"
+        "phone": "+1 212 555 6471",
+        "websiteUrl": "https://ridgebar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000025",
+      "placeId": "00000000-0000-4000-8000-000000000028",
       "reasons": [
-        {
-          "code": "WAIT_FOR_OPENING",
-          "text": "opens at 8pm",
-          "params": {
-            "opensAt": "2026-10-04T00:00:00.000Z"
-          },
-          "required": false
-        },
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 90
+            "usefulMinutes": 155
           },
           "required": false
         },
@@ -141,7 +138,7 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T08:00:00.000Z"
+            "closesAt": "2026-10-04T07:00:00.000Z"
           },
           "required": false
         }
@@ -156,10 +153,10 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.715594,
-        "lon": -73.996037
+        "lat": 40.713276,
+        "lon": -74.00022
       },
-      "placeName": "Pitt Street Nightcap",
+      "placeName": "Ridge Bar",
       "callToAction": "go"
     },
     {
@@ -187,7 +184,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000026",
+      "id": "00000000-0000-4000-8000-00000000000e",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -248,7 +245,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000026",
+      "placeId": "00000000-0000-4000-8000-00000000000e",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -308,7 +305,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000027",
+      "id": "00000000-0000-4000-8000-000000000029",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -369,7 +366,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000027",
+      "placeId": "00000000-0000-4000-8000-000000000029",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -408,8 +405,8 @@
   "page": {
     "offset": 3,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6Nn0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6MH0"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

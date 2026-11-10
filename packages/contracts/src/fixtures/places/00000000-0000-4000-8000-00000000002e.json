@@ -1,15 +1,18 @@
 {
-  "id": "00000000-0000-4000-8000-000000000002",
-  "name": "Clinton Bar",
+  "id": "00000000-0000-4000-8000-00000000002e",
+  "name": "Ridge Tavern",
   "category": {
     "id": "bar",
     "label": "Bar"
   },
-  "subtype": null,
+  "subtype": {
+    "id": "pub",
+    "label": "Pub"
+  },
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.723404,
-    "lon": -73.980264
+    "lat": 40.720409,
+    "lon": -73.998263
   },
   "address": null,
   "photos": [],
@@ -31,24 +34,24 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 16:00-02:00",
+      "value": "Mo-Su 12:00-02:00",
       "detail": "Open now until 2am",
       "provenance": {
         "sources": [
           {
-            "id": "founder",
-            "label": "OutRN"
+            "id": "osm",
+            "label": "OpenStreetMap"
           }
         ],
         "evidence": "published",
-        "confidence": 0.9,
-        "verifiedAt": "2026-09-29T16:00:00.000Z",
-        "sourceUpdatedAt": "2026-09-29T16:00:00.000Z",
-        "retrievedAt": "2026-09-29T16:00:00.000Z",
+        "confidence": 0.547,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "confirmed Sep 29",
-        "summary": "OutRN · confirmed Sep 29 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
@@ -66,12 +69,35 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
+      }
+    },
+    {
+      "attribute": "subtype",
+      "label": "Kind",
+      "value": "Pub",
+      "detail": null,
+      "provenance": {
+        "sources": [
+          {
+            "id": "osm",
+            "label": "OpenStreetMap"
+          }
+        ],
+        "evidence": "published",
+        "confidence": 0.8,
+        "verifiedAt": null,
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
+        "retrievedAt": "2026-09-20T12:00:00.000Z",
+        "dueForRecheck": false,
+        "conflict": false,
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
@@ -89,12 +115,12 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
@@ -112,18 +138,18 @@
         "evidence": "estimate",
         "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     },
     {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "Yes",
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Accessible",
       "detail": null,
       "provenance": {
         "sources": [
@@ -135,18 +161,18 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · published"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · published"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -158,25 +184,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-01-15T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-08-20T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Jan 2026",
-        "summary": "OpenStreetMap · last edited in OSM Jan 2026 · estimate"
+        "freshness": "last edited in OSM Aug 2025",
+        "summary": "OpenStreetMap · last edited in OSM Aug 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
     "websiteUrl": null,
-    "phone": "+1 212 555 8297"
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=driving"
     },
     "links": []
   },

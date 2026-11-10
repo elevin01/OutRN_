@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000033",
+  "requestId": "00000000-0000-4000-8000-000000000035",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -42,57 +42,36 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
           "basis": "typical",
-          "level": "busy",
+          "level": "moderate",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [
-        {
-          "id": "vietnamese",
-          "label": "Vietnamese"
-        }
-      ],
+      "cuisines": [],
       "diets": [],
       "features": [
         {
           "id": "outdoor_seating",
           "label": "Outdoor seating"
-        },
-        {
-          "id": "wheelchair",
-          "label": "Wheelchair accessible"
         }
       ],
       "interests": [
-        "food"
+        "drinks"
       ],
-      "id": "00000000-0000-4000-8000-000000000015",
+      "id": "00000000-0000-4000-8000-00000000002d",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "Vietnamese · ~18 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Ridge Kitchen",
+      "name": "Stanton Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -120,32 +99,32 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
+          "label": "Visit",
+          "style": "visit",
           "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
+          "minMinutes": 45,
+          "typicalMinutes": 60
         },
         "travel": {
           "mode": "walk",
-          "minutes": 18,
+          "minutes": 23,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T22:58:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
         "finishBy": "2026-10-04T00:30:00.000Z",
         "usefulMinutes": 92
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 9547",
-        "websiteUrl": "https://ridgekitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking"
+        "phone": null,
+        "websiteUrl": "https://stantonbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000015",
+      "placeId": "00000000-0000-4000-8000-00000000002d",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -159,132 +138,25 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
+            "closesAt": "2026-10-04T07:00:00.000Z"
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": null,
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
       "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
+        "id": "bar",
+        "label": "Bar"
       },
       "location": {
-        "lat": 40.72504,
-        "lon": -73.997603
+        "lat": 40.730851,
+        "lon": -73.986194
       },
-      "placeName": "Ridge Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday evenings",
-          "basis": "typical",
-          "level": "quiet",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "cafes"
-      ],
-      "id": "00000000-0000-4000-8000-000000000034",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~22 min walk · takes about 35 min · until 8pm · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Ridge Coffee",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:57:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:57pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T00:00:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 8pm, when it closes",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Counter service",
-          "style": "counter",
-          "isEstimate": true,
-          "minMinutes": 30,
-          "typicalMinutes": 35
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 22,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:57:00.000Z",
-        "closesAt": "2026-10-04T00:00:00.000Z",
-        "finishBy": "2026-10-04T00:00:00.000Z",
-        "usefulMinutes": 63
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 1346",
-        "websiteUrl": "https://ridgecoffee.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.728686%2C-73.980324&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000034",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 63
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "cafe",
-        "label": "Cafe"
-      },
-      "location": {
-        "lat": 40.728686,
-        "lon": -73.980324
-      },
-      "placeName": "Ridge Coffee",
+      "placeName": "Stanton Bar",
       "callToAction": "go"
     },
     {
@@ -317,7 +189,7 @@
       "interests": [
         "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000035",
+      "id": "00000000-0000-4000-8000-000000000037",
       "copy": {
         "action": "Book",
         "caveat": "Check first: admission not confirmed",
@@ -385,7 +257,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000035",
+      "placeId": "00000000-0000-4000-8000-000000000037",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -416,13 +288,149 @@
       },
       "placeName": "Grand Kitchen",
       "callToAction": "book"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "pizza",
+          "label": "Pizza"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000031",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: a wait could leave too little time",
+        "summary": "Pizza · ~23 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "sentence": "Open late."
+      },
+      "kind": "venue",
+      "name": "Forsyth Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T23:03:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 7:03pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 23,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T23:03:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 87
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://forsythkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "WAIT_MAY_NOT_FIT",
+          "text": "a wait could leave too little time",
+          "params": {
+            "waitMinutes": 30
+          },
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000031",
+      "reasons": [
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T02:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.70705,
+        "lon": -73.993872
+      },
+      "placeName": "Forsyth Kitchen",
+      "callToAction": "check"
     }
   ],
   "page": {
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM1IiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [

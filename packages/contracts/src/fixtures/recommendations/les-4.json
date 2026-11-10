@@ -64,135 +64,8 @@
       "photos": [],
       "cuisines": [
         {
-          "id": "japanese",
-          "label": "Japanese"
-        }
-      ],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "food"
-      ],
-      "id": "00000000-0000-4000-8000-00000000000b",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Japanese · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Stanton Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:53:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:53pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T01:20:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7138",
-        "websiteUrl": "https://stantonkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000b",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 147
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.721023,
-        "lon": -73.979262
-      },
-      "placeName": "Stanton Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "pizza",
-          "label": "Pizza"
+          "id": "mexican",
+          "label": "Mexican"
         }
       ],
       "diets": [],
@@ -204,11 +77,11 @@
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "Pizza · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
-        "sentence": "Plenty of time."
+        "summary": "Mexican · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Ridge Suffolk Kitchen",
+      "name": "Stanton Allen Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -223,10 +96,10 @@
           "isEstimate": true
         },
         {
-          "at": "2026-10-04T01:20:00.000Z",
+          "at": "2026-10-04T01:30:00.000Z",
           "kind": "wrap_up",
-          "text": "Wrap up by 9:20pm",
-          "isEstimate": true
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
         }
       ],
       "event": null,
@@ -250,15 +123,15 @@
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
-        "finishBy": "2026-10-04T01:20:00.000Z",
-        "usefulMinutes": 147
+        "closesAt": "2026-10-04T03:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 157
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 5718",
-        "websiteUrl": "https://ridgesuffolkkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712091%2C-73.990301&travelmode=walking"
+        "phone": "+1 212 555 7512",
+        "websiteUrl": "https://stantonallenkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
       },
       "caveats": [],
       "placeId": "00000000-0000-4000-8000-00000000000c",
@@ -267,7 +140,15 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 147
+            "usefulMinutes": 157
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
         }
@@ -279,10 +160,129 @@
         "label": "Restaurant"
       },
       "location": {
-        "lat": 40.712091,
-        "lon": -73.990301
+        "lat": 40.725116,
+        "lon": -73.989173
       },
-      "placeName": "Ridge Suffolk Kitchen",
+      "placeName": "Stanton Allen Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "basis": "typical",
+          "level": "moderate",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "drinks"
+      ],
+      "id": "00000000-0000-4000-8000-00000000000d",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~16 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late."
+      },
+      "kind": "venue",
+      "name": "Delancey Tavern",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:51:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:51pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T01:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 9:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "ready",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 45,
+          "typicalMinutes": 60
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 16,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:51:00.000Z",
+        "closesAt": "2026-10-04T06:00:00.000Z",
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "usefulMinutes": 159
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": "https://delanceytavern.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
+      },
+      "caveats": [],
+      "placeId": "00000000-0000-4000-8000-00000000000d",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 159
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T06:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "subtype": {
+        "id": "pub",
+        "label": "Pub"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "location": {
+        "lat": 40.716973,
+        "lon": -73.998882
+      },
+      "placeName": "Delancey Tavern",
       "callToAction": "go"
     },
     {
@@ -310,15 +310,15 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000000d",
+      "id": "00000000-0000-4000-8000-00000000000e",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "summary": "~17 min walk · takes about 1h · until 1am · price unknown · usually 21+",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Ridge Bar",
+      "name": "Hester Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -327,9 +327,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T22:55:00.000Z",
+          "at": "2026-10-03T22:52:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 6:55pm",
+          "text": "Arrive around 6:52pm",
           "isEstimate": true
         },
         {
@@ -354,30 +354,30 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 20,
+          "minutes": 17,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:55:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
+        "arriveAt": "2026-10-03T22:52:00.000Z",
+        "closesAt": "2026-10-04T05:00:00.000Z",
         "finishBy": "2026-10-04T01:30:00.000Z",
-        "usefulMinutes": 155
+        "usefulMinutes": 158
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 6471",
-        "websiteUrl": "https://ridgebar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking"
+        "phone": null,
+        "websiteUrl": "https://hesterbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000d",
+      "placeId": "00000000-0000-4000-8000-00000000000e",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 155
+            "usefulMinutes": 158
           },
           "required": false
         },
@@ -385,7 +385,7 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T07:00:00.000Z"
+            "closesAt": "2026-10-04T05:00:00.000Z"
           },
           "required": false
         }
@@ -400,10 +400,10 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.713276,
-        "lon": -74.00022
+        "lat": 40.727329,
+        "lon": -73.986761
       },
-      "placeName": "Ridge Bar",
+      "placeName": "Hester Bar",
       "callToAction": "go"
     }
   ],

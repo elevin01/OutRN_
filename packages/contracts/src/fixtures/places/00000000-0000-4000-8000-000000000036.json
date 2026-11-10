@@ -1,6 +1,6 @@
 {
-  "id": "00000000-0000-4000-8000-000000000035",
-  "name": "Grand Kitchen",
+  "id": "00000000-0000-4000-8000-000000000036",
+  "name": "Stanton Kitchen",
   "category": {
     "id": "restaurant",
     "label": "Restaurant"
@@ -8,17 +8,17 @@
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.726906,
-    "lon": -73.992709
+    "lat": 40.721023,
+    "lon": -73.979262
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
     "state": "open",
-    "closesAt": "2026-10-04T03:00:00.000Z",
+    "closesAt": "2026-10-04T02:00:00.000Z",
     "opensAt": null,
-    "summary": "Open now until 11pm"
+    "summary": "Open now until 10pm"
   },
   "price": {
     "kind": "unknown"
@@ -28,8 +28,8 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
-      "detail": "Open now until 11pm",
+      "value": "Mo-Su 11:30-15:00,17:00-22:00",
+      "detail": "Open now until 10pm",
       "provenance": {
         "sources": [
           {
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.59,
+        "confidence": 0.534,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -63,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     },
     {
       "attribute": "cuisine",
       "label": "Cuisine",
-      "value": "Korean",
+      "value": "Japanese",
       "detail": null,
       "provenance": {
         "sources": [
@@ -86,18 +86,18 @@
         "evidence": "published",
         "confidence": 0.8,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Reservation required",
+      "value": "Walk in",
       "detail": null,
       "provenance": {
         "sources": [
@@ -106,15 +106,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "published",
-        "confidence": 0.7,
+        "evidence": "estimate",
+        "confidence": 0.45,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     },
     {
@@ -132,12 +132,12 @@
         "evidence": "published",
         "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · published"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · published"
       }
     },
     {
@@ -155,25 +155,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2026-04-19T00:00:00.000Z",
+        "sourceUpdatedAt": "2025-06-04T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Apr 2026",
-        "summary": "OpenStreetMap · last edited in OSM Apr 2026 · estimate"
+        "freshness": "last edited in OSM Jun 2025",
+        "summary": "OpenStreetMap · last edited in OSM Jun 2025 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 5266"
+    "websiteUrl": "https://stantonkitchen.example/",
+    "phone": "+1 212 555 7138"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.726906%2C-73.992709&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=driving"
     },
     "links": []
   },

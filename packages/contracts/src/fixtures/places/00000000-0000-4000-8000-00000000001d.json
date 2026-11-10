@@ -1,15 +1,15 @@
 {
   "id": "00000000-0000-4000-8000-00000000001d",
-  "name": "Delancey Kitchen",
+  "name": "Broome Scoops",
   "category": {
-    "id": "restaurant",
-    "label": "Restaurant"
+    "id": "dessert",
+    "label": "Dessert"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.929225,
-    "lon": -73.844511
+    "lat": 40.933632,
+    "lon": -73.829916
   },
   "address": null,
   "photos": [],
@@ -28,7 +28,7 @@
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "Mo-Su 11:00-23:00",
+      "value": "Mo-Su 12:00-23:00",
       "detail": "Open now until 11pm",
       "provenance": {
         "sources": [
@@ -38,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.489,
+        "confidence": 0.49,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · published"
       }
     },
     {
@@ -63,35 +63,12 @@
         "evidence": "estimate",
         "confidence": 0.35,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
-      }
-    },
-    {
-      "attribute": "cuisine",
-      "label": "Cuisine",
-      "value": "Pizza",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.8,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     },
     {
@@ -107,43 +84,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.45,
+        "confidence": 0.55,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
-      }
-    },
-    {
-      "attribute": "outdoor_seating",
-      "label": "Outdoor seating",
-      "value": "Yes",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "published",
-        "confidence": 0.7,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · published"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     },
     {
       "attribute": "indoor_outdoor",
       "label": "Setting",
-      "value": "Mixed",
+      "value": "Indoor",
       "detail": null,
       "provenance": {
         "sources": [
@@ -155,28 +109,28 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-08-14T00:00:00.000Z",
+        "sourceUpdatedAt": "2024-09-11T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Aug 2024",
-        "summary": "OpenStreetMap · last edited in OSM Aug 2024 · estimate"
+        "freshness": "last edited in OSM Sep 2024",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2024 · estimate"
       }
     }
   ],
   "parkingNearby": {
-    "name": "Orchard Street Lot",
+    "name": null,
     "kind": "lot",
-    "fee": "paid",
-    "openingHours": "Mo-Su 06:00-24:00",
+    "fee": "free",
+    "openingHours": null,
     "location": {
-      "lat": 40.9296,
-      "lon": -73.8434
+      "lat": 40.934,
+      "lon": -73.8304
     },
-    "distanceMetres": 102,
-    "walkMinutes": 2,
-    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.9296%2C-73.8434&travelmode=driving",
-    "text": "Orchard Street Lot (paid), ~2 min walk"
+    "distanceMetres": 58,
+    "walkMinutes": 1,
+    "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.934%2C-73.8304&travelmode=driving",
+    "text": "Lot 60 m away (free), ~1 min walk"
   },
   "contact": {
     "websiteUrl": null,
@@ -184,9 +138,9 @@
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.929225%2C-73.844511&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.933632%2C-73.829916&travelmode=driving"
     },
     "links": []
   },

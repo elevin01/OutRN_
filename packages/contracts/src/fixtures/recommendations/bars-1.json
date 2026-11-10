@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000024",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -39,9 +39,254 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000002",
+      "id": "00000000-0000-4000-8000-000000000006",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000002",
+      "placeId": "00000000-0000-4000-8000-000000000006",
+      "name": "Broome Bar",
+      "placeName": "Broome Bar",
+      "photos": [],
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "drinks"
+      ],
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.727149,
+        "lon": -73.992962
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:53:00.000Z",
+        "usefulMinutes": 157,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T22:30:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 6:30pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-03T22:53:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 6:53pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm"
+        }
+      ],
+      "parking": null,
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
+        }
+      ],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 157
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T07:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "sentence": "Plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
+        "websiteUrl": "https://broomebar.example/",
+        "phone": "+1 212 555 3125",
+        "links": []
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000009",
+      "name": "Pitt Street Nightcap",
+      "placeName": "Pitt Street Nightcap",
+      "photos": [],
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "drinks"
+      ],
+      "status": "ready",
+      "callToAction": "go",
+      "location": {
+        "lat": 40.715594,
+        "lon": -73.996037
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 13,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T23:42:00.000Z",
+        "arriveAt": "2026-10-04T00:00:00.000Z",
+        "usefulMinutes": 90,
+        "finishBy": "2026-10-04T01:30:00.000Z",
+        "closesAt": "2026-10-04T08:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-03T23:42:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 7:42pm"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T00:00:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive as it opens at 8pm"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T01:30:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 9:30pm"
+        }
+      ],
+      "parking": null,
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "moderate",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually fairly busy on Saturday evenings"
+        }
+      ],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "WAIT_FOR_OPENING",
+          "text": "opens at 8pm",
+          "params": {
+            "opensAt": "2026-10-04T00:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 90
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T08:00:00.000Z"
+          },
+          "required": false
+        }
+      ],
+      "caveats": [],
+      "copy": {
+        "summary": "~13 min walk · takes about 1h · until 4am · price unknown · usually 21+",
+        "sentence": "Opens at 8pm, plenty of time, open late.",
+        "caveat": null,
+        "action": "Go now"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
+        "websiteUrl": null,
+        "phone": null,
+        "links": []
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-00000000000a",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-00000000000a",
       "name": "Clinton Bar",
       "placeName": "Clinton Bar",
       "photos": [],
@@ -166,254 +411,12 @@
         "phone": "+1 212 555 8297",
         "links": []
       }
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000006",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000006",
-      "name": "Broome Bar",
-      "placeName": "Broome Bar",
-      "photos": [],
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "cuisines": [],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "drinks"
-      ],
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.727149,
-        "lon": -73.992962
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 18,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:53:00.000Z",
-        "usefulMinutes": 157,
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
-        "visit": {
-          "style": "visit",
-          "label": "Visit",
-          "minMinutes": 45,
-          "typicalMinutes": 60,
-          "isEstimate": true
-        }
-      },
-      "plan": [
-        {
-          "kind": "leave",
-          "at": "2026-10-03T22:30:00.000Z",
-          "isEstimate": false,
-          "text": "Leave at 6:30pm"
-        },
-        {
-          "kind": "arrive",
-          "at": "2026-10-03T22:53:00.000Z",
-          "isEstimate": true,
-          "text": "Arrive around 6:53pm"
-        },
-        {
-          "kind": "wrap_up",
-          "at": "2026-10-04T01:30:00.000Z",
-          "isEstimate": false,
-          "text": "Wrap up by 9:30pm"
-        }
-      ],
-      "parking": null,
-      "conditions": [
-        {
-          "kind": "crowd",
-          "level": "moderate",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually fairly busy on Saturday evenings"
-        }
-      ],
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 157
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T07:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~18 min walk · takes about 1h · until 3am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727149%2C-73.992962&travelmode=walking",
-        "websiteUrl": "https://broomebar.example/",
-        "phone": "+1 212 555 3125",
-        "links": []
-      }
-    },
-    {
-      "id": "00000000-0000-4000-8000-00000000000d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "name": "Ridge Bar",
-      "placeName": "Ridge Bar",
-      "photos": [],
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "cuisines": [],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "drinks"
-      ],
-      "status": "ready",
-      "callToAction": "go",
-      "location": {
-        "lat": 40.713276,
-        "lon": -74.00022
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 20,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:55:00.000Z",
-        "usefulMinutes": 155,
-        "finishBy": "2026-10-04T01:30:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
-        "visit": {
-          "style": "visit",
-          "label": "Visit",
-          "minMinutes": 45,
-          "typicalMinutes": 60,
-          "isEstimate": true
-        }
-      },
-      "plan": [
-        {
-          "kind": "leave",
-          "at": "2026-10-03T22:30:00.000Z",
-          "isEstimate": false,
-          "text": "Leave at 6:30pm"
-        },
-        {
-          "kind": "arrive",
-          "at": "2026-10-03T22:55:00.000Z",
-          "isEstimate": true,
-          "text": "Arrive around 6:55pm"
-        },
-        {
-          "kind": "wrap_up",
-          "at": "2026-10-04T01:30:00.000Z",
-          "isEstimate": false,
-          "text": "Wrap up by 9:30pm"
-        }
-      ],
-      "parking": null,
-      "conditions": [
-        {
-          "kind": "crowd",
-          "level": "moderate",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually fairly busy on Saturday evenings"
-        }
-      ],
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 155
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T07:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "caveats": [],
-      "copy": {
-        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
-        "sentence": "Plenty of time, open late.",
-        "caveat": null,
-        "action": "Go now"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
-        "websiteUrl": "https://ridgebar.example/",
-        "phone": "+1 212 555 6471",
-        "links": []
-      }
     }
   ],
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,

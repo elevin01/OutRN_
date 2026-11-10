@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "requestId": "00000000-0000-4000-8000-00000000000f",
   "asOf": "2026-10-03T18:00:00.000Z",
   "generatedAt": "2026-10-03T18:00:00.000Z",
   "expiresAt": "2026-10-03T18:20:00.000Z",
@@ -40,136 +40,6 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday afternoons",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "mexican",
-          "label": "Mexican"
-        }
-      ],
-      "diets": [],
-      "features": [],
-      "interests": [
-        "food"
-      ],
-      "id": "00000000-0000-4000-8000-000000000009",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "Mexican · ~13 min walk · takes about 1h · ~15–30 min wait · until 11pm · price unknown",
-        "sentence": "Plenty of time, open late."
-      },
-      "kind": "venue",
-      "name": "Stanton Allen Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T18:00:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 2pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T18:23:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 2:23pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T21:00:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 5pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 60
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 13,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T18:00:00.000Z",
-        "arriveAt": "2026-10-03T18:23:00.000Z",
-        "closesAt": "2026-10-04T03:00:00.000Z",
-        "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 157
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 7512",
-        "websiteUrl": "https://stantonallenkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000009",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 157
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T03:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.725116,
-        "lon": -73.989173
-      },
-      "placeName": "Stanton Allen Kitchen",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
           "text": "Places like this are usually fairly busy on Saturday afternoons",
           "basis": "typical",
           "level": "moderate",
@@ -186,15 +56,15 @@
       "interests": [
         "art"
       ],
-      "id": "00000000-0000-4000-8000-000000000012",
+      "id": "00000000-0000-4000-8000-000000000014",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~12 min walk · takes about 45 min · until 7pm · usually free",
+        "summary": "~17 min walk · takes about 45 min · until 7pm · usually free",
         "sentence": "Plenty of time, usually free."
       },
       "kind": "venue",
-      "name": "Stanton Gallery",
+      "name": "Ridge Gallery",
       "plan": [
         {
           "at": "2026-10-03T18:00:00.000Z",
@@ -203,9 +73,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T18:17:00.000Z",
+          "at": "2026-10-03T18:22:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 2:17pm",
+          "text": "Arrive around 2:22pm",
           "isEstimate": true
         },
         {
@@ -237,30 +107,30 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 12,
+          "minutes": 17,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T18:00:00.000Z",
-        "arriveAt": "2026-10-03T18:17:00.000Z",
+        "arriveAt": "2026-10-03T18:22:00.000Z",
         "closesAt": "2026-10-03T23:00:00.000Z",
         "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 163
+        "usefulMinutes": 158
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://stantongallery.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715524%2C-73.995201&travelmode=walking"
+        "phone": "+1 212 555 7174",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727546%2C-73.986184&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000012",
+      "placeId": "00000000-0000-4000-8000-000000000014",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 163
+            "usefulMinutes": 158
           },
           "required": false
         },
@@ -278,41 +148,60 @@
         "label": "Gallery"
       },
       "location": {
-        "lat": 40.715524,
-        "lon": -73.995201
+        "lat": 40.727546,
+        "lon": -73.986184
       },
-      "placeName": "Stanton Gallery",
+      "placeName": "Ridge Gallery",
       "callToAction": "go"
     },
     {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday afternoons",
-          "basis": "typical",
-          "level": "moderate",
+          "text": "Reported busy at 6:28pm",
+          "basis": "report",
+          "level": "busy",
           "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
+          "isEstimate": false,
+          "reportedAt": "2026-10-03T22:28:00.000Z"
+        },
+        {
+          "kind": "wait",
+          "text": "Reported a short line at 6:28pm",
+          "basis": "report",
+          "level": "short",
+          "minutes": null,
+          "isEstimate": false,
+          "reportedAt": "2026-10-03T22:28:00.000Z"
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [],
-      "diets": [],
-      "features": [],
-      "interests": [
-        "cafes"
+      "cuisines": [
+        {
+          "id": "mexican",
+          "label": "Mexican"
+        }
       ],
-      "id": "00000000-0000-4000-8000-000000000013",
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000015",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~11 min walk · takes about 35 min · until 8pm · price unknown",
-        "sentence": "Plenty of time."
+        "summary": "Mexican · ~5 min walk · takes about 1h · short line reported · until 11pm · price unknown",
+        "sentence": "A short walk, plenty of time, open late, recent report."
       },
       "kind": "venue",
-      "name": "Delancey Coffee",
+      "name": "Forsyth Clinton Kitchen",
       "plan": [
         {
           "at": "2026-10-03T18:00:00.000Z",
@@ -321,9 +210,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T18:16:00.000Z",
+          "at": "2026-10-03T18:15:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 2:16pm",
+          "text": "Arrive around 2:15pm",
           "isEstimate": true
         },
         {
@@ -340,38 +229,179 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Counter service",
-          "style": "counter",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 30,
-          "typicalMinutes": 35
+          "minMinutes": 60,
+          "typicalMinutes": 60
         },
         "travel": {
           "mode": "walk",
-          "minutes": 11,
+          "minutes": 5,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T18:00:00.000Z",
-        "arriveAt": "2026-10-03T18:16:00.000Z",
-        "closesAt": "2026-10-04T00:00:00.000Z",
+        "arriveAt": "2026-10-03T18:15:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
         "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 164
+        "usefulMinutes": 165
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 6384",
-        "websiteUrl": "https://delanceycoffee.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.724198%2C-73.987295&travelmode=walking"
+        "phone": "+1 212 555 9967",
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720713%2C-73.98824&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000013",
+      "placeId": "00000000-0000-4000-8000-000000000015",
+      "reasons": [
+        {
+          "code": "SHORT_TRAVEL",
+          "text": "a short walk",
+          "params": {
+            "mode": "walk",
+            "minutes": 5
+          },
+          "required": false
+        },
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 165
+          },
+          "required": false
+        },
+        {
+          "code": "OPEN_LATE",
+          "text": "open late",
+          "params": {
+            "closesAt": "2026-10-04T03:00:00.000Z"
+          },
+          "required": false
+        },
+        {
+          "code": "FRESH_REPORT",
+          "text": "recent report",
+          "params": {},
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.720713,
+        "lon": -73.98824
+      },
+      "placeName": "Forsyth Clinton Kitchen",
+      "callToAction": "go"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "museums"
+      ],
+      "id": "00000000-0000-4000-8000-000000000016",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: walk-in status unknown",
+        "summary": "~18 min walk · takes about 2h · until 6pm · price unknown",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Rivington Museum",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:28:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:28pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "last_entry",
+          "text": "Last entry likely around 5pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 80,
+          "typicalMinutes": 120
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 18,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:28:00.000Z",
+        "closesAt": "2026-10-03T22:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 152
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 3626",
+        "websiteUrl": "https://rivingtonmuseum.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725994%2C-73.979447&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "ADMISSION_UNKNOWN",
+          "text": "walk-in status unknown",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000016",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 164
+            "usefulMinutes": 152
           },
           "required": false
         }
@@ -379,22 +409,22 @@
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "cafe",
-        "label": "Cafe"
+        "id": "museum",
+        "label": "Museum"
       },
       "location": {
-        "lat": 40.724198,
-        "lon": -73.987295
+        "lat": 40.725994,
+        "lon": -73.979447
       },
-      "placeName": "Delancey Coffee",
-      "callToAction": "go"
+      "placeName": "Rivington Museum",
+      "callToAction": "check"
     }
   ],
   "page": {
     "offset": 6,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6M30"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBmIiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBmIiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [

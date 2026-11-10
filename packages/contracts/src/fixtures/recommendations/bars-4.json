@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000024",
+  "requestId": "00000000-0000-4000-8000-000000000027",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -56,14 +56,14 @@
       "diets": [],
       "features": [
         {
-          "id": "wheelchair",
-          "label": "Wheelchair accessible"
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
         }
       ],
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000002b",
+      "id": "00000000-0000-4000-8000-00000000002d",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -71,7 +71,7 @@
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Delancey Bar",
+      "name": "Stanton Bar",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -120,11 +120,11 @@
       "actions": {
         "links": [],
         "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727594%2C-73.999704&travelmode=walking"
+        "websiteUrl": "https://stantonbar.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000002b",
+      "placeId": "00000000-0000-4000-8000-00000000002d",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -153,10 +153,10 @@
         "label": "Bar"
       },
       "location": {
-        "lat": 40.727594,
-        "lon": -73.999704
+        "lat": 40.730851,
+        "lon": -73.986194
       },
-      "placeName": "Delancey Bar",
+      "placeName": "Stanton Bar",
       "callToAction": "go"
     },
     {
@@ -179,7 +179,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000000a",
+      "id": "00000000-0000-4000-8000-00000000000d",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -240,7 +240,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.716973%2C-73.998882&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000000a",
+      "placeId": "00000000-0000-4000-8000-00000000000d",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -303,7 +303,7 @@
       "interests": [
         "drinks"
       ],
-      "id": "00000000-0000-4000-8000-00000000002c",
+      "id": "00000000-0000-4000-8000-00000000002e",
       "copy": {
         "action": "Go now",
         "caveat": null,
@@ -364,7 +364,7 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.720409%2C-73.998263&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-00000000002c",
+      "placeId": "00000000-0000-4000-8000-00000000002e",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -407,7 +407,7 @@
     "offset": 9,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI0IiwibyI6Nn0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDI3IiwibyI6Nn0"
   },
   "insufficient": null,
   "attributions": [

@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-000000000033",
+  "requestId": "00000000-0000-4000-8000-000000000035",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -42,17 +42,34 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "moderate",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [],
+      "cuisines": [
+        {
+          "id": "korean",
+          "label": "Korean"
+        }
+      ],
       "diets": [],
       "features": [
         {
@@ -61,17 +78,17 @@
         }
       ],
       "interests": [
-        "drinks"
+        "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000026",
+      "id": "00000000-0000-4000-8000-000000000007",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~17 min walk · takes about 1h · until 1am · price unknown · usually 21+",
+        "summary": "Korean · ~12 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Hester Bar",
+      "name": "Ludlow Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -99,32 +116,32 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
+          "minMinutes": 60,
+          "typicalMinutes": 80
         },
         "travel": {
           "mode": "walk",
-          "minutes": 17,
+          "minutes": 12,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T22:52:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
         "finishBy": "2026-10-04T00:30:00.000Z",
         "usefulMinutes": 98
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://hesterbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.727329%2C-73.986761&travelmode=walking"
+        "phone": "+1 212 555 6594",
+        "websiteUrl": "https://ludlowkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.712607%2C-73.984996&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000026",
+      "placeId": "00000000-0000-4000-8000-000000000007",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -138,42 +155,56 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
+            "closesAt": "2026-10-04T02:00:00.000Z"
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
+      "ageLimit": null,
       "category": {
-        "id": "bar",
-        "label": "Bar"
+        "id": "restaurant",
+        "label": "Restaurant"
       },
       "location": {
-        "lat": 40.727329,
-        "lon": -73.986761
+        "lat": 40.712607,
+        "lon": -73.984996
       },
-      "placeName": "Hester Bar",
+      "placeName": "Ludlow Kitchen",
       "callToAction": "go"
     },
     {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "moderate",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [],
+      "cuisines": [
+        {
+          "id": "japanese",
+          "label": "Japanese"
+        }
+      ],
       "diets": [],
       "features": [
         {
@@ -182,17 +213,17 @@
         }
       ],
       "interests": [
-        "drinks"
+        "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000027",
+      "id": "00000000-0000-4000-8000-000000000036",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~18 min walk · takes about 1h · until 2am · price unknown · usually 21+",
+        "summary": "Japanese · ~13 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Norfolk Bar",
+      "name": "Stanton Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -220,32 +251,32 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
+          "minMinutes": 60,
+          "typicalMinutes": 80
         },
         "travel": {
           "mode": "walk",
-          "minutes": 18,
+          "minutes": 13,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T22:53:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
+        "closesAt": "2026-10-04T02:00:00.000Z",
         "finishBy": "2026-10-04T00:30:00.000Z",
         "usefulMinutes": 97
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://norfolkbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726726%2C-73.99412&travelmode=walking"
+        "phone": "+1 212 555 7138",
+        "websiteUrl": "https://stantonkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.721023%2C-73.979262&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000027",
+      "placeId": "00000000-0000-4000-8000-000000000036",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -259,61 +290,79 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
+            "closesAt": "2026-10-04T02:00:00.000Z"
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
+      "ageLimit": null,
       "category": {
-        "id": "bar",
-        "label": "Bar"
+        "id": "restaurant",
+        "label": "Restaurant"
       },
       "location": {
-        "lat": 40.726726,
-        "lon": -73.99412
+        "lat": 40.721023,
+        "lon": -73.979262
       },
-      "placeName": "Norfolk Bar",
+      "placeName": "Stanton Kitchen",
       "callToAction": "go"
     },
     {
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday evenings",
+          "text": "Places like this are usually busy on Saturday evenings",
           "basis": "typical",
-          "level": "moderate",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [],
+      "cuisines": [
+        {
+          "id": "vietnamese",
+          "label": "Vietnamese"
+        }
+      ],
       "diets": [],
       "features": [
         {
           "id": "outdoor_seating",
           "label": "Outdoor seating"
+        },
+        {
+          "id": "wheelchair",
+          "label": "Wheelchair accessible"
         }
       ],
       "interests": [
-        "drinks"
+        "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000029",
+      "id": "00000000-0000-4000-8000-000000000019",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~23 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "summary": "Vietnamese · ~18 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
         "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Stanton Bar",
+      "name": "Ridge Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -341,32 +390,32 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
+          "minMinutes": 60,
+          "typicalMinutes": 80
         },
         "travel": {
           "mode": "walk",
-          "minutes": 23,
+          "minutes": 18,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T22:58:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
         "finishBy": "2026-10-04T00:30:00.000Z",
         "usefulMinutes": 92
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://stantonbar.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.730851%2C-73.986194&travelmode=walking"
+        "phone": "+1 212 555 9547",
+        "websiteUrl": "https://ridgekitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.72504%2C-73.997603&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000029",
+      "placeId": "00000000-0000-4000-8000-000000000019",
       "reasons": [
         {
           "code": "ENOUGH_TIME",
@@ -380,33 +429,30 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T07:00:00.000Z"
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
         }
       ],
       "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
+      "ageLimit": null,
       "category": {
-        "id": "bar",
-        "label": "Bar"
+        "id": "restaurant",
+        "label": "Restaurant"
       },
       "location": {
-        "lat": 40.730851,
-        "lon": -73.986194
+        "lat": 40.72504,
+        "lon": -73.997603
       },
-      "placeName": "Stanton Bar",
+      "placeName": "Ridge Kitchen",
       "callToAction": "go"
     }
   ],
   "page": {
     "offset": 6,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6OX0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMzIiwibyI6M30"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM1IiwibyI6OX0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDM1IiwibyI6M30"
   },
   "insufficient": null,
   "attributions": [

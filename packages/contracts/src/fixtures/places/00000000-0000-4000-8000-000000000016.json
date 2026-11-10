@@ -1,36 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000016",
-  "name": "Eldridge Gallery",
+  "name": "Rivington Museum",
   "category": {
-    "id": "gallery",
-    "label": "Gallery"
+    "id": "museum",
+    "label": "Museum"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.713942,
-    "lon": -74.000631
+    "lat": 40.725994,
+    "lon": -73.979447
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-03T23:00:00.000Z",
-    "opensAt": null,
-    "summary": "Open now until 7pm"
+    "state": "closed",
+    "closesAt": null,
+    "opensAt": "2026-10-04T16:00:00.000Z",
+    "summary": "Closed now · opens Sun 12pm"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "We-Su 12:00-19:00",
-      "detail": "Open now until 7pm",
+      "value": "We-Su 12:00-18:00",
+      "detail": "Closed now · opens Sun 12pm",
       "provenance": {
         "sources": [
           {
@@ -39,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.502,
+        "confidence": 0.609,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-10-28T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2024",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2024 · published"
+        "freshness": "last edited in OSM Sep 2026",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · published"
       }
     },
     {
@@ -64,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-10-28T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2024",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2024 · estimate"
+        "freshness": "last edited in OSM Sep 2026",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Unknown",
       "detail": null,
       "provenance": {
         "sources": [
@@ -85,37 +84,14 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.2,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-10-28T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2024",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2024 · estimate"
-      }
-    },
-    {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
-      "detail": null,
-      "provenance": {
-        "sources": [
-          {
-            "id": "osm",
-            "label": "OpenStreetMap"
-          }
-        ],
-        "evidence": "estimate",
-        "confidence": 0.55,
-        "verifiedAt": null,
-        "sourceUpdatedAt": "2024-10-28T00:00:00.000Z",
-        "retrievedAt": "2026-09-20T12:00:00.000Z",
-        "dueForRecheck": false,
-        "conflict": false,
-        "freshness": "last edited in OSM Oct 2024",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2024 · estimate"
+        "freshness": "last edited in OSM Sep 2026",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
       }
     },
     {
@@ -133,25 +109,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2024-10-28T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-09-06T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2024",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2024 · estimate"
+        "freshness": "last edited in OSM Sep 2026",
+        "summary": "OpenStreetMap · last edited in OSM Sep 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": "https://eldridgegallery.example/",
-    "phone": "+1 212 555 6665"
+    "websiteUrl": "https://rivingtonmuseum.example/",
+    "phone": "+1 212 555 3626"
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.713942%2C-74.000631&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.713942%2C-74.000631&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.713942%2C-74.000631&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.725994%2C-73.979447&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.725994%2C-73.979447&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.725994%2C-73.979447&travelmode=driving"
     },
     "links": []
   },

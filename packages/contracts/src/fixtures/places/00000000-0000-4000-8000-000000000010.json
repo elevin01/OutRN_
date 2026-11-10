@@ -1,36 +1,35 @@
 {
   "id": "00000000-0000-4000-8000-000000000010",
-  "name": "Allen Gallery",
+  "name": "Ludlow Museum",
   "category": {
-    "id": "gallery",
-    "label": "Gallery"
+    "id": "museum",
+    "label": "Museum"
   },
   "subtype": null,
   "timezone": "America/New_York",
   "location": {
-    "lat": 40.715441,
-    "lon": -73.989433
+    "lat": 40.719846,
+    "lon": -73.994398
   },
   "address": null,
   "photos": [],
   "status": "operating",
   "hoursNow": {
-    "state": "open",
-    "closesAt": "2026-10-03T23:00:00.000Z",
-    "opensAt": null,
-    "summary": "Open now until 7pm"
+    "state": "closed",
+    "closesAt": null,
+    "opensAt": "2026-10-04T15:00:00.000Z",
+    "summary": "Closed now · opens Sun 11am"
   },
   "price": {
-    "kind": "free",
-    "evidence": "estimate"
+    "kind": "unknown"
   },
   "ageLimit": null,
   "facts": [
     {
       "attribute": "opening_hours",
       "label": "Hours",
-      "value": "We-Su 12:00-19:00",
-      "detail": "Open now until 7pm",
+      "value": "Tu-Su 11:00-18:00; Fr 11:00-21:00; Mo off",
+      "detail": "Closed now · opens Sun 11am",
       "provenance": {
         "sources": [
           {
@@ -39,14 +38,14 @@
           }
         ],
         "evidence": "published",
-        "confidence": 0.561,
+        "confidence": 0.591,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-23T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-16T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · published"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · published"
       }
     },
     {
@@ -64,18 +63,18 @@
         "evidence": "estimate",
         "confidence": 0.5,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-23T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-16T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     },
     {
       "attribute": "admission",
       "label": "Admission",
-      "value": "Walk in",
+      "value": "Unknown",
       "detail": null,
       "provenance": {
         "sources": [
@@ -85,20 +84,20 @@
           }
         ],
         "evidence": "estimate",
-        "confidence": 0.5,
+        "confidence": 0.2,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-23T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-16T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     },
     {
-      "attribute": "price",
-      "label": "Price",
-      "value": "Usually free",
+      "attribute": "wheelchair",
+      "label": "Wheelchair",
+      "value": "Not accessible",
       "detail": null,
       "provenance": {
         "sources": [
@@ -107,15 +106,15 @@
             "label": "OpenStreetMap"
           }
         ],
-        "evidence": "estimate",
-        "confidence": 0.55,
+        "evidence": "published",
+        "confidence": 0.7,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-23T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-16T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · published"
       }
     },
     {
@@ -133,25 +132,25 @@
         "evidence": "estimate",
         "confidence": 0.6,
         "verifiedAt": null,
-        "sourceUpdatedAt": "2025-10-23T00:00:00.000Z",
+        "sourceUpdatedAt": "2026-05-16T00:00:00.000Z",
         "retrievedAt": "2026-09-20T12:00:00.000Z",
         "dueForRecheck": false,
         "conflict": false,
-        "freshness": "last edited in OSM Oct 2025",
-        "summary": "OpenStreetMap · last edited in OSM Oct 2025 · estimate"
+        "freshness": "last edited in OSM May 2026",
+        "summary": "OpenStreetMap · last edited in OSM May 2026 · estimate"
       }
     }
   ],
   "parkingNearby": null,
   "contact": {
-    "websiteUrl": null,
-    "phone": "+1 212 555 3643"
+    "websiteUrl": "https://ludlowmuseum.example/",
+    "phone": null
   },
   "actions": {
     "directionsUrls": {
-      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.715441%2C-73.989433&travelmode=walking",
-      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.715441%2C-73.989433&travelmode=transit",
-      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.715441%2C-73.989433&travelmode=driving"
+      "walk": "https://www.google.com/maps/dir/?api=1&destination=40.719846%2C-73.994398&travelmode=walking",
+      "transit": "https://www.google.com/maps/dir/?api=1&destination=40.719846%2C-73.994398&travelmode=transit",
+      "drive": "https://www.google.com/maps/dir/?api=1&destination=40.719846%2C-73.994398&travelmode=driving"
     },
     "links": []
   },

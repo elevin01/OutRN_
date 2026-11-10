@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000002e",
+  "requestId": "00000000-0000-4000-8000-000000000030",
   "asOf": "2026-10-03T22:30:00.000Z",
   "generatedAt": "2026-10-03T22:30:00.000Z",
   "expiresAt": "2026-10-03T22:50:00.000Z",
@@ -71,145 +71,11 @@
         }
       ],
       "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "food"
-      ],
-      "id": "00000000-0000-4000-8000-000000000030",
-      "copy": {
-        "action": "Check first",
-        "caveat": "Check first: hours not listed",
-        "summary": "Italian · ~17 min walk · takes about 1h20 · ~15–30 min wait · price unknown",
-        "sentence": "Plenty of time."
-      },
-      "kind": "venue",
-      "name": "Hester Kitchen",
-      "plan": [
-        {
-          "at": "2026-10-03T22:30:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 6:30pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T22:57:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive around 6:57pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-04T00:30:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 8:30pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "check_first",
-      "timing": {
-        "visit": {
-          "label": "Sit-down meal",
-          "style": "dine_in",
-          "isEstimate": true,
-          "minMinutes": 60,
-          "typicalMinutes": 80
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 17,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T22:30:00.000Z",
-        "arriveAt": "2026-10-03T22:57:00.000Z",
-        "closesAt": null,
-        "finishBy": "2026-10-04T00:30:00.000Z",
-        "usefulMinutes": 93
-      },
-      "actions": {
-        "links": [],
-        "phone": null,
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking"
-      },
-      "caveats": [
-        {
-          "code": "HOURS_UNKNOWN",
-          "text": "hours not listed",
-          "params": {},
-          "required": true
-        }
-      ],
-      "placeId": "00000000-0000-4000-8000-000000000030",
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 93
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": null,
-      "category": {
-        "id": "restaurant",
-        "label": "Restaurant"
-      },
-      "location": {
-        "lat": 40.726295,
-        "lon": -73.981623
-      },
-      "placeName": "Hester Kitchen",
-      "callToAction": "check"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually busy on Saturday evenings",
-          "basis": "typical",
-          "level": "busy",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        },
-        {
-          "kind": "wait",
-          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
-          "basis": "typical",
-          "level": "long",
-          "minutes": {
-            "max": 30,
-            "min": 15
-          },
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [
-        {
-          "id": "italian",
-          "label": "Italian"
-        }
-      ],
-      "diets": [],
       "features": [],
       "interests": [
         "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000031",
+      "id": "00000000-0000-4000-8000-000000000032",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: a wait could leave too little time",
@@ -279,7 +145,7 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000031",
+      "placeId": "00000000-0000-4000-8000-000000000032",
       "reasons": [
         {
           "code": "OPEN_LATE",
@@ -331,8 +197,8 @@
       "photos": [],
       "cuisines": [
         {
-          "id": "pizza",
-          "label": "Pizza"
+          "id": "italian",
+          "label": "Italian"
         }
       ],
       "diets": [],
@@ -345,15 +211,149 @@
       "interests": [
         "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000032",
+      "id": "00000000-0000-4000-8000-000000000033",
+      "copy": {
+        "action": "Check first",
+        "caveat": "Check first: hours not listed",
+        "summary": "Italian · ~17 min walk · takes about 1h20 · ~15–30 min wait · price unknown",
+        "sentence": "Plenty of time."
+      },
+      "kind": "venue",
+      "name": "Hester Kitchen",
+      "plan": [
+        {
+          "at": "2026-10-03T22:30:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 6:30pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T22:57:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 6:57pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-04T00:30:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 8:30pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Sit-down meal",
+          "style": "dine_in",
+          "isEstimate": true,
+          "minMinutes": 60,
+          "typicalMinutes": 80
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 17,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T22:30:00.000Z",
+        "arriveAt": "2026-10-03T22:57:00.000Z",
+        "closesAt": null,
+        "finishBy": "2026-10-04T00:30:00.000Z",
+        "usefulMinutes": 93
+      },
+      "actions": {
+        "links": [],
+        "phone": null,
+        "websiteUrl": null,
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.726295%2C-73.981623&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "HOURS_UNKNOWN",
+          "text": "hours not listed",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000033",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 93
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "restaurant",
+        "label": "Restaurant"
+      },
+      "location": {
+        "lat": 40.726295,
+        "lon": -73.981623
+      },
+      "placeName": "Hester Kitchen",
+      "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday evenings",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [
+        {
+          "id": "italian",
+          "label": "Italian"
+        }
+      ],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "food"
+      ],
+      "id": "00000000-0000-4000-8000-000000000034",
       "copy": {
         "action": "Check first",
         "caveat": "Check first: a wait could leave too little time",
-        "summary": "Pizza · ~23 min walk · takes about 1h20 · ~15–30 min wait · until 10pm · price unknown",
+        "summary": "Italian · ~23 min walk · takes about 1h20 · ~15–30 min wait · until 11pm · price unknown",
         "sentence": "Open late."
       },
       "kind": "venue",
-      "name": "Forsyth Kitchen",
+      "name": "Attorney Pitt Kitchen",
       "plan": [
         {
           "at": "2026-10-03T22:30:00.000Z",
@@ -395,15 +395,15 @@
         },
         "leaveAt": "2026-10-03T22:30:00.000Z",
         "arriveAt": "2026-10-03T23:03:00.000Z",
-        "closesAt": "2026-10-04T02:00:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
         "finishBy": "2026-10-04T00:30:00.000Z",
         "usefulMinutes": 87
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://forsythkitchen.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.70705%2C-73.993872&travelmode=walking"
+        "phone": "+1 212 555 1242",
+        "websiteUrl": "https://attorneypittkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.718281%2C-73.971661&travelmode=walking"
       },
       "caveats": [
         {
@@ -415,13 +415,13 @@
           "required": true
         }
       ],
-      "placeId": "00000000-0000-4000-8000-000000000032",
+      "placeId": "00000000-0000-4000-8000-000000000034",
       "reasons": [
         {
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T02:00:00.000Z"
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
         }
@@ -433,10 +433,10 @@
         "label": "Restaurant"
       },
       "location": {
-        "lat": 40.70705,
-        "lon": -73.993872
+        "lat": 40.718281,
+        "lon": -73.971661
       },
-      "placeName": "Forsyth Kitchen",
+      "placeName": "Attorney Pitt Kitchen",
       "callToAction": "check"
     }
   ],
@@ -444,7 +444,7 @@
     "offset": 3,
     "size": 3,
     "nextCursor": null,
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJlIiwibyI6MH0"
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDMwIiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

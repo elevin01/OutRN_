@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000000e",
+  "requestId": "00000000-0000-4000-8000-00000000000f",
   "asOf": "2026-10-03T18:00:00.000Z",
   "generatedAt": "2026-10-03T18:00:00.000Z",
   "expiresAt": "2026-10-03T18:20:00.000Z",
@@ -40,31 +40,48 @@
       "conditions": [
         {
           "kind": "crowd",
-          "text": "Places like this are usually fairly busy on Saturday afternoons",
+          "text": "Places like this are usually busy on Saturday afternoons",
           "basis": "typical",
-          "level": "moderate",
+          "level": "busy",
           "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        },
+        {
+          "kind": "wait",
+          "text": "Without a reservation, expect a wait for a table (usually 15–30 min)",
+          "basis": "typical",
+          "level": "long",
+          "minutes": {
+            "max": 30,
+            "min": 15
+          },
           "isEstimate": true,
           "reportedAt": null
         }
       ],
       "parking": null,
       "photos": [],
-      "cuisines": [],
+      "cuisines": [
+        {
+          "id": "mexican",
+          "label": "Mexican"
+        }
+      ],
       "diets": [],
       "features": [],
       "interests": [
-        "books"
+        "food"
       ],
-      "id": "00000000-0000-4000-8000-000000000004",
+      "id": "00000000-0000-4000-8000-00000000000c",
       "copy": {
         "action": "Go now",
         "caveat": null,
-        "summary": "~6 min walk · takes about 30 min · until 9pm · price unknown",
-        "sentence": "A short walk, plenty of time, open late."
+        "summary": "Mexican · ~13 min walk · takes about 1h · ~15–30 min wait · until 11pm · price unknown",
+        "sentence": "Plenty of time, open late."
       },
       "kind": "venue",
-      "name": "Delancey Books",
+      "name": "Stanton Allen Kitchen",
       "plan": [
         {
           "at": "2026-10-03T18:00:00.000Z",
@@ -73,9 +90,9 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T18:11:00.000Z",
+          "at": "2026-10-03T18:23:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 2:11pm",
+          "text": "Arrive around 2:23pm",
           "isEstimate": true
         },
         {
@@ -92,47 +109,38 @@
       "status": "ready",
       "timing": {
         "visit": {
-          "label": "Visit",
-          "style": "visit",
+          "label": "Sit-down meal",
+          "style": "dine_in",
           "isEstimate": true,
-          "minMinutes": 30,
-          "typicalMinutes": 30
+          "minMinutes": 60,
+          "typicalMinutes": 60
         },
         "travel": {
           "mode": "walk",
-          "minutes": 6,
+          "minutes": 13,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T18:00:00.000Z",
-        "arriveAt": "2026-10-03T18:11:00.000Z",
-        "closesAt": "2026-10-04T01:00:00.000Z",
+        "arriveAt": "2026-10-03T18:23:00.000Z",
+        "closesAt": "2026-10-04T03:00:00.000Z",
         "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 169
+        "usefulMinutes": 157
       },
       "actions": {
         "links": [],
-        "phone": null,
-        "websiteUrl": "https://delanceybooks.example/",
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715671%2C-73.989625&travelmode=walking"
+        "phone": "+1 212 555 7512",
+        "websiteUrl": "https://stantonallenkitchen.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.725116%2C-73.989173&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000004",
+      "placeId": "00000000-0000-4000-8000-00000000000c",
       "reasons": [
-        {
-          "code": "SHORT_TRAVEL",
-          "text": "a short walk",
-          "params": {
-            "mode": "walk",
-            "minutes": 6
-          },
-          "required": false
-        },
         {
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 169
+            "usefulMinutes": 157
           },
           "required": false
         },
@@ -140,7 +148,7 @@
           "code": "OPEN_LATE",
           "text": "open late",
           "params": {
-            "closesAt": "2026-10-04T01:00:00.000Z"
+            "closesAt": "2026-10-04T03:00:00.000Z"
           },
           "required": false
         }
@@ -148,143 +156,14 @@
       "subtype": null,
       "ageLimit": null,
       "category": {
-        "id": "bookshop",
-        "label": "Bookshop"
+        "id": "restaurant",
+        "label": "Restaurant"
       },
       "location": {
-        "lat": 40.715671,
-        "lon": -73.989625
+        "lat": 40.725116,
+        "lon": -73.989173
       },
-      "placeName": "Delancey Books",
-      "callToAction": "go"
-    },
-    {
-      "conditions": [
-        {
-          "kind": "crowd",
-          "text": "Places like this are usually quiet on Saturday afternoons",
-          "basis": "typical",
-          "level": "quiet",
-          "minutes": null,
-          "isEstimate": true,
-          "reportedAt": null
-        }
-      ],
-      "parking": null,
-      "photos": [],
-      "cuisines": [],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "drinks"
-      ],
-      "id": "00000000-0000-4000-8000-000000000002",
-      "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~14 min walk · takes about 1h · until 2am · price unknown · usually 21+",
-        "sentence": "Opens at 4pm, open late, hours confirmed."
-      },
-      "kind": "venue",
-      "name": "Clinton Bar",
-      "plan": [
-        {
-          "at": "2026-10-03T19:41:00.000Z",
-          "kind": "leave",
-          "text": "Leave at 3:41pm",
-          "isEstimate": false
-        },
-        {
-          "at": "2026-10-03T20:00:00.000Z",
-          "kind": "arrive",
-          "text": "Arrive as it opens at 4pm",
-          "isEstimate": true
-        },
-        {
-          "at": "2026-10-03T21:00:00.000Z",
-          "kind": "wrap_up",
-          "text": "Wrap up by 5pm",
-          "isEstimate": false
-        }
-      ],
-      "event": null,
-      "price": {
-        "kind": "unknown"
-      },
-      "status": "ready",
-      "timing": {
-        "visit": {
-          "label": "Visit",
-          "style": "visit",
-          "isEstimate": true,
-          "minMinutes": 45,
-          "typicalMinutes": 60
-        },
-        "travel": {
-          "mode": "walk",
-          "minutes": 14,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-03T19:41:00.000Z",
-        "arriveAt": "2026-10-03T20:00:00.000Z",
-        "closesAt": "2026-10-04T06:00:00.000Z",
-        "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 60
-      },
-      "actions": {
-        "links": [],
-        "phone": "+1 212 555 8297",
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.723404%2C-73.980264&travelmode=walking"
-      },
-      "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000002",
-      "reasons": [
-        {
-          "code": "WAIT_FOR_OPENING",
-          "text": "opens at 4pm",
-          "params": {
-            "opensAt": "2026-10-03T20:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "OPEN_LATE",
-          "text": "open late",
-          "params": {
-            "closesAt": "2026-10-04T06:00:00.000Z"
-          },
-          "required": false
-        },
-        {
-          "code": "HOURS_CONFIRMED",
-          "text": "hours confirmed",
-          "params": {
-            "verifiedAt": "2026-09-29T16:00:00.000Z"
-          },
-          "required": false
-        }
-      ],
-      "subtype": null,
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "location": {
-        "lat": 40.723404,
-        "lon": -73.980264
-      },
-      "placeName": "Clinton Bar",
+      "placeName": "Stanton Allen Kitchen",
       "callToAction": "go"
     },
     {
@@ -300,34 +179,22 @@
         }
       ],
       "parking": null,
-      "photos": [
-        {
-          "alt": "OutRN synthetic Norfolk Park",
-          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/OutRN_synthetic_Norfolk_Park.jpg/800px-OutRN_synthetic_Norfolk_Park.jpg",
-          "width": 800,
-          "author": "Unknown author",
-          "credit": "Unknown author, Public domain, via Wikimedia Commons",
-          "height": 600,
-          "license": "Public domain",
-          "sourceUrl": "https://commons.wikimedia.org/wiki/File:OutRN_synthetic_Norfolk_Park.jpg",
-          "licenseUrl": null
-        }
-      ],
+      "photos": [],
       "cuisines": [],
       "diets": [],
       "features": [],
       "interests": [
-        "outdoors"
+        "museums"
       ],
-      "id": "00000000-0000-4000-8000-000000000011",
+      "id": "00000000-0000-4000-8000-000000000012",
       "copy": {
-        "action": "Go now",
-        "caveat": null,
-        "summary": "~9 min walk · takes about 1h · until 1am · usually free",
-        "sentence": "A short walk, plenty of time, open late, usually free."
+        "action": "Check first",
+        "caveat": "Check first: walk-in status unknown",
+        "summary": "~15 min walk · takes about 2h · until 6pm · price unknown",
+        "sentence": "Plenty of time."
       },
       "kind": "venue",
-      "name": "Norfolk Park",
+      "name": "Orchard Museum",
       "plan": [
         {
           "at": "2026-10-03T18:00:00.000Z",
@@ -336,9 +203,127 @@
           "isEstimate": false
         },
         {
-          "at": "2026-10-03T18:14:00.000Z",
+          "at": "2026-10-03T18:25:00.000Z",
           "kind": "arrive",
-          "text": "Arrive around 2:14pm",
+          "text": "Arrive around 2:25pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "last_entry",
+          "text": "Last entry likely around 5pm",
+          "isEstimate": true
+        },
+        {
+          "at": "2026-10-03T21:00:00.000Z",
+          "kind": "wrap_up",
+          "text": "Wrap up by 5pm",
+          "isEstimate": false
+        }
+      ],
+      "event": null,
+      "price": {
+        "kind": "unknown"
+      },
+      "status": "check_first",
+      "timing": {
+        "visit": {
+          "label": "Visit",
+          "style": "visit",
+          "isEstimate": true,
+          "minMinutes": 80,
+          "typicalMinutes": 120
+        },
+        "travel": {
+          "mode": "walk",
+          "minutes": 15,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-03T18:00:00.000Z",
+        "arriveAt": "2026-10-03T18:25:00.000Z",
+        "closesAt": "2026-10-03T22:00:00.000Z",
+        "finishBy": "2026-10-03T21:00:00.000Z",
+        "usefulMinutes": 155
+      },
+      "actions": {
+        "links": [],
+        "phone": "+1 212 555 8384",
+        "websiteUrl": "https://orchardmuseum.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.710951%2C-73.984143&travelmode=walking"
+      },
+      "caveats": [
+        {
+          "code": "ADMISSION_UNKNOWN",
+          "text": "walk-in status unknown",
+          "params": {},
+          "required": true
+        }
+      ],
+      "placeId": "00000000-0000-4000-8000-000000000012",
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 155
+          },
+          "required": false
+        }
+      ],
+      "subtype": null,
+      "ageLimit": null,
+      "category": {
+        "id": "museum",
+        "label": "Museum"
+      },
+      "location": {
+        "lat": 40.710951,
+        "lon": -73.984143
+      },
+      "placeName": "Orchard Museum",
+      "callToAction": "check"
+    },
+    {
+      "conditions": [
+        {
+          "kind": "crowd",
+          "text": "Places like this are usually busy on Saturday afternoons",
+          "basis": "typical",
+          "level": "busy",
+          "minutes": null,
+          "isEstimate": true,
+          "reportedAt": null
+        }
+      ],
+      "parking": null,
+      "photos": [],
+      "cuisines": [],
+      "diets": [],
+      "features": [],
+      "interests": [
+        "outdoors"
+      ],
+      "id": "00000000-0000-4000-8000-000000000013",
+      "copy": {
+        "action": "Go now",
+        "caveat": null,
+        "summary": "~10 min walk · takes about 1h · until dusk (~6:36pm) · usually free",
+        "sentence": "A short walk, plenty of time, usually open dawn to dusk, usually free."
+      },
+      "kind": "venue",
+      "name": "Stanton Park",
+      "plan": [
+        {
+          "at": "2026-10-03T18:00:00.000Z",
+          "kind": "leave",
+          "text": "Leave at 2pm",
+          "isEstimate": false
+        },
+        {
+          "at": "2026-10-03T18:15:00.000Z",
+          "kind": "arrive",
+          "text": "Arrive around 2:15pm",
           "isEstimate": true
         },
         {
@@ -364,31 +349,31 @@
         },
         "travel": {
           "mode": "walk",
-          "minutes": 9,
+          "minutes": 10,
           "isEstimate": true,
           "parkingMinutes": null
         },
         "leaveAt": "2026-10-03T18:00:00.000Z",
-        "arriveAt": "2026-10-03T18:14:00.000Z",
-        "closesAt": "2026-10-04T05:00:00.000Z",
+        "arriveAt": "2026-10-03T18:15:00.000Z",
+        "closesAt": null,
         "finishBy": "2026-10-03T21:00:00.000Z",
-        "usefulMinutes": 166
+        "usefulMinutes": 165
       },
       "actions": {
         "links": [],
-        "phone": "+1 212 555 1075",
-        "websiteUrl": null,
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.722865%2C-73.985733&travelmode=walking"
+        "phone": "+1 212 555 6468",
+        "websiteUrl": "https://stantonpark.example/",
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.719677%2C-73.981504&travelmode=walking"
       },
       "caveats": [],
-      "placeId": "00000000-0000-4000-8000-000000000011",
+      "placeId": "00000000-0000-4000-8000-000000000013",
       "reasons": [
         {
           "code": "SHORT_TRAVEL",
           "text": "a short walk",
           "params": {
             "mode": "walk",
-            "minutes": 9
+            "minutes": 10
           },
           "required": false
         },
@@ -396,17 +381,18 @@
           "code": "ENOUGH_TIME",
           "text": "plenty of time",
           "params": {
-            "usefulMinutes": 166
+            "usefulMinutes": 165
           },
           "required": false
         },
         {
-          "code": "OPEN_LATE",
-          "text": "open late",
+          "code": "DAWN_TO_DUSK",
+          "text": "usually open dawn to dusk",
           "params": {
-            "closesAt": "2026-10-04T05:00:00.000Z"
+            "duskAt": "2026-10-03T22:36:52.045Z",
+            "isEstimate": true
           },
-          "required": false
+          "required": true
         },
         {
           "code": "FREE",
@@ -422,18 +408,18 @@
         "label": "Park"
       },
       "location": {
-        "lat": 40.722865,
-        "lon": -73.985733
+        "lat": 40.719677,
+        "lon": -73.981504
       },
-      "placeName": "Norfolk Park",
+      "placeName": "Stanton Park",
       "callToAction": "go"
     }
   ],
   "page": {
     "offset": 3,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6Nn0",
-    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBlIiwibyI6MH0"
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBmIiwibyI6Nn0",
+    "prevCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDBmIiwibyI6MH0"
   },
   "insufficient": null,
   "attributions": [

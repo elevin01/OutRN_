@@ -1,5 +1,5 @@
 {
-  "requestId": "00000000-0000-4000-8000-00000000002d",
+  "requestId": "00000000-0000-4000-8000-00000000002f",
   "asOf": "2026-10-04T05:15:00.000Z",
   "generatedAt": "2026-10-04T05:15:00.000Z",
   "expiresAt": "2026-10-04T05:35:00.000Z",
@@ -39,9 +39,9 @@
   },
   "items": [
     {
-      "id": "00000000-0000-4000-8000-000000000025",
+      "id": "00000000-0000-4000-8000-000000000009",
       "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-000000000025",
+      "placeId": "00000000-0000-4000-8000-000000000009",
       "name": "Pitt Street Nightcap",
       "placeName": "Pitt Street Nightcap",
       "photos": [],
@@ -152,6 +152,128 @@
         "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.715594%2C-73.996037&travelmode=walking",
         "websiteUrl": null,
         "phone": null,
+        "links": []
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000028",
+      "kind": "venue",
+      "placeId": "00000000-0000-4000-8000-000000000028",
+      "name": "Ridge Bar",
+      "placeName": "Ridge Bar",
+      "photos": [],
+      "category": {
+        "id": "bar",
+        "label": "Bar"
+      },
+      "subtype": null,
+      "cuisines": [],
+      "diets": [],
+      "features": [
+        {
+          "id": "outdoor_seating",
+          "label": "Outdoor seating"
+        }
+      ],
+      "interests": [
+        "drinks"
+      ],
+      "status": "check_first",
+      "callToAction": "check",
+      "location": {
+        "lat": 40.713276,
+        "lon": -74.00022
+      },
+      "event": null,
+      "timing": {
+        "travel": {
+          "mode": "walk",
+          "minutes": 20,
+          "isEstimate": true,
+          "parkingMinutes": null
+        },
+        "leaveAt": "2026-10-04T05:15:00.000Z",
+        "arriveAt": "2026-10-04T05:40:00.000Z",
+        "usefulMinutes": 80,
+        "finishBy": "2026-10-04T07:00:00.000Z",
+        "closesAt": "2026-10-04T07:00:00.000Z",
+        "visit": {
+          "style": "visit",
+          "label": "Visit",
+          "minMinutes": 45,
+          "typicalMinutes": 60,
+          "isEstimate": true
+        }
+      },
+      "plan": [
+        {
+          "kind": "leave",
+          "at": "2026-10-04T05:15:00.000Z",
+          "isEstimate": false,
+          "text": "Leave at 1:15am"
+        },
+        {
+          "kind": "arrive",
+          "at": "2026-10-04T05:40:00.000Z",
+          "isEstimate": true,
+          "text": "Arrive around 1:40am"
+        },
+        {
+          "kind": "wrap_up",
+          "at": "2026-10-04T07:00:00.000Z",
+          "isEstimate": false,
+          "text": "Wrap up by 3am, when it closes"
+        }
+      ],
+      "parking": null,
+      "conditions": [
+        {
+          "kind": "crowd",
+          "level": "busy",
+          "basis": "typical",
+          "isEstimate": true,
+          "minutes": null,
+          "reportedAt": null,
+          "text": "Places like this are usually busy on Saturday nights"
+        }
+      ],
+      "price": {
+        "kind": "unknown"
+      },
+      "ageLimit": {
+        "minAge": 21,
+        "evidence": "estimate"
+      },
+      "reasons": [
+        {
+          "code": "ENOUGH_TIME",
+          "text": "plenty of time",
+          "params": {
+            "usefulMinutes": 80
+          },
+          "required": false
+        }
+      ],
+      "caveats": [
+        {
+          "code": "AGE_LIMIT_LIKELY",
+          "text": "probably 21+ only",
+          "params": {
+            "minAge": 21
+          },
+          "required": true
+        }
+      ],
+      "copy": {
+        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
+        "sentence": "Plenty of time.",
+        "caveat": "Check first: probably 21+ only",
+        "action": "Check first"
+      },
+      "actions": {
+        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
+        "websiteUrl": "https://ridgebar.example/",
+        "phone": "+1 212 555 6471",
         "links": []
       }
     },
@@ -276,134 +398,12 @@
         "phone": "+1 212 555 3125",
         "links": []
       }
-    },
-    {
-      "id": "00000000-0000-4000-8000-00000000000d",
-      "kind": "venue",
-      "placeId": "00000000-0000-4000-8000-00000000000d",
-      "name": "Ridge Bar",
-      "placeName": "Ridge Bar",
-      "photos": [],
-      "category": {
-        "id": "bar",
-        "label": "Bar"
-      },
-      "subtype": null,
-      "cuisines": [],
-      "diets": [],
-      "features": [
-        {
-          "id": "outdoor_seating",
-          "label": "Outdoor seating"
-        }
-      ],
-      "interests": [
-        "drinks"
-      ],
-      "status": "check_first",
-      "callToAction": "check",
-      "location": {
-        "lat": 40.713276,
-        "lon": -74.00022
-      },
-      "event": null,
-      "timing": {
-        "travel": {
-          "mode": "walk",
-          "minutes": 20,
-          "isEstimate": true,
-          "parkingMinutes": null
-        },
-        "leaveAt": "2026-10-04T05:15:00.000Z",
-        "arriveAt": "2026-10-04T05:40:00.000Z",
-        "usefulMinutes": 80,
-        "finishBy": "2026-10-04T07:00:00.000Z",
-        "closesAt": "2026-10-04T07:00:00.000Z",
-        "visit": {
-          "style": "visit",
-          "label": "Visit",
-          "minMinutes": 45,
-          "typicalMinutes": 60,
-          "isEstimate": true
-        }
-      },
-      "plan": [
-        {
-          "kind": "leave",
-          "at": "2026-10-04T05:15:00.000Z",
-          "isEstimate": false,
-          "text": "Leave at 1:15am"
-        },
-        {
-          "kind": "arrive",
-          "at": "2026-10-04T05:40:00.000Z",
-          "isEstimate": true,
-          "text": "Arrive around 1:40am"
-        },
-        {
-          "kind": "wrap_up",
-          "at": "2026-10-04T07:00:00.000Z",
-          "isEstimate": false,
-          "text": "Wrap up by 3am, when it closes"
-        }
-      ],
-      "parking": null,
-      "conditions": [
-        {
-          "kind": "crowd",
-          "level": "busy",
-          "basis": "typical",
-          "isEstimate": true,
-          "minutes": null,
-          "reportedAt": null,
-          "text": "Places like this are usually busy on Saturday nights"
-        }
-      ],
-      "price": {
-        "kind": "unknown"
-      },
-      "ageLimit": {
-        "minAge": 21,
-        "evidence": "estimate"
-      },
-      "reasons": [
-        {
-          "code": "ENOUGH_TIME",
-          "text": "plenty of time",
-          "params": {
-            "usefulMinutes": 80
-          },
-          "required": false
-        }
-      ],
-      "caveats": [
-        {
-          "code": "AGE_LIMIT_LIKELY",
-          "text": "probably 21+ only",
-          "params": {
-            "minAge": 21
-          },
-          "required": true
-        }
-      ],
-      "copy": {
-        "summary": "~20 min walk · takes about 1h · until 3am · price unknown · usually 21+",
-        "sentence": "Plenty of time.",
-        "caveat": "Check first: probably 21+ only",
-        "action": "Check first"
-      },
-      "actions": {
-        "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=40.713276%2C-74.00022&travelmode=walking",
-        "websiteUrl": "https://ridgebar.example/",
-        "phone": "+1 212 555 6471",
-        "links": []
-      }
     }
   ],
   "page": {
     "offset": 0,
     "size": 3,
-    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJkIiwibyI6M30",
+    "nextCursor": "eyJ2IjoxLCJyIjoiMDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDJmIiwibyI6M30",
     "prevCursor": null
   },
   "insufficient": null,
