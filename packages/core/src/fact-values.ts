@@ -4,6 +4,7 @@ import { RESTROOM_AVAILABILITY, RESTROOM_WHEELCHAIR, type KidFacility, type Rest
 import { DIET_LEVELS, type DIETS } from "./diets.js";
 import type { Attribute } from "./evidence.js";
 import { DESTINATION_KINDS } from "./destinations.js";
+import { RENOWN_LEVELS } from "./renown.js";
 import { isInterest } from "./interests.js";
 import { isPublicWebHost } from "./urls.js";
 
@@ -112,6 +113,8 @@ export const FACT_VALUE_SCHEMAS = {
   destination: z.object({ kind: z.enum(DESTINATION_KINDS), note: z.string().min(3).max(120).optional() }).strict(),
   audience: z.object({ kids: z.literal(true) }).strict(),
   popularity: z.object({ score: z.number().min(0).max(1), source: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/), rank: z.number().int().min(1).max(1000).optional() }).strict(),
+  // What it is known for, in a few words: kept for whoever audits the ratings, never shown as a claim.
+  renown: z.object({ level: z.enum(RENOWN_LEVELS), note: z.string().min(3).max(120).optional() }).strict(),
   crowd_level: oneOf(["quiet", "moderate", "busy"]),
   queue: oneOf(["none", "short", "long"]),
   open_state: oneOf(["open", "closed"]),

@@ -135,6 +135,36 @@ fetched. `outrn ai spend` shows the day so far. It needs `ANTHROPIC_API_KEY`; th
 with Anthropic's server-side fallback when a request is declined. `outrn refresh` runs both every two
 hours while the key is set.
 
+**Which places Claude knows by name** (`pnpm outrn ai renown --area <slug> --save fixtures/live/<slug>-renown.json`):
+what the engine knew of a place's standing was an encyclopedia entry on its map record, which two
+dozen places on the Lower East Side have. Asked from memory, a model names Russ & Daughters, Scarr's
+Pizza and the Bronx Zoo. So Claude is asked, once per place, about the places we already hold: a
+hundred names, kinds and streets to a question, and it lists the ones it recognises as *notable*
+(recommended beyond its own block) or a *destination* (people cross the city for it), with a few
+words on what each is known for. Nothing is fetched.
+- **It is an estimate, and only lifts.** The `renown` fact is evidence class estimate: a model's
+  memory is not a source. It is never asked whether a place exists, is open or is good, and never
+  about a place we do not hold from a real source. A place it does not recognise, or finds ordinary,
+  gets no fact: there is no low rating anywhere, in the database or the capture. Chains are not asked
+  about. An answer that recognises most of a batch is not believed.
+- **What the engine does with it** (draw.ts): a recognised place's draw is its kind's plus 0.2
+  (notable) or 0.3 (destination), within the level's range (0.7 to 0.8, 0.85 to 1), or its
+  encyclopedia entry's if that is more. The card says "well known", marked an estimate; what Claude
+  said it is known for is kept for audit and shown on no card. A place known by name with no hours
+  listed, at the time of day its kind is for (the zoo at one on a Saturday), pays for the check and
+  not for a wasted trip; it stays Check first. The more of an outing a place is, the less its
+  distance counts against it. Its website is read for hours before others'.
+- **Spending and replay.** Under the same cap as every other use of Claude
+  (`OUTRN_AI_DAILY_BUDGET_USD`); `--dry-run` says how many places and questions a run would take and
+  the most it could cost (the Lower East Side: 2,765 places, 28 questions, at most $3.64 on
+  `claude-opus-5-5`, usually a fraction). A place is asked about again after 180 days. `--save` keeps
+  what was asked (read first when the file exists, so nothing in it is asked again) and `pnpm real`
+  replays `fixtures/live/<area>-renown.json`; `--clear` takes an area's renown back.
+- **The captures here** (the Lower East Side, Bronxville, White Plains) were answered by Claude in a
+  Claude Code session on 11 November 2026, with the job's own questions, where no API key was at
+  hand: 366 of 2,765 places recognised on the Lower East Side, 32 of 160 around Bronxville, 91 of
+  1,018 around White Plains. Delete a file and run the command to ask afresh through the API.
+
 **Library and town calendars** (`pnpm outrn ingest calendars [--area <slug>]`): the events in
 libraries', towns' and nature centers' own calendars around the launch areas, for the next 30 days:
 storytimes, LEGO clubs, author talks, concerts, nature walks, a town's parade. The feeds are a reviewed
@@ -402,6 +432,8 @@ museum café, closed bar, six-year-old hours) are the acceptance cases.
 | `outrn facts set <venue> <attribute> <value> --evidence "called 9/26" [--verified date] [--json]` | Record a fact you checked (published, source `founder`, trust 0.85); `<venue>` is an id or a unique name |
 | `outrn facts show <venue>` | What the engine believes about a venue: value, evidence class, source, confidence, age |
 | `outrn venues add --name --category --lat --lon --evidence [--hours --website --phone --area]` | Add a place OSM lacks; links to the existing venue instead if OSM has it |
+| `outrn ai renown --area <slug> [--save p] [--from-file p] [--limit n] [--dry-run] [--clear]` | Ask Claude which of an area's places it recognises by name (an estimate that lifts them in ranking); `--dry-run` asks nothing and says what a run would cost |
+| `outrn ai events` / `ai recheck` / `ai spend` | Claude reads venues' events pages, re-checks events about to start, and what it has cost today |
 | `outrn areas list` / `add` / `set` / `launch` / `pause` | Service areas and their lifecycle (see Areas) |
 
 ## Layout

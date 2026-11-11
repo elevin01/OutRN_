@@ -78,7 +78,63 @@ changelog.
 
 ## Next, in order
 
-### Batch 11: worth going out for (this PR)
+### Batch 12: what Claude knows by name (this PR)
+The founder's question after batch 11 (11 Nov): "how good is this compared to just asking AI?"
+- **Measured.** Three of the audited moments, answered from a model's memory (no search), each pick
+  then looked up in our data and ranking:
+  - Lower East Side, Saturday 2pm: 12 picks, all in the data. 5 were in the engine's first 12; 6 were
+    outside its first 300 (Russ & Daughters Cafe, Scarr's Pizza, Economy Candy, Metrograph, the
+    Doughnut Plant, the International Center of Photography). One the engine rightly ruled out: the
+    Museum at Eldridge Street, closed on Saturdays by its listed hours.
+  - Bronxville, Saturday 1pm, four hours: the Bronx Zoo was #80, Wave Hill #74, the Botanical Garden
+    #107, Untermyer Gardens #115, behind a county park and a Chinese restaurant.
+  - White Plains, Friday 7pm: 2 of 12 picks were options; 6 were not in the data at all, and nothing
+    here can say whether the data lacks them or the memory is stale.
+  - So: choosing what is worth going to, a model's memory was better than batch 11's encyclopedia
+    proxy. Knowing whether it can be done now (hours, travel, what is on) is ours, and a model's
+    memory recommended a museum on the day it is shut. Not measured: a model with web search.
+- **Borrowed, not competed with** (`outrn ai renown`, ingest's renown.ts, migration 0031). Claude is
+  asked once per place which of an area's places it recognises as notable or as a destination; the
+  `renown` fact is an estimate that only lifts (see the README for what it is and is not).
+  - Draw: recognised, a place's draw is its kind's plus 0.2 or 0.3, kept within the level's range
+    (notable 0.7 to 0.8, a destination 0.85 to 1), or its encyclopedia entry's when that is more. A
+    café people cross the city for is not ranked as a café; a club Claude merely knows of is not
+    above the deli everyone names.
+  - **No hours listed, known by name, at its hour** (`knownAtItsHour`): 0.03 for the check, in place
+    of 0.08 and 0.004 a minute for a trip that may be wasted. What unlisted hours mostly risk is a
+    stale record and a shut door; the zoo at one on a Saturday is neither. Still Check first, with
+    "hours not listed" on the card. Variety may show it only when it is widely known (an
+    encyclopedia entry, or a destination). Not at any other hour, and not what shuts for a season
+    (an amusement park, an ice rink, mini golf).
+  - **Worth a longer walk** (`WORTH_A_WALK`): from draw 0.6 up, up to 60% of a trip's length is
+    forgiven. Katz's was the food card on 8 of 9 opens for being the nearest famous deli.
+  - Rotation is ±0.04 (was ±0.06): with a few hundred places now known to be better, a turn should
+    not put an ordinary one before them.
+  - The website job reads a recognised place's site before others': its hours matter most.
+- **What it did** (the captures' ratings: 366 of 2,765 places on the Lower East Side, 32 of 160
+  around Bronxville, 91 of 1,018 around White Plains; answered in a Claude Code session, see README):
+  - The same three moments. Lower East Side: Russ & Daughters Cafe from outside the first 300 to
+    #35, the ICP from outside it to #20; Scarr's and Economy Candy to about #170, still Check first
+    for their hours. Bronxville: Wave Hill #6, the Botanical Garden #10, Untermyer #14, the Zoo #16.
+  - The nine opens: Bronxville and White Plains by day now show the Met Cloisters, the Bronx Zoo,
+    Kykuit, Sunnyside and Untermyer among the preserves; the Lower East Side's evenings Double
+    Chicken Please, Dhamaka, Prince Street Pizza. Different places on first pages: 14, 13 and 14 of
+    27 (were 15, 14, 14).
+  - Golden, re-pinned with the ratings replayed: Russ & Daughters leads Sunday brunch; pizza is
+    Lombardi's, Prince Street, Lil' Frankies, Rubirosa, Scarr's; a Bronxville family's Sunday is Van
+    Cortlandt Park, the Bronx Zoo, Glen Island; a show on Friday is La MaMa, the Public, Metrograph.
+- **Seen, not fixed.**
+  - **Hours are still what holds a known place back.** Scarr's at #170 is a pizzeria everyone names
+    with no hours on record. `outrn firstparty run` now reads such sites first; a founder check
+    (`outrn facts set`) on the dozen marquee places with none (the Zoo, the Botanical Garden, Wave
+    Hill) would make them Ready.
+  - **A model's memory is dated.** It can vouch for a place that has since closed; only our sources'
+    status says otherwise, and it is asked only about places they hold.
+  - **It over-trusts now and then:** a curling club and a town library were found notable. A level
+    costs nothing to take back (`--clear`, or the founder's exclude).
+  - Not run through the API here (no key in the cloud session); the job is tested against a stand-in.
+
+### Batch 11: worth going out for
 The founder's call (10 Nov): "the recommendation system is terrible at this point. I open it up and
 it gives me things, activities, places (new, interesting, or genuinely worth going) that I can go out
 for. Currently it does not do that." No contract change: reason codes are open-ended.
@@ -712,6 +768,9 @@ the person's taste, with places as the fallback and the "grab a bite after" stop
    when most places like it nearby are open then (still labelled Check first, with the reason on its
    card)?~~ Decided by batch 11: Ready is no longer a tier at all. Every caveat costs merit by what it
    risks, and a likely-open place pays its own, smaller cost. Veto batch 11 in review to go back.
+12. **What Claude says a place is known for** (batch 12): kept, and shown on no card ("smoked fish
+   and bagels" would read as our claim, and a model's memory is not a source). Showing it, marked as
+   Claude's, would give each card its hook. Yours to call.
 11. **Remembering what was shown** (batch 11): the day's turn varies the first page without keeping
    anything. Sinking what this device saw last week would vary it more (`seenIds` already works),
    and means storing what was shown on the device, which the mobile app has so far refused to do.

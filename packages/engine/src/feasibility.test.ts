@@ -8,8 +8,8 @@ import { caveatNotes, explain, planSteps, reasonNotes } from "./explain.js";
 import { openShares } from "./likely.js";
 import { evaluateAll, recommend } from "./recommend.js";
 import { orderForDisplay } from "./select.js";
-import { APPEAL_WEIGHTS, MERIT, merit, ROTATION, rotationOf, standing, suitsCompany, tripAtRisk, uncertaintyCost, UNCERTAINTY, UNCERTAINTY_MAX, WASTED_TRIP_PER_MINUTE } from "./score.js";
-import { DRAW, drawOf, KIND_DRAW } from "./draw.js";
+import { APPEAL_WEIGHTS, KNOWN_AT_ITS_HOUR, knownAtItsHour, MERIT, merit, ROTATION, rotationOf, standing, suitsCompany, tripAtRisk, uncertaintyCost, UNCERTAINTY, UNCERTAINTY_MAX, WASTED_TRIP_PER_MINUTE } from "./score.js";
+import { DRAW, drawOf, KIND_DRAW, RENOWN_DRAW, RENOWN_FLOOR, renownOf } from "./draw.js";
 import { TASTE } from "./taste.js";
 import { parkingText, parkStepText } from "./parking.js";
 import type { Candidate, CategoryPolicy, Evaluation, NearbyParking, RequestContext, TimingBase, Visit } from "./types.js";
@@ -731,7 +731,7 @@ describe("selection: diversity and fewer than three", () => {
 
   it("what there is to check outweighs variety: a place with no hours listed and a new cuisine does not come before a Ready one", () => {
     const x = ctx("2026-10-02 19:00", 120, { categories: ["restaurant"] });
-    const s = recommend([dinner({ id: "it1", cuisine: ["italian"] }), dinner({ id: "it2", cuisine: ["italian"] }), { ...dinner({ id: "thai", cuisine: ["thai"], hours: null }), hasLandmarkId: true }], x, POLICIES);
+    const s = recommend([dinner({ id: "it1", cuisine: ["italian"] }), dinner({ id: "it2", cuisine: ["italian"] }), dinner({ id: "thai", cuisine: ["thai"], hours: null })], x, POLICIES);
     expect(s.items.map((e) => [e.candidate.id, e.class])).toEqual([["it1", "ready"], ["it2", "ready"], ["thai", "check_first"]]);
   });
 
@@ -2802,7 +2802,7 @@ describe("variety is among outings about as good as the best", () => {
 
   it("the best option leads whatever there is to check; variety only decides what jumps the queue", () => {
     // A lookout for the sunset with no hours listed is the best thing on the list: it is first, and variety does not push it down.
-    const lookout = { ...venue({ id: "lookout", category: "viewpoint", hours: null, boost: 0.3 }), hasLandmarkId: true, hasWikipedia: true };
+    const lookout = venue({ id: "lookout", category: "viewpoint", hours: null, boost: 0.4 });
     const cands = [lookout, venue({ id: "r1", category: "restaurant", hours: "Mo-Su 11:00-23:00" }), venue({ id: "b1", category: "bar", hours: "Mo-Su 12:00-02:00" })];
     const x = ctx("2026-10-03 17:00", 180);
     const all = evaluateAll(cands, x, POLICIES);
@@ -2854,5 +2854,108 @@ describe("today's turn: near-equals rotate from day to day", () => {
       const s = recommend([...places(), institution], ctx(`${d} 19:00`, 180, { steady: false }), POLICIES);
       expect(s.items[0]!.candidate.id, d).toBe("known");
     }
+  });
+});
+
+describe("renown: a place Claude recognises by name rises, as an estimate, and nothing sinks", () => {
+  const sat = () => ctx("2026-10-03 13:00", 180);
+  const known = (c: Candidate, level: string, note?: string): Candidate => ({ ...c, facts: { ...c.facts, renown: { value: note ? { level, note } : { level }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1, sources: ["ai_renown"] } } });
+  const cafe = () => venue({ id: "cafe", name: "Russ & Daughters Cafe", category: "cafe", hours: "Mo-Su 08:00-20:00" });
+
+  it("lifts draw by its level, whatever kind of place it is; a level we do not know says nothing", () => {
+    const base = drawOf(cafe(), sat()).score;
+    expect(drawOf(known(cafe(), "notable"), sat()).score).toBe(RENOWN_FLOOR.notable);
+    expect(drawOf(known(cafe(), "destination"), sat()).score).toBe(RENOWN_FLOOR.destination);
+    expect(drawOf(known(cafe(), "legendary"), sat())).toEqual({ score: base, reasons: [] });
+    expect(drawOf(known(venue({ id: "park", name: "Tompkins Square Park", category: "park" }), "notable"), sat()).score).toBe(RENOWN_FLOOR.notable);
+    expect(renownOf(known(cafe(), "notable"))).toBe("notable");
+    expect(renownOf(cafe())).toBeNull();
+  });
+
+  it("is one way of knowing a place, not a second helping: with an encyclopedia entry too, the larger counts", () => {
+    const deli = (): Candidate => ({ ...venue({ id: "katz", category: "restaurant", hours: "Mo-Su 08:00-23:00" }), hasLandmarkId: true, hasWikipedia: true });
+    const entry = drawOf(deli(), sat()).score;
+    expect(drawOf(known(deli(), "notable"), sat()).score).toBe(entry);
+    expect(drawOf(known(deli(), "destination"), sat()).score).toBe(RENOWN_FLOOR.destination);
+    // A museum's entry says little (most have one); recognised as a destination, it has the larger lift.
+    const museum = (): Candidate => ({ ...venue({ id: "tenement", category: "museum", hours: "Mo-Su 10:00-18:00" }), hasLandmarkId: true });
+    expect(drawOf(known(museum(), "destination"), sat()).score).toBe(1);
+    expect(drawOf(museum(), sat()).score).toBeCloseTo(KIND_DRAW.museum + 0.1, 5);
+  });
+
+  it("never a chain's, and a small square it recognises is not small", () => {
+    expect(drawOf({ ...known(cafe(), "destination"), brand: "Starbucks" }, sat())).toEqual({ score: KIND_DRAW.cafe, reasons: [] });
+    const square = venue({ id: "sq", name: "Petrosino Square", category: "park", hours: null });
+    expect(drawOf(square, sat()).score).toBe(DRAW.pocketPark);
+    expect(drawOf(known(square, "notable"), sat()).score).toBe(RENOWN_FLOOR.notable);
+  });
+
+  it("the café everyone names comes before the three nearer ones, and the card says only that it is well known, as an estimate", () => {
+    const farther = { lat: ORIGIN.lat + 0.004, lon: ORIGIN.lon };
+    const russ = known({ ...cafe(), point: farther }, "notable", "smoked fish and bagels since 1914");
+    const others = ["c1", "c2", "c3"].map((id) => venue({ id, category: "cafe", hours: "Mo-Su 08:00-20:00" }));
+    const x = ctx("2026-10-03 13:00", 180, { categories: ["cafe"] });
+    const s = recommend([...others, russ], x, POLICIES);
+    expect(s.items[0]!.candidate.id).toBe("cafe");
+    const notes = reasonNotes(s.items[0]!, TZ);
+    expect(notes.find((n) => n.code === "LANDMARK")).toEqual({ code: "LANDMARK", text: "well known", params: { basis: "recognised", isEstimate: true } });
+    // What Claude said it is known for is not ours to assert: it is on no card.
+    expect(JSON.stringify([notes, explain(s.items[0]!, TZ)])).not.toContain("smoked fish");
+    // An entry on its record is not an estimate.
+    const katz = one({ ...venue({ id: "katz", category: "restaurant", hours: "Mo-Su 08:00-23:00" }), hasLandmarkId: true }, x.categories ? ctx("2026-10-03 13:00", 180) : x);
+    expect(reasonNotes(katz, TZ).find((n) => n.code === "LANDMARK")!.params).toEqual({ basis: "encyclopedia" });
+  });
+});
+
+describe("no hours listed, at a place known by name, at its hour", () => {
+  const known = (c: Candidate, level: string): Candidate => ({ ...c, facts: { ...c.facts, renown: { value: { level }, confidence: 0.5, evidenceClass: "estimate", validUntil: null, independentSources: 1, sources: ["ai_renown"] } } });
+  const zoo = () => {
+    const c = venue({ id: "zoo", name: "Bronx Zoo", category: "attraction", hours: null, admission: "ticket" });
+    c.facts.destination = { value: { kind: "zoo", note: "the largest city zoo in the country" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    return c;
+  };
+
+  it("the zoo at one on a Saturday pays for the check, not for a wasted trip; at eight in the evening it is as any other", () => {
+    const day = one(known(zoo(), "destination"), ctx("2026-10-03 13:00", 240));
+    expect(day.class).toBe("check_first");
+    expect(day.unresolved).toContain("HOURS_UNKNOWN");
+    expect(day.dayPart).toBe("prime");
+    expect(knownAtItsHour(day)).toBe(true);
+    expect(tripAtRisk(day)).toBe(false);
+    expect(uncertaintyCost(day)).toBeCloseTo(KNOWN_AT_ITS_HOUR + UNCERTAINTY.ADMISSION_UNCONFIRMED!, 10);
+    // The card is unchanged: it still says what to check.
+    expect(explain(day, TZ).caveat).toMatch(/hours not listed/);
+    const night = one(known(zoo(), "destination"), ctx("2026-10-01 20:00", 180));
+    expect(knownAtItsHour(night)).toBe(false);
+    expect(tripAtRisk(night)).toBe(true);
+    // And a zoo nobody vouches for pays in full at any hour.
+    const unknown = one(zoo(), ctx("2026-10-03 13:00", 240));
+    expect(knownAtItsHour(unknown)).toBe(false);
+    expect(uncertaintyCost(unknown)).toBeGreaterThan(UNCERTAINTY.HOURS_UNKNOWN!);
+  });
+
+  it("the pizzeria everyone names, with no hours listed, joins the first page at lunch as Check first; one nobody names does not", () => {
+    const ready = ["r1", "r2", "r3", "r4"].map((id) => venue({ id, category: "restaurant", hours: "Mo-Su 11:00-23:00" }));
+    const plain = venue({ id: "scarrs", name: "Scarr's Pizza", category: "restaurant", hours: null });
+    const x = ctx("2026-10-03 12:30", 180, { categories: ["restaurant"] });
+    expect(recommend([...ready, plain], x, POLICIES).items.map((e) => e.candidate.id)).not.toContain("scarrs");
+    const s = recommend([...ready, known(plain, "notable")], x, POLICIES);
+    expect(s.items[0]!.candidate.id).toBe("scarrs");
+    expect(s.items[0]!.class).toBe("check_first");
+    // What it is worth: a notable restaurant's draw is its kind's and the lift.
+    expect(s.items[0]!.draw).toBeCloseTo(KIND_DRAW.restaurant + RENOWN_DRAW.notable, 5);
+    // One sure option stays on the page all the same.
+    expect(s.items.some((e) => e.class === "ready")).toBe(true);
+  });
+
+  it("an encyclopedia entry counts the same way; a stage with nothing listed does not", () => {
+    const deli: Candidate = { ...venue({ id: "deli", category: "restaurant", hours: null }), hasLandmarkId: true };
+    expect(knownAtItsHour(one(deli, ctx("2026-10-03 12:30", 180)))).toBe(true);
+    const cinema = known(venue({ id: "metrograph", category: "cinema", hours: null, admission: "ticket" }), "destination");
+    cinema.facts.website = { value: { value: "https://metrograph.com" }, confidence: 0.8, evidenceClass: "published", validUntil: null, independentSources: 1 };
+    const e = one(cinema, ctx("2026-10-03 19:00", 240));
+    expect(e.unresolved).toContain("PROGRAMME_UNLISTED");
+    expect(tripAtRisk(e)).toBe(true);
+    expect(uncertaintyCost(e)).toBeCloseTo(UNCERTAINTY.PROGRAMME_UNLISTED! + UNCERTAINTY.ADMISSION_UNCONFIRMED!, 10);
   });
 });

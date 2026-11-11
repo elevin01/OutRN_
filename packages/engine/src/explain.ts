@@ -73,7 +73,8 @@ export function reasonNotes(e: Evaluation, tz: string): Note[] {
     add("POPULAR_NOW", p?.source === "tmdb" ? "one of the most popular films right now" : "popular right now", { source: p?.source ?? null, rank: p?.rank ?? null });
   }
   // What its own record says for it: an encyclopedia entry, an opening date, a first mapping. Never a verdict of ours.
-  if (has("LANDMARK")) add("LANDMARK", "well known");
+  // "Well known" by its record's encyclopedia entry, or only by Claude recognising it: then it is an estimate.
+  if (has("LANDMARK")) add("LANDMARK", "well known", e.candidate.hasLandmarkId || e.candidate.hasWikipedia ? { basis: "encyclopedia" } : { basis: "recognised", isEstimate: true });
   const since = parseSince(e.candidate.since);
   if (has("NEWLY_OPENED") && since) add("NEWLY_OPENED", `opened in ${since.month ? `${MONTHS[since.month - 1]} ` : ""}${since.year}`, { year: since.year, month: since.month });
   if (has("NEW_ON_MAP")) add("NEW_ON_MAP", "new on the map", { mappedAt: iso(e.candidate.firstMappedAt), isEstimate: true });

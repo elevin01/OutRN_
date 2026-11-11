@@ -12,3 +12,4 @@ export * from "./diets.js";
 export * from "./amenities.js";
 export * from "./interests.js";
 export * from "./destinations.js";
+export * from "./renown.js";

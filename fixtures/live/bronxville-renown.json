@@ -1,0 +1,1479 @@
+{
+ "outrn_capture": "renown",
+ "area": "bronxville",
+ "asked_by": "Claude, in a Claude Code session on 11 Nov 2026, answering the job's own questions (no API key was at hand there). `outrn ai renown --area bronxville --save` writes this same file from the API; delete it first to ask afresh.",
+ "asked": [
+  {
+   "keys": [
+    "osm:node/357609382"
+   ],
+   "name": "Andrews Court",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/357609392"
+   ],
+   "name": "Andrus Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:d0439d34-6ae2-43a2-953a-2d222cc556b5"
+   ],
+   "name": "Apshawa Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:5b1af713-a787-4b9c-a330-8086f2b4c0e4"
+   ],
+   "name": "Barney McNabbs",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:525ab3f5-36b9-4efd-bed5-293d9ff0b620"
+   ],
+   "name": "Bartlett Arboretum and Gardens",
+   "level": "notable",
+   "note": "arboretum with gardens and specimen trees",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/543719349"
+   ],
+   "name": "Bicentennial Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:f1bb8116-0e0a-48b1-83e0-669303456646"
+   ],
+   "name": "Blue Mountain Reservation",
+   "level": "notable",
+   "note": "wooded hiking and mountain biking trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:d2e6373f-a0a2-4cfa-bec8-a045a602a445"
+   ],
+   "name": "Borg's Woods Nature Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:85c48e3b-28fc-4623-bace-ab8117376cc7"
+   ],
+   "name": "Brinton Brook Audubon Sanctuary",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/544009333"
+   ],
+   "name": "Bronx River Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:5bdeb9a9-a74b-462c-8006-f955f27b7d2b"
+   ],
+   "name": "Bronx Zoo",
+   "level": "destination",
+   "note": "large city zoo with wildlife exhibits",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8842884596"
+   ],
+   "name": "Bronxville Diner",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/1288822660"
+   ],
+   "name": "Bronxville Giving Garden",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/469494034"
+   ],
+   "name": "Bronxville Public Library",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:00ee03ec-01fa-4296-8537-64651d0d1113"
+   ],
+   "name": "Bronxville Saturday Farmers Market",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:25413a0f-e87e-4336-973d-c2a691246531"
+   ],
+   "name": "Buleria Tapas & Wine Bar",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12162168803"
+   ],
+   "name": "The Burrito Poblano",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12179109031"
+   ],
+   "name": "BXVL Coffeehouse",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:2f76c300-e3d2-414b-90ef-0fe3e471dbc3"
+   ],
+   "name": "Carlo's",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:3f84c8a3-84c4-4326-b58f-8c1542af8a5f"
+   ],
+   "name": "Carolina's Desserts",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:c0656086-b235-4b1a-9daf-ea11d6867bfe"
+   ],
+   "name": "Chantilly Patisserie",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/368045850"
+   ],
+   "name": "Charles DeCarlo Performing Arts Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:1281c043-42ea-427c-8124-ecbbb6bc24a5"
+   ],
+   "name": "Closter Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/6997169881"
+   ],
+   "name": "Coals",
+   "level": "notable",
+   "note": "grilled pizza and coal-fired pies",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805923452"
+   ],
+   "name": "Coffee Unique",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12001630375"
+   ],
+   "name": "Cookies n' Cream",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:896013a4-e069-4cc4-9505-a252108fbfa7"
+   ],
+   "name": "Cora Hartshorn Arboretum and Bird Sanctuary",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:131a6c3b-17cb-4387-9cd4-6e1901b8badf"
+   ],
+   "name": "Cranberry Lake Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:44f0d37e-937e-4ce1-afc2-59b2c4990215"
+   ],
+   "name": "Croton Gorge Park",
+   "level": "notable",
+   "note": "new croton dam and spillway views",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:0a8a06f7-86a6-4d69-85ed-ed8a514e40c3"
+   ],
+   "name": "Croton Point Park",
+   "level": "notable",
+   "note": "hudson river peninsula park with camping",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938969559"
+   ],
+   "name": "Dumpling + Noodle",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:4fa15fb5-e4cf-41f3-9a4f-69531deccd36"
+   ],
+   "name": "Eagle Rock Reservation",
+   "level": "notable",
+   "note": "manhattan skyline views and 9/11 memorial",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/6393154641"
+   ],
+   "name": "East Harbor Seafood Restaurant",
+   "level": "notable",
+   "note": "dim sum and cantonese seafood",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:0d2ca36e-012c-4f35-9b48-868def066405"
+   ],
+   "name": "Edward R Schongalla Nature Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12505080430"
+   ],
+   "name": "Ernie's Wine Bar & Eats",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/192793018"
+   ],
+   "name": "Esther Raushenbush Library",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:f26422a1-a818-45de-90c5-7c6a77b46f45"
+   ],
+   "name": "Famous Peppino's Pizza",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:70d88622-d54e-49cb-b261-6c490ed0daba"
+   ],
+   "name": "Farm Creek Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12044800134"
+   ],
+   "name": "The Fine Art Gallery",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:6eedec4d-b792-4bf3-94f6-246572c9cae9"
+   ],
+   "name": "Flat Rock Brook Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:cb3a9947-13e8-4d19-88aa-219b01fb5c99"
+   ],
+   "name": "Foo Chow",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:11a52b01-59f6-4df7-9148-7c662b375fdd"
+   ],
+   "name": "Fort Tryon Park",
+   "level": "destination",
+   "note": "hudson views, gardens, and the met cloisters",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:7d638b2e-1b6d-49f0-9bbc-a0e1f4a853c5"
+   ],
+   "name": "Franklin Lakes Nature Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:04a900da-a6ed-47b5-8f14-a7fc890934c2"
+   ],
+   "name": "Frederick P. Rose Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:647cdcf2-07cf-4bcf-aa22-3bbbc6ca5a47"
+   ],
+   "name": "Fresh Creek Nature Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938969566"
+   ],
+   "name": "Full Moon Pizza",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/14083494479"
+   ],
+   "name": "Gelateria Sorella",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/560553350"
+   ],
+   "name": "Gifford Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/6997116433"
+   ],
+   "name": "Gino's Pizzeria",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:94de4b81-af7f-42ca-8cbc-0e21c19fc948"
+   ],
+   "name": "Glen Island Park",
+   "level": "notable",
+   "note": "waterfront county park with beach",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:1440a8d5-ada5-4a0f-a130-eb522f7dfdab"
+   ],
+   "name": "Graham Hills Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:a3ff82d3-3e63-4517-b7fc-ac465348f588"
+   ],
+   "name": "Greenbelt Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:7aec4a20-31cb-4065-a2a3-5130f6f9f02b"
+   ],
+   "name": "Greenburgh Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/1705829296"
+   ],
+   "name": "Growlers",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805928892"
+   ],
+   "name": "Haiku Asian Bistro & Sushi Bar",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:94ad4c9a-cab9-45dc-873a-3d418d0334f8"
+   ],
+   "name": "Hallett Nature Sanctuary",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:55234653-e99f-43a4-be63-b0758945b2cc"
+   ],
+   "name": "Hart’s Brook Park and Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938969567"
+   ],
+   "name": "Henry's Bar-Grill",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938969571"
+   ],
+   "name": "Hickey's Deli",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:48de4feb-8ba4-4f18-b8c9-5fe4e5f11073"
+   ],
+   "name": "The Hole In The Wall",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11974319867"
+   ],
+   "name": "Hunan III",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:71716a9a-9004-4439-917e-476f7d979eaa"
+   ],
+   "name": "Hunter Brook Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/755050175"
+   ],
+   "name": "Hunt's Woods Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12042738017"
+   ],
+   "name": "Il Bacio Trattoria",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:68f7373b-4a49-4845-96a5-862a650c061b"
+   ],
+   "name": "Il Gusto Ristorante Italiano",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:74e77285-cc17-48f0-a84d-f8246d5f5d1d"
+   ],
+   "name": "Inwood Hill Park",
+   "level": "notable",
+   "note": "manhattan's last natural forest and salt marsh",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/851112210"
+   ],
+   "name": "J.C. Fogarty's",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ce0c31e3-4b26-4ca4-b304-5eb896f4a642"
+   ],
+   "name": "Jay Heritage Center",
+   "level": "notable",
+   "note": "historic estate of john jay family",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:4f6fd662-6976-444f-b510-b6fe6351810c"
+   ],
+   "name": "Juhring Nature Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938969572"
+   ],
+   "name": "Kaito Japanese Restaurant",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:4ae62333-5035-4356-a4ba-8b7e29273f2f"
+   ],
+   "name": "Kensico Dam Plaza",
+   "level": "notable",
+   "note": "plaza below the kensico dam",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:0430256a-b921-4e9c-a1d4-8561c899bcf0"
+   ],
+   "name": "Kykuit",
+   "level": "destination",
+   "note": "rockefeller family estate and gardens",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ea1369fa-b64f-4dbb-b8f1-a9409d26a28b"
+   ],
+   "name": "L & T Chinese Kitchen",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:145dd0e4-1f08-4207-a68e-ddd507be7dfb"
+   ],
+   "name": "La Bella",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:37601965-55f6-4ef3-822f-bcdde717c3e8"
+   ],
+   "name": "La Casa Bronxville",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11974319866"
+   ],
+   "name": "La Chitarra",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805938153"
+   ],
+   "name": "Lange's of Bronxville",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:5477ad2f-18b1-472d-9869-8079b008490e"
+   ],
+   "name": "Lenoir Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:9b6788e1-38f0-416b-8c69-591bd9c113c5"
+   ],
+   "name": "Lola On The Grill",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:42165973-3fc9-479a-bece-5638839697b1"
+   ],
+   "name": "Lunde's Deli",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:42d2759c-d836-47cc-87dc-22be5b9f79de"
+   ],
+   "name": "Lyndhurst",
+   "level": "destination",
+   "note": "gothic revival mansion on the hudson",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/507430841"
+   ],
+   "name": "Main Street Playground",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/1543908202"
+   ],
+   "name": "Maltby Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:5b006bdf-f142-4a71-b405-2356d647b292"
+   ],
+   "name": "Mamma Assunta Ristorante",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:f189e1fc-0c2f-4258-9de5-434b83f22946"
+   ],
+   "name": "Manitou Point Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:b876956b-d6b8-420c-9c15-582b50bbcad9"
+   ],
+   "name": "Marshlands Conservancy",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:e6566bdd-ba05-4424-bb0a-803bb23f43eb"
+   ],
+   "name": "The Met Cloisters",
+   "level": "destination",
+   "note": "medieval art museum in fort tryon park",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:d3bc7492-1210-4363-9777-c3f8a70db89f"
+   ],
+   "name": "Mianus River Gorge Preserve",
+   "level": "notable",
+   "note": "old-growth hemlock gorge hiking preserve",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:e6c26ea9-03c4-4cb3-ab01-1a96d84c57a0"
+   ],
+   "name": "Mills Reservation County Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/368045847"
+   ],
+   "name": "Monica A and Charles A Heinbold, Junior Visual Arts Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ecb30acc-0493-4163-ba79-7d72c5b785fb"
+   ],
+   "name": "New Canaan Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:c727dc91-f995-4ef3-b440-87a7fe6e2184"
+   ],
+   "name": "New York Botanical Garden",
+   "level": "destination",
+   "note": "botanical garden, conservatory and seasonal shows",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/469494037"
+   ],
+   "name": "Objects & Images Fine Art",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:47125b29-de84-4df7-a4ea-dc2fa37ae611"
+   ],
+   "name": "ODO",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:591314f0-f076-44b6-a112-6957903db5f5"
+   ],
+   "name": "O'Hara Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11970945713"
+   ],
+   "name": "OpaOpa Fresh Greek",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:424a1ee6-1eaa-4ff4-a81a-0f4ce7a4f469"
+   ],
+   "name": "Orchard Beach",
+   "level": "notable",
+   "note": "bronx public beach on long island sound",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11984336478"
+   ],
+   "name": "Ovder",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:bdc62a57-b879-4567-9e06-fcda56b59535"
+   ],
+   "name": "Park 143 Bistro",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:b312815e-3c46-403d-ba5f-cca99f36d19b"
+   ],
+   "name": "Park Place Bagels 2",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:704b0670-f39f-49bb-993c-716bf6a452f0"
+   ],
+   "name": "Parkway Delicatessen",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:c4826798-20f9-448b-a231-fefd0e26c408"
+   ],
+   "name": "Pasquale's Deli",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:485e4d5e-2db6-42a7-9a45-8749e7b76242"
+   ],
+   "name": "Pelham Bay Park",
+   "level": "notable",
+   "note": "new york city's largest park, beaches and trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12054023483"
+   ],
+   "name": "Pete's Park Place Tavern",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/6952593996"
+   ],
+   "name": "The Picture House",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:504e0cdb-b839-436a-a2c6-56369a8ff2fb"
+   ],
+   "name": "Pine Croft Meadow Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:3a077cc6-cfd7-4721-a5c1-48f052ac646b"
+   ],
+   "name": "Playland",
+   "level": "destination",
+   "note": "historic art deco amusement park",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:bd0af337-e499-4a88-99d8-1aa9addf6539"
+   ],
+   "name": "Pondfield Cafe",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:93bcc1c6-7034-43fb-a3ec-5e00079eb1a0"
+   ],
+   "name": "Pruyn Audubon Sanctuary",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ae775ff4-a2de-4415-a36d-dbfe9dcb0ac3"
+   ],
+   "name": "Ramapo Valley County Reservation",
+   "level": "notable",
+   "note": "hiking trails and reservoir views",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:be27c089-cab3-4ad2-bd65-79cab41cd79b"
+   ],
+   "name": "Reeves-Reed Arboretum",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ff21910b-12de-4a11-a95f-c967319f3958"
+   ],
+   "name": "Rockefeller State Park Preserve",
+   "level": "notable",
+   "note": "carriage roads and walking trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12437363682"
+   ],
+   "name": "Roma Restaurant",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11974319862"
+   ],
+   "name": "Root & Vine Juice Bar",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12222666168"
+   ],
+   "name": "Rosie's Bistro Italiano",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:551c94be-f9c3-45f1-860e-9a9bbb009bda"
+   ],
+   "name": "Rye Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:2ef1fba3-e88f-46fb-9ed0-8d9f8d1632f6"
+   ],
+   "name": "Salt Marsh Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:93a1f9c6-61dd-4c2d-b340-0eaf879a0fc2"
+   ],
+   "name": "Saxon Woods Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12092405959"
+   ],
+   "name": "Scalini Osteria",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/543822483"
+   ],
+   "name": "Scheele Memorial Library",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/461439443"
+   ],
+   "name": "Scout Field",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/7938966034"
+   ],
+   "name": "Slave To the Grind",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:way/543822456"
+   ],
+   "name": "Sommer Center for Worship and the Performing Arts",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:f30f0d52-a8bc-48bc-b184-6bf42b302384"
+   ],
+   "name": "South Mountain Reservation",
+   "level": "notable",
+   "note": "forest trails and hemlock falls",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:7865cda4-3063-4c7e-9afe-bda6b0e0d2f0"
+   ],
+   "name": "Spice Village",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:29919d33-f069-43d6-9670-c01ce8b17c23"
+   ],
+   "name": "Sprain Ridge Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:e459b5a2-131e-4f0c-a883-52e9e8706958"
+   ],
+   "name": "State Line Lookout",
+   "level": "notable",
+   "note": "palisades cliff views over the hudson",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:e1bf88c7-6c5b-4878-8cdb-503e739d7c7c"
+   ],
+   "name": "Sunny Ridge Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/357609725"
+   ],
+   "name": "Sunnybrook Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:fb4f4481-e529-4b57-8162-fbe0f0dc9204"
+   ],
+   "name": "Sunnyside",
+   "level": "destination",
+   "note": "washington irving's historic home",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:359c5819-8d47-4f9c-a33f-21e8fe488ad7"
+   ],
+   "name": "Taco Bahama",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11984324908"
+   ],
+   "name": "The Taco Project",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:9e8342df-e206-4ce8-8f6d-85eb99c52120"
+   ],
+   "name": "Tangerine Thai Restaurant",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/368053415"
+   ],
+   "name": "Teahaus",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:26b4e1e6-d9d3-4bf2-a99d-7eb63ef535a7"
+   ],
+   "name": "Teatown Lake Reservation",
+   "level": "notable",
+   "note": "nature preserve with lake and trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ca15ba95-b84f-4f15-aa14-6456ede7e308"
+   ],
+   "name": "Tenafly Nature Center",
+   "level": "notable",
+   "note": "nature preserve with trails and pond",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:f2ed0cab-ac28-40dc-9199-386603163122"
+   ],
+   "name": "Thielke Arboretum",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:ed56ba66-a200-47fe-8832-a56330f7e4eb"
+   ],
+   "name": "Tibbetts Brook Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:0a963276-8081-4443-9956-1e1e6ca9229b"
+   ],
+   "name": "Topps Bakery",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:e2bb3ad4-3fec-4dd7-ae81-7cb52b61ab96"
+   ],
+   "name": "Toscana on Main",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:b65fad33-2f5e-46ac-86e3-b681d93c0a46"
+   ],
+   "name": "Treat Me Sweet Candy Buffets and Marquee Light up Letters",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805925731"
+   ],
+   "name": "tredici SOCIAL",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8220170765"
+   ],
+   "name": "Tuckahoe Community Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8600254142"
+   ],
+   "name": "Tuck'd Away Bar and Grill",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:c3512816-c1cd-4f99-a83f-5aec8c2641a3"
+   ],
+   "name": "Twin Lakes County Park",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805937479"
+   ],
+   "name": "Underhills Crossing",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:a425f1d8-a3c2-4415-815c-a2eb359ecc30"
+   ],
+   "name": "Untermyer Gardens",
+   "level": "destination",
+   "note": "restored walled garden overlooking the hudson",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/11984314285"
+   ],
+   "name": "The Urban Hamlet",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:d07c56ff-ce04-469a-93ea-4e1aff650aa4"
+   ],
+   "name": "Van Cortlandt Park",
+   "level": "notable",
+   "note": "large bronx park, golf, running trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:8a09cec4-2f29-461c-8124-ad5fedd6089e"
+   ],
+   "name": "Ward Pound Ridge Reservation",
+   "level": "notable",
+   "note": "large county reservation with trails",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:8b25e513-6374-4036-ae0c-2f1bdff7b5ee"
+   ],
+   "name": "Wave Hill",
+   "level": "destination",
+   "note": "public garden and cultural center on hudson",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:2882e14d-afc4-4533-a08f-b1de5d03cc69"
+   ],
+   "name": "WestArt",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:1937273b-1b63-4d80-bdca-fc3ecc1ad9ba"
+   ],
+   "name": "Westmoreland Sanctuary",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/12179324756"
+   ],
+   "name": "Whistling Rail",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:664246c5-a3af-4d6d-a518-4f1f39615a31"
+   ],
+   "name": "Wicked Wolf North",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/8805921111"
+   ],
+   "name": "Wild Ginger",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:710e6e50-b975-4160-a1c2-17e1afb2805a"
+   ],
+   "name": "Woodcock Nature Center",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "osm:node/6670887082"
+   ],
+   "name": "Yonkers Public Library Grinton I. Will Branch",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:eee1f37c-560d-49aa-84ba-00265fda1e65"
+   ],
+   "name": "Zero Otto Nove Tuckahoe",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  },
+  {
+   "keys": [
+    "overture:d29800af-2c9e-4664-8514-3b7b817a0ba4"
+   ],
+   "name": "Zofnass Family Preserve",
+   "level": "none",
+   "model": null,
+   "askedAt": "2026-11-11T16:08:45.996Z"
+  }
+ ]
+}

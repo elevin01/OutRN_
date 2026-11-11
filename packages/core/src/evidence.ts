@@ -45,6 +45,10 @@ export type EvidenceClass = (typeof EVIDENCE_CLASSES)[number];
  *  - audience           : { kids: true }  an event made for children, as its source says ("Best for Kids")
  *  - popularity         : { score: 0..1, source: string, rank?: number }  how much demand there is for an event, as a
  *                         source measures it (SeatGeek's score; a film's place among TMDB's most popular now playing)
+ *  - renown             : { level: "notable"|"destination", note?: string }  how well known a place is as one worth
+ *                         going to, as Claude recognises it by name (estimate only: a model's memory is not a source).
+ *                         "notable": recommended beyond its own block; "destination": people cross the city for it.
+ *                         Never a low rating: a place it does not recognise, or finds ordinary, has no renown fact
  *  - crowd_level        : { value: "quiet"|"moderate"|"busy" }        (observation only)
  *  - queue              : { value: "none"|"short"|"long" }             (observation only)
  *  - open_state         : { value: "open"|"closed" }                   (observation only)
@@ -81,6 +85,7 @@ export const ATTRIBUTES = [
   "destination",
   "audience",
   "popularity",
+  "renown",
   "crowd_level",
   "queue",
   "open_state",

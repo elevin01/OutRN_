@@ -10,7 +10,7 @@ import { happyHourAt, OFFERS, outdoorSeatingWeather } from "./offers.js";
 import { TASTE, tasteMatch, tasteWeights } from "./taste.js";
 import { cuisinesOf } from "./cuisine.js";
 import { LIKELY_OPEN } from "./likely.js";
-import { drawOf } from "./draw.js";
+import { drawOf, renownOf } from "./draw.js";
 
 /**
  * Four separately inspectable scores. Feasibility is a gate, not a score: nothing here can rescue a
@@ -37,6 +37,8 @@ export const APPEAL_WEIGHTS = { base: 0.3, draw: 0.5, completeness: 0.06, chainP
 export const POPULAR_FROM = 0.7;
 /** A trip up to this long costs nothing in fit: three minutes' walk or six, one is as near as the other. */
 export const NEAR_ENOUGH_MINUTES: Readonly<Record<RequestContext["mode"], number>> = { walk: 6, transit: 8, drive: 8 };
+/** How much of a trip's length a place's draw forgives, at most (`share`, at draw 1), and from what draw. */
+export const WORTH_A_WALK = { share: 0.6, fromDraw: 0.6 } as const;
 /** How much of the travel score is "worth the trip" (see scoreCandidate), by window length. */
 export const WORTH_THE_TRIP = { fromMinutes: 90, fullMinutes: 240, share: 0.5 } as const;
 /**
@@ -96,6 +98,8 @@ export function scoreCandidate(
 ): { scores: Scores; extraReasons: ReasonCode[]; dayPart: DayPart | null; tasteLead: Interest | null; draw: number; rotation: number } {
   const extra: ReasonCode[] = [];
   const t = f.timing!;
+  // What it is worth going out for (draw.ts): the base of its appeal, and how far it is worth going.
+  const draw = drawOf(c, ctx);
 
   // Fit: travel slack, time slack, who is going, weather. (A mood is taste: see below.)
   // Travel counts against the time the user has: a 15-minute walk is nothing in an evening, a lot in an hour.
@@ -108,7 +112,12 @@ export function scoreCandidate(
   const longWindow = longWindowOf(ctx);
   // A few minutes more or less is no difference: the nearest of several good places is not the best for it.
   const free = NEAR_ENOUGH_MINUTES[ctx.mode];
-  const nearness = Math.max(0, 1 - Math.max(0, t.travel.minutes - free) / Math.max(1, reach - free));
+  const near = Math.max(0, 1 - Math.max(0, t.travel.minutes - free) / Math.max(1, reach - free));
+  // And a place people cross the city for is worth a longer walk: the more of an outing it is in
+  // itself (draw, from 0.6 up), the less of its distance counts against it. The nearest famous deli
+  // is not the only famous deli.
+  const stretch = WORTH_A_WALK.share * Math.max(0, Math.min(1, (draw.score - WORTH_A_WALK.fromDraw) / (1 - WORTH_A_WALK.fromDraw)));
+  const nearness = near + (1 - near) * stretch;
   const travelScore = (1 - longWindow * WORTH_THE_TRIP.share) * nearness + longWindow * WORTH_THE_TRIP.share * worth;
   // Time spent waiting (for a table, in line) is not time there.
   const timeSlack = Math.max(0, Math.min(1, (t.usefulMinutes - waitFloorMinutes(t.conditions) - t.minUsefulMinutes) / Math.max(15, t.minUsefulMinutes)));
@@ -146,7 +155,6 @@ export function scoreCandidate(
 
   // Appeal: how much it is something to go out for (its kind, what its records say of it: draw.ts),
   // then what suits the moment and the party, overrides and context rules.
-  const draw = drawOf(c, ctx);
   let appeal = APPEAL_WEIGHTS.base + APPEAL_WEIGHTS.draw * draw.score;
   extra.push(...draw.reasons);
   const completeness = ["website", "phone", "opening_hours"].filter((a) => c.facts[a as keyof typeof c.facts]).length / 3;
@@ -261,7 +269,7 @@ export function scoreCandidate(
  * that lead (a market day, a museum day). A search repeated the same day gives the same order, and
  * an option better than another by more than `span` always comes first.
  */
-export const ROTATION = { span: 0.12, kindShare: 0.35 } as const;
+export const ROTATION = { span: 0.08, kindShare: 0.35 } as const;
 
 /**
  * FNV-1a, then a finishing mix: a stable spread of a short string, not a secret. Without the mix a
@@ -348,6 +356,7 @@ export function uncertaintyCost(e: Evaluation): number {
       if (programme) continue;
       // Likely open, not known to be: the cost of checking, and of the times places like it are shut then.
       if (e.likelyOpen) cost += LIKELY_OPEN.checkCost + (1 - e.likelyOpen.open / e.likelyOpen.listed) * LIKELY_OPEN.missCost;
+      else if (knownAtItsHour(e)) cost += KNOWN_AT_ITS_HOUR;
       else cost += UNCERTAINTY.HOURS_UNKNOWN! + WASTED_TRIP_PER_MINUTE * (e.timing?.travel.minutes ?? 0);
     } else cost += UNCERTAINTY[code] ?? UNCERTAINTY_DEFAULT;
   }
@@ -363,7 +372,39 @@ const TRIP_AT_RISK: ReadonlySet<string> = new Set(["HOURS_UNKNOWN", "HOURS_DOUBT
  * such an option (select.ts): it is offered where its merit puts it, with what to check.
  */
 export function tripAtRisk(e: Evaluation): boolean {
-  return e.unresolved.some((code) => TRIP_AT_RISK.has(code) && !(code === "HOURS_UNKNOWN" && e.likelyOpen));
+  return e.unresolved.some((code) => TRIP_AT_RISK.has(code) && !(code === "HOURS_UNKNOWN" && (e.likelyOpen || (knownAtItsHour(e) && widelyKnown(e.candidate)))));
+}
+
+/**
+ * Known well enough that variety may show it with its hours unlisted: an encyclopedia entry on its
+ * record, or recognised by Claude as a destination. A place it merely finds notable pays less for
+ * its unlisted hours at its hour (knownAtItsHour) and still waits for its merit.
+ */
+function widelyKnown(c: Candidate): boolean {
+  return c.hasLandmarkId || c.hasWikipedia === true || renownOf(c) === "destination";
+}
+
+/**
+ * No hours listed, for a place known by name (an encyclopedia entry, or Claude recognising it:
+ * LANDMARK) at the time of day its kind of place is for: the zoo at one on a Saturday, the pizzeria
+ * everyone names at lunch. What "no hours listed" mostly risks is a record nobody has looked at in
+ * years and a door that is shut at that hour; a place this known is neither, most days. It stays
+ * Check first with "hours not listed" on its card. It pays for the check, not for a wasted trip, and
+ * variety may show it when it is widely known. At any other hour (the zoo at eight in the evening)
+ * it is as any other.
+ */
+export const KNOWN_AT_ITS_HOUR = 0.03;
+export function knownAtItsHour(e: Evaluation): boolean {
+  return e.dayPart === "prime" && e.reasons.includes("LANDMARK") && !SEASONAL.has(seasonOf(e.candidate));
+}
+
+/**
+ * Kinds that shut for months whatever the hour: an amusement park's rides run in season only, so its
+ * time of day says nothing in October. They pay for their unlisted hours in full.
+ */
+const SEASONAL: ReadonlySet<string> = new Set(["amusement", "theme_park", "ice_rink", "miniature_golf"]);
+function seasonOf(c: Candidate): string {
+  return destinationOf(c)?.kind === "amusement" ? "amusement" : (subtypeOf(c) ?? "");
 }
 
 /** Merit without a taste or a mood: what is worth going for first, then how well it fits the time, then novelty. */

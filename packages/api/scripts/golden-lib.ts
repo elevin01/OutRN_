@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import type { RecommendationRequest } from "@outrn/contracts";
 import { reset, setLaunchState, type Db } from "@outrn/db";
 import { caveatNotes, reasonNotes } from "@outrn/engine";
-import { ingestDestinations, ingestOsmArea, ingestOverture } from "@outrn/ingest";
+import { ingestDestinations, ingestOsmArea, ingestOverture, rateRenown } from "@outrn/ingest";
 import { runEngine } from "../src/service/recommendations.js";
 
 /**
@@ -107,6 +107,8 @@ export async function seedGolden(db: Db, root: string, world: GoldenWorld = "les
     await ingestOsmArea(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains.json"), clock: wp });
     await ingestOverture(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains-overture.json"), clock: wp });
     await ingestDestinations(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains-destinations.json"), clock: wp });
+    // And which of its places Claude recognises by name (read 11 Nov): an estimate that lifts them.
+    await rateRenown(db, { areaSlug: "white_plains", fromFile: resolve(root, "fixtures/live/white_plains-renown.json"), now: wp(), env: {} });
     // Served, as `pnpm real` serves it (seeded areas outside the city start ingest-only).
     await setLaunchState(db, "white_plains", "test");
     return;
@@ -117,6 +119,8 @@ export async function seedGolden(db: Db, root: string, world: GoldenWorld = "les
   for (const area of ["les", "bronxville"]) await ingestOverture(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}-overture.json`), clock: () => new Date("2026-09-29T12:00:00Z") });
   // And the destinations worth a longer outing around Bronxville (read 5 Oct: the records selection reads).
   await ingestDestinations(db, { areaSlug: "bronxville", fromFile: resolve(root, "fixtures/live/bronxville-destinations.json"), clock: () => new Date("2026-09-29T12:00:00Z") });
+  // And which of each area's places Claude recognises by name (read 11 Nov): an estimate that lifts them.
+  for (const area of ["les", "bronxville"]) await rateRenown(db, { areaSlug: area, fromFile: resolve(root, `fixtures/live/${area}-renown.json`), now: new Date("2026-09-29T12:00:00Z"), env: {} });
 }
 
 /**

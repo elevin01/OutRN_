@@ -1,4 +1,4 @@
-import { isInterest, minutesBetween, ownValue, type Category, type Interest } from "@outrn/core";
+import { isInterest, isRenownLevel, minutesBetween, ownValue, type Category, type Interest, type RenownLevel } from "@outrn/core";
 import { subtypeOf } from "./daypart.js";
 import { candidateInterests } from "./taste.js";
 import type { Candidate, ReasonCode, RequestContext } from "./types.js";
@@ -96,6 +96,24 @@ const NOTABLE: Readonly<Partial<Record<Category, { id: number; article: number }
   garden: { id: 0, article: 0.1 },
 };
 
+/**
+ * What Claude's recognising a place adds (the renown fact: ingest's renown.ts, an estimate), whatever
+ * kind of place it is: the question it was asked is already about this place among its kind. As much
+ * as an encyclopedia entry adds a restaurant, which is the most one adds anything. It only ever
+ * adds: a place Claude does not recognise has no renown fact, and is ranked as before.
+ */
+export const RENOWN_DRAW: Readonly<Record<RenownLevel, number>> = { notable: 0.2, destination: 0.3 };
+/** The least a recognised place's draw is, whatever its kind: the levels are asked for in absolute terms. */
+export const RENOWN_FLOOR: Readonly<Record<RenownLevel, number>> = { notable: 0.7, destination: 0.85 };
+/** And the most recognition alone makes it: a notable place of any kind stays below a destination of any kind. */
+export const RENOWN_CAP: Readonly<Record<RenownLevel, number>> = { notable: 0.8, destination: 1 };
+
+/** How Claude recognises a place, when it does. */
+export function renownOf(c: Pick<Candidate, "facts">): RenownLevel | null {
+  const level = (c.facts.renown?.value as { level?: unknown } | undefined)?.level;
+  return isRenownLevel(level) ? level : null;
+}
+
 export const DRAW = {
   /** Opened within the last year, as the place itself says. */
   newlyOpened: 0.2,
@@ -150,16 +168,21 @@ function placeDraw(c: Candidate, ctx: Pick<RequestContext, "now" | "youngestAge"
   const destination = (c.facts.destination?.value as { kind?: unknown } | undefined)?.kind;
   let score = (subtype ? ownValue(SUBTYPE_DRAW, subtype) : undefined) ?? (typeof destination === "string" ? ownValue(SUBTYPE_DRAW, destination) : undefined) ?? KIND_DRAW[c.category];
   // A chain is the same everywhere: an encyclopedia entry is its brand's, an opening date its branch's.
-  if (c.category === "park" && POCKET_PARK.test(c.name) && !c.facts.destination) {
+  const renown = c.brand ? null : renownOf(c);
+  if (c.category === "park" && POCKET_PARK.test(c.name) && !c.facts.destination && !renown) {
     // A playground is the outing for a small child, and nobody else's.
     score = PLAYGROUND.test(c.name) && youngestUnderTwelve(ctx) ? DRAW.playgroundWithKids : DRAW.pocketPark;
   } else if (!c.brand) {
+    // Known by name, two ways of knowing it: an encyclopedia entry on its record, and Claude
+    // recognising it (the renown fact, an estimate). They measure one thing, so the larger counts.
     const n = NOTABLE[c.category];
-    const bonus = n ? (c.hasLandmarkId ? n.id : 0) + (c.hasWikipedia ? n.article : 0) : 0;
-    if (bonus > 0) {
-      score += bonus;
-      reasons.push("LANDMARK");
-    }
+    const entry = n ? (c.hasLandmarkId ? n.id : 0) + (c.hasWikipedia ? n.article : 0) : 0;
+    // Recognised at a level, it is that much of an outing whatever it is filed as, within the level's
+    // range: the smoked-fish café people cross the city for is not a café like any other (the floor),
+    // and a club Claude merely knows of is not more of an outing than the deli everyone names (the cap).
+    const recognised = renown ? Math.max(RENOWN_FLOOR[renown], Math.min(RENOWN_CAP[renown], score + RENOWN_DRAW[renown])) : 0;
+    if (entry > 0 || renown) reasons.push("LANDMARK");
+    score = Math.max(score + entry, recognised);
   }
   if (!c.brand) {
     const since = parseSince(c.since);

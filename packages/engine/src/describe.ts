@@ -70,7 +70,8 @@ const KID_FACILITY_LIMITED: Readonly<Record<string, string>> = { changing_table:
 const NET_LABEL: Readonly<Record<string, string>> = { wlan: "Wi-Fi", yes: "Yes", wired: "Wired", terminal: "Computers to use", no: "None" };
 const ORDER = ["destination", "opening_hours", "kitchen_hours", "business_status", "scheduled_closure", "subtype", "cuisine", "age_limit", "admission", "admission_status", "takeout", "happy_hours", "outdoor_seating", "diets", "internet_access", "price", "last_entry_offset", "min_useful_minutes", "wheelchair", "restroom", "kid_facilities", "parking", "indoor_outdoor", "open_state", "queue", "crowd_level"];
 /** Shown elsewhere on the page (title, category, contact panel). */
-const HIDDEN = new Set(["name", "category", "website", "phone", "links"]);
+/** And renown: Claude's recognition of a place ranks it, and is never shown as something we know of it. */
+const HIDDEN = new Set(["name", "category", "website", "phone", "links", "renown"]);
 
 const SOURCE_LABEL: Record<string, string> = {
   founder: "OutRN",

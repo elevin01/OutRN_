@@ -16,3 +16,4 @@ export * from "./ticketing.js";
 export * from "./films.js";
 export * from "./claude.js";
 export * from "./site-ai.js";
+export * from "./renown.js";

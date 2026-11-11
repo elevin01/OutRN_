@@ -12,6 +12,7 @@
 # fixtures/live/<area>-photos.json next to it brings its photos, <area>-overture.json checks its
 # places against Overture Maps (still operating, closed, websites and phones), and
 # <area>-destinations.json adds the places worth a longer outing around it (preserves, gardens, lookouts), and
+# <area>-renown.json which of its places Claude recognises by name (outrn ai renown --save), and
 # <area>-sites.json what the venues' own websites stated (their hours, mostly); fixtures/live/calendars.json,
 # when there is one, brings the events in libraries', towns' and nature centers' own calendars. A capture named after something
 # that is not an area here is skipped. A capture of a real area that fails to replay stops the run
@@ -72,7 +73,7 @@ shopt -s nullglob
 served=""
 for file in fixtures/live/*.json; do
   slug="$(basename "$file" .json)"
-  case "$slug" in *-photos | *-overture | *-destinations | *-sites | calendars) continue ;; esac
+  case "$slug" in *-photos | *-overture | *-destinations | *-sites | *-renown | calendars) continue ;; esac
   echo
   echo "== ${slug}"
   known="$(area_count "$slug")" || fail "could not look up ${slug} in ${DB_NAME}"
@@ -120,6 +121,17 @@ for file in fixtures/live/*.json; do
       fail "${slug}: ${destinations} did not replay (see above), so nothing is served. Re-record it with pnpm capture ${slug}, or move it out of fixtures/live."
     fi
     summary "$out" "places|venues"
+  fi
+
+  # Which of its places Claude recognises by name (outrn ai renown --save): an estimate that lifts them
+  # in ranking. Replayed, never asked here: asking costs money, and is a command of its own.
+  renown="fixtures/live/${slug}-renown.json"
+  if [ -f "$renown" ]; then
+    if ! out="$(pnpm -s outrn ai renown --area "$slug" --from-file "$renown" 2>&1)"; then
+      if [ -n "$out" ]; then printf '%s\n' "$out" >&2; fi
+      fail "${slug}: ${renown} did not replay (see above), so nothing is served. Re-record it with pnpm outrn ai renown --area ${slug} --save ${renown}, or move it out of fixtures/live."
+    fi
+    summary "$out" "renown"
   fi
 
   # What the venues' own websites stated (their hours, mostly), as recorded by pnpm capture.

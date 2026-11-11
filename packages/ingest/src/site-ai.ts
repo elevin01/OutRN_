@@ -198,9 +198,12 @@ const localDate = (at: Date, timeZone: string): string => localClock(at, timeZon
 
 // ── Spending ────────────────────────────────────────────────────────────────────────────────────
 
+/** Every source whose runs spend on Claude: one cap covers them all (renown.ts is the second). */
+export const AI_SPENDING_SOURCES: readonly string[] = [SITE_AI_SOURCE, "ai_renown"];
+
 /** Dollars spent on Claude in the last 24 hours, from the run log. */
 export async function spentLastDay(db: Db, now: Date): Promise<number> {
-  const r = await db.query<{ cents: string }>(`select coalesce(sum(cost_cents), 0) as cents from ingestion_runs where source_id = $1 and started_at > $2::timestamptz - interval '24 hours'`, [SITE_AI_SOURCE, now]);
+  const r = await db.query<{ cents: string }>(`select coalesce(sum(cost_cents), 0) as cents from ingestion_runs where source_id = any($1::text[]) and started_at > $2::timestamptz - interval '24 hours'`, [AI_SPENDING_SOURCES, now]);
   return Number(r.rows[0]!.cents) / 100;
 }
 
@@ -211,7 +214,7 @@ export function aiSettings(env: Readonly<Record<string, string | undefined>>): {
 }
 
 /** A run's spending: checked before each request, written to the run after each answer (a crash loses none of it). */
-class Spending {
+export class Spending {
   total = 0;
   constructor(
     private readonly db: Db,
